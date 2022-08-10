@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!--  로그인 -->
+	<select id="AdmLgnDAO.actionLogin" parameterClass="string" resultClass="adminVO">
+/* AdmLgnDAO.actionLogin */
+	<![CDATA[
+		SELECT 
+			MEM_SEQ as memSeq
+			, MEM_CODE as memCode
+			, MEM_NAME as memName
+			, MEM_EMAIL as memEmail
+			, MEM_MPHONE as memMphone
+			, MEM_LEVEL as memLevel
+			, MEM_UPDT_YN as memUpdtYn
+		FROM 
+			TB_HSWC_MEMBER
+		WHERE
+			MEM_CODE = #memCode#
+	]]>
+	</select>
+	
+	<!-- sso 로그인 -->
+	<select id="AdmLgnDAO.actionSsoLogin" parameterClass="string" resultClass="adminVO">
+/* AdmLgnDAO.actionSsoLogin */
+	<![CDATA[
+		SELECT
+			PROF_CODE		as profCode
+			, PROF_NAME		as profName
+			, PROF_SOSOK	as profSosok
+			, PROF_STATUS	as profStatus
+		FROM
+			WRITER_USER1
+		WHERE
+			PROF_CODE = #profCode#
+	]]>
+	</select>
+	
+		<!-- 메뉴권한 -->
+	<select id="AdmLgnDAO.selectMenuAthrList" parameterClass="string" resultClass="menuAthrVO">
+/* AdmLgnDAO.selectMenuAthrList */
+	<![CDATA[
+		SELECT 
+			ATHR_SEQ 		as athrSeq
+			, ATHR_NAME		as athrName
+			, ATHR_URL 		as athrUrl
+		FROM 
+			TB_HSWC_MNG_ATHR 
+		WHERE 
+			ATHR_SEQ IN (
+				SELECT ATHR_SEQ 
+				FROM TB_HSWC_MEMATHR_MATCH 
+				WHERE MEM_SEQ = #memSeq#
+			)
+	]]>
+	</select>
+</sqlMap>

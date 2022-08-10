@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_code_table">
+		FROM
+			TB_HDA_BOARD_CODE
+		WHERE 1=1
+		<isNotEmpty property="searchType" prepend="AND">
+			BC_USE_YN = #searchType#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			BC_NAME like concat('%', #searchWord#, '%')
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 코드관리 목록 -->
+	<select id="AdmMajorCodeDAO.selectAdmMajorCodeList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmMajorCodeDAO.selectAdmMajorCodeList */
+	<![CDATA[
+		SELECT
+			BC_SEQ
+			, BC_NAME
+			, BC_TYPE
+			, BC_USE_YN
+			, BC_REG_DTTM
+	]]>
+	<include refid="adm_code_table"/>		
+	<![CDATA[
+		ORDER BY
+			BC_REG_DTTM DESC
+	]]>
+	<dynamic>
+		LIMIT #firstIndex#, 10
+	</dynamic>	
+	</select>
+	
+	<!-- 코드관리 목록 Cnt-->
+	<select id="AdmMajorCodeDAO.selectAdmMajorCodeListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmMajorCodeDAO.selectAdmMajorCodeListCnt*/
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_code_table"/>		
+	</select>
+	
+	<!-- 코드관리 조회 -->
+	<select id="AdmMajorCodeDAO.selectAdmMajorCodeOne" parameterClass="String" resultClass="codeVo">
+/*AdmMajorCodeDAO.selectAdmMajorCodeOne*/
+	<![CDATA[
+		SELECT
+			BC_SEQ AS bcSeq
+			, BC_NAME AS bcName
+			, BC_TYPE AS bcType
+			, BC_USE_YN AS bcUseYn
+		FROM
+			TB_HDA_BOARD_CODE
+		WHERE
+			BC_SEQ = #bcSeq#
+	]]>
+	</select>
+	
+	
+	<!-- 코드 등록 -->
+	<insert id="AdmMajorCodeDAO.insertAdmMajorCode" parameterClass="codeVO">
+/*AdmMajorCodeDAO.insertAdmMajorCode*/
+	<![CDATA[
+		INSERT INTO
+			TB_HDA_BOARD_CODE(
+				BC_NAME
+				, BC_TYPE
+				, BC_USE_YN
+			) VALUES (
+				#bcName#
+				, #bcType#
+				, #bcUseYn#
+			)
+	]]>
+	</insert>
+	
+	<!-- 코드수정 -->
+	<update id="AdmMajorCodeDAO.updateAdmMajorCode" parameterClass="codeVO">
+/*AdmMajorCodeDAO.updateAdmMajorCode*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_BOARD_CODE
+		SET
+			BC_NAME = #bcName#
+			, BC_TYPE = #bcType#
+			, BC_USE_YN = #bcUseYn#
+		WHERE
+			BC_SEQ = #bcSeq#
+	]]>
+	</update>
+	
+</sqlMap>

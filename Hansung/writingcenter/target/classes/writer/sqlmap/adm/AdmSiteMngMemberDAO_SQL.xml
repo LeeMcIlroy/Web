@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="adm_member_table">
+		FROM
+			TB_HSWC_MEMBER
+		WHERE 1=1
+		<isNotEmpty property="searchWord">
+			<isEqual prepend="AND" property="searchCondition" compareValue="memName">
+				MEM_NAME LIKE '%' || #searchWord# || '%'		
+			</isEqual>
+			<isEqual prepend="AND" property="searchCondition" compareValue="memEmail">
+				MEM_EMAIL LIKE '%' || #searchWord# || '%'		
+			</isEqual>
+		</isNotEmpty>
+	
+	</sql>
+	<!-- 목록 -->
+	<select id="AdmSiteMngMemberDAO.selectSiteMngMemberList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmSiteMngMemberDAO.selectSiteMngMemberList */
+	<![CDATA[
+	SELECT
+		*
+	FROM
+		(SELECT
+			ROWNUM AS rn
+			, MEM_SEQ
+			, MEM_CODE
+			, MEM_NAME
+			, MEM_EMAIL
+			, MEM_MPHONE
+			, MEM_LEVEL
+			, MEM_UPDT_YN
+			, MEM_MEMO
+			, REG_ID
+			, REG_DATE
+		FROM	
+			(SELECT
+				MEM_SEQ
+				, MEM_CODE
+				, MEM_NAME
+				, MEM_EMAIL
+				, MEM_MPHONE
+				, MEM_LEVEL
+				, MEM_UPDT_YN
+				, MEM_MEMO
+				, REG_ID
+				, REG_DATE
+			]]>
+			<include refid="adm_member_table"/>
+			<![CDATA[
+			ORDER BY
+				REG_DATE DESC
+			)
+		)t1
+	WHERE
+		rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#	
+	]]>	
+	</select>	
+	<!-- 목록 Cnt -->
+	<select id="AdmSiteMngMemberDAO.selectSiteMngMemberListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmSiteMngMemberDAO.selectSiteMngMemberListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>	
+		<include refid="adm_member_table"/>
+	</select>
+	
+	<!-- 입력 -->
+	<insert id="admSiteMngMemberDAO.insertSiteMngMemberOne" parameterClass="adminVO">
+/* admSiteMngMemberDAO.insertSiteMngMemberOne */
+	<selectKey type="pre" keyProperty="memSeq" resultClass="String">
+		SELECT SEQ_HSWC_MEMBER.nextval FROM DUAL
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_HSWC_MEMBER(
+			MEM_SEQ
+			, MEM_CODE
+			, MEM_NAME
+			, MEM_EMAIL
+			, MEM_MPHONE
+			, MEM_LEVEL
+			, MEM_UPDT_YN
+			, MEM_MEMO
+			, REG_ID
+		)VALUES(
+			#memSeq#
+			, #memCode#
+			, #memName#
+			, #memEmail#
+			, #memMphone#
+			, #memLevel#
+			, #memUpdtYn#
+			, #memMemo#
+			, #regId#
+		)
+	]]>	
+	</insert>
+	
+	<!-- 삭제 -->
+	<delete id="admSiteMngMemberDAO.deleteSiteMngMemberOne" parameterClass="String">
+/* admSiteMngMemberDAO.deleteSiteMngSiteMngMemberOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_MEMBER
+		WHERE MEM_SEQ = #memSeq#
+	]]>	
+	</delete>
+	
+	<!-- 조회 -->
+	<select id="admSiteMngMemberDAO.selectSiteMngMemberOne" parameterClass="String" resultClass="adminVO">
+/* admSiteMngMemberDAO.selectSiteMngMemberOne */
+	<![CDATA[
+		SELECT
+			MEM_SEQ AS memSeq
+			, MEM_CODE AS memCode
+			, MEM_NAME AS memName
+			, MEM_EMAIL AS memEmail
+			, MEM_MPHONE AS memMphone
+			, MEM_LEVEL AS memLevel
+			, MEM_UPDT_YN AS memUpdtYn
+			, MEM_MEMO AS memMemo
+			, REG_ID AS regId
+			, REG_DATE AS regDate
+		FROM
+			TB_HSWC_MEMBER
+		WHERE
+			MEM_SEQ = #memSeq#
+	]]>	
+	</select>
+	
+	<!-- 수정 -->
+	<update id="admSiteMngMemberDAO.updateSiteMngMemberOne" parameterClass="adminVO">
+/* admSiteMngMemberDAO.updateSiteMngMemberOne */	
+	<![CDATA[
+		UPDATE
+			TB_HSWC_MEMBER
+		SET
+			MEM_CODE = #memCode#
+			, MEM_NAME = #memName#
+			, MEM_EMAIL = #memEmail#
+			, MEM_MPHONE = #memMphone#
+			, MEM_LEVEL = #memLevel#
+			, MEM_UPDT_YN = #memUpdtYn#
+			, MEM_MEMO = #memMemo#
+		WHERE
+			MEM_SEQ = #memSeq#
+	]]>
+	</update>
+	
+	<!-- 첨삭 여부 "N"일경우 권한 수정 -->
+	<delete id="admSiteMngMemberDAO.deleteClsAthrOne" parameterClass="String">
+/* admSiteMngMemberDAO.deleteClsAthrOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_ATHR
+		WHERE MEM_SEQ = #memSeq#
+	]]>	
+	</delete>
+	
+	<!-- 권한 등록 -->
+	<insert id="admSiteMngMemberDAO.insertMenuAthr" parameterClass="map">
+/* admSiteMngMemberDAO.insertMenuAthr */
+	<![CDATA[
+		INSERT ALL
+	]]>
+	<dynamic>
+		<isEqual property="memLevel" compareValue="1">
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'LEC')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'CNSLT')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'WCGUIDE')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'BOARDMNG')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'LECMNG')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'SITEMNG')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'QESTNAR')
+		</isEqual>
+		<isEqual property="memLevel" compareValue="2">
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'LEC')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'CNSLT')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'WCGUIDE')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'BOARDMNG')
+		</isEqual>
+		<isEqual property="memLevel" compareValue="3">
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'LEC')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'CNSLT')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'WCGUIDE')
+			INTO TB_HSWC_MEMATHR_MATCH VALUES (#memSeq#, 'BOARDMNG')
+		</isEqual>
+	</dynamic>
+	<![CDATA[
+		SELECT * FROM dual
+	]]>
+	</insert>
+	
+	<!-- 권한 삭제 -->
+	<delete id="admSiteMngMemberDAO.deleteMenuAthr" parameterClass="string">
+/* admSiteMngMemberDAO.deleteMenuAthr */
+	<![CDATA[
+		DELETE FROM TB_HSWC_MEMATHR_MATCH
+		WHERE MEM_SEQ = #memSeq#
+	]]>
+	</delete>
+</sqlMap>

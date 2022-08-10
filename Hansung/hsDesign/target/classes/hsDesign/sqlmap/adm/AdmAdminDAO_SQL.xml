@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_admin_table">
+		FROM
+			TB_HDA_ADMIN
+		WHERE 1=1
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			ADM_USE_YN = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition2" compareValue="N">
+				ADM_NAME like concat('%', #searchWord#, '%')
+			</isEqual>
+			<isEqual property="searchCondition2" compareValue="T">
+				ADM_TEL like concat('%', #searchWord#, '%')
+			</isEqual>
+			<isEqual property="searchCondition2" compareValue="I">
+				ADM_ID like concat('%', #searchWord#, '%')
+			</isEqual>
+			<isEqual property="searchCondition2" compareValue="E">
+				ADM_EMAIL like concat('%', #searchWord#, '%')
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 관리자관리 목록 -->
+	<select id="AdmAdminDAO.selectAdmAdminList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmAdminDAO.selectAdmAdminList */
+	<![CDATA[
+		SELECT
+			ADM_SEQ
+			, ADM_NAME
+			, ADM_ID
+			, ADM_TEL
+			, ADM_EMAIL
+			, ADM_USE_YN
+	]]>
+	<include refid="adm_admin_table"/>		
+	<![CDATA[
+		ORDER BY
+			ADM_REG_DATE DESC
+	]]>
+	<dynamic>
+		LIMIT #firstIndex#, 10
+	</dynamic>	
+	</select>
+	
+	<!-- 관리자관리 목록 Cnt-->
+	<select id="AdmAdminDAO.selectAdmAdminListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmAdminDAO.selectAdmAdminListCnt*/
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_admin_table"/>		
+	</select>
+	
+	<!-- 관리자관리 조회 -->
+	<select id="AdmAdminDAO.selectAdmAdminOne" parameterClass="String" resultClass="adminVo">
+/*AdmAdminDAO.selectAdmAdminOne*/
+	<![CDATA[
+		SELECT
+			ADM_SEQ AS admSeq
+			, ADM_NAME AS admName
+			, ADM_ID AS admId
+			, ADM_TEL AS admTel
+			, ADM_EMAIL AS admEmail
+			, ADM_USE_YN AS admUseYn
+		FROM
+			TB_HDA_ADMIN
+		WHERE
+			ADM_SEQ = #admSeq#
+	]]>
+	</select>
+	
+	<!-- 관리자 등록 - 중복확인 -->
+	<select id="AdmAdminDAO.selectAdmAdminIdCheck" parameterClass="adminVO" resultClass="string">
+/*AdmAdminDAO.selectAdmAdminIdCheck*/
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_HDA_ADMIN
+		WHERE
+			ADM_ID = #admId#
+	]]>
+	</select>
+	
+	<!-- 관리자 등록 -->
+	<insert id="AdmAdminDAO.insertAdmAdmin" parameterClass="adminVO">
+/*AdmAdminDAO.insertAdmAdmin*/
+	<![CDATA[
+		INSERT INTO
+			TB_HDA_ADMIN(
+				ADM_NAME
+				, ADM_ID
+				, ADM_PWD
+				, ADM_TEL
+				, ADM_EMAIL
+				, ADM_USE_YN
+			) VALUES (
+				#admName#
+				, #admId#
+				, #admPwd#
+				, #admTel#
+				, #admEmail#
+				, #admUseYn#
+			)
+	]]>
+	</insert>
+	
+	<!--시스템 관리자 수정 -->
+	<update id="AdmAdminDAO.updateAdmSystemAdmin" parameterClass="adminVO">
+/*AdmAdminDAO.updateAdmAdmin*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_ADMIN
+		SET
+			ADM_NAME = #admName#
+			, ADM_TEL = #admTel#
+			, ADM_EMAIL = #admEmail#
+			, ADM_USE_YN = #admUseYn#
+	]]>
+	<isNotEmpty property="admPwd" prepend=",">
+			ADM_PWD = #admPwd#
+		</isNotEmpty>
+	<![CDATA[
+		WHERE
+			ADM_SEQ = #admSeq#
+	]]>
+
+	</update>
+	
+	<!--일반 관리자 수정 -->
+	<update id="AdmAdminDAO.updateAdmNomalAdmin" parameterClass="adminVO">
+/*AdmAdminDAO.updateAdmAdmin*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_ADMIN
+		SET
+			ADM_TEL = #admTel#
+			, ADM_EMAIL = #admEmail#
+	]]>
+		<isNotEmpty property="admPwd" prepend=",">
+			ADM_PWD = #admPwd#
+		</isNotEmpty>
+	<![CDATA[
+		WHERE
+			ADM_SEQ = #admSeq#
+	]]>
+	</update>
+	
+	<!-- 비밀번호 초기화 -->
+	<update id="AdmAdminDAO.updateAdmPwdClear" parameterClass="adminVO">
+/*AdmAdminDAO.updateAdmPwdClear*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_ADMIN
+		SET
+			ADM_PWD = #admPwd#
+		WHERE
+			ADM_SEQ = #admSeq#
+	]]>
+	</update>
+</sqlMap>

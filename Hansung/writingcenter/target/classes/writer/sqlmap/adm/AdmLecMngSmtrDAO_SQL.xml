@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_smtr_table">
+		FROM 
+			TB_HSWC_SMTR
+		WHERE 1=1
+	</sql>
+	
+	<!-- 목록 -->
+	<select id="AdmLecMngSmtrDAO.selectLecMngSmtrList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmLecMngSmtrDAO.selectLecMngSmtrList */
+	<![CDATA[
+		SELECT 
+			SMTR_SEQ
+			, SMTR_TITLE
+			, SMTR_VIEW_YN
+			, SMTR_HITCOUNT
+			, REG_ID
+			, REG_DATE
+		FROM (
+			SELECT
+				rownum AS rn
+				, SMTR_SEQ
+				, SMTR_TITLE
+				, SMTR_VIEW_YN
+				, SMTR_HITCOUNT
+				, REG_ID
+				, REG_DATE
+			FROM (
+				SELECT 
+					SMTR_SEQ
+					, SMTR_TITLE
+					, SMTR_VIEW_YN
+					, SMTR_HITCOUNT
+					, REG_ID
+					, REG_DATE
+			 
+	]]>
+			<include refid="adm_smtr_table"/>
+	<![CDATA[
+				ORDER BY 
+					SMTR_SORT asc, SMTR_SEQ desc
+			) tt
+		)
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmLecMngSmtrDAO.selectLecMngSmtrListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmLecMngSmtrDAO.selectLecMngSmtrListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_smtr_table"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmLecMngSmtrDAO.selectLecMngSmtrOne" parameterClass="string" resultClass="semesterVO">
+/* AdmLecMngSmtrDAO.selectLecMngSmtrOne */
+	<![CDATA[
+		SELECT
+			SMTR_SEQ as smtrSeq
+			, SMTR_TITLE as smtrTitle
+			, SMTR_CONTENT as smtrContent
+			, SMTR_SORT as smtrSort
+			, SMTR_VIEW_YN as smtrViewYn
+			, SMTR_HITCOUNT as smtrHitcount
+			, REG_ID as regId
+			, REG_NAME as regName
+			, REG_DATE as regDate
+		FROM
+			TB_HSWC_SMTR
+		WHERE
+			SMTR_SEQ = #smtrSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmLecMngSmtrDAO.lecMngSmtrInsert" parameterClass="semesterVO">
+/* AdmLecMngSmtrDAO.lecMngSmtrInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_SMTR (
+			SMTR_SEQ
+			, SMTR_TITLE
+			, SMTR_CONTENT
+			, SMTR_VIEW_YN
+			, REG_ID
+			, REG_NAME	
+		) VALUES (
+			SEQ_HSWC_SMTR.nextval
+			, #smtrTitle#
+			, #smtrContent#
+			, #smtrViewYn#
+			, #regId#
+			, #regName#
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmLecMngSmtrDAO.lecMngSmtrUpdate" parameterClass="semesterVO">
+/* AdmLecMngSmtrDAO.lecMngSmtrUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_SMTR
+		SET
+			SMTR_TITLE = #smtrTitle#
+			, SMTR_CONTENT = #smtrContent#
+			, SMTR_VIEW_YN = #smtrViewYn#
+		WHERE 
+			SMTR_SEQ = #smtrSeq#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmLecMngSmtrDAO.lecMngSmtrDelete" parameterClass="string">
+/* AdmLecMngSmtrDAO.lecMngSmtrDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_SMTR
+		WHERE SMTR_SEQ = #smtrSeq#
+	]]>
+	</delete>
+	
+	<!-- 데이터의 존재 유무 -->
+	<select id="AdmLecMngSmtrDAO.lecMngSmtrCnt" parameterClass="String" resultClass="int">
+/* AdmLecMngSmtrDAO.lecMngSmtrCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_HSWC_CLS
+		WHERE
+			SMTR_SEQ = #smtrSeq#
+	]]>	
+	</select>
+</sqlMap>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 목록 -->
+	<sql id="usr_brodata_table">
+		FROM
+			TB_HDA_BRODATA
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="title">
+					BD_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="name">
+					REG_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="BroDataDAO.selectBroDataList" parameterClass="searchVO" resultClass="egovMap">
+/* BroDataDAO.selectBroDataList */
+	<![CDATA[
+		SELECT
+			BD_SEQ
+			, BD_NAME
+			, BD_URL
+			, REG_DATE
+			, REG_NAME
+			, BD_SAVE_FILE_PATH
+			, concat(
+				substring(BD_SAVE_FILE_PATH, 1, instr(BD_SAVE_FILE_PATH, '.')-1)
+				, '_thumbnail'
+				, substring(BD_SAVE_FILE_PATH, instr(BD_SAVE_FILE_PATH, '.'), length(BD_SAVE_FILE_PATH)) 
+			) as BD_SAVE_THUMB_PATH
+	]]>
+	<include refid="usr_brodata_table"/>
+	<![CDATA[
+		ORDER BY
+			REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="BroDataDAO.selectBroDataListCnt" parameterClass="searchVO" resultClass="int">
+/* BroDataDAO.selectBroDataListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+	<include refid="usr_brodata_table"/>
+	</select>
+
+</sqlMap>

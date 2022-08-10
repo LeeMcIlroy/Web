@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- ***************************************** 진로체험 신청 ***************************************** -->
+	<sql id="adm_exper_table">
+		FROM
+			TB_HDA_EXPER_APLY t1
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="name">
+					EXA_APLY_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="school">
+					EXA_SCH_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 목록 -->
+	<select id="AdmExperienceDAO.selectExperAplyList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmExperienceDAO.selectExperAplyList */
+	<![CDATA[
+		SELECT
+			EXA_SEQ
+			, EXA_APLY_NAME
+			, EXA_SCH_NAME
+			, EXA_TEL
+			, EXA_ST_DATE
+			, EXA_ED_DATE
+			, REG_DATE
+			, EXA_EMAIL
+			, (
+				SELECT
+					GROUP_CONCAT(
+						(
+							case 
+								when EXC_CD = '01' then '시각패키지디자이너'
+								when EXC_CD = '02' then '광고디자이너(광고마케팅)'
+								when EXC_CD = '03' then '동화일러스트작가'
+								when EXC_CD = '04' then '웹코딩(웹디자이너)'
+								when EXC_CD = '05' then '영상디자이너/방송PD'
+								when EXC_CD = '06' then '웹툰/게임그래픽작가'
+								when EXC_CD = '07' then '실내건축디자이너'
+								when EXC_CD = '08' then '주얼리디자이너'
+								when EXC_CD = '09' then '패션디자이너'
+								when EXC_CD = '10' then '패션코디/패션스타일리스트'
+								when EXC_CD = '11' then '뷰티메이크업 코디네이터'
+								when EXC_CD = '12' then '헤어코디네이터'
+							end
+						)
+						order by EXC_CD asc
+						SEPARATOR '<br>'
+					)
+				FROM
+					TB_HDA_EXPER_COURCE
+				WHERE EXA_SEQ = t1.EXA_SEQ
+			) as ARR_EXC_CD
+	]]>
+	<include refid="adm_exper_table"/>
+	<![CDATA[
+		ORDER BY
+			REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmExperienceDAO.selectExperAplyListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmExperienceDAO.selectExperAplyListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+	<include refid="adm_exper_table"/>
+	</select>
+	
+	<!-- 삭제 - 신청 -->
+	<delete id="AdmExperienceDAO.experDelete" parameterClass="string">
+/* AdmExperienceDAO.experDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_EXPER_APLY
+		WHERE EXA_SEQ = #exaSeq#
+	]]>
+	</delete>
+	
+	<!-- 삭제 - 과정 -->
+	<delete id="AdmExperienceDAO.experCourceDelete" parameterClass="string">
+/* AdmExperienceDAO.experCourceDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_EXPER_COURCE
+		WHERE EXA_SEQ = #exaSeq#
+	]]>
+	</delete>
+</sqlMap>

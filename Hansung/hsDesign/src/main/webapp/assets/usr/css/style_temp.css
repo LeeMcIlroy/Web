@@ -1,0 +1,289 @@
+﻿@charset "UTF-8";
+
+.sb-header h1.big {
+	width:60%;
+}
+
+.game {
+}
+.game:before,
+.game:after {
+	content:"";
+	position:absolute;
+	z-index:-1;
+	width:100%;
+	height:86%;
+	bottom:0;
+	left:0;
+}
+.game:before{
+	background:url("../images/common/game_bg.gif") 0 0 repeat;
+	background-size:50%;
+}
+.game:after {
+	background:url("../images/common/game_bg_top.png") 0 0 no-repeat;
+	background-size:100% auto;
+}
+.game-vs {
+	position:relative;
+	padding:6% 0 4%;
+	margin-top:-6%;
+}
+.game-vs p { 
+	font-family:"HanwhaL";
+	font-size:1.154em;
+	font-size:3vw;
+	line-height:1.4em;
+	color:#fff;
+	text-align:center;
+}
+.game-vs strong {
+	position:absolute;
+	top:-50%;
+	width:28%;
+}
+.game-vs strong.team-left { left:-3%; }
+.game-vs strong.team-right { right:-3%; }
+.game-vs strong img {
+	display:block;
+	width:100%;
+}
+
+.bingo { margin:0 9%; }
+.bingo ul{
+	overflow:hidden;
+	border-top:1px solid #95989a;
+	border-left:1px solid #95989a;
+	background:#fff;
+}
+.bingo ul li {
+	float:left;
+	width:33.33%;
+	padding-top:33.33%;
+	background:#fff;
+	box-sizing:border-box;
+	border-right:1px solid #95989a;
+	border-bottom:1px solid #95989a;
+	position:relative;
+	overflow:hidden;
+}
+.bingo ul li a {
+	position:absolute;
+	width:100%;
+	height:100%;
+	top:0;
+	left:0;
+}
+.bingo ul li a img {
+	display:block;
+	width:70%;
+	margin:10% auto;
+}
+
+.explane {
+	margin:3% 9% 0;
+}
+.explane li {
+	position:relative;
+	color:#fff;
+	letter-spacing:-0.05em;
+	font-size:2vw;
+	padding-left:6px;
+}
+.explane li:before {
+	position:absolute;
+	left:0;
+	top:5%;
+	content:"*";
+	color:#fff;
+}
+.btn-bingo {
+	position:fixed;
+	left:0;
+	bottom:0;
+	width:100%;
+}
+.btn-bingo-result {
+	float:right;
+	margin:3% 9% 0;
+	width:53.8%;
+}
+.btn-bingo img,
+.btn-bingo-result img{
+	width:100%;
+	display:block;
+}
+
+.status {
+	margin:3% 9% 0;
+	position:relative;
+}
+.status strong {
+	font-family:"HanwhaL";
+	font-weight:normal;
+	color:#fff;
+	font-size:6vw;
+}
+.status .status-list {
+	position:absolute;
+	right:0;
+	top:50%;
+	margin-top:-7px;
+}
+.status .status-list span {
+	display:inline-block;
+	width:15px;
+	height:15px;
+	border:1px solid #fff;
+	border-radius:50%;
+	box-sizing:border-box;
+}
+.status .status-list span.on {
+	background:#fff;
+}
+
+.mycoupon {
+	position:fixed;
+	width:100%;
+	height:26%;
+	left:0;
+	bottom:-26%;
+	background:#fff;
+	z-index:9;
+	transition:all .5s;
+}
+.mycoupon.open {
+	bottom:0;
+}
+.mycoupon .btn-toggle {
+	position:absolute;
+	font-family:"HanwhaR";
+	left:5%;
+	padding:0.2em 1.5em;
+	top:-2.4em;
+	line-height:2.2em;
+	font-size:4vw;
+	color:#888;
+	background:#fff;
+	border-radius:1.6em 1.6em 0 0;
+}
+
+.mycoupon ul { 
+	margin:3.5% 5%; 
+	overflow:hidden;
+}
+.mycoupon ul li { 
+	float:left; 
+	width:31%;
+}
+.mycoupon ul li + li {
+	margin-left:3.5%;
+}
+.mycoupon ul li p { 
+	position:relative;
+	font-weight:600;
+	font-size:2.2vw;
+	padding:4% 0;
+}
+.mycoupon ul li p strong {
+	color:#eb7600;
+	position:absolute;
+	font-size:1.5vw; 
+	line-height:1.6em;
+	text-align:center;
+	top:12%;
+	right:0;
+}
+.mycoupon ul li p strong span {
+	display:block;
+	font-size:3.6vw;
+	font-weight:normal;
+}
+.mycoupon ul li a { 
+	font-family:"HanwhaL";
+	display:block;
+	text-align:center; 
+	color:#fff;
+	height:3em;
+	line-height:3em;
+	background:#bfbfbf;
+	font-size:2.3vw;
+	margin-top:8%;
+	border-radius:.6em;
+}
+.mycoupon ul li a.spot { background:#83a5e5; }
+.mycoupon > p { font-size:2.5vw;margin:0 5%; }
+.mycoupon > a.btn { 
+	position:absolute;
+	font-family:"HanwhaR";
+	font-size:4vw;
+	background:#ff671b; 
+	color:#fff;
+	line-height:3em;
+	height:3em;
+	border-radius:1.5em;
+	width:50%;
+	text-align:center;
+	box-sizing:border-box;
+	right:5%;
+	bottom:18%;
+}
+.mycoupon + .dim { opacity:.6; }
+
+/********** 모바일 외 처리 **********/
+@media screen and (min-width: 768px){
+	.game:before,
+	.game:after {
+		height:85%;
+	}
+	.btn-bingo {
+		position:absolute;
+	}
+	.bingo { margin:0 12%; }
+	.explane {
+		margin:3% 12% 0;
+	}
+	.game-vs p { 
+		font-size:20px;
+	}
+	.explane li {
+		font-size:16px;
+	}
+	.mycoupon {
+		position:absolute;
+	}
+	.btn-toggle {
+		font-size:20px;
+	}
+}
+/********** 768px **********/
+@media screen and (max-width: 768px) {	
+	
+}
+/********** 640px **********/
+@media screen and (max-width: 640px) {
+	
+}
+
+/********** 480px **********/
+@media screen and (max-width: 480px) {
+	
+}
+
+/********** 414px **********/
+@media screen and (max-width: 414px) {
+
+}
+
+/********** 375px **********/
+@media screen and (max-width: 375px) {
+}
+
+/********** 360 **********/
+@media screen and (max-width: 360px) {
+	
+}
+
+/********** 320 **********/
+@media screen and (max-width: 320px) {
+}

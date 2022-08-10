@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 학생 출결 조회 -->
+	<select id="StdLecResultDAO.selectAttendView" parameterClass="searchVO" resultClass="egovMap">
+	/* StdLecResultDAO.selectAttendView */
+	<![CDATA[
+		SELECT
+			T.*
+			, ROUND((ATTEND/TOTAL)*100, 2) AS RATE
+		FROM
+		(
+			SELECT
+				COUNT(ATTEND) AS TOTAL
+				, (COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)) AS ATTEND
+				, (COUNT(CASE WHEN ATTEND = '2' THEN 1 END)+TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)) AS ABSENT
+			FROM
+				TB_LCMS_ATTEND
+			WHERE
+				LECT_SEQ = #searchLecture#
+			AND
+				MEMBER_CODE = #searchMemberCode#
+		) T
+	]]>
+	</select>
+	
+	<!-- 학생 성적 조회 -->
+	<select id="StdLecResultDAO.selectGradeView" parameterClass="searchVO" resultClass="egovMap">
+	/* StdLecResultDAO.selectGradeView */
+	<![CDATA[
+		SELECT
+			T.*
+			, ROUND((MID_SPEAK+FIN_SPEAK)/2, 0)		AS AVG_SPEAK
+			, ROUND((MID_WRITE+FIN_WRITE)/2, 0)		AS AVG_WRITE
+			, ROUND((MID_LISTEN+FIN_LISTEN)/2, 0)	AS AVG_LISTEN
+			, ROUND((MID_READ+FIN_READ)/2, 0)		AS AVG_READ
+			, ROUND((ROUND((MID_SPEAK+MID_WRITE+MID_LISTEN+MID_READ)/4, 0)+ROUND((FIN_SPEAK+FIN_WRITE+FIN_LISTEN+FIN_READ)/4, 0))/2, 0) AS AVG_TOTAL
+		FROM
+		(
+			SELECT
+				A.GRADE_EXPR_SPEAK		AS MID_SPEAK
+				, A.GRADE_EXPR_WRITE	AS MID_WRITE
+				, A.GRADE_COMP_LISTEN	AS MID_LISTEN
+				, A.GRADE_COMP_READ		AS MID_READ
+				, B.GRADE_EXPR_SPEAK	AS FIN_SPEAK
+				, B.GRADE_EXPR_WRITE	AS FIN_WRITE
+				, B.GRADE_COMP_LISTEN	AS FIN_LISTEN
+				, B.GRADE_COMP_READ		AS FIN_READ
+			FROM
+				TB_LCMS_GRADE A 
+				JOIN TB_LCMS_GRADE B
+				ON A.LECT_CODE = B.LECT_CODE
+				AND A.MEMBER_CODE = B.MEMBER_CODE
+			WHERE
+				A.GRADE_GUBUN = '1'
+			AND
+				B.GRADE_GUBUN = '2'
+			AND
+				A.LECT_CODE = #searchLecture#
+			AND
+				A.MEMBER_CODE = #searchMemberCode#
+		) T
+	]]>
+	</select>
+
+</sqlMap>

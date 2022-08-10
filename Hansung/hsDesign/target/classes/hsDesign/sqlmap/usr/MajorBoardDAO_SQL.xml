@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="usr_mb_table">
+		FROM
+			TB_HDA_MAJOR_BOARD t2
+		WHERE 1=1
+		AND (SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU t3 WHERE t2.MB_GUBUN1 = t3.MM_SEQ) = 'Y'
+		<isNotEmpty property="menuType" prepend="AND">
+			(
+				M_CODE = #menuType#
+				<isEqual property="menuType" prepend="OR" compareValue="05">
+					M_CODE = '06'
+				</isEqual>
+			)
+		</isNotEmpty>
+		<isEmpty property="menuType" prepend="AND">
+			M_CODE = '01'
+		</isEmpty>
+		<isNotEmpty property="searchType" prepend="AND">
+			(
+				MB_GUBUN1 = #searchType#
+				<isEqual property="searchType" prepend="OR" compareValue="40">
+					MB_GUBUN1 = '42'
+				</isEqual>
+				<isEqual property="searchType" prepend="OR" compareValue="41">
+					MB_GUBUN1 = '43'
+				</isEqual>
+			)
+		</isNotEmpty>
+		<isEmpty property="searchType" prepend="AND">
+			MB_GUBUN1 = '1'
+		</isEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition2" compareValue="title">
+				MB_TITLE like concat('%', #searchWord#, '%')
+			</isEqual>
+			<isEqual property="searchCondition2" compareValue="content">
+				MB_CONTENT like concat('%', #searchWord#, '%')
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition3" prepend="AND">
+			MB_GUBUN2 = #searchCondition3#		
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition4" prepend="AND">
+			<![CDATA[
+				MB_SEQ < #searchCondition4#		
+			]]>
+			<![CDATA[
+				AND MB_NOTICE_YN <> 'Y'
+			]]>
+		</isNotEmpty>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="MajorBoardDAO.selectMajorBoardList" parameterClass="searchVO" resultClass="egovMap">
+/* MajorBoardDAO.selectMajorBoardList */
+	<![CDATA[
+		SELECT
+			MB_SEQ
+			, M_CODE
+			, MB_GUBUN1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS MB_GUBUN1_NAME
+			, MB_GUBUN2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = MB_GUBUN2) AS MB_GUBUN2_NAME
+			, MB_TITLE
+			, MB_REG_SEQ
+			, MB_REG_NAME
+			, MB_COUNT
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as MB_REG_DATE
+			, MB_CONTENT
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as MBTH_SEQ
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as MBTH_TYPE
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as MBTH_IMG_NAME
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as MBTH_IMG_PATH
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as MBTH_URL
+			
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileSeq
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileType
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileName
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFilePath
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileUrl
+			, MB_OLD_YN
+	
+	]]>	
+		<include refid="usr_mb_table"/>
+	<![CDATA[
+		ORDER BY
+			MB_NOTICE_YN desc, MB_NOTICE_DATE desc, t2.MB_REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="MajorBoardDAO.selectMajorBoardListCnt" parameterClass="searchVO" resultClass="int">
+/* MajorBoardDAO.selectMajorBoardListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	
+	]]>	
+		<include refid="usr_mb_table"/>
+	
+	</select>
+	
+	<!-- 조회 -->
+	<select id="MajorBoardDAO.selectMajorBoardOne" parameterClass="String" resultClass="majorBoardVO">
+/* MajorBoardDAO.selectMajorBoardOne */
+	<![CDATA[
+		SELECT
+			MB_SEQ as mbSeq
+			, M_CODE as mCode
+			, MB_GUBUN1 as mbGubun1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS mbGubun1Name
+			, MB_GUBUN2 as mbGubun2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = t2.MB_GUBUN2) AS mbGubun2Name
+			, MB_TITLE as mbTitle
+			, MB_REG_SEQ as mbRegSeq
+			, MB_REG_NAME as mbRegName
+			, MB_COUNT as mbCount
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as mbRegDate
+			, MB_CONTENT mbContent
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthSeq
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthType
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthImgName
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthImgPath
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='VIDEO') as mbthUrl
+		
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileSeq
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileType
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileName
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFilePath
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileUrl
+		FROM
+			TB_HDA_MAJOR_BOARD t2
+		WHERE
+			MB_SEQ = #mbSeq#
+	]]>	
+	</select>
+	
+	<!-- 이전글 조회 -->
+	<select id="MajorBoardDAO.selectMajorBoardPreOne" parameterClass="majorBoardVO" resultClass="majorBoardVO">
+/* MajorBoardDAO.selectMajorBoardPreOne */
+	<![CDATA[
+		SELECT
+			MB_SEQ as mbSeq
+			, M_CODE as mCode
+			, MB_GUBUN1 as mbGubun1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS mbGubun1Name
+			, MB_GUBUN2 as mbGubun2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = t2.MB_GUBUN2) AS mbGubun2Name
+			, MB_TITLE as mbTitle
+			, MB_REG_SEQ as mbRegSeq
+			, MB_REG_NAME as mbRegName
+			, MB_COUNT as mbCount
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as mbRegDate
+			, MB_CONTENT mbContent
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthSeq
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthType
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthImgName
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthImgPath
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthUrl
+		
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileSeq
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileType
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileName
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFilePath
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileUrl
+		FROM
+			TB_HDA_MAJOR_BOARD t2
+		WHERE
+			M_CODE = #mCode#
+			AND MB_GUBUN1 = #mbGubun1#
+			AND MB_GUBUN2 = #mbGubun2#
+			AND MB_SEQ < #mbSeq#
+		ORDER BY MB_SEQ DESC
+		LIMIT 1
+	]]>	
+	</select>
+	
+	<!-- 썸네일 조회(mbSeq) -->
+	<select id="MajorBoardDAO.selectMajorBoardThumbList" parameterClass="String" resultClass="egovMap">
+/* MajorBoardDAO.selectMajorBoardThumbList */
+	<![CDATA[
+		SELECT
+			MBTH_SEQ 
+			, MBTH_TYPE 
+			, MBTH_IMG_NAME 
+			, MBTH_IMG_PATH
+			, MBTH_URL 
+			, MB_SEQ 
+		FROM
+			TB_HDA_MB_THUMBNAIL
+		WHERE
+			MB_SEQ = #mbSeq#
+		AND MBTH_TYPE='IMAGE'
+	]]>	
+	</select>
+	
+	<!-- 조회수 증가 -->
+	<update id="MajorBoardDAO.updateReadCntOne" parameterClass="String">
+/* MajorBoardDAO.updateReadCntOne */
+	<![CDATA[
+	 UPDATE 
+		TB_HDA_MAJOR_BOARD 
+     SET 
+		MB_COUNT = MB_COUNT + 1 
+     WHERE 
+     	MB_SEQ = #mbSeq#
+
+	]]>	
+	</update>
+	
+	<!-- 전공목록 -->
+	<select id="MajorBoardDAO.selectMajorList" resultClass="egovMap">
+/* MajorBoardDAO.selectMajorList */	
+	<![CDATA[
+		SELECT
+			M_SEQ
+			, M_CODE
+			, M_NAME
+			, M_REG_DTTM
+		FROM
+			TB_HDA_MAJOR
+		
+	]]>
+	
+	
+	</select>
+	
+	<!-- 말머리 목록 -->
+	<select id="MajorBoardDAO.selectMajorHeadList" parameterClass="String" resultClass="egovMap">
+/* MajorBoardDAO.selectMajorHeadList */
+	<![CDATA[
+		SELECT
+			MMH_SEQ
+			, MM_SEQ
+			, BC_SEQ
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = t2.BC_SEQ) AS BC_NAME
+			, MMH_REG_DTTM
+		FROM
+			TB_HDA_MAJOR_MENU_HEAD t2
+		WHERE
+			MM_SEQ = #mmSeq#
+		
+	]]>
+	
+	</select>
+	
+	<!-- 메뉴이름 -->
+	<select id="MajorBoardDAO.selectMenuNameOne" parameterClass="String" resultClass="String">
+/* MajorBoardDAO.selectMenuNameOne */
+	<![CDATA[
+		SELECT 
+			BC_NAME 
+		FROM TB_HDA_BOARD_CODE t1
+			 , TB_HDA_MAJOR_MENU t2 
+		WHERE 
+			t1.BC_SEQ = t2.BC_SEQ 
+			AND t2.MM_SEQ = #mmSeq#
+	]]>	
+	</select>
+	
+	
+	<!-- 썸네일 조회(mbthSeq)-->
+	<select id="MajorBoardDAO.selectMajorBoardThumbOne" parameterClass="String" resultClass="egovMap">
+/* MajorBoardDAO.selectMajorBoardThumbOne */	
+	<![CDATA[
+		SELECT
+			MBTH_SEQ
+			, MBTH_TYPE
+			, MBTH_IMG_NAME
+			, MBTH_IMG_PATH
+			, MBTH_URL
+			, MB_SEQ
+		FROM
+			TB_HDA_MB_THUMBNAIL
+		WHERE
+			MBTH_SEQ = #mbthSeq#
+		
+	]]>
+	</select>
+	<!-- 전공 첨부한 파일 조회 -->
+	<select id="MajorBoardDAO.selectMajorBoardAttachFileOne" parameterClass="String" resultClass="egovMap">
+/* MajorBoardDAO.selectMajorBoardAttachFileOne */	
+	<![CDATA[
+		SELECT
+			  MBTH_SEQ
+			, MBTH_TYPE
+			, MBTH_IMG_NAME
+			, MBTH_IMG_PATH
+			, MBTH_URL
+			, MB_SEQ
+		FROM
+			TB_HDA_MB_THUMBNAIL
+		WHERE
+			MBTH_SEQ = #mbthSeq#
+		
+	]]>
+	</select>
+	
+	<select id="MajorBoardDAO.selectMajorMainList" resultClass="egovMap">
+/* MajorBoardDAO.selectMajorMainList */
+	<![CDATA[
+		SELECT
+			MB_SEQ
+			, M_CODE
+			, case M_CODE when '01' then 'interior'
+				  when '02' then 'visual'
+				  when '03' then 'industrial'
+				  when '04' then 'digitalArt'
+				  when '05' then 'fassion'
+				  when '06' then 'fbusiness'
+				  when '07' then 'beauty' 
+				  when '11' then 'digitalEnt'
+				  when '12' then 'digitalArt'
+				  when '13' then 'fbusiness'
+				  when '14' then 'beauty'
+				  end as DEPT
+			, case when M_CODE like '0%' then 'major'
+				   when M_CODE like '1%' then 'elite'
+				   end as DEPT2
+			, MB_GUBUN1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS MB_GUBUN1_NAME
+			, MB_GUBUN2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = MB_GUBUN2) AS MB_GUBUN2_NAME
+			, MB_TITLE
+			, MB_REG_SEQ
+			, MB_REG_NAME
+			, MB_COUNT
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as MB_REG_DATE
+			, MB_CONTENT
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as MBTH_SEQ
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as MBTH_TYPE
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as MBTH_IMG_NAME
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as MBTH_IMG_PATH
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as MBTH_URL
+			, MB_OLD_YN
+		FROM TB_HDA_MAJOR_BOARD t2
+		WHERE 1=1
+			AND (SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU t3 WHERE t2.MB_GUBUN1 = t3.MM_SEQ) = 'Y'
+			AND (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) like '전공소식'
+			AND MB_SORT <> 0
+		ORDER BY
+			t2.MB_SORT asc
+		LIMIT 0, 8
+	]]>
+	
+	</select>
+	
+</sqlMap>

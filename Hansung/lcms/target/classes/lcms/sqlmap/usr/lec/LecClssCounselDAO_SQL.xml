@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 교사 상담통계 조회 -->
+	<select id="LecClssCounselDAO.selectLecClssCounselStat" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssCounselDAO.selectLecClssCounselStat */
+	<![CDATA[
+		SELECT
+			COUNT(*) AS TOT_CNT
+			, COUNT(CASE WHEN CONSULT_SEQ IS NOT NULL THEN 1 END) PRO_CNT
+			, COUNT(CASE WHEN CONSULT_SEQ IS NULL THEN 1 END) NPRO_CNT
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			(
+				SELECT
+					MAX(CONSULT_SEQ) AS CONSULT_SEQ
+					, LECT_SEQ
+					, MEMBER_CODE
+				FROM
+					TB_LCMS_CONSULT
+				GROUP BY
+					LECT_SEQ
+					, MEMBER_CODE
+			) TLC ON TLLM.LECT_SEQ = TLC.LECT_SEQ AND TLLM.MEMBER_CODE = TLC.MEMBER_CODE
+		WHERE
+			TLLM.LECT_SEQ = #searchLecture#
+	]]>
+	</select>
+
+	<sql id="lec_clss_counsel">
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			LECT_SEQ = #searchLecture#
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLM.NAME LIKE CONCAT('%', #searchCondition1#, '%')
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 교사 상담 목록Cnt -->
+	<select id="LecClssCounselDAO.selectLecClssCounselListCnt" parameterClass="searchVO" resultClass="int">
+	/* LecClssCounselDAO.selectLecClssCounselListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="lec_clss_counsel"/>
+	</select>
+	
+	<!-- 교사 상담 목록 -->
+	<select id="LecClssCounselDAO.selectLecClssCounselList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssCounselDAO.selectLecClssCounselList */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ
+			, CONSULT_DATE
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER T
+				WHERE
+					T.MEMBER_CODE = PROF_CODE
+			) AS PROF_NAME
+			, CASE CONSULT_TYPE WHEN '1' THEN '출결'
+								WHEN '2' THEN '성적'
+								WHEN '3' THEN '수업'
+								WHEN '4' THEN '기타' END AS CONSULT_TYPE
+			, TLC.MEMBER_CODE
+			, NAME
+			, E_NAME
+			, STEP
+			, LPAD(ST_HOUR, 2, 0) AS ST_HOUR
+			, LPAD(ST_MINU, 2, 0) AS ST_MINU
+			, LPAD(ED_HOUR, 2, 0) AS ED_HOUR
+			, LPAD(ED_MINU, 2, 0) AS ED_MINU
+			, PLACE
+	]]>
+	<include refid="lec_clss_counsel"/>
+	<![CDATA[
+		ORDER BY
+			NAME ASC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 교사 상담 조회 -->
+	<select id="LecClssCounselDAO.selectLecClssCounselOne" parameterClass="string" resultClass="consultVO">
+	/* LecClssCounselDAO.selectLecClssCounselOne */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ			AS consultSeq
+			, LECT_SEQ			AS lectSeq
+			, TLC.MEMBER_CODE	AS memberCode
+			, PROF_CODE			AS profCode
+			, CONSULT_DATE		AS consultDate
+			, CONSULT_TYPE		AS consultType
+			, ST_HOUR			AS stHour
+			, ST_MINU			AS stMinu
+			, ED_HOUR			AS edHour
+			, ED_MINU			AS edMinu
+			, PLACE				AS place
+			, CONTENT			AS content
+			, NAME				AS name
+			, E_NAME			AS eName
+			, STATUS			AS status
+			, STEP				AS step
+			, NATION			AS nation
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			CONSULT_SEQ = #consultSeq# 
+	]]>
+	</select>
+	
+	<!-- 교사 상담 등록 -->
+	<insert id="LecClssCounselDAO.insertLecClssCounsel" parameterClass="consultVO">
+	<selectKey keyProperty="consultSeq" resultClass="string" type="post">
+		SELECT MAX(CONSULT_SEQ) FROM TB_LCMS_CONSULT
+	</selectKey>
+	/* LecClssCounselDAO.insertLecClssCounsel */
+		INSERT INTO TB_LCMS_CONSULT(
+			LECT_SEQ
+			, MEMBER_CODE
+			, PROF_CODE
+			, CONSULT_DATE
+			, CONSULT_TYPE
+			, ST_HOUR
+			, ST_MINU
+			, ED_HOUR
+			, ED_MINU
+			, PLACE
+			, CONTENT
+			, REG_DATE
+			, YEAR
+			, SEMESTER
+			, REG_TYPE
+		)VALUES(
+			#lectSeq#
+			, #memberCode#
+			, #profCode#
+			, #consultDate#
+			, #consultType#
+			, #stHour#
+			, #stMinu#
+			, #edHour#
+			, #edMinu#
+			, #place#
+			, #content#
+			, SYSDATE()
+			, #year#
+			, #semester#
+			, '2'
+		)
+	</insert>
+	
+	<!--  -->
+	<update id="LecClssCounselDAO.updatetLecClssCounsel">
+	/* LecClssCounselDAO.updatetLecClssCounsel */
+		UPDATE
+			TB_LCMS_CONSULT
+		SET
+			PROF_CODE = #profCode#
+			, CONSULT_DATE = #consultDate#
+			, CONSULT_TYPE = #consultType#
+			, ST_HOUR = #stHour#
+			, ST_MINU = #stMinu#
+			, ED_HOUR = #edHour#
+			, ED_MINU = #edMinu#
+			, PLACE = #place#
+			, CONTENT = #content#
+		WHERE
+			CONSULT_SEQ = #consultSeq#
+	</update>
+	
+	<!-- 교사 상담 조회 -->
+	<select id="LecClssCounselDAO.selectLecClssCounselView" parameterClass="string" resultClass="consultVO">
+	/* LecClssCounselDAO.selectLecClssCounselView */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ		AS consultSeq
+			, LECT_SEQ		AS lectSeq
+			, TLC.MEMBER_CODE	AS memberCode
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = PROF_CODE
+			) AS profCode
+			, CONSULT_DATE	AS consultDate
+			, CASE CONSULT_TYPE WHEN '1' THEN '출결'
+								WHEN '2' THEN '성적'
+								WHEN '3' THEN '수업'
+								WHEN '4' THEN '기타' END AS consultType
+			, LPAD(ST_HOUR, 2, 0) AS stHour
+			, LPAD(ST_MINU, 2, 0) AS stMinu
+			, LPAD(ED_HOUR, 2, 0) AS edHour
+			, LPAD(ED_MINU, 2, 0) AS edMinu
+			, PLACE			AS place
+			, CONTENT		AS content
+			, NAME			AS name
+			, E_NAME		AS eName
+			, STATUS		AS status
+			, STEP			AS step
+			, NATION		AS nation
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			CONSULT_SEQ = #consultSeq# 
+	]]>
+	</select>
+	
+	<select id="LecClssCounselDAO.lecClssCounselPop" parameterClass="egovMap" resultClass="egovMap">
+	/* LecClssCounselDAO.lecClssCounselPop */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ		AS consultSeq
+			, LECT_SEQ		AS lectSeq
+			, TLC.MEMBER_CODE	AS memberCode
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = PROF_CODE
+			) AS profCode
+			, CONSULT_DATE	AS consultDate
+			, CASE CONSULT_TYPE WHEN '1' THEN '출결'
+								WHEN '2' THEN '성적'
+								WHEN '3' THEN '수업'
+								WHEN '4' THEN '기타' END AS consultType
+			, LPAD(ST_HOUR, 2, 0) AS stHour
+			, LPAD(ST_MINU, 2, 0) AS stMinu
+			, LPAD(ED_HOUR, 2, 0) AS edHour
+			, LPAD(ED_MINU, 2, 0) AS edMinu
+			, PLACE			AS place
+			, CONTENT		AS content
+			, NAME			AS name
+			, E_NAME		AS eName
+			, STATUS		AS status
+			, STEP			AS step
+			, NATION		AS nation
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			REG_TYPE = '2'
+		AND
+			TLC.MEMBER_CODE = #memberCode#
+		ORDER BY CONSULT_DATE DESC
+	]]>
+	</select>
+	
+</sqlMap>

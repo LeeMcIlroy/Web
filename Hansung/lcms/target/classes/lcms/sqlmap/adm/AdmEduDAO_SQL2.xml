@@ -1,0 +1,1063 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+<!-- 교육과정 > 학기*************************************************************************************************************************** -->
+	<!-- 학기 리스트 -->
+	<select id="AdmCurrDAO.SemeList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.SemeList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT 
+					SEM_CODE
+					,SEM_YEAR
+					,SEMESTER
+					,SEM_HAKGI
+					,CASE LEC_ATTEND_S
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(LEC_ATTEND_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(LEC_ATTEND_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN LEC_ATTEND_S THEN DATE_FORMAT(STR_TO_DATE(LEC_ATTEND_S, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE LEC_ATTEND_S END LEC_ATTEND_S
+					,CASE LEC_ATTEND_E
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(LEC_ATTEND_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(LEC_ATTEND_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN LEC_ATTEND_E THEN DATE_FORMAT(STR_TO_DATE(LEC_ATTEND_E, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE LEC_ATTEND_E END LEC_ATTEND_E
+					,CASE VALUATION_S
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(VALUATION_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(VALUATION_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN VALUATION_S THEN DATE_FORMAT(STR_TO_DATE(VALUATION_S, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE VALUATION_S END VALUATION_S
+					,CASE VALUATION_E
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(VALUATION_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(VALUATION_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN VALUATION_E THEN DATE_FORMAT(STR_TO_DATE(VALUATION_E, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE VALUATION_E END VALUATION_E
+					,CASE REGIST_S
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(REGIST_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(REGIST_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN REGIST_S THEN DATE_FORMAT(STR_TO_DATE(REGIST_S, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE REGIST_S END REGIST_S
+					,CASE REGIST_E
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(REGIST_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(REGIST_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN REGIST_E THEN DATE_FORMAT(STR_TO_DATE(REGIST_E, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE REGIST_E END REGIST_E
+					,CASE ENTER_REGI_S
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(ENTER_REGI_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(ENTER_REGI_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN ENTER_REGI_S THEN DATE_FORMAT(STR_TO_DATE(ENTER_REGI_S, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE ENTER_REGI_S END ENTER_REGI_S
+					,CASE ENTER_REGI_E
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(ENTER_REGI_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(ENTER_REGI_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN ENTER_REGI_E THEN DATE_FORMAT(STR_TO_DATE(ENTER_REGI_E, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE ENTER_REGI_E END ENTER_REGI_E
+					,OPEN_SEM
+					,OPEN_REGI
+					,DORM_S
+					,DORM_E
+					,DORM_INC_S
+					,DORM_INC_E
+					,(SELECT 
+						COUNT(*) 
+					FROM 
+						TB_LCMS_SEME)
+				from TB_LCMS_SEME
+				ORDER BY SEM_YEAR DESC, SEMESTER DESC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 학기 cnt -->
+	<select id="AdmCurrDAO.SemeListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmCurrDAO.SemeListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		from TB_LCMS_SEME
+	]]>	
+	</select>
+	
+	<!-- 학기 추가 -->
+	<insert id="AdmCurrDAO.addSeme" parameterClass="SemesterVO">
+	/* AdmCurrDAO.addSeme */
+	<selectKey keyProperty="sem_code" resultClass="string" type="post">
+		SELECT MAX(SEM_CODE) FROM TB_LCMS_SEME
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_LCMS_SEME(
+			SEM_YEAR
+			,SEMESTER
+			,SEM_HAKGI
+			,LEC_ATTEND_S
+			,LEC_ATTEND_E
+			,VALUATION_S
+			,VALUATION_E
+			,REGIST_S
+			,REGIST_E
+			,ENTER_REGI_S
+			,ENTER_REGI_E
+			,OPEN_SEM
+			,OPEN_REGI
+			,DORM_S
+			,DORM_E
+			,DORM_INC_S
+			,DORM_INC_E
+			,GRADE_S
+			,GRADE_E
+			,SATIS_PRF_YN
+		)values(
+			#sem_year#
+			,#semester#
+			,#sem_hakgi#
+			,#lec_attend_s#
+			,#lec_attend_e#
+			,#valuation_s#
+			,#valuation_e#
+			,#regist_s#
+			,#regist_e#
+			,#enter_regi_s#
+			,#enter_regi_e#
+			,#open_sem#
+			,#open_regi#
+			,#dormS#
+			,#dormE#
+			,#dormIncS#
+			,#dormIncE#
+			,#gradeS#
+			,#gradeE#
+			,#satisPrfYn#
+		)
+	]]>
+	</insert>
+	
+	<!-- 학기 수정 -->
+	<update id="AdmCurrDAO.editSeme" parameterClass="SemesterVO">
+		UPDATE
+			TB_LCMS_SEME
+		SET 
+			SEM_YEAR		=	#sem_year#
+			,SEMESTER		=	#semester#
+			,SEM_HAKGI		=	#sem_hakgi#
+			,LEC_ATTEND_S	=	#lec_attend_s#
+			,LEC_ATTEND_E	=	#lec_attend_e#
+			,VALUATION_S	=	#valuation_s#
+			,VALUATION_E	=	#valuation_e#
+			,REGIST_S		=	#regist_s#
+			,REGIST_E		=	#regist_e#
+			,ENTER_REGI_S	=	#enter_regi_s#
+			,ENTER_REGI_E	=	#enter_regi_e#
+			,OPEN_SEM		=	#open_sem#
+			,OPEN_REGI		=	#open_regi#
+			,DORM_S			=	#dormS#
+			,DORM_E			=	#dormE#
+			,DORM_INC_S		=	#dormIncS#
+			,DORM_INC_E		=	#dormIncE#
+			,GRADE_S		=	#gradeS#
+			,GRADE_E		=	#gradeE#
+			,SATIS_PRF_YN	=	#satisPrfYn#
+		WHERE 
+			SEM_CODE = #sem_code#
+	</update>
+	
+	<!-- 학기 상세보기 -->
+	<select id="AdmCurrDAO.selectSemeOne" parameterClass="string" resultClass="egovMap">
+	/* AdmCurrDAO.selectSemeOne */
+	<![CDATA[
+  	 	SELECT 
+			SEM_CODE
+			,SEM_YEAR
+			,SEMESTER
+			,SEM_HAKGI
+			,LEC_ATTEND_S
+			,LEC_ATTEND_E
+			,VALUATION_S
+			,VALUATION_E
+			,REGIST_S
+			,REGIST_E
+			,ENTER_REGI_S
+			,ENTER_REGI_E
+			,OPEN_SEM
+			,OPEN_REGI
+			,DORM_S
+			,DORM_E
+			,DORM_INC_S
+			,DORM_INC_E
+			,GRADE_S
+			,GRADE_E
+			,SATIS_PRF_YN
+	    FROM 
+	        TB_LCMS_SEME 
+	    WHERE 
+	    	SEM_CODE = #sem_code#
+	]]>	
+	</select>
+	
+	<!-- 학기 엑셀다운로드 -->
+	<select id="AdmCurrDAO.selectAdmSemeExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.selectAdmSemeExcel */
+	<![CDATA[
+		SELECT 
+			SEM_CODE
+			,SEM_YEAR
+			,CASE  WHEN SEMESTER = '1' THEN '봄학기' 
+					WHEN SEMESTER = '2' THEN '여름학기'
+					WHEN SEMESTER = '3' THEN '가을학기'
+					WHEN SEMESTER = '4' THEN '겨울학기' END AS SEMESTER
+			,SEM_HAKGI
+			,CASE LEC_ATTEND_S
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(LEC_ATTEND_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(LEC_ATTEND_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN LEC_ATTEND_S THEN DATE_FORMAT(STR_TO_DATE(LEC_ATTEND_S, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE LEC_ATTEND_S END LEC_ATTEND_S
+			,CASE LEC_ATTEND_E
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(LEC_ATTEND_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(LEC_ATTEND_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN LEC_ATTEND_E THEN DATE_FORMAT(STR_TO_DATE(LEC_ATTEND_E, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE LEC_ATTEND_E END LEC_ATTEND_E
+			,CASE VALUATION_S
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(VALUATION_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(VALUATION_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN VALUATION_S THEN DATE_FORMAT(STR_TO_DATE(VALUATION_S, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE VALUATION_S END VALUATION_S
+			,CASE VALUATION_E
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(VALUATION_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(VALUATION_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN VALUATION_E THEN DATE_FORMAT(STR_TO_DATE(VALUATION_E, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE VALUATION_E END VALUATION_E
+			,CASE REGIST_S
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(REGIST_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(REGIST_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN REGIST_S THEN DATE_FORMAT(STR_TO_DATE(REGIST_S, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE REGIST_S END REGIST_S
+			,CASE REGIST_E
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(REGIST_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(REGIST_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN REGIST_E THEN DATE_FORMAT(STR_TO_DATE(REGIST_E, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE REGIST_E END REGIST_E
+			,CASE ENTER_REGI_S
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(ENTER_REGI_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(ENTER_REGI_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN ENTER_REGI_S THEN DATE_FORMAT(STR_TO_DATE(ENTER_REGI_S, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE ENTER_REGI_S END ENTER_REGI_S
+			,CASE ENTER_REGI_E
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(ENTER_REGI_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(ENTER_REGI_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN ENTER_REGI_E THEN DATE_FORMAT(STR_TO_DATE(ENTER_REGI_E, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE ENTER_REGI_E END ENTER_REGI_E
+			,OPEN_SEM
+			,OPEN_REGI
+			,CASE DORM_S
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(DORM_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(DORM_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN DORM_S THEN DATE_FORMAT(STR_TO_DATE(DORM_S, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE DORM_S END DORM_S
+			,CASE DORM_E
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(DORM_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(DORM_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN DORM_E THEN DATE_FORMAT(STR_TO_DATE(DORM_E, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE DORM_E END DORM_E
+			,CASE DORM_INC_S
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(DORM_INC_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(DORM_INC_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN DORM_INC_S THEN DATE_FORMAT(STR_TO_DATE(DORM_INC_S, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE DORM_INC_S END DORM_INC_S
+			,CASE DORM_INC_E
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(DORM_INC_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(DORM_INC_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN DORM_INC_E THEN DATE_FORMAT(STR_TO_DATE(DORM_INC_E, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE DORM_INC_E END DORM_INC_E
+			,CASE GRADE_S
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(GRADE_S, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(GRADE_S, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN GRADE_S THEN DATE_FORMAT(STR_TO_DATE(GRADE_S, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE GRADE_S END GRADE_S
+			,CASE GRADE_E
+				WHEN NULL THEN ''
+				WHEN '' THEN ''
+				WHEN STR_TO_DATE(GRADE_E, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(GRADE_E, '%Y-%m-%d'),'%Y년 %m월 %d일')
+				WHEN GRADE_E THEN DATE_FORMAT(STR_TO_DATE(GRADE_E, '%Y%m%d'),'%Y년 %m월 %d일')
+				ELSE GRADE_E END GRADE_E
+			, CASE  WHEN (OPEN_SEM = 'Y' AND OPEN_REGI = 'Y') THEN '개설'  
+					WHEN (OPEN_SEM = 'Y' AND OPEN_REGI = 'N') THEN '개설'
+					WHEN (OPEN_SEM = 'N' AND OPEN_REGI = 'Y') THEN '신청'
+					WHEN (OPEN_SEM = 'N' AND OPEN_REGI = 'N') THEN '마감' END AS STATUS
+			,(SELECT COUNT(*) FROM TB_LCMS_SEME)
+		FROM 
+			TB_LCMS_SEME
+		ORDER BY 
+			SEM_YEAR ASC, SEMESTER ASC
+	]]>
+	</select>
+<!-- /교육과정 > 학기*************************************************************************************************************************** -->
+
+<!-- 교육과정 > 교육과정  -->
+	<select id="AdmCurrDAO.CurrList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.CurrList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT 
+					CURR_SEQ
+					,CURR_NAME
+					,CURR_CODE
+					,CURR_STATE
+					,(SELECT 
+						COUNT(*) 
+					FROM 
+						TB_LCMS_CURR)
+				FROM 
+					TB_LCMS_CURR
+				ORDER BY 
+					CURR_SEQ DESC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 교육과정 cnt -->
+	<select id="AdmCurrDAO.CurrListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmCurrDAO.CurrListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM TB_LCMS_CURR
+	]]>	
+	</select>
+	
+	<!-- 교육과정 추가 -->
+		<insert id="AdmCurrDAO.addCurr" parameterClass="CurrVO">
+		/* AdmCurrDAO.addCurr */
+		<selectKey keyProperty="currSeq" resultClass="string" type="post">
+			SELECT MAX(CURR_SEQ) FROM TB_LCMS_CURR
+		</selectKey>
+	<![CDATA[
+		INSERT INTO 
+			TB_LCMS_CURR 
+				(
+				CURR_NAME
+				,CURR_CODE
+				,CURR_STATE)
+			VALUES
+				(
+				#currName#
+				,#currCode#
+				,#currState#)
+	]]>
+	</insert>
+	
+	<!-- 교육과정 수정 -->
+	<update id="AdmCurrDAO.editCurr" parameterClass="CurrVO">
+		UPDATE 
+			TB_LCMS_CURR
+		SET 
+			CURR_NAME 		=	#currName# 	 
+			,CURR_CODE 		= 	#currCode#
+			,CURR_STATE 	= 	#currState#
+		WHERE 
+			CURR_SEQ 		= 	#currSeq#
+	</update>
+	
+	<!-- 교육과정 상세보기 -->
+	<select id="AdmCurrDAO.selectCurrOne" parameterClass="string" resultClass="egovMap">
+	/* AdmCurrDAO.selectCurrOne */
+	<![CDATA[
+	 	SELECT 
+	 		CURR_SEQ
+	  	 	,CURR_NAME 	 	 
+			,CURR_CODE 	
+			,CURR_STATE 
+	    FROM 
+	        TB_LCMS_CURR 
+	    WHERE 
+	    	CURR_SEQ = #currSeq#
+	]]>	
+	</select>
+
+<!-- /교육과정 > 교육과정  -->
+
+<!-- 교육과정 > 프로그램 *************************************************************************************************************************** -->
+	
+	<select id="AdmCurrDAO.ProgList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.ProgList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT 
+					PROG_SEQ
+					,PROG_NAME
+					,PROG_CODE
+					,PROG_STATE
+					,(SELECT 
+						COUNT(*) 
+					FROM 
+						TB_LCMS_PROG)
+			FROM 
+					TB_LCMS_PROG
+				ORDER BY 
+					PROG_SEQ DESC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 프로그램 cnt -->
+	<select id="AdmCurrDAO.ProgListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmCurrDAO.ProgListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM 
+			TB_LCMS_PROG	]]>
+	</select>
+	
+	<!-- 프로그램 추가 -->
+		<insert id="AdmCurrDAO.addProg" parameterClass="ProgVO">
+		/* AdmCurrDAO.addProg */
+		<selectKey keyProperty="progSeq" resultClass="string" type="post">
+			SELECT MAX(PROG_SEQ) FROM TB_LCMS_PROG
+		</selectKey>
+	<![CDATA[
+		INSERT INTO 
+			TB_LCMS_PROG 
+				(
+				PROG_NAME
+				,PROG_CODE
+				,PROG_STATE)
+			VALUES
+				(
+				#progName#
+				,#progCode#
+				,#progState#)
+	]]>
+	</insert>
+	
+	<!-- 프로그램 수정 -->
+	<update id="AdmCurrDAO.editProg" parameterClass="ProgVO">
+		UPDATE 
+			TB_LCMS_PROG
+		SET 
+			PROG_NAME 		=	#progName# 	 
+			,PROG_CODE 		= 	#progCode#
+			,PROG_STATE 	= 	#progState#
+		WHERE 
+			PROG_SEQ 		= 	#progSeq#
+	</update>
+	
+	<!-- 프로그램 상세보기 -->
+	<select id="AdmCurrDAO.selectProgOne" parameterClass="string" resultClass="egovMap">
+	/* AdmCurrDAO.selectProgOne */
+	<![CDATA[
+	 	SELECT 
+	  	 	PROG_SEQ 	 	 
+			,PROG_NAME 	 	 
+			,PROG_CODE 	
+			,PROG_STATE 
+	    FROM 
+	        TB_LCMS_PROG 
+	    WHERE 
+	    	PROG_SEQ = #progSeq#
+	]]>	
+	</select>
+<!-- /교육과정 > 프로그램 *************************************************************************************************************************** -->
+
+
+<!-- 교육과정 > 수업시간 *************************************************************************************************************************** -->
+	<sql id="where_clstm">
+		FROM
+			TB_LCMS_CLSTM
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				CLSTM_YEAR = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition2" prepend="AND">
+				CLSTM_SEME = #searchCondition2#
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition3" prepend="AND">
+				CLSTM_NAME = #searchCondition3#
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<select id="AdmCurrDAO.ClstmList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.ClstmList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT 
+					CLSTM_SEQ
+					, CLSTM_NAME
+					, CLSTM_CODE 
+					, LPAD(CLSTM_STIME_S, 2, '0') AS CLSTM_STIME_S
+					, LPAD(CLSTM_STIME_E, 2, '0') AS CLSTM_STIME_E
+					, LPAD(CLSTM_ETIME_S, 2, '0') AS CLSTM_ETIME_S
+					, LPAD(CLSTM_ETIME_E, 2, '0') AS CLSTM_ETIME_E
+					, CLSTM_STATE
+					, CLSTM_YEAR
+					, CLSTM_SEME
+					,(SELECT 
+						COUNT(*) 
+					FROM 
+						TB_LCMS_CLSTM)
+			]]>	 <include refid="where_clstm"/>	<![CDATA[
+				ORDER BY 
+					CLSTM_NAME ASC, CLSTM_CODE ASC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 수업시간 cnt -->
+	<select id="AdmCurrDAO.ClstmListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmCurrDAO.ClstmListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+				]]>	 <include refid="where_clstm"/>	
+	</select>
+	
+	<!-- 수업시간 추가 -->
+		<insert id="AdmCurrDAO.addClstm" parameterClass="ClstmVO">
+		/* AdmCurrDAO.addClstm */
+		<selectKey keyProperty="clstmSeq" resultClass="string" type="post">
+			SELECT MAX(CLSTM_SEQ) FROM TB_LCMS_CLSTM
+		</selectKey>
+	<![CDATA[
+		INSERT INTO 
+			TB_LCMS_CLSTM(
+				CLSTM_NAME
+				,CLSTM_CODE
+				,CLSTM_STIME_S
+				,CLSTM_STIME_E
+				,CLSTM_ETIME_S
+				,CLSTM_ETIME_E
+				,CLSTM_STATE
+				,CLSTM_YEAR
+				,CLSTM_SEME
+			)VALUES(
+				#clstmName#
+				,#clstmCode#
+				,#clstmStimeS#
+				,#clstmStimeE#
+				,#clstmEtimeS#
+				,#clstmEtimeE#
+				,#clstmState#
+				,#clstmYear#
+				,#clstmSeme#
+			)
+	]]>
+	</insert>
+	
+	<!-- 수업시간 수정 -->
+	<update id="AdmCurrDAO.editClstm" parameterClass="ClstmVO">
+		UPDATE 
+			TB_LCMS_CLSTM 
+		SET 
+			CLSTM_NAME 			=	#clstmName#  
+			, CLSTM_CODE 		=  	#clstmCode#
+			, CLSTM_STIME_S 	=  	#clstmStimeS#
+			, CLSTM_STIME_E		=  	#clstmStimeE#
+			, CLSTM_ETIME_S		= 	#clstmEtimeS#
+			, CLSTM_ETIME_E		= 	#clstmEtimeE#
+			, CLSTM_STATE  		= 	#clstmState#  
+			, CLSTM_YEAR  		= 	#clstmYear#  
+			, CLSTM_SEME  		= 	#clstmSeme#  
+		WHERE 
+			CLSTM_SEQ = #clstmSeq#
+	</update>
+	
+	<!-- 수업시간 상세보기 -->
+	<select id="AdmCurrDAO.selectClstmOne" parameterClass="string" resultClass="clstmVO">
+	/* AdmCurrDAO.selectClstmOne */
+	<![CDATA[
+    	SELECT 
+    		CLSTM_SEQ			AS clstmSeq
+    		,CLSTM_NAME			AS clstmName
+    		,CLSTM_CODE			AS clstmCode
+			,CLSTM_STIME_S		AS clstmStimeS
+			,CLSTM_STIME_E		AS clstmStimeE
+			,CLSTM_ETIME_S		AS clstmEtimeS
+			,CLSTM_ETIME_E		AS clstmEtimeE
+    		,CLSTM_STATE 		AS clstmState
+			, CLSTM_YEAR		AS clstmYear
+			, CLSTM_SEME		AS clstmSeme
+    	FROM 
+    		TB_LCMS_CLSTM 
+    	WHERE 
+    		CLSTM_SEQ = #clstmSeq#
+	]]>	
+	</select>
+<!-- /교육과정 > 수업시간  *************************************************************************************************************************** -->
+
+
+<!-- 교육과정 > 교과목 *************************************************************************************************************************** -->
+	
+	<select id="AdmCurrDAO.CourList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.CourList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT 
+					COUR_SEQ
+					,COUR_NAME
+					,COUR_CODE
+					,COUR_PRO
+					,COUR_STATE
+					,(SELECT 
+						COUNT(*) 
+					FROM 
+						TB_LCMS_COUR)
+				FROM 
+					TB_LCMS_COUR
+				ORDER BY 
+					COUR_NAME ASC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 교과목 cnt -->
+	<select id="AdmCurrDAO.CourListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmCurrDAO.CourListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM 
+			TB_LCMS_COUR 		
+	]]>
+	</select>
+	
+	<!-- 교과목 추가 -->
+		<insert id="AdmCurrDAO.addCour" parameterClass="CourVO">
+		/* AdmCurrDAO.addCour */
+		<selectKey keyProperty="courSeq" resultClass="string" type="post">
+			SELECT MAX(COUR_SEQ) FROM TB_LCMS_COUR
+		</selectKey>
+	<![CDATA[
+		INSERT INTO 
+			TB_LCMS_COUR 
+				(
+				COUR_NAME
+				,COUR_CODE
+				,COUR_PRO
+				,COUR_STATE)
+			VALUES 
+				(
+				#courName#
+				,#courCode#
+				,#courPro#
+				,#courState#)
+	]]>
+	</insert>
+	
+	<!-- 교과목 수정 -->
+	<update id="AdmCurrDAO.editCour" parameterClass="CourVO">
+		UPDATE 
+			TB_LCMS_COUR 
+		SET 
+			COUR_NAME		= #courName#
+			,COUR_CODE		= #courCode#
+			,COUR_PRO		= #courPro#
+			,COUR_STATE		= #courState#
+		WHERE 
+			COUR_SEQ		= #courSeq#
+	</update>
+	
+	<!-- 교과목 상세보기 -->
+	<select id="AdmCurrDAO.selectCourOne" parameterClass="string" resultClass="egovMap">
+	/* AdmCurrDAO.selectCourOne */
+	<![CDATA[
+		SELECT 
+    		COUR_SEQ
+			,COUR_NAME
+			,COUR_CODE
+			,COUR_PRO
+			,COUR_STATE
+    	FROM 
+    		TB_LCMS_COUR 
+    	WHERE 
+    		COUR_SEQ = #courSeq#
+	]]>	
+	</select>
+<!-- /교육과정 > 교과목  *************************************************************************************************************************** -->
+
+
+<!-- 교육과정 > 강의개설 *************************************************************************************************************************** -->
+	
+	<sql id="where_lect">
+		FROM
+			TB_LCMS_LECT a, TB_LCMS_MEMBER b, TB_LCMS_LECTTIMETABLE c 
+		WHERE a.LECT_CLA_TEA = b.MEMBER_CODE
+			AND a.LECT_SEQ = c.LECT_CODE
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				LECT_YEAR = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition2" prepend="AND">
+				LECT_SEM = #searchCondition2#
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition3" prepend="AND">
+				LECT_CURR = #searchCondition3#
+			</isNotEmpty>
+	</sql>
+	
+	<select id="AdmCurrDAO.LectList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.LectList */
+	<![CDATA[
+				SELECT 
+					LECT_SEQ
+					,LECT_NAME
+					,LECT_DIVI
+					,a.LECT_CLA_TEA
+					,LECT_CLASSROOM
+					,CASE LECT_SDATE
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(LECT_SDATE, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(LECT_SDATE, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN LECT_SDATE THEN DATE_FORMAT(STR_TO_DATE(LECT_SDATE, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE LECT_SDATE END LECT_SDATE
+					,CASE LECT_EDATE
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(LECT_EDATE, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(LECT_EDATE, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN LECT_EDATE THEN DATE_FORMAT(STR_TO_DATE(LECT_EDATE, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE LECT_EDATE END LECT_EDATE
+					,LECT_STATE
+					,LECT_YEAR
+					,LECT_SEM
+					,LECT_PROG
+					,LECT_CURR
+					,LECT_PER
+					,(SELECT 
+						COUNT(*) 
+					FROM 
+						TB_LCMS_LECT)
+					, b.MEMBER_CODE, b.NAME
+					, (SELECT GROUP_CONCAT(DISTINCT NAME SEPARATOR ',')NAME
+						FROM TB_LCMS_LECTTIMETABLE A, TB_LCMS_MEMBER B
+						WHERE A.LECT_TEA = B.MEMBER_CODE
+						AND LECT_CODE = LECT_SEQ)LECT_TEA
+				]]>	 <include refid="where_lect"/>	<![CDATA[
+				GROUP BY LECT_SEQ, b.NAME
+				ORDER BY LECT_SEQ DESC
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	<!-- 강의개설 cnt -->
+	<select id="AdmCurrDAO.LectListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmCurrDAO.LectListCnt */
+	<![CDATA[
+		SELECT COUNT(*) FROM
+			(SELECT
+			LECT_SEQ
+		]]>	<include refid="where_lect"/><![CDATA[
+			GROUP BY LECT_SEQ
+)A	
+	]]>	 
+	</select>
+	
+	<!-- 강의개설 추가 -->
+		<insert id="AdmCurrDAO.addLect" parameterClass="LectureVO">
+		/* AdmCurrDAO.addLect */
+		<selectKey keyProperty="lectSeq" resultClass="string" type="post">
+			SELECT MAX(LECT_SEQ) FROM TB_LCMS_LECT
+		</selectKey>
+	<![CDATA[
+		INSERT INTO 
+			TB_LCMS_LECT 
+				(
+				LECT_NAME
+				,LECT_DIVI
+				,LECT_CLA_TEA
+				,LECT_CLASSROOM
+				,LECT_SDATE
+				,LECT_EDATE
+				,LECT_STATE
+				,LECT_YEAR
+				,LECT_SEM
+				,LECT_PROG
+				,LECT_CURR
+				,LECT_PER
+				,LECT_GRADE
+				)
+			VALUES
+				(
+				#lectName#
+				,#lectDivi#
+				,#lectClaTea#
+				,#lectClassroom#
+				,#lectSdate#
+				,#lectEdate#
+				,#lectState#
+				,#lectYear#
+				,(CASE #lectSem#  WHEN '봄학기' THEN '1'  WHEN '여름학기' THEN '2'  WHEN '가을학기' THEN '3'  WHEN '겨울학기' THEN '4' END)
+				,#lectProg#
+				,#lectCurr#
+				,#lectPer#
+				,#lectGrade#
+				)
+	]]>
+	</insert>
+
+	<!-- 강의개설 수정 -->
+	<update id="AdmCurrDAO.editLect" parameterClass="LectureVO">
+		UPDATE 
+			TB_LCMS_LECT
+		SET 
+			LECT_NAME			= #lectName#
+			,LECT_DIVI			= #lectDivi#
+			,LECT_CLA_TEA		= #lectClaTea#
+			,LECT_CLASSROOM		= #lectClassroom#
+			,LECT_SDATE			= #lectSdate#
+			,LECT_EDATE			= #lectEdate#
+			,LECT_STATE			= #lectState#
+			,LECT_YEAR			= #lectYear#
+			,LECT_SEM			= (CASE #lectSem#  WHEN '봄학기' THEN '1'  WHEN '여름학기' THEN '2'  WHEN '가을학기' THEN '3'  WHEN '겨울학기' THEN '4' END)
+			,LECT_PROG			= #lectProg#
+			,LECT_CURR			= #lectCurr#
+			,LECT_PER			= #lectPer#
+			,LECT_GRADE			= #lectGrade#
+		WHERE 
+			LECT_SEQ		= #lectSeq#
+
+	</update>
+	
+	<!-- 강의개설 상세보기 -->
+	<select id="AdmCurrDAO.selectLectOne" parameterClass="string" resultClass="egovMap">
+	/* AdmCurrDAO.selectLectOne */
+	<![CDATA[
+		SELECT 
+    		LECT_SEQ
+			,LECT_NAME
+			,LECT_DIVI
+			,LECT_CLA_TEA
+			,LECT_CLASSROOM
+			,LECT_SDATE
+			,LECT_EDATE
+			,LECT_STATE
+			,LECT_YEAR
+			,CASE LECT_SEM WHEN '1' THEN '봄학기' 
+							WHEN '2' THEN '여름학기' 
+							WHEN '3' THEN '가을학기' 
+							WHEN '4' THEN '겨울학기' END AS LECT_SEM
+			,LECT_PROG
+			,LECT_CURR
+			,LECT_PER
+			,LECT_GRADE
+    	FROM 
+    		TB_LCMS_LECT 
+    	WHERE 
+    		LECT_SEQ = #lectSeq#
+	]]>	
+	</select>	
+		
+		
+	<select id="AdmCurrDAO.LectTimeTableList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.LectTimeTableList */
+	<![CDATA[
+		SELECT LECT_CODE
+			,LECT_TBSEQ
+			,LECT_WEEK
+			,LECT_SCLASS
+			,LECT_ECLASS
+			,LECT_GRAMMAR
+			,LECT_TEA 
+		FROM 
+			TB_LCMS_LECTTIMETABLE
+	]]>	
+	</select>	
+	<!-- 강의개설 cnt -->
+	<select id="AdmCurrDAO.LectTimeTableListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmCurrDAO.LectTimeTableListCnt */
+		<![CDATA[ SELECT COUNT(*) TOTALCNT FROM TB_LCMS_LECTTIMETABLE ]]>	
+	</select>
+	<!-- 강의개설 수업시간 추가 -->
+		<insert id="AdmCurrDAO.addLectTimetable" parameterClass="LectureTimeTableVO">
+		/* AdmCurrDAO.addLectTimetable */
+		<selectKey keyProperty="lectTbseq" resultClass="string" type="post">
+			SELECT MAX(LECT_TBSEQ) FROM TB_LCMS_LECTTIMETABLE
+		</selectKey>
+	<![CDATA[
+		INSERT INTO 
+			TB_LCMS_LECTTIMETABLE 
+				(LECT_CODE
+				,LECT_TEA
+				,LECT_WEEK
+				,LECT_SCLASS
+				,LECT_ECLASS
+				,LECT_GRAMMAR)
+			VALUES
+				(#lectSeq#
+				,#lectTea#
+				,#lectWeek#
+				,#lectSclass#
+				,#lectEclass#
+				,#lectGrammar#)
+	]]>
+	</insert>
+	
+	<!-- 강의개설  수업시간 수정 -->
+	<update id="AdmCurrDAO.editLectTimetable" parameterClass="LectureTimeTableVO">
+		UPDATE 
+			TB_LCMS_LECTTIMETABLE
+		SET 
+			LECT_TEA		= #lectTea#
+			,LECT_WEEK		= #lectWeek#
+			,LECT_SCLASS	= #lectSclass#
+			,LECT_ECLASS	= #lectEclass#
+			,LECT_GRAMMAR	= #lectGrammar#
+		WHERE 
+			LECT_TBSEQ		= #lectTbseq#
+
+	</update>
+<!-- 	강의개설 > 수업시간 > 삭제 -->
+	<delete id="AdmCurrDAO.deleteTimetable" parameterClass="String">
+		DELETE FROM TB_LCMS_LECTTIMETABLE WHERE LECT_TBSEQ = #lectTbseq#
+	</delete>
+	<!-- 강의개설 수업시간 상세보기 -->
+	<select id="AdmCurrDAO.selectLectTimetables" parameterClass="string" resultClass="LectureTimeTableVO">
+	/* AdmCurrDAO.selectLectTimetables */
+	<![CDATA[
+		SELECT 
+    		LECT_CODE		AS lectCode
+			,LECT_TBSEQ		AS lectTbseq
+			,LECT_TEA		AS lectTea
+			,LECT_WEEK		AS lectWeek
+			,LECT_SCLASS	AS lectSclass
+			,LECT_ECLASS	AS lectEclass
+			,LECT_GRAMMAR	AS lectGrammar
+    	FROM 
+    		TB_LCMS_LECTTIMETABLE 
+    	WHERE 
+    		LECT_CODE = #lectSeq#
+	]]>	
+	</select>
+	
+	<select id="AdmCurrDAO.LectCurr" parameterClass="string" resultClass="egovMap">
+		SELECT CURR_NAME FROM TB_LCMS_CURR WHERE CURR_STATE = 'Y' ORDER BY CURR_NAME DESC
+	</select>
+	
+	<select id="AdmCurrDAO.LectCour" parameterClass="string" resultClass="egovMap">
+		SELECT COUR_NAME FROM TB_LCMS_COUR WHERE COUR_STATE = 'Y' ORDER BY COUR_NAME DESC
+	</select>
+	
+	<select id="AdmCurrDAO.LectProg" parameterClass="string" resultClass="egovMap">
+		SELECT PROG_NAME FROM TB_LCMS_PROG WHERE PROG_STATE = 'Y' ORDER BY PROG_NAME ASC
+	</select>
+	
+	<select id="AdmCurrDAO.LectSeme" parameterClass="string" resultClass="egovMap">
+		SELECT SEM_CODE, SEM_YEAR, SEMESTER, ENTER_REGI_S, ENTER_REGI_E FROM TB_LCMS_SEME WHERE OPEN_SEM = 'Y' ORDER BY SEM_YEAR DESC
+	</select>
+
+	<select id="AdmCurrDAO.admAjaxSelectBoxLectSem" parameterClass="egovMap" resultClass="egovMap">
+		SELECT
+			CASE SEMESTER WHEN '1' THEN '봄학기' 
+							WHEN '2' THEN '여름학기' 
+							WHEN '3' THEN '가을학기' 
+							WHEN '4' THEN '겨울학기' END AS SEMESTER
+			, ENTER_REGI_S
+			, ENTER_REGI_E 
+		FROM 
+			TB_LCMS_SEME 
+		WHERE 
+			SEM_YEAR = #lectYear# 
+		AND 
+			OPEN_SEM = 'Y' 
+	</select>
+	
+	<select id="AdmCurrDAO.TeacherName" parameterClass="string" resultClass="egovMap">
+		SELECT MEMBER_CODE, NAME FROM TB_LCMS_MEMBER WHERE  STATUS = '재직' ORDER BY MEMBER_CODE DESC
+	</select>
+	
+	<select id="AdmCurrDAO.TimeTable" parameterClass="string" resultClass="egovMap">
+		SELECT A.LECT_CODE ,A.LECT_TBSEQ ,A.LECT_TEA, B.NAME FROM TB_LCMS_LECTTIMETABLE A, TB_LCMS_MEMBER B WHERE A.LECT_TEA = B.MEMBER_CODE
+	</select>
+	
+	
+	<!-- 중복확인 -->
+	<select id="AdmCurrDAO.chkLect" parameterClass="LectureVO" resultClass="string">
+		/*AdmCurrDAO.chkLect*/ 
+		<![CDATA[ 
+		SELECT COUNT(*)FROM TB_LCMS_LECT 
+		WHERE 
+			LECT_DIVI = #lectDivi# 
+			AND LECT_YEAR = #lectYear#
+			AND LECT_SEM = (CASE #lectSem#  WHEN '봄학기' THEN '1'  WHEN '여름학기' THEN '2'  WHEN '가을학기' THEN '3'  WHEN '겨울학기' THEN '4' END)
+			AND LECT_NAME = #lectName#
+			AND LECT_CURR = #lectCurr#
+		]]>
+	</select>
+	
+		<!-- 강의개설 엑셀다운로드 -->
+	<select id="AdmCurrDAO.selectAdmLectExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.selectAdmLectExcel */
+	<![CDATA[
+					SELECT 
+					LECT_SEQ
+					,LECT_NAME
+					,LECT_DIVI
+					,a.LECT_CLA_TEA
+					,LECT_CLASSROOM
+					,CASE LECT_SDATE
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(LECT_SDATE, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(LECT_SDATE, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN LECT_SDATE THEN DATE_FORMAT(STR_TO_DATE(LECT_SDATE, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE LECT_SDATE END LECT_SDATE
+					,CASE LECT_EDATE
+						WHEN NULL THEN ''
+						WHEN '' THEN ''
+						WHEN STR_TO_DATE(LECT_EDATE, '%Y-%m-%d') THEN DATE_FORMAT(STR_TO_DATE(LECT_EDATE, '%Y-%m-%d'),'%Y년 %m월 %d일')
+						WHEN LECT_EDATE THEN DATE_FORMAT(STR_TO_DATE(LECT_EDATE, '%Y%m%d'),'%Y년 %m월 %d일')
+						ELSE LECT_EDATE END LECT_EDATE
+					,CASE LECT_STATE WHEN 'Y' THEN '개강' 
+									 WHEN 'N' THEN '폐강' END AS LECT_STATE
+					,LECT_YEAR
+					,LECT_SEM
+					,LECT_PROG
+					,LECT_CURR
+					,LECT_PER
+					,(SELECT 
+						COUNT(*) 
+					FROM 
+						TB_LCMS_LECT)
+					, b.MEMBER_CODE, b.NAME
+					, (SELECT GROUP_CONCAT(NAME SEPARATOR ',')NAME
+						FROM TB_LCMS_LECTTIMETABLE A, TB_LCMS_MEMBER B
+						WHERE A.LECT_TEA = B.MEMBER_CODE
+						AND LECT_CODE = LECT_SEQ)LECT_TEA
+				]]>	 <include refid="where_lect"/>	<![CDATA[
+				GROUP BY LECT_SEQ, b.NAME
+				ORDER BY LECT_SEQ ASC
+	]]>	
+	</select>
+<!-- /교육과정 > 강의개설  *************************************************************************************************************************** -->
+</sqlMap>

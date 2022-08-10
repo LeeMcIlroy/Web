@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_qestnar_table">
+		FROM
+			TB_HSWC_QSTNR_INFO
+	</sql>
+	
+	
+	<select id="AdmQestnarDAO.selectQestnarInfoList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmQestnarDAO.selectQestnarInfoList */
+	<![CDATA[
+		SELECT
+			QSTNR_SEQ
+			, QSTNR_TITLE
+			, QSTNR_SUB_TITLE
+			, QSTNR_CONTENT
+			, QSTNR_START_DATE
+			, QSTNR_END_DATE
+			, QSTNR_RESP_COUNT
+			, REG_ID
+			, REG_DATE
+			, SMTR_SEQ
+			, (SELECT SMTR_TITLE FROM TB_HSWC_SMTR WHERE SMTR_SEQ = tt.SMTR_SEQ ) as SMTR_TITLE
+		FROM (
+			SELECT
+				rownum AS rn
+				, QSTNR_SEQ
+				, QSTNR_TITLE
+				, QSTNR_SUB_TITLE
+				, QSTNR_CONTENT
+				, QSTNR_START_DATE
+				, QSTNR_END_DATE
+				, QSTNR_RESP_COUNT
+				, REG_ID
+				, REG_DATE
+				, SMTR_SEQ
+			FROM (
+				SELECT
+					QSTNR_SEQ
+					, QSTNR_TITLE
+					, QSTNR_SUB_TITLE
+					, QSTNR_CONTENT
+					, QSTNR_START_DATE
+					, QSTNR_END_DATE
+					, QSTNR_RESP_COUNT
+					, REG_ID
+					, REG_DATE
+					, SMTR_SEQ
+	]]>
+			<include refid="adm_qestnar_table"/>		
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) tt
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmQestnarDAO.selectQestnarInfoListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmQestnarDAO.selectQestnarInfoListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_qestnar_table"/>
+	</select>
+	
+	<!-- 설문조사_기본 등록 -->
+	<insert id="AdmQestnarDAO.insertQestnarInfoOne" parameterClass="qestnarVO">
+/* AdmQestnarDAO.insertQestnarInfoOne */	
+	<selectKey keyProperty="qstnrSeq" type="pre" resultClass="String" >
+		SELECT SEQ_HSWC_QSTNR_INFO.nextval FROM DUAL
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_HSWC_QSTNR_INFO(
+			QSTNR_SEQ
+			, QSTNR_TITLE
+			, QSTNR_SUB_TITLE
+			, QSTNR_CONTENT
+			, QSTNR_START_DATE
+			, QSTNR_END_DATE
+			, QSTNR_RESP_COUNT
+			, REG_ID
+			, SMTR_SEQ
+		)VALUES(
+			#qstnrSeq#
+			, #qstnrTitle#
+			, #qstnrSubTitle#
+			, #qstnrContent#
+			, #qstnrStartDate#
+			, #qstnrEndDate#
+			, #qstnrRespCount#
+			, #regId#
+			, #smtrSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 설문조사_질문지 등록 -->
+	<insert id="AdmQestnarDAO.insertQestnarAskOne" parameterClass="qestnarAskVO">
+/* AdmQestnarDAO.insertQestnarAskOne */
+	<![CDATA[
+		INSERT INTO TB_HSWC_QSTNR_ASK(
+			ASK_SEQ
+			, ASK_NO
+			, ASK_CONTENT
+			, ASK_TYPE
+			, QSTNR_SEQ
+			, ASK_CHK
+		)VALUES	(
+			SEQ_HSWC_QSTNR_ASK.nextval
+			, #askNo#
+			, #askContent#			
+			, #askType#
+			, #qstnrSeq#
+			, #askChk#
+		)
+	]]>		
+	</insert>
+	
+	<!-- 설문조사_답변지 등록 -->
+	<insert id="AdmQestnarDAO.insertQestnarReplyOne" parameterClass="qestnarReplyVO">
+/* AdmQestnarDAO.insertQestnarReplyOne */
+	<![CDATA[
+		INSERT INTO TB_HSWC_QSTNR_REPLY(
+			REP_SEQ
+			, ASK_NO
+			, REP_NO
+			, REP_CONTENT
+			, REP_CHOICE_COUNT
+			, QSTNR_SEQ
+		)VALUES	(
+			SEQ_HSWC_QSTNR_REPLY.nextval
+			, #askNo#
+			, #repNo#
+			, #repContent#
+			, #repChoiceCount#
+			, #qstnrSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 답변자 보기 -->
+	
+	<sql id="adm_psn_table">
+		FROM
+			TB_HSWC_QSTNR_PSN
+		WHERE 1=1
+		<isNotEmpty property="searchDepartment" prepend="AND">
+			DEPT_SEQ = #searchDepartment#
+		</isNotEmpty>
+		<isNotEmpty property="searchClass" prepend="AND">
+			CLS_SEQ = #searchClass#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			QSTNR_SEQ = #searchWord#
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 답변자 목록 -->
+	<select id="AdmQestnarDAO.selectQestnarAnswererList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmQestnarDAO.selectQestnarAnswerList */
+	<![CDATA[
+		SELECT
+			PSN_SEQ
+			, DEPT_SEQ
+			, CLS_SEQ
+			, PSN_HAKBUN
+			, PSN_NAME
+			, REG_DATE
+			, QSTNR_SEQ
+			, (SELECT CLS_TITLE FROM TB_HSWC_CLS WHERE CLS_SEQ = tt.CLS_SEQ) as CLS_TITLE
+			, (SELECT DEPT_TITLE FROM TB_HSWC_DEPT WHERE DEPT_SEQ = tt.DEPT_SEQ) as DEPT_TITLE
+		FROM
+			(SELECT
+				ROWNUM as rn
+				, PSN_SEQ
+				, DEPT_SEQ
+				, CLS_SEQ
+				, PSN_HAKBUN
+				, PSN_NAME
+				, REG_DATE
+				, QSTNR_SEQ	
+			FROM
+				(SELECT
+					PSN_SEQ
+					, DEPT_SEQ
+					, CLS_SEQ
+					, PSN_HAKBUN
+					, PSN_NAME
+					, REG_DATE
+					, QSTNR_SEQ	
+				]]>
+				<include refid="adm_psn_table"/>
+				<![CDATA[
+				ORDER BY
+					REG_DATE desc
+				)
+			) tt
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>	
+	</select>
+	
+	<!-- 답변자 목록Cnt -->
+	<select id="AdmQestnarDAO.selectQestnarAnswererListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmQestnarDAO.selectQestnarAnswererListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_psn_table"/>
+	</select>
+	
+	<!-- 수강 교실 목록 -->
+	<select id="AdmQestnarDAO.selectClassList" parameterClass="searchVO" resultClass="classVO">
+/* AdmQestnarDAO.selectClassList */
+	<![CDATA[
+		SELECT
+			CLS_SEQ as clsSeq
+			, CLS_TITLE as clsTitle
+			, CLS_CONTENT as clsContent
+			, CLS_SORT as clsSort
+			, CLS_VIEW_YN as clsViewYn
+			, CLS_HITCOUNT as clsHitcount
+			, CLS_LINK as clsLink
+			, REG_ID as regId
+			, REG_NAME as regName
+			, REG_DATE as regDate
+			, DEPT_SEQ as deptSeq
+			, SMTR_SEQ as smtrSeq
+		FROM
+			TB_HSWC_CLS
+		WHERE
+			CLS_VIEW_YN = 'Y'
+			AND SMTR_SEQ = #searchSemester#
+	]]>	
+		<isNotEmpty property="searchDepartment" prepend="AND">
+			DEPT_SEQ = #searchDepartment#
+		</isNotEmpty>
+	</select>
+	
+	
+	<!-- 설문조사_기본 삭제 -->
+	<delete id="AdmQestnarDAO.deleteQestnarInfoOne" parameterClass="String">
+/* AdmQestnarDAO.deleteQestnarInfoOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_QSTNR_INFO
+		WHERE QSTNR_SEQ = #qstnrSeq#
+	]]>	
+	</delete>
+	
+	<!-- 설문조사 질문지 삭제 -->
+	<delete id="AdmQestnarDAO.deleteQestnarAskOne" parameterClass="String">
+/* AdmQestnarDAO.deleteQestnarAskOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_QSTNR_ASK
+		WHERE QSTNR_SEQ = #qstnrSeq#
+	]]>	
+	</delete>
+	
+	<!-- 설문조사 답변지 삭제 -->
+	<delete id="AdmQestnarDAO.deleteQestnarReplyOne" parameterClass="String">
+/* AdmQestnarDAO.deleteQestnarReplyOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_QSTNR_REPLY
+		WHERE QSTNR_SEQ = #qstnrSeq#
+	]]>	
+	</delete>
+	
+	<!-- 설문조사 조회 -->
+	<select id="AdmQestnarDAO.selectQestnarInfoOne" parameterClass="String" resultClass="qestnarVO">
+/* AdmQestnarDAO.selectQestnarInfoOne */
+	<![CDATA[
+		SELECT
+			QSTNR_SEQ as qstnrSeq
+			, SMTR_SEQ as smtrSeq
+			, QSTNR_TITLE as qstnrTitle
+			, QSTNR_SUB_TITLE as qstnrSubTitle
+			, QSTNR_CONTENT as qstnrContent
+			, QSTNR_START_DATE as qstnrStartDate
+			, QSTNR_END_DATE as  qstnrEndDate
+			, QSTNR_RESP_COUNT as qstnrRespCount
+			, REG_ID as regId
+			, REG_DATE as regDate
+			, (SELECT SMTR_TITLE FROM TB_HSWC_SMTR WHERE SMTR_SEQ = t1.SMTR_SEQ) as smtrTitle
+		FROM
+			TB_HSWC_QSTNR_INFO t1
+		where	
+			QSTNR_SEQ = #qstnrSeq#
+	]]>
+	</select>
+	
+	<!-- 설문조사 질문지 조회 -->
+	<select id="AdmQestnarDAO.selectQestnarAskOne" parameterClass="String" resultClass="qestnarAskVO">
+/* AdmQestnarDAO.selectQestnarAskOne */
+	<![CDATA[
+		SELECT
+			ASK_SEQ as askSeq
+			, ASK_NO as askNo
+			, ASK_CONTENT as askContent
+			, ASK_TYPE as askType
+			, QSTNR_SEQ as qstnrSeq
+			, ASK_CHK	as askChk
+			/*, (SELECT count(*) FROM TB_HSWC_QSTNR_REPLY WHERE QSTNR_SEQ = ask.QSTNR_SEQ AND ASK_NO = ask.ASK_NO) as repCnt*/
+		FROM
+			TB_HSWC_QSTNR_ASK ask
+		WHERE
+			QSTNR_SEQ = #qstnrSeq#
+		ORDER BY ASK_NO asc
+		
+	]]>	
+	</select>
+	
+	<!-- 설문조사 답변지 조회 -->
+	<select id="AdmQestnarDAO.selectQestnarReplyOne" parameterClass="String" resultClass="qestnarReplyVO">
+/* AdmQestnarDAO.selectQestnarReplyOne */
+	<![CDATA[
+		SELECT
+			REP_SEQ as repSeq
+			, ASK_NO as askNo
+			, REP_NO as repNo
+			, REP_CONTENT as repContent
+			, REP_CHOICE_COUNT as repChoiceCount
+			, (SELECT max(REP_CHOICE_COUNT) FROM TB_HSWC_QSTNR_REPLY WHERE ASK_NO = rep.ASK_NO AND QSTNR_SEQ = rep.QSTNR_SEQ) as maxRepCnt
+			, QSTNR_SEQ as qstnrSeq
+		FROM
+			TB_HSWC_QSTNR_REPLY rep
+		WHERE
+			QSTNR_SEQ = #qstnrSeq#
+		ORDER BY REP_SEQ asc, REP_NO asc
+		
+	]]>
+	
+	</select>
+	
+	<!-- 설문조사_기본 수정 -->
+	<update id="AdmQestnarDAO.updateQestnarInfoOne" parameterClass="qestnarVO">
+/* AdmQestnarDAO.updateQestnarInfoOne */
+	<![CDATA[
+		UPDATE
+			TB_HSWC_QSTNR_INFO
+		SET
+			QSTNR_SEQ = #qstnrSeq#
+			, QSTNR_TITLE = #qstnrTitle#
+			, QSTNR_SUB_TITLE = #qstnrSubTitle#
+			, QSTNR_CONTENT = #qstnrContent#
+			, QSTNR_START_DATE = #qstnrStartDate#
+			, QSTNR_END_DATE = #qstnrEndDate#
+			, REG_ID = #regId#
+			, SMTR_SEQ = #smtrSeq#
+		WHERE
+			QSTNR_SEQ = #qstnrSeq#
+	]]>	
+	</update>
+	
+	<!-- ******************************************** 2017-07-25 추가 ******************************************** -->
+	<!-- 설문조사 주관식 답변 목록 -->
+	<select id="-*" parameterClass="map" resultClass="egovMap">
+/* AdmQestnarDAO.selectSubAnswerList */
+	<![CDATA[
+		SELECT
+			ASK_NO
+			, PSN_SEQ
+			, PANS_TXT
+			, (SELECT PSN_HAKBUN FROM TB_HSWC_QSTNR_PSN WHERE PSN_SEQ = t1.PSN_SEQ) AS PSN_HAKBUN
+			, (SELECT PSN_NAME FROM TB_HSWC_QSTNR_PSN WHERE PSN_SEQ = t1.PSN_SEQ) AS PSN_NAME
+		FROM 
+			TB_HSWC_QSTNR_PSN_ANS t1 
+		WHERE 
+			PSN_SEQ IN (
+				SELECT PSN_SEQ 
+				FROM TB_HSWC_QSTNR_PSN 
+				WHERE QSTNR_SEQ = #qstnrSeq#
+			)
+			AND ASK_NO = #askNo#
+		ORDER BY 
+			ASK_NO asc
+	]]>
+	</select>
+</sqlMap>

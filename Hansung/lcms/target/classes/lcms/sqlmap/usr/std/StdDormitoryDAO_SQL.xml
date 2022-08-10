@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	
+	<!-- *********** 20200306 STD기숙사 리스트 검색 동적 쿼리 *********** -->
+<sql id="where_stdDorm">
+		FROM TB_LCMS_DORM  
+		<dynamic prepend="WHERE">
+		<isNotEmpty property="searchMemberCode" prepend="AND" >
+		  DORM_MEMCODE = #searchMemberCode#
+		  </isNotEmpty>
+		  <isNotEmpty property="searchCondition5" prepend="AND">
+			DORM_SEMYEAR = #searchCondition5#
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition6" prepend="AND">
+			DORM_SEMESTER = #searchCondition6#
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	
+	<!-- *********** 20200313 STD기숙사 리스트 *********** -->
+	<select id="StdDormitoryDAO.selectStdDormList" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* StdDormitoryDAO.selectStdDormList */
+	<![CDATA[
+		SELECT K.*,SUBSTRING_INDEX(ROWNUM,'.',1) ROWINDEX FROM
+		(
+          SELECT A.*,@rownum := @rownum+1 AS ROWNUM FROM
+           (SELECT 
+					DORM_SEQ
+					,DORM_MEMCODE
+					,DORM_RENEWGUBUN
+					,DORM_RECEPNUM
+					,DATE_FORMAT(DORM_REGISTDATE,'%Y.%m.%d') AS DORM_REGISTDATE
+					,(CASE DORM_DORMFIRST
+					         WHEN '1' THEN 'Global Village 1'
+							 WHEN '2' THEN 'Global Village 2'
+							 WHEN '3' THEN 'APT'
+							 END) AS DORM_DORMFIRST
+					,(CASE DORM_DORMSECOND
+					         WHEN '1' THEN 'Global Village 1'
+							 WHEN '2' THEN 'Global Village 2'
+							 WHEN '3' THEN 'APT'
+							 END) AS DORM_DORMSECOND
+					,DORM_JOINYN
+					,(SELECT COUNT(*) FROM TB_LCMS_DORM ) dormcnt
+					]]>	 <include refid="where_stdDorm"/>	<![CDATA[
+					)A ,(SELECT @ROWNUM:=0) R 
+                      ORDER BY ROWNUM DESC , DORM_REGISTDATE DESC , DORM_RECEPNUM DESC)K 
+                     LIMIT  #firstIndex#, #recordCountPerPage#
+	
+	]]>
+	</select>
+
+	<!-- *********** 20200306 기숙사 리스트 cnt *********** -->
+	<select id="StdDormitoryDAO.selectStdDormListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/* StdDormitoryDAO.selectStdDormListCnt */
+	<![CDATA[
+		SELECT COUNT(*) 
+		]]>	 <include refid="where_stdDorm"/>	
+	</select>
+	
+	<!-- *********** 20200318 기숙사 리스트 view 구분 cnt *********** -->
+	<!-- <select id="StdDormitoryDAO.selectStdDormOneCnt" parameterClass="String"
+		resultClass="int">
+		/* StdDormitoryDAO.selectStdDormOneCnt */
+	<![CDATA[
+		SELECT COUNT(*) FROM TB_LCMS_DORM  WHERE DORM_MEMCODE = #memberCode#
+			 ]]>
+	</select> -->
+	
+	<!-- *********** 20200313 std기숙사 입사 등록 *********** -->
+	<!-- <insert id="StdDormitoryDAO.insertStdDormView" parameterClass="dormVO">
+		/*StdDormitoryDAO.insertStdDormView */
+	<![CDATA[
+	
+		INSERT INTO TB_LCMS_DORM(
+		DORM_MEMCODE
+		,DORM_RESISTARTDATE
+		,DORM_RESIENDDATE
+		,DORM_DORMFIRST
+		,DORM_DORMSECOND
+		,DORM_RENEWGUBUN
+		,DORM_PERROOMFIRST
+		,DORM_PERROOMSECOND
+		,DORM_REGISTDATE
+		,DORM_JOINYN
+		)VALUES(
+		#memCode#
+		, #resiStartdate#
+		, #resiEnddate#
+		, #dormFirst#
+		, #dormSecond#
+		, #renewGubun#
+		, #perroomFirst#
+		, #perroomSecond#
+		, NOW()
+		, 'N'
+		)
+		 ]]> 
+	</insert>-->
+		
+	<!-- *********** 20200309 기숙사 신청목록 한개! 조회 *********** -->
+	<!-- <select id="StdDormitoryDAO.selectStdDormListOne" parameterClass="string" resultClass="dormVO">
+/* StdDormitoryDAO.selectStdDormListOne */
+	<![CDATA[
+			SELECT 
+					DORM_SEQ AS dormSeq
+					,DORM_MEMCODE AS dormSeq
+					,DATE_FORMAT(DORM_RESISTARTDATE,'%Y.%m.%d') AS resiStartdate
+					,DATE_FORMAT(DORM_RESIENDDATE,'%Y.%m.%d') AS resiEnddate
+					,(CASE DORM_DORMFIRST
+					         WHEN '1' THEN 'Global Village 1'
+							 WHEN '2' THEN 'Global Village 2'
+							 WHEN '3' THEN 'APT'
+							 END) AS dormFirst
+					,(CASE DORM_DORMSECOND
+					         WHEN '1' THEN 'Global Village 1'
+							 WHEN '2' THEN 'Global Village 2'
+							 WHEN '3' THEN 'APT'
+							 END) AS dormSecond
+					,(CASE DORM_PERROOMFIRST
+					         WHEN '1' THEN '2인실'
+							 WHEN '2' THEN '3인실'
+							 WHEN '3' THEN '4인실'
+							 END) AS perroomFirst
+					,(CASE DORM_PERROOMSECOND
+					         WHEN '1' THEN '2인실'
+							 WHEN '2' THEN '3인실'
+							 WHEN '3' THEN '4인실'
+							 END) AS perroomSecond
+					,(CASE DORM_DORMNOW
+					         WHEN '1' THEN 'Global Village 1'
+							 WHEN '2' THEN 'Global Village 2'
+							 WHEN '3' THEN 'APT'
+							 END) AS dormNow
+					,(CASE DORM_PERROOMNOW
+					         WHEN '1' THEN '2인실'
+							 WHEN '2' THEN '3인실'
+							 WHEN '3' THEN '4인실'
+							 END) AS perroomNow
+				 	,DORM_RENEWGUBUN AS renewGubun
+				 	,DORM_REGISTDATE AS registDate
+					,DORM_JOINYN AS joinyn
+					,DATE_FORMAT(DORM_JOINDATE,'%Y.%m.%d') AS joinDate
+					,DORM_RESIGNDATE AS resignDate
+					,DORM_ROOMNUM AS roomNum
+					,DORM_PAYMENT AS payment
+					,DORM_PAYDATE AS payDate
+					,DORM_REMARKS AS remarks
+			  FROM TB_LCMS_DORM
+		WHERE
+			DORM_MEMCODE = #memCode#
+	]]>	
+	</select>	 -->
+	
+
+	<!-- *********** 20200306 기숙사 학생 데이터 찾기 *********** -->
+	<!-- <select id="AdmAdmstrDAO.selectStudents" parameterClass="String"
+		resultClass="memberVO">
+		/* AdmAdmstrDAO.selectStudents */
+	<![CDATA[
+		SELECT
+			MEMBER_SEQ			AS memberSeq
+			, MEMBER_CODE		AS memberCode
+			, MEMBER_TYPE       AS memberType
+			, NAME				AS name
+			, H_NAME			AS hName
+			, E_NAME			AS eName
+			, BIRTH				AS birth
+			, POST				AS post
+			, ADDR1				AS addr1
+			, ADDR2				AS addr2
+			, APP_DATE			AS appDate
+			, RES_DATE			AS resDate
+			, STATUS			AS status
+			, TEL				AS tel
+			, MOBILE			AS mobile
+			, EMAIL				AS email
+			, MEMBER_PW			AS memberPw
+			, LOGIN_DATE_TIME	AS loginDateTime
+			, STEP              AS step
+			, NATION            AS nation
+		FROM
+			TB_LCMS_MEMBER WHERE NAME = #name# OR MEMBER_CODE = #memberCode#
+	]]>
+	</select>
+ -->
+	
+
+	<!-- <update id="StdDormitoryDAO.updateStdDormRegist" parameterClass="dormVO">
+	/* StdDormitoryDAO.updateStdDormRegist */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_DORM
+		SET
+		    DORM_DORMNOW = #dormNow#
+		    ,DORM_PERROOMNOW = #perroomNow#
+		    ,DORM_ROOMNUM = #roomNum#
+		    ,DORM_JOINDATE = #joinDate#
+		    ,DORM_RESIGNDATE = #resignDate#
+		    ,DORM_PAYMENT = #payment#
+		    ,DORM_PAYDATE = #payDate#
+		    ,DORM_REMARKS = #remarks#
+		    ,DORM_JOINYN =  'Y'
+		WHERE
+			DORM_MEMCODE = #memCode#
+	]]>	
+	</update> -->
+</sqlMap>

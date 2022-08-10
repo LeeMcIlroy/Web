@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 상담일정 목록 -->
+	<select id="CnsltDAO.selectCnsltScheduleList" parameterClass="map" resultClass="cnsltScheduleVO">
+/* CnsltDAO.selectCnsltScheduleList */
+	<![CDATA[
+		SELECT
+			SCH_SEQ			as schSeq
+			, SCH_YMD		as schYmd
+			, SCH_HM		as schHm
+			, SCH_DY		as schDy
+			, REG_ID		as regId
+			, REG_DATE		as regDate
+			, REG_NAME		as regName
+		FROM (
+			SELECT
+				SCH_SEQ
+				, SCH_YMD
+				, SCH_HM
+				, SCH_DY
+				, REG_ID
+				, REG_DATE
+				, REG_NAME
+			FROM
+				TB_HSWC_CNSLT_SCHDUL
+			WHERE
+				SCH_SEQ NOT IN (
+						SELECT SCH_SEQ 
+						FROM TB_HSWC_CNSLT_APLY
+						WHERE APLY_STATUS != 4
+					)
+	]]>
+		<isEmpty property="schYmd" prepend="AND">
+			SCH_YMD >= TO_CHAR(TRUNC(SYSDATE,'MM'), 'YYYY-MM-dd')
+			AND SCH_YMD <![CDATA[<]]>= to_char(LAST_DAY(SYSDATE), 'YYYY-MM-dd')
+		</isEmpty>
+		<isNotEmpty property="schYmd" prepend="AND">
+			SCH_YMD >= to_char(sysdate+1, 'YYYY-MM-dd')
+		</isNotEmpty>
+		<isEqual property="flag" compareValue="Y">
+			AND SCH_HM > to_char(sysdate, 'HH24')||':'||to_char(sysdate, 'MI')
+		</isEqual>
+	<![CDATA[
+		) t1
+		WHERE
+			1=1
+	]]>
+		<isNotEmpty property="schYmd" prepend="AND">
+			SCH_YMD = #schYmd#
+		</isNotEmpty>
+	<![CDATA[
+		ORDER BY 
+			SCH_HM asc
+	]]>
+	</select>
+	
+	<sql id="usr_cnslt_aply_table">
+		FROM
+			TB_HSWC_CNSLT_APLY
+		WHERE 
+			APLY_HAKBUN = #userVO.memCode#
+	</sql>
+	
+	<!-- 상담일정 체크 -->
+	<select id="CnsltDAO.selectCnsltScheduleCheck" parameterClass="string" resultClass="int">
+/* CnsltDAO.selectCnsltScheduleCheck */
+	<![CDATA[
+		SELECT
+			COUNT(SCH_SEQ)
+		FROM
+			TB_HSWC_CNSLT_APLY
+		WHERE
+			SCH_SEQ = #schSeq#
+	]]>
+	</select>
+	
+	<!-- 상담신청 목록 -->
+	<select id="CnsltDAO.selectCnsltRecordList" parameterClass="map" resultClass="egovMap">
+/* CnsltDAO.cnsltRecordList */
+	<![CDATA[
+		SELECT 
+			APLY_SEQ
+			, APLY_TYPE
+			, APLY_USR_TYPE
+			, APLY_COURSE_NAME
+			, APLY_STATUS
+			, SCH_SEQ
+			, (SELECT SCH_YMD FROM TB_HSWC_CNSLT_SCHDUL WHERE SCH_SEQ = t1.SCH_SEQ) as SCH_YMD
+			, TO_CHAR(t1.REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE				
+			, UPDT_ID
+			, UPDT_NAME
+			, TO_CHAR(t1.UPDT_DATE, 'YYYY-MM-DD') AS UPDT_DATE
+		FROM (
+			SELECT 
+				rownum as rn
+				, APLY_SEQ
+				, APLY_TYPE
+				, APLY_USR_TYPE
+				, APLY_COURSE_NAME
+				, APLY_STATUS
+				, SCH_SEQ
+				, REG_DATE
+				, UPDT_ID
+				, UPDT_NAME
+				, UPDT_DATE
+			FROM (
+				SELECT 
+					APLY_SEQ
+					, APLY_TYPE
+					, APLY_USR_TYPE
+					, APLY_COURSE_NAME
+					, APLY_STATUS
+					, SCH_SEQ
+					, REG_DATE
+					, UPDT_ID
+					, UPDT_NAME
+					, UPDT_DATE
+	]]>
+		<include refid="usr_cnslt_aply_table"/>
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) t1
+		WHERE rn BETWEEN #searchVO.firstIndex# + 1 AND #searchVO.firstIndex# + #searchVO.recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 상담신청 목록Cnt -->
+	<select id="CnsltDAO.selectCnsltRecordListCnt" parameterClass="map" resultClass="int">
+/* CnsltDAO.cnsltRecordListCnt */
+	<![CDATA[
+		SELECT 
+			count(*)
+	]]>
+		<include refid="usr_cnslt_aply_table"/>
+	</select>
+	
+	<!-- 상담신청 등록 -->
+	<insert id="CnsltDAO.cnsltApplyInsert" parameterClass="cnsltApplyVO">
+/* CnsltDAO.cnsltApplyInsert */
+	<selectKey keyProperty="aplySeq" resultClass="string" type="pre">
+		select SEQ_HSWC_CNSLT_APLY.nextval from dual
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_HSWC_CNSLT_APLY (
+			APLY_SEQ
+			, APLY_TYPE
+			, APLY_USR_TYPE
+			, APLY_GRADE
+			, APLY_HAKBUN
+			, APLY_DEPT
+			, APLY_NAME
+			, APLY_MPHONE
+			, APLY_COURSE_NAME
+			, APLY_STATUS
+			, UPDT_ID
+			, UPDT_NAME
+			, APLY_COLLEGE
+			, APLY_REGIST_YN
+			, SCH_SEQ
+		) VALUES (
+			#aplySeq#
+			, #aplyType#
+			, #aplyUsrType#
+			, #aplyGrade#
+			, #aplyHakbun#
+			, #aplyDept#
+			, #aplyName#
+			, #aplyMphone#
+			, #aplyCourseName#
+			, '1'
+			, (SELECT REG_ID FROM TB_HSWC_CNSLT_SCHDUL WHERE SCH_SEQ = #schSeq#)
+			, (SELECT REG_NAME FROM TB_HSWC_CNSLT_SCHDUL WHERE SCH_SEQ = #schSeq#)
+			, #aplyCollege#
+			, #aplyRegistYn#
+			, #schSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 공통 답변 등록 -->
+	<insert id="CnsltDAO.cnsltTotAnswerInsert" parameterClass="map">
+/* CnsltDAO.cnsltTotAnswerInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CNSLT_TOT_ANS (
+			TANS_SEQ
+			, TANS1
+			, TANS2
+			, APLY_SEQ
+		) VALUES (
+			SEQ_HSWC_CNSLT_REGI_ANS.nextval
+			, #cnsltApplyVO.tans1#
+			, #cnsltApplyVO.tans2#
+			, #aplySeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 재학생 답변 등록 -->
+	<insert id="CnsltDAO.cnsltRegiAnswerInsert" parameterClass="map">
+/* "CnsltDAO.cnsltRegiAnswerInsert" */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CNSLT_REGI_ANS (
+			ANS_SEQ
+			, ANS1
+			, ANS1_TXT
+			, ANS2
+			, ANS3_A
+			, ANS3_B
+			, ANS3_C
+			, ANS3_D
+			, ANS3_E
+			, ANS3_F
+			, ANS3_G
+			, ANS3_H
+			, ANS3_I
+			, ANS3_TXT
+			, ANS4_TXT
+			, ANS5_TXT
+			, APLY_SEQ
+		) VALUES (
+			SEQ_HSWC_CNSLT_REGI_ANS.nextval
+			, #cnsltApplyVO.regiAns1#
+			, #cnsltApplyVO.regiAns1Txt#
+			, #cnsltApplyVO.regiAns2#
+			, #cnsltApplyVO.regiAns3A#
+			, #cnsltApplyVO.regiAns3B#
+			, #cnsltApplyVO.regiAns3C#
+			, #cnsltApplyVO.regiAns3D#
+			, #cnsltApplyVO.regiAns3E#
+			, #cnsltApplyVO.regiAns3F#
+			, #cnsltApplyVO.regiAns3G#
+			, #cnsltApplyVO.regiAns3H#
+			, #cnsltApplyVO.regiAns3I#
+			, #cnsltApplyVO.regiAns3Txt#
+			, #cnsltApplyVO.regiAns4Txt#
+			, #cnsltApplyVO.regiAns5Txt#
+			, #aplySeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 외국인 답변 등록 -->
+	<insert id="CnsltDAO.cnsltOverAnswerInsert" parameterClass="map">
+/* CnsltDAO.cnsltOverAnswerInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CNSLT_OVER_ANS (
+			ANS_SEQ
+			, ANS1
+			, ANS1_TXT
+			, ANS2_A
+			, ANS2_B
+			, ANS2_C
+			, ANS2_D
+			, ANS2_E
+			, ANS2_F
+			, ANS2_TXT
+			, ANS3
+			, APLY_SEQ
+		) VALUES (
+			SEQ_HSWC_CNSLT_OVER_ANS.nextval
+			, #cnsltApplyVO.overAns1#
+			, #cnsltApplyVO.overAns1Txt#
+			, #cnsltApplyVO.overAns2A#
+			, #cnsltApplyVO.overAns2B#
+			, #cnsltApplyVO.overAns2C#
+			, #cnsltApplyVO.overAns2D#
+			, #cnsltApplyVO.overAns2E#
+			, #cnsltApplyVO.overAns2F#
+			, #cnsltApplyVO.overAns2Txt#
+			, #cnsltApplyVO.overAns3#
+			, #aplySeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 상담신청 첨부파일 등록 -->
+	<insert id="CnsltDAO.cnsltRequestUpfileInsert" parameterClass="map">
+/* CnsltDAO.cnsltRequestUpfileInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CNSLT_APLY_UPFILE (
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, APLY_SEQ
+		) VALUES (
+			SEQ_HSWC_CNSLT_APLY_UPFILE.nextval
+			, #fileInfoVO.fileName#
+			, #fileInfoVO.filePath#
+			, #aplySeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 상담신청 삭제(취소) -->
+	<delete id="CnsltDAO.deleteCnsltAplyOne" parameterClass="String">
+/* CnsltDAO.deleteCnsltAplyOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CNSLT_APLY
+		WHERE APLY_SEQ = #aplySeq#
+	]]>
+	</delete>
+	<!--
+		2018-05-28 celldio 추가 
+		상담신청 취소 - flag update 
+	-->
+	<delete id="CnsltDAO.updateCnsltCancel" parameterClass="String">
+/* CnsltDAO.updateCnsltCancel */
+	<![CDATA[
+		UPDATE TB_HSWC_CNSLT_APLY
+		SET
+			APLY_STATUS = 4
+		WHERE APLY_SEQ = #aplySeq#
+	]]>
+	</delete>
+	
+	
+	<!-- 상담질문지_재학생 삭제(취소) -->
+	<delete id="CnsltDAO.deleteCnsltRegiOne" parameterClass="String">
+/* CnsltDAO.deleteCnsltSchdulOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CNSLT_REGI_ANS
+		WHERE APLY_SEQ = #aplySeq#
+	]]>
+	</delete>
+	
+	<!-- 상담질문지_외국인 삭제(취소) -->
+	<delete id="CnsltDAO.deleteCnsltOverOne" parameterClass="String">
+/* CnsltDAO.deleteCnsltSchdulOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CNSLT_OVER_ANS
+		WHERE APLY_SEQ = #aplySeq#
+	]]>
+	</delete>
+	
+	<!-- 상담질문지_공통 삭제(취소) -->
+	<delete id="CnsltDAO.deleteCnsltCommonOne" parameterClass="String">
+/* CnsltDAO.deleteCnsltSchdulOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CNSLT_TOT_ANS
+		WHERE APLY_SEQ = #aplySeq#
+	]]>
+	</delete>
+	
+	<!-- 상담 첨부파일 목록 -->
+	<select id="CnsltDAO.selectCnsltUpfileList" parameterClass="String" resultClass="egovMap">
+/* CnsltDAO.selectCnsltUpfileList */
+	<![CDATA[
+		SELECT
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, REG_DATE
+			, APLY_SEQ
+		FROM
+			TB_HSWC_CNSLT_APLY_UPFILE
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>	
+	</select>
+	
+	<!-- 상담 첨부파일 조회 -->
+	<select id="CnsltDAO.selectCnsltUpfileOne" parameterClass="string" resultClass="egovMap">
+/* CnsltDAO.selectCnsltUpfileOne */
+	<![CDATA[
+		SELECT 
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, REG_DATE
+			, APLY_SEQ
+		FROM 
+			TB_HSWC_CNSLT_APLY_UPFILE
+		WHERE
+			UP_SEQ = #upSeq#
+	]]>
+	</select>
+	
+	<!-- 상담 첨부파일 삭제 -->
+	<delete id="CnsltDAO.deleteCnsltUpfileList" parameterClass="list">
+/* CnsltDAO.deleteCnsltSchdulOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CNSLT_APLY_UPFILE
+		WHERE UP_SEQ IN (
+	]]>
+		<iterate conjunction=",">
+			#[]#
+		</iterate>
+	<![CDATA[
+			)
+	]]>
+	</delete>
+	
+	<!-- 상담 시간표 목록 -->
+	<select id="UsrCnsltSchdulDAO.selectCnsltScheduleList" parameterClass="searchVO" resultClass="cnsltScheduleVO">
+/* UsrCnsltSchdulDAO.selectCnsltScheduleList */
+	<![CDATA[
+		SELECT 
+			SCH_SEQ as schSeq
+			, SCH_YMD as schYmd
+			, SCH_HM as schHm
+			, SCH_DY as schDy
+			, REG_ID as regId
+			, REG_NAME as regName
+			, REG_DATE as regDate
+		FROM
+			TB_HSWC_CNSLT_SCHDUL
+		WHERE 
+			SCH_YMD >= to_char(add_months(sysdate,-1),'yyyy-mm')
+	]]>	
+	</select>
+	
+	<!-- 상담 첨부파일 리스트에서 조회  // 20200401 join한 첨부파일 new list-->
+	<select id="CnsltDAO.selectNewCnsltUpfileList" parameterClass="map" resultClass="egovMap">
+/* CnsltDAO.selectNewCnsltUpfileList */
+	<![CDATA[
+		SELECT A.UP_SEQ
+			, A.UP_ORIGIN_FILE_NAME
+			, A.UP_SAVE_FILE_PATH
+			, A.REG_DATE
+			, A.APLY_SEQ 
+			, A.UP_TYPE
+			FROM TB_HSWC_CNSLT_APLY_UPFILE A
+		INNER JOIN  TB_HSWC_CNSLT_APLY B 
+		ON A.APLY_SEQ = B.APLY_SEQ
+	    AND APLY_HAKBUN = #userVO.memCode#
+	]]>
+	</select>
+	
+	
+</sqlMap>

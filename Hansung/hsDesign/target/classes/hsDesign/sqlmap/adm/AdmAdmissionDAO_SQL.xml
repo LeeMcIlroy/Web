@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_ad_table">
+		FROM
+			TB_HDA_ADMISSION
+		WHERE
+			1=1	
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition1" compareValue="name">
+				AD_NAME = #searchWord#
+			</isEqual>
+			<isEqual property="searchCondition1" compareValue="major">
+				AD_MAJOR = #searchWord#
+			</isEqual>			
+		</isNotEmpty>		
+	</sql>
+
+	<!--  목록 -->
+	<select id="AdmAdmissionDAO.selectAdmissionList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmAdmissionDAO.selectAdmissionList */	
+	<![CDATA[
+		SELECT
+			AD_SEQ
+			, AD_NAME
+			, AD_SCHOOL
+			, AD_TEL
+			, AD_MAJOR
+			, AD_ZIPCODE
+			, AD_ADDR1
+			, AD_ADDR2
+	]]>
+	<include refid="adm_ad_table"/>
+	<![CDATA[
+		ORDER BY AD_REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+
+	<!--  목록Cnt -->
+	<select id="AdmAdmissionDAO.selectAdmissionListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmAdmissionDAO.selectAdmissionListCnt */	
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+	<include refid="adm_ad_table"/>
+	</select>
+	
+	<!--  삭제 -->
+	<delete id="AdmAdmissionDAO.deleteAdmissionOne" parameterClass="String">
+/* AdmAdmissionDAO.deleteAdmissionOne */
+	<![CDATA[
+		DELETE FROM TB_HDA_ADMISSION
+		WHERE AD_SEQ = #adSeq#
+	]]>
+		
+	</delete>
+
+</sqlMap>

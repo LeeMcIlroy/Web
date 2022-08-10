@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- ***************************************** 진로체험 신청 ***************************************** -->
+	<!-- 등록 - 신청 -->
+	<insert id="ExperienceDAO.experAplyInsert" parameterClass="experVO">
+/* ExperienceDAO.experAplyInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_EXPER_APLY (
+			EXA_APLY_NAME
+			, EXA_SCH_NAME
+			, EXA_TEL
+			, EXA_ST_DATE
+			, EXA_ED_DATE
+			, REG_DATE
+			, EXA_EMAIL
+		) VALUES (
+			#exaAplyName#
+			, #exaSchName#
+			, #exaTel#
+			, #exaStDate#
+			, #exaEdDate#
+			, CURRENT_TIMESTAMP
+			, #exaEmail#
+		)
+	]]>
+	<selectKey keyProperty="exaSeq" resultClass="string" type="post">
+		select LAST_INSERT_ID() as value
+	</selectKey>
+	</insert>
+	
+	<!-- 등록 - 과정 -->
+	<insert id="ExperienceDAO.experCourceInsert" parameterClass="map">
+/* ExperienceDAO.experCourceInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_EXPER_COURCE (
+			EXC_CD
+			, EXA_SEQ
+		) VALUES (
+			#excCd#
+			, #rsExaSeq#
+		)
+	]]>
+	</insert>
+</sqlMap>

@@ -1,0 +1,879 @@
+package writer.adm.lec;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import component.file.CmmnFileMngUtil;
+import component.file.FileInfoVO;
+import component.web.PaginationController;
+import egovframework.com.cmm.web.EgovWebUtil;
+import egovframework.let.utl.fcc.service.EgovStringUtil;
+import egovframework.rte.fdl.property.EgovPropertyService;
+import egovframework.rte.psl.dataaccess.util.EgovMap;
+import egovframework.rte.ptl.mvc.tags.ui.pagination.PaginationInfo;
+import writer.adm.cmm.AdmCmmCmmtDAO;
+import writer.adm.cmm.AdmCmmDAO;
+import writer.adm.cmm.AdmCmmLogDAO;
+import writer.valueObject.ClsNoticeVO;
+import writer.valueObject.DepartmentVO;
+import writer.valueObject.HomeworkVO;
+import writer.valueObject.SemesterVO;
+import writer.valueObject.SubjectVO;
+import writer.valueObject.cmmn.CmmnCommentVO;
+import writer.valueObject.cmmn.CmmnListVO;
+import writer.valueObject.cmmn.CmmnSearchVO;
+
+@Controller
+public class AdmLecController {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AdmLecController.class);
+	
+	@Autowired private AdmLecDAO admLecDAO;
+	@Autowired private AdmCmmDAO admCmmDAO;
+	@Autowired private CmmnFileMngUtil cmmnFileMngUtil;
+	@Autowired private AdmCmmCmmtDAO admCmmCmmtDAO;
+	
+	@Autowired private AdmCmmLogDAO admCmmLogDAO;
+	@Resource(name = "propertiesService") protected EgovPropertyService propertyService;
+	
+	/*********************************** 공통 ***********************************/
+	// 검색 조건을 가지고 목록페이지(조회_주제목록)로 이동합니다.
+	private String redirectListPage(CmmnSearchVO searchVO, RedirectAttributes reda, String type){
+		reda.addFlashAttribute("message", searchVO.getMessage());
+		reda.addFlashAttribute("searchVO", searchVO);
+		
+		String redirectPage = "";
+		if ("CLS_SBJT".equals(type)) {
+			redirectPage = "redirect:/xabdmxgr/lec/admLecSubjectList.do";		// 주제 출제 목록
+		}else if ("CLS_NOTI".equals(type)) {
+			redirectPage = "redirect:/xabdmxgr/lec/admLecBoardList.do";			// 우리반 게시판 목록
+		}
+		return redirectPage;
+		
+	}
+	
+	// 검색 조건을 가지고 목록페이지(과제목록)로 이동합니다.
+	private String redirectHmwkPage(String message, String type, CmmnSearchVO searchVO, RedirectAttributes reda){
+		reda.addFlashAttribute("message", message);
+		reda.addFlashAttribute("searchVO", searchVO);
+
+		if("LIST".equals(type)){
+			return "redirect:/xabdmxgr/lec/admLecHomeWorkList.do";
+		}else if("VIEW".equals(type)){
+			reda.addAttribute("hmwkSeq", searchVO.getSearchHomework());
+			return "redirect:/xabdmxgr/lec/admLecHomeWorkView.do";
+		}
+		
+		return "/";
+	}
+	
+	// 학기 목록, 학기&반_교수 정보 가져오기
+	private void getSmtrClsInfoAndSmtrList(CmmnSearchVO searchVO, ModelMap model) throws UnknownHostException{
+		// 학기 & 반_교수 정보
+		EgovMap smtrClsInfo = admCmmDAO.selectClassOne(searchVO.getSearchClass());
+		model.addAttribute("smtrClsInfo", smtrClsInfo);
+		
+		// 학기 목록
+		searchVO.setSearchSemester(smtrClsInfo.get("smtrSeq").toString());
+		List<SemesterVO> smtrList = admCmmDAO.selectSmtrList(searchVO);
+		model.addAttribute("smtrList", smtrList);
+	}
+	
+	// 목록
+	@RequestMapping("/xabdmxgr/lec/admLecClassList.do")
+	public String admLecClassList(@ModelAttribute("searchVO") CmmnSearchVO searchVO, ModelMap model, HttpSession session) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecClassList.do - 관리자 > 강의실 > 목록");
+		LOGGER.debug("searchVO = "+searchVO.toString());
+		// 메뉴 코드
+		session.setAttribute("admMenuNo", "10");
+		
+		// 학기 목록
+		List<SemesterVO> smtrList = admCmmDAO.selectSmtrList(searchVO);
+		model.addAttribute("smtrList", smtrList);
+		for(SemesterVO semesterVO : smtrList){
+			if ("Y".equals(semesterVO.getChoiceYn())) {
+				searchVO.setSearchSemester(semesterVO.getSmtrSeq());
+			}
+		}
+		
+		// 계열 목록
+		List<DepartmentVO> deptList = admCmmDAO.selectDeptList(searchVO);
+		model.addAttribute("deptList", deptList);
+		
+		// 강의실 목록
+		List<EgovMap> clsList = admCmmDAO.selectMyClassList(searchVO);
+		model.addAttribute("clsList", clsList);
+		
+		return "/adm/lec/admLecClassList";
+	}
+	
+	/*********************************** 주제 ***********************************/
+	// 조회_주제목록
+	@RequestMapping("/xabdmxgr/lec/admLecSubjectList.do")
+	public String admLecSubjectList(@ModelAttribute("searchVO") CmmnSearchVO searchVO, ModelMap model, RedirectAttributes reda, HttpSession session) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecSubjectList.do - 관리자 > 강의실 > 조회_주제목록");
+		LOGGER.debug("searchVO = "+searchVO.toString());
+		// 메뉴 코드
+		session.setAttribute("admMenuNo", "10");
+		
+		// 학기 목록, 학기&반_교수 정보
+		getSmtrClsInfoAndSmtrList(searchVO, model);
+		
+		// 주제 출제
+		PaginationInfo paginationInfo = PaginationController.getPaginationInfo(searchVO);
+		
+		CmmnListVO listVO = admLecDAO.selectLecSubjectList(searchVO);
+		paginationInfo.setTotalRecordCount(listVO.getTotalRecordCount());
+		model.addAttribute("paginationInfo", paginationInfo);
+		model.addAttribute("resultList", listVO.getEgovList());
+		
+		return "/adm/lec/admLecSubjectList";
+	}
+	
+	// 주제 등록&수정 화면
+	@RequestMapping("/xabdmxgr/lec/admLecSubjectModify.do")
+	public String admLecSubjectModify(String sbjtSeq, @ModelAttribute("searchVO") CmmnSearchVO searchVO, ModelMap model) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecSubjectModify.do - 관리자 > 강의실 > 조회_주제목록 > 주제 등록&수정 화면");
+		LOGGER.debug("sbjtSeq = "+sbjtSeq);
+		
+		// 학기 목록, 학기&반_교수 정보
+		getSmtrClsInfoAndSmtrList(searchVO, model);
+				
+		SubjectVO subjectVO = null;
+		if (EgovStringUtil.isEmpty(sbjtSeq)) {
+			// 등록화면
+			subjectVO = new SubjectVO();
+		}else {
+			// 수정화면
+			subjectVO = (SubjectVO) admLecDAO.selectLecSubjectOne(sbjtSeq);
+			model.addAttribute("sbjtUpfileList", admLecDAO.selectLecSbjtUpfileList(sbjtSeq));
+		}
+		
+		model.addAttribute("subjectVO", subjectVO);
+		
+		return "/adm/lec/admLecSubjectModify";
+	}
+	
+	// 주제 등록&수정
+	@RequestMapping("/xabdmxgr/lec/admLecSubjectUpdate.do")
+	public String admLecSubjectUpdate(SubjectVO subjectVO, @ModelAttribute("searchVO") CmmnSearchVO searchVO, MultipartHttpServletRequest multiRequest, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecSubjectUpdate.do - 관리자 > 강의실 > 조회_주제목록 > 주제 등록&수정");
+		LOGGER.debug("searchVO = "+searchVO.toString());
+		LOGGER.debug("subjectVO = "+subjectVO);
+		
+		// 첨부파일 조건확인
+		boolean flag = cmmnFileMngUtil.uploadFileCheck(multiRequest);
+		if(!flag){
+			LOGGER.debug("첨부된 파일이 잘못되었습니다.");
+			searchVO.setMessage("첨부된 파일이 잘못되었습니다.");
+			return redirectListPage(searchVO, reda, "CLS_SBJT");
+		}
+		
+		// 시작시간 및 종료시간 set
+		subjectVO.setSbjtStartTime(subjectVO.getSbjtStartTime1() + ":" + subjectVO.getSbjtStartTime2());
+		subjectVO.setSbjtEndTime(subjectVO.getSbjtEndTime1() + ":" + subjectVO.getSbjtEndTime2());
+		
+		String logJob = "";
+		String rsSbjtSeq = "";
+		if (EgovStringUtil.isEmpty(subjectVO.getSbjtSeq())) {
+			// 등록
+			subjectVO.setClsSeq(searchVO.getSearchClass());
+			rsSbjtSeq = admLecDAO.lecSubjectInsert(subjectVO);
+			logJob = "강의실 주제 등록()";
+			searchVO.setMessage("등록되었습니다.");
+		}else {
+			// 수정
+			admLecDAO.lecSubjectUpdate(subjectVO);
+			logJob = "강의실 주제 수정("+subjectVO.getSbjtSeq()+")";
+			rsSbjtSeq = subjectVO.getSbjtSeq();
+			searchVO.setMessage("수정되었습니다.");
+		}
+		
+		// 첨부파일
+		List<FileInfoVO> fileInfoList = cmmnFileMngUtil.uploadAttachedFiles(multiRequest, "CLASS_SUBJECT");
+		for(FileInfoVO vo : fileInfoList){
+			admLecDAO.lecSubjectUpfileInsert(vo, rsSbjtSeq);
+		}
+
+		// 첨부파일 삭제
+		if (!EgovStringUtil.isEmpty(subjectVO.getFileDeleteChk())) {
+			String[] arrUpSeq = (subjectVO.getFileDeleteChk()).split(",");
+			List<String> upSeqList = new ArrayList<>();
+			for(String upSeq : arrUpSeq){
+				EgovMap upfile = admLecDAO.selectLecSbjtUpfileOne(upSeq);
+				cmmnFileMngUtil.deleteFile(upfile.get("upSaveFilePath").toString());	// 파일 삭제
+				upSeqList.add(upSeq);
+			}
+			admLecDAO.lecSbjtUpfileDelete(upSeqList);	// 데이터 삭제
+		}
+		
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+        admCmmLogDAO.insertLogOne(logJob, ip);
+		return redirectListPage(searchVO, reda, "CLS_SBJT");
+	}
+	
+	// 주제 삭제
+	@RequestMapping("/xabdmxgr/lec/admLecSubjectDelete.do")
+	public String admLecSubjectDelete(@RequestParam String sbjtSeq, @ModelAttribute("searchVO") CmmnSearchVO searchVO, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecSubjectDelete.do - 관리자 > 강의실 > 주제 조회 > 삭제");
+		LOGGER.debug("sbjtSeq = "+sbjtSeq);
+		
+		// 첨부파일 삭제
+		List<EgovMap> upfileList = admLecDAO.selectLecSbjtUpfileList(sbjtSeq);
+		if(upfileList.size() != 0){
+			List<String> upSeqList = new ArrayList<>();
+			for(EgovMap upfile : upfileList){
+				cmmnFileMngUtil.deleteFile(upfile.get("upSaveFilePath").toString());	// 파일 삭제
+				upSeqList.add(upfile.get("upSeq").toString());
+			}
+			admLecDAO.lecSbjtUpfileDelete(upSeqList);	// 데이터 삭제
+		}
+		
+		// 주제 삭제
+		admLecDAO.lecSubjectDelete(sbjtSeq);
+		
+		searchVO.setMessage("삭제되었습니다.");
+		return redirectListPage(searchVO, reda, "CLS_SBJT");
+	}
+	
+	
+	/*********************************** 과제 ***********************************/
+	// 주제 조회화면_과제 목록
+	@RequestMapping("/xabdmxgr/lec/admLecHomeWorkList.do")
+	public String admLecHomeWorkList(@ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, ModelMap model) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecHomeWorkList.do - 관리자 > 강의실 > 조회_주제목록 > 주제조회_과제목록");
+		LOGGER.debug("searchVO = "+searchVO.toString());
+		
+		// 학기 목록, 학기&반_교수 정보
+		getSmtrClsInfoAndSmtrList(searchVO, model);
+		
+		// 주제 조회
+		model.addAttribute("subjectVO", admLecDAO.selectLecSubjectOne(searchVO.getSearchSubject()));
+		model.addAttribute("sbjtUpfileList", admLecDAO.selectLecSbjtUpfileList(searchVO.getSearchSubject()));
+		// 과제 목록
+		PaginationInfo paginationInfo = PaginationController.getPaginationInfo2(searchVO);
+		CmmnListVO listVO = admLecDAO.selectLecHomeworkList(searchVO);
+		paginationInfo.setTotalRecordCount(listVO.getTotalRecordCount());
+		model.addAttribute("paginationInfo", paginationInfo);
+		model.addAttribute("resultList", listVO.getEgovList());
+
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("강의실 주제 조회("+searchVO.getSearchSubject()+")", ip);
+		return "/adm/lec/admLecHomeWorkList";
+	}
+	
+	// 과제 조회
+	@RequestMapping("/xabdmxgr/lec/admLecHomeWorkView.do")
+	public String admLecHomeWorkView(@RequestParam String hmwkSeq, @RequestParam(defaultValue="1") String pageCmmtIndex, @ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecHomeWorkView.do - 관리자 > 강의실 > 조회_주제목록 > 과제 조회");
+		LOGGER.debug("hmwkSeq = "+hmwkSeq);
+		
+		// 학기 목록, 학기&반_교수 정보
+		getSmtrClsInfoAndSmtrList(searchVO, model);
+		
+		// 과제
+		HomeworkVO homeworkVO = admLecDAO.selectLecHomeworkOne(hmwkSeq, searchVO);
+		if(homeworkVO == null){
+			LOGGER.debug("조회된 과제가 없습니다.(hmwkSeq = "+hmwkSeq+")");
+			return redirectHmwkPage("조회된 과제가 없습니다.", "LIST", searchVO, reda);
+		}
+		
+		// 스크립트 치환
+		homeworkVO.setHmwkContent((EgovWebUtil.clearXSSMinimum(homeworkVO.getHmwkContent()).replaceAll("\r\n", "<br>")));
+		homeworkVO.setHmwkContent2((EgovWebUtil.clearXSSMinimum(homeworkVO.getHmwkContent2()).replaceAll("\r\n", "<br>")));
+		
+		model.addAttribute("homeworkVO", homeworkVO);
+	
+		// 첨부파일
+		List<EgovMap> hmwkFileList = admLecDAO.selectLecHomeworkUpfileList(hmwkSeq);
+		model.addAttribute("hmwkFileList", hmwkFileList);
+		
+		// 댓글
+		CmmnListVO cmmtListVO = admCmmCmmtDAO.selectLecHomeworkCommentList(hmwkSeq, pageCmmtIndex);
+		model.addAttribute("cmmtListCnt", cmmtListVO.getTotalRecordCount());
+		
+		for(EgovMap vo : cmmtListVO.getEgovList()){
+			vo.put("cmtContent", (EgovWebUtil.clearXSSMinimum(vo.get("cmtContent").toString()).replaceAll("\r\n", "<br>")));
+		}
+		
+		model.addAttribute("cmmtList", cmmtListVO.getEgovList());
+
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("강의실 과제 조회("+hmwkSeq+")", ip);
+		return "/adm/lec/admLecHomeWorkView";
+	}
+	
+	// 과제 첨삭 등록&수정화면
+	@RequestMapping("/xabdmxgr/lec/admLecHomeWorkModify.do")
+	public String lecHomeWorkModify(@RequestParam String hmwkSeq, @ModelAttribute("searchVO") CmmnSearchVO searchVO, ModelMap model) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/lecHomeWorkModify.do - 관리자 > 강의실 > 주제목록 > 과제조회 > 첨삭 등록&수정화면");
+		LOGGER.debug("hmwkSeq = "+hmwkSeq);
+
+		// 학기 목록, 학기&반_교수 정보
+		getSmtrClsInfoAndSmtrList(searchVO, model);
+		
+		// 과제 조회
+		HomeworkVO homeworkVO = admLecDAO.selectLecHomeworkOne(hmwkSeq, searchVO);
+		
+		// 스크립트 치환
+		homeworkVO.setHmwkContent((EgovWebUtil.clearXSSMinimum(homeworkVO.getHmwkContent()).replaceAll("\r\n", "<br>")));
+		
+		model.addAttribute("homeworkVO", homeworkVO);
+		
+		// 과제 첨부파일 목록
+		List<EgovMap> hmwkFileList = admLecDAO.selectLecHomeworkUpfileList(hmwkSeq);
+		model.addAttribute("hmwkFileList", hmwkFileList);
+		return "/adm/lec/admLecHomeWorkModify";
+	}
+	
+	// 과제 첨삭 등록&수정
+	@RequestMapping("/xabdmxgr/lec/admLecHomeWorkUpdate.do")
+	public String admLecHomeWorkUpdate(HomeworkVO homeworkVO, @ModelAttribute("searchVO") CmmnSearchVO searchVO, MultipartHttpServletRequest multiRequest, HttpServletRequest request, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecHomeWorkUpdate.do - 관리자 > 강의실 > 주제목록 > 과제조회 > 첨삭 등록&수정");
+		LOGGER.debug("homework = "+homeworkVO.toString());
+		// searchVO set
+		searchVO.setSearchHomework(homeworkVO.getHmwkSeq());
+		
+		// 첨부파일 조건 검사
+		boolean flag = cmmnFileMngUtil.uploadFileCheck(multiRequest);
+		if(!flag){
+			LOGGER.debug("첨부된 파일이 잘못되었습니다.");
+			return redirectHmwkPage("첨부된 파일이 잘못되었습니다.", "VIEW", searchVO, reda);
+		}
+		
+		// 과제 첨삭
+		homeworkVO.setHmwkStatus("4");
+		admLecDAO.lecHomeworkUpdate(homeworkVO);
+		// 첨부파일
+		List<FileInfoVO> fileInfoList = cmmnFileMngUtil.uploadAttachedFiles(multiRequest, "HOMEWORK");
+		for(FileInfoVO fileInfoVO : fileInfoList){
+			admLecDAO.lecHomeworkUpfileInsert(fileInfoVO, homeworkVO.getHmwkSeq());
+		}
+		
+		// 첨부파일 삭제
+		if (!EgovStringUtil.isEmpty(homeworkVO.getFileDeleteChk())) {
+			String[] arrUpSeq = (homeworkVO.getFileDeleteChk()).split(",");
+			List<String> upSeqList = new ArrayList<>();
+			for(String upSeq : arrUpSeq){
+				EgovMap upfile = admLecDAO.selectLecHomeworkUpfileOne(upSeq);
+				cmmnFileMngUtil.deleteFile(upfile.get("upSaveFilePath").toString());	// 파일 삭제
+				upSeqList.add(upSeq);
+			}
+			admLecDAO.lecHomeworkUpFileDelete(upSeqList);	// 데이터 삭제
+		}
+		
+		String message = EgovStringUtil.isEmpty(homeworkVO.getHmwkUpdtDate()) ? "첨삭이 등록되었습니다." : "첨삭을 수정하였습니다.";
+
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("강의실 과제 수정(첨삭지도)("+homeworkVO.getHmwkSeq()+")", ip);
+		return redirectHmwkPage(message, "VIEW", searchVO, reda);
+	}
+	// 과제 상태 변경(첨삭진행중 > 첨삭완료)
+	@RequestMapping("/xabdmxgr/lec/admLecHomeWorkStatusUpdate.do")
+	public String admLecHomeWorkUpdate(ModelMap model, @ModelAttribute("searchVO") CmmnSearchVO searchVO, RedirectAttributes reda, @RequestParam("sbjtSeq")String sbjtSeq){
+		LOGGER.info("/xabdmxgr/lec/admLecHomeWorkStatusUpdate.do - 관리자 > 강의실 > 주제목록 > 과제목록 > 과제 상태 변경(첨삭진행중 > 첨삭완료)");
+		LOGGER.debug("searchVO - "+searchVO.toString());
+		LOGGER.debug("sbjtSeq - "+sbjtSeq);
+
+		admLecDAO.lecHomeworkStatusUpdate(sbjtSeq);
+		
+		searchVO.setSearchType("");
+		return redirectHmwkPage("일괄처리 되었습니다.", "LIST", searchVO, reda);
+	}
+	
+	// 과제 댓글 더보기
+	@RequestMapping("/xabdmxgr/lec/lecHmwkCommentAddList.do")
+	public View lecHmwkCommentAddList(@RequestParam String hmwkSeq, @RequestParam String pageCmmtIndex, ModelMap model) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/lecHmwkCommentAddList.do - 사용자 > 강의실 > 반_교수 목록 > 주제조회 > 과제 조회 > 댓글 더보기");
+		LOGGER.debug("hmwkSeq = "+hmwkSeq+", pageCmmtIndex = "+pageCmmtIndex);
+		
+		CmmnListVO cmmtListVO = admCmmCmmtDAO.selectLecHomeworkCommentList(hmwkSeq, pageCmmtIndex);
+		model.addAttribute("cmmtList", cmmtListVO.getEgovList());
+		return jsonView;
+	}
+	
+	// 과제 댓글 등록
+	@RequestMapping("/xabdmxgr/lec/lecHmwkCommentInsert.do")
+	public String lecHmwkCommentInsert(CmmnCommentVO commentVO, @ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/lecHmwkCommentInsert.do - 사용자 > 강의실 > 반_교수 목록 > 주제조회 > 과제 조회 > 댓글 등록");
+		LOGGER.debug("commentVO = "+commentVO.toString());
+		
+		if (EgovStringUtil.isEmpty(commentVO.getCmtContent()) || EgovStringUtil.isEmpty(commentVO.getHmwkSeq())) {
+			LOGGER.debug("내용 또는 원글 번호가 없습니다.(cmtContent = "+commentVO.getCmtContent()+", hmwkSeq = "+commentVO.getHmwkSeq()+")");
+			return redirectHmwkPage("내용 또는 원글 번호가 없습니다.", "LIST", searchVO, reda);
+		}
+		// 등록
+		admCmmCmmtDAO.lecHomeworkCommentInsert(commentVO);
+		
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("과제 댓글 등록", ip);
+		
+		reda.addFlashAttribute("message", "댓글이 등록되었습니다.");
+		reda.addFlashAttribute("searchVO", searchVO);
+		reda.addAttribute("hmwkSeq", commentVO.getHmwkSeq());
+		return "redirect:/xabdmxgr/lec/admLecHomeWorkView.do";
+	}
+	
+	// 과제 댓글 삭제
+	@RequestMapping("/xabdmxgr/lec/lecHmwkCommentDelete.do")
+	public String lecHmwkCommentDelete(@RequestParam String cmtSeq, @RequestParam String hmwkSeq, @ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/lecHmwkCommentDelete.do - 사용자 > 강의실 > 반_교수 목록 > 주제조회 > 과제 조회 > 댓글 삭제");
+		LOGGER.debug("cmtSeq = "+cmtSeq+", hmwkSeq = "+hmwkSeq);
+		
+		// 삭제
+		admCmmCmmtDAO.lecHomeworkCommentDelete(cmtSeq);
+		
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("과제 댓글 삭제("+cmtSeq+")", ip);
+		
+		reda.addFlashAttribute("message", "댓글이 삭제되었습니다.");
+		reda.addFlashAttribute("searchVO", searchVO);
+		reda.addAttribute("hmwkSeq", hmwkSeq);
+		return "redirect:/xabdmxgr/lec/admLecHomeWorkView.do";		
+	}
+
+	
+	/*********************************** 우리반게시판 ***********************************/
+	// 우리반게시판 목록
+	@RequestMapping("/xabdmxgr/lec/admLecBoardList.do")
+	public String admLecBoardList(@ModelAttribute("searchVO") CmmnSearchVO searchVO, ModelMap model, HttpSession session) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecBoardList.do - 관리자 > 강의실 > 조회_우리반게시판");
+		LOGGER.debug("searchVO = "+searchVO.toString());
+		// 메뉴 코드
+		session.setAttribute("admMenuNo", "10");
+		
+		// 학기 목록, 학기&반_교수 정보
+		getSmtrClsInfoAndSmtrList(searchVO, model);
+		
+		// 우리반게시판
+		// 1. 공지
+		searchVO.setSearchType("Y"); 
+		CmmnListVO notiListVO = admLecDAO.selectLecBoardList(searchVO);
+		model.addAttribute("notiList", notiListVO.getEgovList());
+		
+		// 2. 일반글
+		searchVO.setSearchType("N"); 
+		PaginationInfo paginationInfo = PaginationController.getPaginationInfo(searchVO);
+		
+		CmmnListVO listVO = admLecDAO.selectLecBoardList(searchVO);
+		paginationInfo.setTotalRecordCount(listVO.getTotalRecordCount());
+		model.addAttribute("paginationInfo", paginationInfo);
+		model.addAttribute("resultList", listVO.getEgovList());
+		
+		return "/adm/lec/admLecBoardList";
+	}
+	
+	// 우리반게시판 조회
+	@RequestMapping("/xabdmxgr/lec/admLecBoardView.do")
+	public String admLecBoardView(@RequestParam String ntSeq, @RequestParam(defaultValue="1") String pageCmmtIndex, @ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecBoardView.do - 관리자 > 강의실 > 조회_우리반게시판 > 조회");
+		LOGGER.debug("ntSeq = "+ntSeq);
+		
+		// 학기 목록, 학기&반_교수 정보
+		getSmtrClsInfoAndSmtrList(searchVO, model);
+		
+		// 우리반게시판
+		ClsNoticeVO clsNoticeVO = admLecDAO.selectLecBoardOne(ntSeq);
+		
+		if (clsNoticeVO == null) {
+			LOGGER.debug("우리반게시판 글이 없습니다.(ntSeq = "+ntSeq+")");
+			searchVO.setMessage("우리반게시판 글이 없습니다.");
+			return redirectListPage(searchVO, reda, "CLS_NOTI");
+		}
+		//태그 제거
+		//clsNoticeVO.setNtContent(EgovWebUtil.clearXSSMinimum(clsNoticeVO.getNtContent()).replaceAll("\r\n", "<br/>"));
+		
+		model.addAttribute("clsNoticeVO", clsNoticeVO);
+		
+		// 첨부파일
+		model.addAttribute("notiUpfileList", admLecDAO.selectLecBoardUpfileList(ntSeq));
+		
+		// 댓글
+		CmmnListVO cmmtListVO = admCmmCmmtDAO.selectLecBoardCommentList(ntSeq, pageCmmtIndex);
+		model.addAttribute("cmmtListCnt", cmmtListVO.getTotalRecordCount());
+		model.addAttribute("cmmtList", cmmtListVO.getEgovList());
+		
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("우리반게시판 조회("+ntSeq+")", ip);
+		return "/adm/lec/admLecBoardView";
+	}
+	
+	// 우리반게시판 등록&수정 화면
+	@RequestMapping("/xabdmxgr/lec/admLecBoardModify.do")
+	public String admLecBoardModify(String ntSeq, @ModelAttribute("searchVO") CmmnSearchVO searchVO, ModelMap model) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecBoardModify.do - 관리자 > 강의실 > 조회_우리반게시판 > 등록&수정화면");
+		LOGGER.debug("ntSeq = "+ntSeq);
+
+		// 학기 목록, 학기&반_교수 정보
+		getSmtrClsInfoAndSmtrList(searchVO, model);
+		
+		ClsNoticeVO clsNoticeVO = null;
+		if (EgovStringUtil.isEmpty(ntSeq)) {
+			// 등록화면
+			clsNoticeVO = new ClsNoticeVO();
+		}else {
+			// 수정화면
+			clsNoticeVO = admLecDAO.selectLecBoardOne(ntSeq);
+			model.addAttribute("notiUpfileList", admLecDAO.selectLecBoardUpfileList(ntSeq));
+		}
+		
+		model.addAttribute("clsNoticeVO", clsNoticeVO);
+		return "/adm/lec/admLecBoardModify";
+	}
+	
+	// 우리반게시판 등록&수정
+	@RequestMapping("/xabdmxgr/lec/admLecBoardUpdate.do")
+	public String admLecBoardUpdate(ClsNoticeVO clsNoticeVO, @ModelAttribute("searchVO") CmmnSearchVO searchVO, MultipartHttpServletRequest multiRequest, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecBoardUpdate.do - 관리자 > 강의실 > 조회_우리반게시판 > 등록&수정");
+		LOGGER.debug("clsNoticeVO = "+clsNoticeVO.toString());
+		
+		// 첨부파일 조건확인
+		boolean flag = cmmnFileMngUtil.uploadFileCheck(multiRequest);
+		if(!flag){
+			LOGGER.debug("첨부된 파일이 잘못되었습니다.");
+			searchVO.setMessage("첨부된 파일이 잘못되었습니다.");
+			return redirectListPage(searchVO, reda, "CLS_NOTI");
+		}
+		String logJob = "";
+		String rsNtSeq = "";
+		if (EgovStringUtil.isEmpty(clsNoticeVO.getNtSeq())) {
+			// 등록
+			clsNoticeVO.setClsSeq(searchVO.getSearchClass());
+			
+			rsNtSeq = admLecDAO.lecBoardInsert(clsNoticeVO);
+			logJob = "우리반게시판 등록()";
+			
+			searchVO.setMessage("등록되었습니다.");
+		}else {
+			// 수정
+			admLecDAO.lecBoardUpdate(clsNoticeVO);
+			
+			logJob = "우리반게시판 수정("+clsNoticeVO.getNtSeq()+")";
+			
+			rsNtSeq = clsNoticeVO.getNtSeq();
+			searchVO.setMessage("수정되었습니다.");
+		}
+		
+		// 첨부파일
+		List<FileInfoVO> fileInfoList = cmmnFileMngUtil.uploadAttachedFiles(multiRequest, "CLASS_NOTICE");
+		for(FileInfoVO vo : fileInfoList){
+			admLecDAO.lecBoardUpfileInsert(vo, rsNtSeq);
+		}
+
+		// 첨부파일 삭제
+		if (!EgovStringUtil.isEmpty(clsNoticeVO.getFileDeleteChk())) {
+			String[] arrUpSeq = (clsNoticeVO.getFileDeleteChk()).split(",");
+			List<String> upSeqList = new ArrayList<>();
+			for(String upSeq : arrUpSeq){
+				EgovMap upfile = admLecDAO.selectLecBoardUpfileOne(upSeq);
+				cmmnFileMngUtil.deleteFile(upfile.get("upSaveFilePath").toString());	// 파일 삭제
+				upSeqList.add(upSeq);
+			}
+			admLecDAO.lecBoardUpfileDelete(upSeqList);	// 데이터 삭제
+		}
+		
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne(logJob, ip);
+		return redirectListPage(searchVO, reda, "CLS_NOTI");
+	}
+	
+	// 우리반게시판 삭제
+	@RequestMapping("/xabdmxgr/lec/admLecBoardDelete.do")
+	public String admLecBoardDelete(@RequestParam String ntSeq, @ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecBoardDelete.do - 관리자 > 강의실 > 조회_우리반게시판 > 삭제");
+		LOGGER.debug("ntSeq = "+ntSeq);
+		
+		// 첨부파일 삭제
+		List<EgovMap> upfileList = admLecDAO.selectLecBoardUpfileList(ntSeq);
+		if(upfileList.size() != 0){
+			List<String> upSeqList = new ArrayList<>();
+			for(EgovMap upfile : upfileList){
+				cmmnFileMngUtil.deleteFile(upfile.get("upSaveFilePath").toString());	// 파일 삭제
+				upSeqList.add(upfile.get("upSeq").toString());
+			}
+			admLecDAO.lecBoardUpfileDelete(upSeqList);	// 데이터 삭제
+		}
+		
+		// 주제 삭제
+		admLecDAO.lecBoardDelete(ntSeq);
+		
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("우리반게시판 삭제("+ntSeq+")", ip);
+		searchVO.setMessage("삭제되었습니다.");
+		return redirectListPage(searchVO, reda, "CLS_NOTI");
+	}
+	
+	// 우리반게시판 댓글 더보기
+	@Resource View jsonView;
+	@RequestMapping("/xabdmxgr/lec/admLecBoardCommentAddList.do")
+	public View admLecBoardCommentAddList(@RequestParam String ntSeq, @RequestParam String pageCmmtIndex, ModelMap model) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecBoardCommentAddList.do - 관리자 > 강의실 > 조회_우리반게시판 > 조회 > 댓글 더보기");
+		LOGGER.debug("ntSeq = "+ntSeq+", pageCmmtIndex = "+pageCmmtIndex);
+		
+		CmmnListVO cmmtListVO = admCmmCmmtDAO.selectLecBoardCommentList(ntSeq, pageCmmtIndex);
+		model.addAttribute("cmmtList", cmmtListVO.getEgovList());
+		return jsonView;
+	}
+	
+	// 우리반게시판 댓글 등록
+	@RequestMapping("/xabdmxgr/lec/admLecBoardCommentInsert.do")
+	public String admLecBoardCommentInsert(CmmnCommentVO commentVO, @ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecBoardCommentInsert.do - 관리자 > 강의실 > 조회_우리반게시판 > 조회 > 댓글 등록");
+		LOGGER.debug("commentVO = "+commentVO.toString());
+		
+		if (EgovStringUtil.isEmpty(commentVO.getCmtContent()) || EgovStringUtil.isEmpty(commentVO.getNtSeq())) {
+			LOGGER.debug("내용 또는 원글 번호가 없습니다.(cmtContent = "+commentVO.getCmtContent()+", ntSeq = "+commentVO.getNtSeq()+")");
+			searchVO.setMessage("내용 또는 원글 번호가 없습니다.");
+			return redirectListPage(searchVO, reda, "CLS_NOTI");
+		}
+		
+		// 등록
+		admCmmCmmtDAO.lecBoardCommentInsert(commentVO);
+		
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("우리반게시판 댓글 등록", ip);
+		searchVO.setMessage("댓글이 등록되었습니다.");
+		reda.addFlashAttribute("searchVO", searchVO);
+		reda.addAttribute("ntSeq", commentVO.getNtSeq());
+		return "redirect:/xabdmxgr/lec/admLecBoardView.do";
+	}
+	
+	// 우리반게시판 댓글 삭제
+	@RequestMapping("/xabdmxgr/lec/admLecBoardCommentDelete.do")
+	public String admLecBoardCommentDelete(@RequestParam String cmtSeq, @RequestParam String ntSeq, @ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecBoardCommentDelete.do - 관리자 > 강의실 > 조회_우리반게시판 > 조회 > 댓글 삭제");
+		LOGGER.debug("cmtSeq = "+cmtSeq+", ntSeq = "+ntSeq);
+		
+		// 삭제
+		admCmmCmmtDAO.lecBoardCommentDelete(cmtSeq);
+		
+		// 로그 등록
+		String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) ip = request.getRemoteAddr();
+		admCmmLogDAO.insertLogOne("우리반게시판 댓글 삭제("+cmtSeq+")", ip);
+		
+		searchVO.setMessage("댓글이 삭제되었습니다.");
+		reda.addFlashAttribute("searchVO", searchVO);
+		reda.addAttribute("ntSeq", ntSeq);
+		return "redirect:/xabdmxgr/lec/admLecBoardView.do"; 
+	}
+	
+	/**
+	 * 첨부파일 일괄다운로드
+	 * @param searchVO
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/xabdmxgr/lec/admLecHomeWorkZip.do")
+	public void admLecHomeWorkZip(@ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		LOGGER.info("/xabdmxgr/lec/admLecHomeWorkList.do - 관리자 > 강의실 > 조회_주제목록 > 주제조회_과제_첨부파일_일괄다운");
+		//int bufferSize = 8192;
+		int bufferSize = 1024*2;
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+		Calendar cal = Calendar.getInstance();
+		
+		String outputName = sdf.format(cal.getTime()) + "_과제파일일괄다운로드";
+		
+		response.setHeader("Content-Transfer-Encoding", "binary");
+		response.setContentType("application/x-msdownload");
+		setDisposition(outputName, request, response);
+	//	response.setHeader("Content-Disposition", "attachment; filename=" + outputName + ".zip" + ";");
+		
+		//BufferedInputStream in = null;
+		BufferedOutputStream out = null;
+		ZipOutputStream zos = null;
+		
+		try {
+		    out = new BufferedOutputStream(response.getOutputStream());
+		    out.flush();
+		    
+		    zos = new ZipOutputStream(response.getOutputStream()); 
+			zos.setLevel(8);
+			BufferedInputStream bis = null;
+			
+			List<EgovMap> resultList = admLecDAO.selectLecHomeworkZipList(searchVO);
+			
+			for(EgovMap result : resultList){
+				List<EgovMap> fileList = admLecDAO.selectLecHomeworkUpfileList(result.get("hmwkSeq").toString());
+				
+				/*
+				 * 압축파일 내 폴더를 지정하는 소스
+				
+				String dirNm = number + resultInfo.getTitle() + sep;
+				
+				if("1".equals(zipType)){
+					ZipEntry dirZentry = new ZipEntry(dirNm);
+					zos.putNextEntry(dirZentry);
+				}
+				*/
+				for(EgovMap fileMap : fileList){
+					String fileName = "";
+					
+					/*
+					 * 압축파일 내 폴더를 지정할 시 파일명에 폴더 경로를 추가해야 함
+					if("1".equals(zipType)){
+						fileName += dirNm;
+					}else{
+						int nm = ++k;
+						fileName += nf.format(nm) + "_";
+					}*/
+					
+					if(!EgovStringUtil.isEmpty(result.get("hmwkNames").toString())
+					&& !EgovStringUtil.isEmpty(result.get("hmwkHakbuns").toString())
+					&& !EgovStringUtil.isEmpty(result.get("hmwkDepts").toString())){
+						fileName += result.get("hmwkHakbuns")+"_"+result.get("hmwkNames")+"_"+fileMap.get("upOriginFileName");
+					}else{
+						fileName += result.get("hmwkRegId")+"_"+result.get("hmwkRegName")+"_"+fileMap.get("upOriginFileName");
+					}
+
+					String UPLOAD_HOME = propertyService.getString("Globals.fileStorePath.attachedFile");
+					File file = new File(UPLOAD_HOME, fileMap.get("upSaveFilePath").toString());
+					
+					bis = new BufferedInputStream(new FileInputStream(file));
+					ZipEntry zentry = new ZipEntry(fileName);
+					zentry.setTime(file.lastModified());
+					zos.putNextEntry(zentry);
+					byte[] buffer = new byte[bufferSize];
+					int cnt = 0;
+					
+					while ((cnt = bis.read(buffer, 0, bufferSize)) != -1) {
+						zos.write(buffer, 0, cnt);
+					}
+					
+					zos.closeEntry();
+					bis.close();
+				}
+			}
+			zos.finish();
+			zos.close();
+			//bis.close();
+			
+		} catch (Exception ex) {
+		    LOGGER.debug("IGNORED (cat): " + ex.getMessage() + " :str: "+ ex.toString());
+		} finally {
+		    if (out != null) {
+				try {
+				    out.close();
+				} catch (Exception ignore) {
+					LOGGER.debug("IGNORED (final): " + ignore.getMessage());
+				}
+		    }
+		}
+	}
+	
+	/**
+	 * Disposition 지정하기.
+	 *
+	 * @param filename
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	private void setDisposition(String filename, HttpServletRequest request, HttpServletResponse response) throws Exception {
+		String browser = getBrowser(request);
+
+		String dispositionPrefix = "attachment; filename=";
+		String encodedFilename = null;
+
+		if (browser.equals("MSIE")) {
+			encodedFilename = URLEncoder.encode(filename, "UTF-8").replaceAll("\\+", "%20");
+		} else if (browser.equals("Trident")) { // IE11 문자열 깨짐 방지
+			encodedFilename = URLEncoder.encode(filename, "UTF-8").replaceAll("\\+", "%20");
+		} else if (browser.equals("Firefox")) {
+			encodedFilename = "\"" + new String(filename.getBytes("UTF-8"), "8859_1") + "\"";
+		} else if (browser.equals("Opera")) {
+			encodedFilename = "\"" + new String(filename.getBytes("UTF-8"), "8859_1") + "\"";
+		} else if (browser.equals("Chrome")) {
+			StringBuffer sb = new StringBuffer();
+			for (int i = 0; i < filename.length(); i++) {
+				char c = filename.charAt(i);
+				if (c > '~') {
+					sb.append(URLEncoder.encode("" + c, "UTF-8"));
+				} else {
+					sb.append(c);
+				}
+			}
+			encodedFilename = sb.toString();
+		} else {
+			//throw new RuntimeException("Not supported browser");
+			throw new IOException("Not supported browser");
+		}
+
+		response.setHeader("Content-Disposition", dispositionPrefix + encodedFilename + ".zip;");
+
+		if ("Opera".equals(browser)) {
+			response.setContentType("application/octet-stream;charset=UTF-8");
+		}
+	}
+	
+	/**
+	 * 브라우저 구분 얻기.
+	 *
+	 * @param request
+	 * @return
+	 */
+	private String getBrowser(HttpServletRequest request) {
+		String header = request.getHeader("User-Agent");
+		if (header.indexOf("MSIE") > -1) {
+			return "MSIE";
+		} else if (header.indexOf("Trident") > -1) { // IE11 문자열 깨짐 방지
+			return "Trident";
+		} else if (header.indexOf("Chrome") > -1) {
+			return "Chrome";
+		} else if (header.indexOf("Opera") > -1) {
+			return "Opera";
+		}
+		return "Firefox";
+	}
+	
+}

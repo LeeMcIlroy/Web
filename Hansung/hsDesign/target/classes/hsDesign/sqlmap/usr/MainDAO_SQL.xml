@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 팝업 목록 -->
+	<select id="MainDAO.selectPopupList" resultClass="popupVO">
+/* MainDAO.selectPopupList */
+	<![CDATA[
+		SELECT
+			POP_SEQ 										as popSeq
+			, POP_TITLE										as popTitle
+			, POP_WIDTH										as popWidth
+			, POP_HEIGHT									as popHeight
+			, POP_TOP										as popTop
+			, POP_LEFT										as popLeft
+			, POP_SCROLL_YN									as popScrollYn
+			, POP_RESIZE_YN									as popResizeYn
+			, POP_CONTENT									as popContent
+			, POP_USE_YN									as popUseYn
+			, DATE_FORMAT(POP_REG_DATE, '%Y-%m-%d %H:%i:%s') as popRegDate
+			, POP_IMG_NAME									as popImgName
+			, POP_IMG_PATH									as popImgPath
+			, POP_TYPE										as popType
+		FROM
+			TB_HDA_POPUP
+		WHERE 
+			POP_USE_YN = 'Y'
+	]]>	
+	</select>
+	
+	<!-- 팝업 조회 -->
+	<select id="MainDAO.selectPopupOne" parameterClass="String" resultClass="popupVO" >
+/* MainDAO.selectPopupOne */
+	<![CDATA[
+		SELECT
+			POP_SEQ 										as popSeq
+			, POP_TITLE										as popTitle
+			, POP_WIDTH										as popWidth
+			, POP_HEIGHT									as popHeight
+			, POP_TOP										as popTop
+			, POP_LEFT										as popLeft
+			, POP_SCROLL_YN									as popScrollYn
+			, POP_RESIZE_YN									as popResizeYn
+			, POP_CONTENT									as popContent
+			, POP_USE_YN									as popUseYn
+			, DATE_FORMAT(POP_REG_DATE, '%Y-%m-%d %H:%i:%s') as popRegDate
+			, POP_IMG_NAME									as popImgName
+			, POP_IMG_PATH									as popImgPath
+			, POP_TYPE										as popType
+			, POP_URL										as popUrl
+		FROM
+			TB_HDA_POPUP
+		WHERE 
+			POP_USE_YN = 'Y'
+			AND POP_SEQ = #popSeq#
+	]]>	
+	</select>
+	
+	<!-- 배너 목록 
+	<select id="MainDAO.selectBannerList" resultClass="egovMap">
+/* MainDAO.selectBannerList */
+	<![CDATA[
+		SELECT
+			BAN_SEQ
+			, BAN_NAME
+			, BAN_TYPE
+			, BAN_NEW_WINDOW
+			, BAN_ORDER
+			, BAN_USE_YN
+			, BAN_URL
+			, BAN_IMG_NAME
+			, BAN_IMG_PATH
+			, DATE_FORMAT(BAN_REG_DATE, '%Y-%m-%d %H:%i:%s') as BAN_REG_DATE
+			, BAN_ADD_NAME1
+			, BAN_ADD_NAME2
+			, BAN_ADD_NAME3
+			, BAN_ADD_URL1
+			, BAN_ADD_URL2
+			, BAN_ADD_URL3
+		FROM
+			TB_HDA_BANNER
+		WHERE
+			BAN_USE_YN = 'Y'
+		ORDER BY
+			BAN_ORDER ASC
+			, BAN_REG_DATE DESC
+	
+	]]>	
+	</select>
+	-->
+		
+	<!-- 배너 목록 -->
+	<select id="MainDAO.selectBannerList" parameterClass="string" resultClass="egovMap" remapResults="true">
+/* MainDAO.selectBannerList */
+	<![CDATA[
+		SELECT
+			BAN_SEQ
+			, BAN_NAME
+			, BAN_TYPE
+			, BAN_NEW_WINDOW
+			, BAN_ORDER
+			, BAN_USE_YN
+			, BAN_URL
+			, BAN_IMG_NAME
+			, BAN_IMG_PATH
+			, BAN_REG_DATE
+			, BAN_ADD_NAME1
+			, BAN_ADD_NAME2
+			, BAN_ADD_NAME3
+			, BAN_ADD_URL1
+			, BAN_ADD_URL2
+			, BAN_ADD_URL3
+			, BAN_ADD_WINDOW1
+			, BAN_ADD_WINDOW2
+			, BAN_ADD_WINDOW3
+			, BAN_MP4_NAME
+			, BAN_MP4_PATH
+		FROM
+			TB_HDA_BANNER
+		WHERE
+			BAN_USE_YN = 'Y'
+	]]>
+	<dynamic>
+		<isParameterPresent>
+			AND BAN_TYPE = #banType#
+		</isParameterPresent>
+	</dynamic>
+	<![CDATA[
+		ORDER BY
+			BAN_ORDER asc, BAN_REG_DATE asc
+	]]>
+	</select>
+	
+	
+	<!-- 통합검색 목록-->
+	<select id="MainDAO.selectSearchList" parameterClass="searchVO" resultClass="egovMap">
+/* MainDAO.selectSearchList */	
+	<![CDATA[
+		SELECT 
+			t2.*
+		FROM 
+			(
+				SELECT 
+					t1.SEQ
+					, t1.TITLE
+					, t1.CONTENT
+					, t1.REG_NAME
+					, DATE_FORMAT(t1.REG_DATE, '%Y-%m-%d') as REG_DATE
+					, t1.BOARD_NAME
+					, t1.BOARD_TYPE
+					, t1.BOARD_CODE
+					, t1.SECRET_YN
+					, IMG_PATH
+					, IMG_NAME
+					, t1.OLD_YN
+					, t1.GUBUN
+				FROM 
+					(
+						SELECT
+							CB_SEQ AS SEQ
+							, CB_TITLE AS TITLE
+							, CB_CONTENT AS CONTENT
+							, REG_NAME
+							, CB_REG_DATE AS REG_DATE
+							, CB_NAME AS BOARD_NAME
+							, CB_TYPE AS BOARD_TYPE
+							, 'CB' as BOARD_CODE
+							, CB_SECRET_YN AS SECRET_YN
+							, CB_TH_IMG_PATH AS IMG_PATH
+							, CB_TH_IMG_NAME AS IMG_NAME
+							, 'N' as OLD_YN
+							, CB_GUBUN AS GUBUN
+						FROM TB_HDA_CMM_BOARD
+						WHERE
+							1=1
+							AND CB_TYPE != '1101'
+							AND CB_TYPE != '0101'
+							AND CB_TYPE != '0102'
+							AND CB_TYPE != '0201'
+							AND CB_TYPE != '0301'
+							AND CB_TYPE != '1001'
+							AND CB_TYPE != '0901'
+							AND CB_TYPE != '0902'
+							AND CB_TYPE != '0501'
+							AND CB_TYPE != '0401'
+							AND CB_SECRET_YN != 'Y'
+							]]>
+							<isNotEmpty prepend="AND" property="searchWord">
+								CB_TITLE like concat('%',#searchWord#,'%')
+							</isNotEmpty>
+							<![CDATA[
+						UNION ALL
+						
+						SELECT 
+							MB_SEQ AS SEQ
+							, MB_TITLE AS TITLE
+							, MB_CONTENT AS CONTENT
+							, MB_REG_NAME AS REG_NAME
+							, MB_REG_DATE AS REG_DATE
+							, case 
+								when M_CODE = '01' then '실내디자인' 		when M_CODE = '02'  then '시각디자인' 			when M_CODE = '03'   then '산업디자인'
+								when M_CODE = '04' then '디지털아트' 		when M_CODE = '05'  then '패션디자인' 			when M_CODE = '06'   then '패션비즈니스'
+								when M_CODE = '07' then '미용학' 			when M_CODE = '08'  then '미용학(one-day)' 		
+								else ''
+							end
+							, case 
+								when M_CODE = '01' then 'interior'	 		when M_CODE = '02'  then 'visual'	 			when M_CODE = '03'   then 'industrial'
+								when M_CODE = '04' then 'digitalArt' 		when M_CODE = '05'  then 'fassion'	 			when M_CODE = '06'   then 'fbusiness'
+								when M_CODE = '07' then 'beauty' 			when M_CODE = '08'  then 'beautyOne' 		
+								else ''
+							end
+							, 'MB'
+							, 'N'
+							, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL s1 WHERE s1.MB_SEQ = s2.MB_SEQ) as IMG_PATH
+							, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL s1 WHERE s1.MB_SEQ = s2.MB_SEQ) as IMG_NAME
+							, MB_OLD_YN as OLD_YN
+							, MB_GUBUN1
+						FROM
+							TB_HDA_MAJOR_BOARD s2
+						WHERE 
+							1=1
+							AND (SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU s1 WHERE s2.MB_GUBUN1 = s1.MM_SEQ) = 'Y'
+							
+							]]>
+							<isNotEmpty prepend="AND" property="searchWord">
+								MB_TITLE like concat('%',#searchWord#,'%')
+							</isNotEmpty>
+							<![CDATA[
+						
+					)t1
+			
+			)t2
+		ORDER BY REG_DATE DESC
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	
+	</select>
+	
+	<!-- 통합검색 목록수-->
+	<select id="MainDAO.selectSearchListCnt" parameterClass="searchVO" resultClass="int">
+/* MainDAO.selectSearchListCnt */	
+	<![CDATA[
+		SELECT 
+			count(*)			
+		FROM 
+			(
+				SELECT
+					CB_SEQ AS SEQ
+					, CB_TITLE AS TITLE
+					, CB_CONTENT AS CONTENT
+					, REG_NAME
+					, CB_REG_DATE AS REG_DATE
+					, CB_NAME AS BOARD_NAME
+					, CB_TYPE AS BOARD_TYPE
+					, 'CB' as BOARD_CODE 
+					, CB_SECRET_YN AS SECRET_YN
+					, CB_TH_IMG_PATH AS IMG_PATH
+					, CB_TH_IMG_NAME AS IMG_NAME
+					, 'N' as OLD_YN
+					, CB_GUBUN
+				FROM TB_HDA_CMM_BOARD
+				WHERE
+					1=1
+					AND CB_TYPE != '1101'
+					AND CB_TYPE != '0101'
+					AND CB_TYPE != '0102'
+					AND CB_TYPE != '0201'
+					AND CB_TYPE != '0301'
+					AND CB_TYPE != '1001'
+					AND CB_TYPE != '0901'
+					AND CB_TYPE != '0902'
+					AND CB_TYPE != '0501'
+					AND CB_TYPE != '0401'
+					AND CB_SECRET_YN != 'Y'
+					]]>
+					<isNotEmpty prepend="AND" property="searchWord">
+						CB_TITLE like concat('%',#searchWord#,'%')
+					</isNotEmpty>
+					<![CDATA[
+				UNION ALL
+				
+				SELECT 
+					MB_SEQ AS SEQ
+					, MB_TITLE AS TITLE
+					, MB_CONTENT AS CONTENT
+					, MB_REG_NAME AS REG_NAME
+					, MB_REG_DATE AS REG_DATE
+					, case 
+						when M_CODE = '01' then '실내디자인' 		when M_CODE = '02'  then '시각디자인' 			when M_CODE = '03'   then '산업디자인'
+						when M_CODE = '04' then '디지털아트' 		when M_CODE = '05'  then '패션디자인' 			when M_CODE = '06'   then '패션비즈니스'
+						when M_CODE = '07' then '미용학' 			when M_CODE = '08'  then '미용학(one-day)' 		
+						else ''
+					end
+					, case 
+						when M_CODE = '01' then 'interior'	 		when M_CODE = '02'  then 'visual'	 			when M_CODE = '03'   then 'industrial'
+						when M_CODE = '04' then 'digitalArt' 		when M_CODE = '05'  then 'fassion'	 			when M_CODE = '06'   then 'fbusiness'
+						when M_CODE = '07' then 'beauty' 			when M_CODE = '08'  then 'beautyOne' 		
+						else ''
+					end
+					, 'MB'
+					, 'N'
+					, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL s1 WHERE s1.MB_SEQ = s2.MB_SEQ) as IMG_PATH
+					, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL s1 WHERE s1.MB_SEQ = s2.MB_SEQ) as IMG_NAME
+					, MB_OLD_YN as OLD_YN
+					, MB_GUBUN1
+				FROM
+					TB_HDA_MAJOR_BOARD s2
+				WHERE 
+					1=1
+					AND (SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU s1 WHERE s2.MB_GUBUN1 = s1.MM_SEQ) = 'Y'
+					]]>
+					<isNotEmpty prepend="AND" property="searchWord">
+						MB_TITLE like concat('%',#searchWord#,'%')
+					</isNotEmpty>
+					<![CDATA[
+			)t1
+				
+	]]>
+	
+	</select>
+	
+</sqlMap>

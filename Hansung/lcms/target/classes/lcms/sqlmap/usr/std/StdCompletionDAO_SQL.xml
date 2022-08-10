@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<select id="StdCompletionDAO.selectStdCompletionList" parameterClass="searchVO" resultClass="egovMap">
+	/* StdCompletionDAO.selectStdCompletionList */
+	<![CDATA[
+		SELECT
+			LECT_YEAR
+			, LECT_SEM
+			, CASE LECT_SEM WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS LECT_SEM_NM
+			, IFNULL((
+				SELECT ROUND((AVG(GRADE_EXPR_SPEAK)+AVG(GRADE_EXPR_WRITE)+AVG(GRADE_COMP_LISTEN)+AVG(GRADE_COMP_READ))/4, 0)
+				FROM
+					TB_LCMS_GRADE TLG
+				WHERE
+					GROUP_CONCAT(TLLM.LECT_SEQ) = TLG.LECT_CODE
+				AND
+					TLLM.MEMBER_CODE = TLG.MEMBER_CODE
+				GROUP BY LECT_CODE, MEMBER_CODE
+			),0) AS AVG_GRADE
+			, IFNULL((
+				SELECT
+					ROUND((COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)/200)*100, 2)
+				FROM
+					TB_LCMS_ATTEND TLA
+				WHERE
+					TLA.LECT_SEQ = GROUP_CONCAT(TLLM.LECT_SEQ)
+				AND
+					TLA.MEMBER_CODE = TLLM.MEMBER_CODE
+				AND
+					TLA.ATT_DATE >= MAX(TLL.LECT_SDATE)
+				AND
+					TLA.ATT_DATE <= MAX(TLL.LECT_EDATE)
+			),0) AS AVG_ATTEND
+			, MAX(GRADE) AS GRADE
+			, CASE MAX(COMPLE_STA) WHEN '1' THEN '수료'
+							  WHEN '2' THEN '유급' ELSE '재학' END AS COMPLE_STA
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+		WHERE
+			TLLM.MEMBER_CODE = #searchMemberCode#
+		AND
+			TLL.GRADE_YN = 'Y'
+		AND
+			TLL.ADMIS_YN = 'Y'
+		GROUP BY
+			LECT_YEAR, LECT_SEM, TLLM.MEMBER_CODE
+		ORDER BY
+			LECT_YEAR DESC, LECT_SEM DESC
+	]]>
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="webtoon_table">
+		FROM
+			TB_HDA_WEBTOON
+	<dynamic prepend="WHERE">
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			WC_SEQ = #searchCondition1#
+		</isNotEmpty>
+	</dynamic>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="WebtoonDAO.selectWebtoonList" parameterClass="searchVO" resultClass="egovMap">
+/* WebtoonDAO.selectWebtoonList */
+	<![CDATA[
+		SELECT
+			 W_SEQ
+			, WC_SEQ
+			, (SELECT WC_TITLE FROM TB_HDA_WEBTOON_CATEGORY WHERE WC_SEQ = tt.WC_SEQ) as WC_TITLE
+			, W_TITLE
+			, W_TH_IMG_NAME
+			, W_TH_IMG_PATH
+			, W_ORDER
+			, W_COUNT
+			, DATE_FORMAT(REG_DATE, '%Y-%m-%d')		as REG_DATE
+		FROM (
+			SELECT
+				W_SEQ
+				, WC_SEQ
+				, W_TITLE
+				, W_TH_IMG_NAME
+				, W_TH_IMG_PATH
+				, W_ORDER
+				, W_COUNT
+				, W_CONTENT
+				, REG_DATE
+	]]>
+		<include refid="webtoon_table"/>
+	<![CDATA[
+			ORDER BY
+				REG_DATE desc
+			LIMIT #firstIndex#, #recordCountPerPage#
+		) tt
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="WebtoonDAO.selectWebtoonListCnt" parameterClass="searchVO" resultClass="int">
+/* WebtoonDAO.selectWebtoonListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="webtoon_table"/>
+	</select>
+
+	<!-- 조회 -->
+	<select id="WebtoonDAO.selectWebtoonOne" parameterClass="string" resultClass="webtoonVO">
+/* WebtoonDAO.selectWebtoonOne */
+	<![CDATA[
+		SELECT
+			W_SEQ				as wSeq
+			, WC_SEQ			as wcSeq
+			, (SELECT WC_TITLE FROM TB_HDA_WEBTOON_CATEGORY WHERE WC_SEQ = t1.WC_SEQ) as wcTitle
+			, W_TITLE			as wTitle
+			, W_TH_IMG_NAME		as wThImgName
+			, W_TH_IMG_PATH		as wThImgPath
+			, W_ORDER			as wOrder
+			, W_COUNT			as wCount
+			, W_CONTENT			as wContent
+			, REG_SEQ			as regSeq
+			, REG_NAME			as regName
+			, DATE_FORMAT(REG_DATE, '%Y-%m-%d')		as regDate
+			, (SELECT W_SEQ FROM TB_HDA_WEBTOON WHERE WC_SEQ = t1.WC_SEQ AND W_SEQ < t1.W_SEQ ORDER BY W_ORDER desc limit 1) as beforeWSeq
+			, (SELECT W_SEQ FROM TB_HDA_WEBTOON WHERE WC_SEQ = t1.WC_SEQ AND W_SEQ > t1.W_SEQ ORDER BY W_ORDER asc limit 1) as afterWSeq
+		FROM TB_HDA_WEBTOON t1
+		WHERE W_SEQ = #wSeq#
+	]]>
+	</select>
+	
+	<!-- 웹툰 조회수 증가 -->
+	<update id="WebtoonDAO.webtoonCountUpdate" parameterClass="string">
+/* WebtoonDAO.webtoonCountUpdate */
+	<![CDATA[
+		UPDATE TB_HDA_WEBTOON
+		SET
+			W_COUNT= W_COUNT + 1
+		WHERE W_SEQ = #wSeq#
+	]]>
+	</update>
+
+<!-- **************************************************************************** 웹툰 카테고리 **************************************************************************** -->
+
+	<!-- 카테고리 목록 -->
+	<select id="WebtoonDAO.selectWebtoonCategoryList" resultClass="webtoonVO">
+/* WebtoonDAO.selectWebtoonCategoryList */
+	<![CDATA[
+		SELECT
+			WC_SEQ			as wcSeq
+			, WC_TITLE		as wcTitle
+			, WC_ORDER		as wcOrder
+			, REG_SEQ		as regSeq
+			, REG_NAME		as regName
+			, DATE_FORMAT(REG_DATE, '%Y-%m-%d')		as regDate
+		FROM
+			TB_HDA_WEBTOON_CATEGORY
+		ORDER BY
+			REG_DATE desc
+	]]>
+	</select>
+
+</sqlMap>

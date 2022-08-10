@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_brodata_table">
+		FROM
+			TB_HDA_BRODATA
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="title">
+					BD_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="name">
+					REG_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="AdmBroDataDAO.selectBroDataList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmBroDataDAO.selectBroDataList */
+	<![CDATA[
+		SELECT
+			BD_SEQ
+			, BD_NAME
+			, REG_DATE
+			, REG_NAME
+			, BD_SAVE_FILE_PATH
+			, concat(
+				substring(BD_SAVE_FILE_PATH, 1, instr(BD_SAVE_FILE_PATH, '.')-1)
+				, '_thumbnail'
+				, substring(BD_SAVE_FILE_PATH, instr(BD_SAVE_FILE_PATH, '.'), length(BD_SAVE_FILE_PATH)) 
+			) as BD_SAVE_THUMB_PATH
+	]]>
+	<include refid="adm_brodata_table"/>
+	<![CDATA[
+		ORDER BY
+			REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmBroDataDAO.selectBroDataListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmBroDataDAO.selectBroDataListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+	<include refid="adm_brodata_table"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmBroDataDAO.selectBroDataOne" parameterClass="string" resultClass="brodataVO">
+/* AdmBroDataDAO.selectBroDataOne */
+	<![CDATA[
+		SELECT
+			BD_SEQ					as bdSeq
+			, BD_NAME				as bdName
+			, BD_ORIGIN_FILE_NAME	as bdOriginFileName
+			, BD_SAVE_FILE_PATH		as bdSaveFilePath
+			, BD_URL				as bdUrl
+			, REG_DATE				as regDate
+			, REG_SEQ				as regSeq
+			, REG_NAME				as regName
+		FROM
+			TB_HDA_BRODATA
+		WHERE
+			BD_SEQ = #bdSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmBroDataDAO.broDataInsert" parameterClass="brodataVO">
+/* AdmBroDataDAO.broDataInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_BRODATA (
+			BD_NAME
+			, BD_URL
+			, REG_DATE
+			, REG_SEQ
+			, REG_NAME
+		) VALUES (
+			#bdName#
+			, #bdUrl#
+			, CURRENT_TIMESTAMP
+			, #regSeq#
+			, #regName#
+		)
+	]]>
+	<selectKey keyProperty="bdSeq" resultClass="string" type="post">
+		select LAST_INSERT_ID() as value
+	</selectKey>
+	</insert>
+	
+	<!-- 수정 - 이미지 업로드 관련 -->
+	<update id="AdmBroDataDAO.broDataImgUpdate" parameterClass="map">
+/* AdmBroDataDAO.broDataImgUpdate */
+	<![CDATA[
+		UPDATE TB_HDA_BRODATA
+		SET
+			BD_ORIGIN_FILE_NAME = #fileInfoVO.fileName#
+			, BD_SAVE_FILE_PATH = #fileInfoVO.filePath#
+		WHERE BD_SEQ = #rsBdSeq#
+			
+	]]>
+	</update>
+	
+	<!-- 수정 - 글 수정 -->
+	<update id="AdmBroDataDAO.broDataUpdate" parameterClass="brodataVO">
+/* AdmBroDataDAO.broDataUpdate */
+	<![CDATA[
+		UPDATE TB_HDA_BRODATA
+		SET
+			BD_NAME = #bdName#
+			, BD_URL = #bdUrl#
+		WHERE BD_SEQ = #bdSeq#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmBroDataDAO.broDataDelete" parameterClass="string">
+/* AdmBroDataDAO.broDataDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_BRODATA
+		WHERE BD_SEQ = #bdSeq#
+	]]>
+	</delete>
+</sqlMap>

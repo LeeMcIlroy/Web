@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap>
+	
+	
+	<!-- 배너 목록 -->
+	<select id="CmmDAO.selectLeftBannerList" resultClass="egovMap">
+/* CmmDAO.selectLeftBannerList */	
+	<![CDATA[
+		SELECT
+			BAN_SEQ
+			, BAN_NAME
+			, BAN_TYPE
+			, BAN_NEW_WINDOW
+			, BAN_ORDER
+			, BAN_USE_YN
+			, BAN_URL
+			, BAN_IMG_NAME
+			, BAN_IMG_PATH
+			, DATE_FORMAT(BAN_REG_DATE, '%Y-%m-%d %H:%i:%s') as BAN_REG_DATE
+			, BAN_ADD_NAME1
+			, BAN_ADD_NAME2
+			, BAN_ADD_NAME3
+			, BAN_ADD_URL1
+			, BAN_ADD_URL2
+			, BAN_ADD_URL3
+			, BAN_ADD_WINDOW1
+			, BAN_ADD_WINDOW2
+			, BAN_ADD_WINDOW3
+			, BAN_MP4_NAME
+			, BAN_MP4_PATH
+		FROM
+			TB_HDA_BANNER
+		WHERE
+			BAN_USE_YN = 'Y'
+			AND BAN_TYPE = 'F'
+		ORDER BY
+			BAN_USE_YN DESC
+			, BAN_ORDER ASC
+			, BAN_REG_DATE DESC
+	]]>	
+	</select>
+	
+	<!-- incleftmenu 구분 -->
+	<select id="MajorBoardDAO.selectBoardCodeList" resultClass="egovMap">
+/* MajorBoardDAO.selectBoardCodeList */	
+	<![CDATA[
+		SELECT
+			MM_SEQ
+			, BC_SEQ
+			, M_CODE
+			, MM_SORT_NUM
+			, MM_USE_YN
+			, DATE_FORMAT(MM_REG_DTTM, '%Y-%m-%d') as MM_REG_DTTM
+			, DATE_FORMAT(MM_UDP_DTTM, '%Y-%m-%d') as MM_UDP_DTTM
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = t2.BC_SEQ ) as BC_NAME
+		FROM
+			TB_HDA_MAJOR_MENU t2
+		WHERE
+			MM_USE_YN = 'Y'
+		ORDER BY MM_SORT_NUM , MM_REG_DTTM DESC 
+	]]>
+
+	</select>
+
+	<!-- pdf 목록 -->
+	<select id="CmmDAO.selectPdfList" parameterClass="String" resultClass="egovMap">
+/* CmmDAO.selectPdfList */
+	<![CDATA[
+		SELECT
+			PDF_SEQ
+			, PDF_PATH
+			, PDF_NAME
+			, PDF_REG_DATE
+			, PDF_TYPE
+			, SUBJECT_PRICE	
+			, PDF_NAME2
+		FROM
+			TB_HDA_PDF
+		WHERE
+			1=1
+	]]>
+	<isNotEmpty prepend="AND">
+		PDF_TYPE = #pdfType#
+	</isNotEmpty>	
+	<![CDATA[
+		order by PDF_SORT
+	]]>
+	</select>
+	
+	<!-- pdf 조회 -->
+	<select id="CmmDAO.selectPdfOne" parameterClass="String" resultClass="egovMap">
+/* CmmDAO.selectPdfOne */
+	<![CDATA[
+		SELECT
+			PDF_SEQ
+			, PDF_PATH
+			, PDF_NAME
+			, PDF_REG_DATE
+			, PDF_TYPE
+			, SUBJECT_PRICE	
+		FROM
+			TB_HDA_PDF
+		WHERE
+			PDF_SEQ = #pdfSeq#
+	]]>
+	
+	</select>
+</sqlMap>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="usr_bkCtlg_table">
+		FROM
+			TB_HSWC_BOOKCATALOG
+		WHERE 1=1
+		<isNotEmpty property="searchType" prepend="AND">
+			CTL_TYPE = #searchType#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" >
+			<isEqual property="searchCondition" compareValue="title" prepend="AND">
+				CTL_TITLE like '%' || #searchWord# || '%'
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="content" prepend="AND">
+				CTL_CONTENT like '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty property="menuType" prepend="AND">
+			<isEqual property="menuType" compareValue="1">CTL_TITLE between '가' and '나'</isEqual>
+			<isEqual property="menuType" compareValue="2">CTL_TITLE between '나' and '다'</isEqual>
+			<isEqual property="menuType" compareValue="3">CTL_TITLE between '다' and '라'</isEqual>
+			<isEqual property="menuType" compareValue="4">CTL_TITLE between '라' and '마'</isEqual>
+			<isEqual property="menuType" compareValue="5">CTL_TITLE between '마' and '바'</isEqual>
+			<isEqual property="menuType" compareValue="6">CTL_TITLE between '바' and '사'</isEqual>
+			<isEqual property="menuType" compareValue="7">CTL_TITLE between '사' and '아'</isEqual>
+			<isEqual property="menuType" compareValue="8">CTL_TITLE between '아' and '자'</isEqual>
+			<isEqual property="menuType" compareValue="9">CTL_TITLE between '자' and '차'</isEqual>
+			<isEqual property="menuType" compareValue="10">CTL_TITLE between '차' and '카'</isEqual>
+			<isEqual property="menuType" compareValue="11">CTL_TITLE between '카' and '타'</isEqual>
+			<isEqual property="menuType" compareValue="12">CTL_TITLE between '타' and '파'</isEqual>
+			<isEqual property="menuType" compareValue="13">CTL_TITLE between '파' and '하'</isEqual>
+			<isEqual property="menuType" compareValue="14"><![CDATA[ CTL_TITLE > '하' ]]></isEqual>
+			<isEqual property="menuType" compareValue="15">CTL_TITLE between 'A' and 'z'</isEqual>
+		</isNotEmpty>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="WcGuideBkCtlgDAO.selectWcGuideBkCtlgList" parameterClass="searchVO" resultClass="egovMap">
+/* WcGuideBkCtlgDAO.selectWcGuideBkCtlgList */
+	<![CDATA[
+		SELECT
+			CTL_SEQ
+			, CTL_TYPE
+			, CTL_BK_TYPE
+			, CTL_TITLE
+			, CTL_WRITER
+			, CTL_PUBLISHER
+			, REG_DATE
+			, CTL_HITCOUNT
+			, CTL_IMG_NAME
+			, CTL_IMG_PATH
+			, CTL_IMG_THUMB_PATH
+		FROM (
+			SELECT
+				rownum as rn
+				, CTL_SEQ
+				, CTL_TYPE
+				, CTL_BK_TYPE
+				, CTL_TITLE
+				, CTL_WRITER
+				, CTL_PUBLISHER
+				, REG_DATE
+				, CTL_HITCOUNT
+				, CTL_IMG_NAME
+				, CTL_IMG_PATH
+				, CTL_IMG_THUMB_PATH
+			FROM (
+				SELECT
+					CTL_SEQ
+					, CTL_TYPE
+					, CTL_BK_TYPE
+					, CTL_TITLE
+					, CTL_WRITER
+					, CTL_PUBLISHER
+					, CTL_CONTENT
+					, REG_DATE
+					, CTL_HITCOUNT
+					, CTL_IMG_NAME
+					, CTL_IMG_PATH
+					, CTL_IMG_THUMB_PATH
+	]]>
+		<include refid="usr_bkCtlg_table"/>
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="WcGuideBkCtlgDAO.selectWcGuideBkCtlgListCnt" parameterClass="searchVO" resultClass="int">
+/* WcGuideBkCtlgDAO.selectWcGuideBkCtlgListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="usr_bkCtlg_table"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="WcGuideBkCtlgDAO.selectWcGuideBkCtlgOne" parameterClass="string" resultClass="bookcatalogVO">
+/* WcGuideBkCtlgDAO.selectWcGuideBkCtlgOne */
+	<![CDATA[
+		SELECT
+			CTL_SEQ					as ctlSeq
+			, CTL_TYPE				as ctlType
+			, CTL_BK_TYPE			as ctlBkType
+			, CTL_TITLE				as ctlTitle
+			, CTL_WRITER			as ctlWriter
+			, CTL_PUBLISHER			as ctlPublisher
+			, CTL_CONTENT			as ctlContent
+			, REG_ID				as regId
+			, REG_NAME				as regName
+			, REG_DATE				as regDate
+			, CTL_HITCOUNT			as ctlHitcount
+			, CTL_IMG_NAME			as ctlImgName
+			, CTL_IMG_PATH			as ctlImgPath
+			, CTL_IMG_THUMB_PATH	as ctlImgThumbPath
+		FROM 
+			TB_HSWC_BOOKCATALOG
+		WHERE
+			CTL_SEQ = #ctlSeq#
+	]]>
+	</select>
+	
+	<!-- 조회 수 증가 -->
+	<update id="WcGuideTipsDAO.updateWcGuideBkCtlgHitcountOne" parameterClass="string">
+/* WcGuideTipsDAO.updateWcGuideBkCtlgHitcountOne */
+	<![CDATA[
+		UPDATE
+			TB_HSWC_BOOKCATALOG
+		SET
+			CTL_HITCOUNT = CTL_HITCOUNT + 1
+		WHERE
+			CTL_SEQ = #ctlSeq#
+	]]>
+	
+	</update>
+	
+</sqlMap>

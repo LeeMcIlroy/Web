@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_cls_table">
+		FROM 
+			TB_HSWC_CLS
+		WHERE 
+			SMTR_SEQ IN (
+				SELECT SMTR_SEQ 
+				FROM TB_HSWC_SMTR 
+				WHERE SMTR_VIEW_YN = 'Y'
+			)
+		<isNotEmpty property="searchSemester" prepend="AND">
+			SMTR_SEQ = #searchSemester#
+		</isNotEmpty>
+		<isNotEmpty property="searchDepartment" prepend="AND">
+			DEPT_SEQ = #searchDepartment#
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 목록 -->
+	<select id="AdmLecMngClsDAO.selectLecMngClsList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmLecMngClsDAO.selectLecMngClsList */
+	<![CDATA[
+		SELECT
+			CLS_SEQ
+			, CLS_TITLE
+			, CLS_SORT
+			, CLS_VIEW_YN
+			
+			, SMTR_SEQ
+			, (SELECT SMTR_TITLE FROM TB_HSWC_SMTR WHERE SMTR_SEQ = tt.SMTR_SEQ) AS SMTR_TITLE
+			
+			, DEPT_SEQ
+			, (SELECT DEPT_TITLE FROM TB_HSWC_DEPT WHERE DEPT_SEQ = tt.DEPT_SEQ) AS DEPT_TITLE
+		FROM (
+			SELECT
+				rownum AS rn
+				, CLS_SEQ
+				, CLS_TITLE
+				, CLS_SORT
+				, CLS_VIEW_YN
+				, SMTR_SEQ
+				, DEPT_SEQ
+			FROM (
+				SELECT
+					CLS_SEQ
+					, CLS_TITLE
+					, CLS_SORT
+					, CLS_VIEW_YN
+					, SMTR_SEQ
+					, DEPT_SEQ
+	]]>
+			<include refid="adm_cls_table"/>		
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) tt
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmLecMngClsDAO.selectLecMngClsListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmLecMngClsDAO.selectLecMngClsListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_cls_table"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmLecMngClsDAO.selectLecMngClsOne" parameterClass="string" resultClass="classVO">
+/* AdmLecMngClsDAO.selectLecMngClsOne */
+	<![CDATA[
+		SELECT
+			CLS_SEQ as clsSeq
+			, CLS_TITLE as clsTitle
+			, CLS_SORT as clsSort
+			, CLS_VIEW_YN as clsViewYn
+			, CLS_LINK as clsLink
+			, SMTR_SEQ as smtrSeq
+			, DEPT_SEQ as deptSeq
+		FROM
+			TB_HSWC_CLS
+		WHERE
+			CLS_SEQ = #clsSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmLecMngClsDAO.lecMngClsInsert" parameterClass="classVO">
+/* AdmLecMngClsDAO.lecMngClsInsert */
+	<selectKey keyProperty="clsSeq" resultClass="string" type="pre">
+		SELECT SEQ_HSWC_CLS.nextval FROM DUAL
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS (
+			CLS_SEQ
+			, CLS_TITLE
+			, CLS_SORT
+			, CLS_VIEW_YN
+			, CLS_LINK
+			, REG_ID
+			, REG_NAME
+			, DEPT_SEQ
+			, SMTR_SEQ
+		) VALUES (
+			#clsSeq#
+			, #clsTitle#
+			, #clsSort#
+			, #clsViewYn#
+			, #clsLink#
+			, #regId#
+			, #regName#
+			, #deptSeq#
+			, #smtrSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmLecMngClsDAO.lecMngClsUpdate" parameterClass="classVO">
+/* AdmLecMngClsDAO.lecMngClsUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_CLS
+		SET
+			CLS_TITLE = #clsTitle#
+			, CLS_SORT = #clsSort#
+			, CLS_VIEW_YN = #clsViewYn#
+			, CLS_LINK = #clsLink#
+			, DEPT_SEQ = #deptSeq#
+			, SMTR_SEQ = #smtrSeq#
+		WHERE
+			CLS_SEQ = #clsSeq#
+	]]>
+	</update>
+	
+	<!-- 데이터의 존재 유무 파악 -->
+	<select id="AdmLecMngClsDAO.lecMngClsNotiCnt" parameterClass="String" resultClass="int">
+/* AdmLecMngClsDAO.lecMngClsNotiCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_HSWC_CLS_NOTI
+		WHERE
+			CLS_SEQ = #clsSeq#
+	]]>	
+	</select>
+	
+	<select id="AdmLecMngClsDAO.lecMngClsSbjtCnt" parameterClass="String" resultClass="int">
+/* AdmLecMngClsDAO.lecMngClsSbjtCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_HSWC_CLS_SBJT
+		WHERE
+			CLS_SEQ = #clsSeq#
+	]]>	
+	</select>
+	<select id="AdmLecMngClsDAO.lecMngClsMyClsCnt" parameterClass="String" resultClass="int">
+/* AdmLecMngClsDAO.lecMngClsMyClsCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_HSWC_MYCLASS
+		WHERE
+			CLS_SEQ = #clsSeq#
+	]]>	
+	</select>
+	
+	
+	<!-- 삭제 -->
+	<delete id="AdmLecMngClsDAO.lecMngClsDelete" parameterClass="string">
+/* AdmLecMngClsDAO.lecMngClsDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS
+		WHERE CLS_SEQ = #clsSeq#
+	]]>
+	</delete>
+	
+	<!-- **************************************** 반_교수 권한(주제 및 첨삭) **************************************** -->
+	<!-- 권한 등록 -->
+	<insert id="AdmLecMngClsDAO.lecMngClsAthrInsert" parameterClass="map">
+/* AdmLecMngClsDAO.lecMngClsAthrInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS_ATHR (
+			ATHR_SEQ
+			, CLS_SEQ
+			, MEM_SEQ
+		) VALUES (
+			SEQ_HSWC_CLS_ATHR.nextval
+			, #clsSeq#
+			, #memSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 권한 삭제 -->
+	<delete id="AdmLecMngClsDAO.lecMngClsAthrDelete" parameterClass="string">
+/* AdmLecMngClsDAO.lecMngClsAthrDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_ATHR
+		WHERE CLS_SEQ = #clsSeq#
+	]]>
+	</delete>
+</sqlMap>

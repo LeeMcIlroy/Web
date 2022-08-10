@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 과제 리스트 -->
+	<select id="LecTaskDAO.LecTaskList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecTaskDAO.LecTaskList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT TASK_SEQ
+				     , LECT_TBSEQ
+				     , TASK_NM
+				     , TASK_CONTENT
+				     , TASK_SDATE
+				     , TASK_SDATE_T
+				     , TASK_SDATE_M
+				     , TASK_EDATE
+				     , TASK_EDATE_T
+				     , TASK_EDATE_M
+				     , TASK_YN 
+				     , REG_DATE
+				     , REG_ID
+				     , UPD_DATE
+				     , UPD_ID
+				     , TASK_HIT
+				     , (CASE
+				        	WHEN 
+				        		DATE_FORMAT(CONCAT(TASK_SDATE,' ', TASK_SDATE_T,':',TASK_SDATE_M,':','00'), '%Y-%m-%d %H:%i:%S') < NOW()
+				        	AND
+				        		 NOW() < DATE_FORMAT(CONCAT(TASK_EDATE,' ', TASK_EDATE_T,':',TASK_EDATE_M,':','00'), '%Y-%m-%d %H:%i:%S')
+				        	THEN
+				            	'진행'
+				        	ELSE '마감'
+				        END) AS TASK_STATUS
+				     , IFNULL((SELECT COUNT(*) FROM TB_LCMS_TASK_SUB TLTS WHERE TLTS.SUB_DATE IS NOT NULL AND TLTS.TASK_SEQ=TLT.TASK_SEQ), 0) AS TASK_RESULT_CNT
+				     , IFNULL((SELECT COUNT(*) FROM TB_LCMS_LECT_MAP TLLM WHERE TLLM.LECT_SEQ=TLT.LECT_TBSEQ), 0) AS TASK_ALL_CNT
+				  FROM TB_LCMS_TASK TLT
+				 WHERE LECT_TBSEQ = #searchLecture#
+		      ORDER BY REG_DATE DESC, UPD_DATE DESC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 과제 cnt -->
+	<select id="LecTaskDAO.LecTaskListCnt" parameterClass="searchVO" resultClass="int">
+	/*LecTaskDAO.LecTaskListCnt */
+	<![CDATA[
+		SELECT COUNT(*) AS TOTALCNT
+		  FROM TB_LCMS_TASK
+		 WHERE LECT_TBSEQ = #searchLecture#
+	]]>	
+	</select>
+	
+	<!-- 과제 상세보기 -->
+	<select id="LecTaskDAO.selectTaskOne" parameterClass="string" resultClass="TaskVO">
+	/* LecTaskDAO.selectTaskOne */
+	<![CDATA[
+	    SELECT TASK_SEQ		AS taskSeq
+			 , LECT_TBSEQ	AS lectTbseq
+			 , TASK_NM		AS taskNm
+			 , TASK_CONTENT	AS taskContent
+			 , TASK_SDATE	AS taskSdate
+			 , TASK_SDATE_T	AS taskSdateT
+			 , TASK_SDATE_M	AS taskSdateM
+			 , TASK_EDATE	AS taskEdate
+			 , TASK_EDATE_T	AS taskEdateT
+			 , TASK_EDATE_M	AS taskEdateM
+			 , TASK_YN		AS taskYn
+			 , REG_DATE		AS regDate
+			 , REG_ID		AS regId
+			 , UPD_DATE		AS updDate
+			 , UPD_ID		AS updId
+			 , TASK_HIT		AS taskHit
+			 , (CASE
+		        	WHEN 
+		        		DATE_FORMAT(CONCAT(TASK_SDATE,' ', TASK_SDATE_T,':',TASK_SDATE_M,':','00'), '%Y-%m-%d %H:%i:%S') < NOW()
+		        	AND
+		        		 NOW() < DATE_FORMAT(CONCAT(TASK_EDATE,' ', TASK_EDATE_T,':',TASK_EDATE_M,':','00'), '%Y-%m-%d %H:%i:%S')
+		        	THEN
+		            	'진행'
+		        	ELSE '마감'
+		        END) AS taskStatus
+			 , IFNULL((SELECT COUNT(*) FROM TB_LCMS_TASK_SUB TLTS WHERE TLTS.SUB_DATE IS NOT NULL AND TLTS.TASK_SEQ=TLT.TASK_SEQ), '0') AS taskResultCnt
+		     , IFNULL((SELECT COUNT(*) FROM TB_LCMS_LECT_MAP TLLM WHERE TLLM.LECT_SEQ=TLT.LECT_TBSEQ), '0') AS taskAllCnt
+	    FROM TB_LCMS_TASK TLT
+	   WHERE TASK_SEQ = #taskSeq#
+	]]>	
+	</select>
+	
+    <!-- 조회수 증가 -->
+   	<update id="LecTaskDAO.updateTaskHits" parameterClass="string">
+	/* LecTaskDAO.updateTaskHits */
+	<![CDATA[
+		UPDATE TB_LCMS_TASK
+		   SET TASK_HIT = COALESCE(TASK_HIT+1,'1')
+		WHERE
+			TASK_SEQ = #taskSeq#
+	]]>
+    </update>
+	
+	<!-- 과제 등록 -->
+	<insert id="LecTaskDAO.lecAddTask" parameterClass="taskVO">
+		/* LecTaskDAO.lecAddTask*/
+		<selectKey keyProperty="taskSeq" resultClass="string" type="post">
+			SELECT MAX(TASK_SEQ) FROM TB_LCMS_TASK
+		</selectKey>
+		<![CDATA[
+			INSERT INTO TB_LCMS_TASK
+				(
+				LECT_TBSEQ
+				,TASK_NM
+				,TASK_CONTENT
+				,TASK_SDATE
+				,TASK_SDATE_T
+				,TASK_SDATE_M
+				,TASK_EDATE
+				,TASK_EDATE_T
+				,TASK_EDATE_M
+				,TASK_YN
+				,REG_DATE
+				,REG_ID
+				,TASK_HIT)
+			VALUES
+				(
+				#lectTbseq#
+				,#taskNm#
+				,#taskContent#
+				,#taskSdate#
+				,#taskSdateT#
+				,#taskSdateM#
+				,#taskEdate#
+				,#taskEdateT#
+				,#taskEdateM#
+				,#taskYn#
+				,NOW()
+				,#regId#
+				,'0') 
+		]]>	
+	</insert>
+	
+	<!-- 과제 수정 -->
+	<update id="LecTaskDAO.lecEditTask" parameterClass="taskVO">
+		UPDATE
+			TB_LCMS_TASK
+		SET 
+			TASK_NM			=	#taskNm#
+			,TASK_YN		=	#taskYn#
+			,TASK_CONTENT	=	#taskContent#
+			,TASK_SDATE		=	#taskSdate#
+			,TASK_SDATE_T	=	#taskSdateT#
+			,TASK_SDATE_M	=	#taskSdateM#
+			,TASK_EDATE		=	#taskEdate#
+			,TASK_EDATE_T	=	#taskEdateT#
+			,TASK_EDATE_M	=	#taskEdateM#
+			,UPD_DATE		=	NOW()
+			,UPD_ID			=	#updId#
+		WHERE 
+			TASK_SEQ = #taskSeq#
+	</update>
+	
+	<sql id="presen_list">
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM
+			ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+		LEFT JOIN
+			TB_LCMS_TASK TLT
+			ON TLLM.LECT_SEQ = TLT.LECT_TBSEQ
+		LEFT JOIN
+			TB_LCMS_TASK_SUB TLTS
+			ON TLT.TASK_SEQ = TLTS.TASK_SEQ
+			AND TLLM.MEMBER_CODE = TLTS.MEMBER_CODE
+		LEFT JOIN
+			TB_LCMS_ATTACH TLA
+			ON TLTS.SUB_SEQ = TLA.BOARD_SEQ
+			AND TLA.BOARD_TYPE = 'TASB'
+		WHERE
+			TLLM.LECT_SEQ = #searchLecture#
+		AND
+			TLT.TASK_SEQ = #searchType#
+	</sql>
+	
+	<select id="LecTaskDAO.selectPresenListCnt" parameterClass="searchVO" resultClass="int">
+	/* LecTaskDAO.selectPresenList */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="presen_list"/>
+	</select>
+	
+	<select id="LecTaskDAO.selectPresenList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecTaskDAO.selectPresenList */
+	<![CDATA[
+		SELECT
+			SUB_SEQ
+			, NAME
+			, TLM.MEMBER_CODE
+			, IFNULL(DATE_FORMAT(LOOK_DATE, '%Y-%m-%d %H:%i:%S'), '미확인') AS LOOK_DATE
+			, IFNULL(DATE_FORMAT(SUB_DATE, '%Y-%m-%d %H:%i:%S'), '미제출') AS SUB_DATE
+			, IFNULL(DATE_FORMAT(DOWN_DATE, '%Y-%m-%d %H:%i:%S'), '미확인') AS DOWN_DATE
+			, ATTACH_SEQ
+			, ORG_FILE_NAME
+			, REG_FILE_NAME
+			, BOARD_TYPE
+	]]>
+	<include refid="presen_list"/>
+	<![CDATA[
+		ORDER BY
+			NAME ASC
+	]]>
+	</select>
+	
+	<update id="LecTaskDAO.updateLecTaskSubShow" parameterClass="string">
+	/* LecTaskDAO.updateLecTaskSubShow */
+		UPDATE
+			TB_LCMS_TASK_SUB
+		SET
+			DOWN_DATE = SYSDATE()
+		WHERE
+			SUB_SEQ = #subSeq#
+	</update>
+	
+	<select id="LecTaskDAO.selectLecTaskSubDownDate" parameterClass="string" resultClass="string">
+	/* LecTaskDAO.selectLecTaskSubDownDate */
+	<![CDATA[
+		SELECT
+			DOWN_DATE
+		FROM
+			TB_LCMS_TASK_SUB
+		WHERE
+			SUB_SEQ = #subSeq#
+	]]>
+	</select>
+	
+	<select id="LecTaskDAO.selectTaskSubCnt" parameterClass="string" resultClass="int">
+	/* LecTaskDAO.selectTaskSubCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_LCMS_TASK_SUB
+		WHERE
+			TASK_SEQ = #taskSeq#
+		AND
+			SUB_DATE IS NOT NULL
+	]]>
+	</select>
+	
+	<delete id="LecTaskDAO.deleteTask" parameterClass="string">
+	/* LecTaskDAO.deleteTask */
+		DELETE
+		FROM
+			TB_LCMS_TASK
+		WHERE
+			TASK_SEQ = #taskSeq#
+	</delete>
+	
+	<delete id="LecTaskDAO.deleteTaskSub" parameterClass="string">
+	/* LecTaskDAO.deleteTaskSub */
+		DELETE
+		FROM
+			TB_LCMS_TASK_SUB
+		WHERE
+			TASK_SEQ = #taskSeq#
+	</delete>
+	
+</sqlMap>

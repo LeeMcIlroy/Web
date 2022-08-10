@@ -1,0 +1,1333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_entran_list">
+		FROM
+			TB_LCMS_ENTER T1
+			LEFT JOIN (
+				SELECT
+					MEMBER_CODE
+					, CASE COUNT(*)
+						WHEN COUNT(CASE COMPLE_STA WHEN '1' THEN 1 END) THEN '수료'
+						WHEN (COUNT(CASE COMPLE_STA WHEN '1' THEN 1 END) + COUNT(CASE COMPLE_STA WHEN '2' THEN 1 END)) THEN '유급'
+						ELSE '미산정'
+					END AS COMPLE_STA
+				FROM
+					TB_LCMS_LECT_MAP TLLM
+					LEFT JOIN TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+				WHERE
+					TLL.LECT_YEAR = CASE #searchCondition2# WHEN '1' THEN (#searchCondition1#-1) ELSE #searchCondition1# END
+					AND TLL.LECT_SEM = CASE #searchCondition2# WHEN '1' THEN '4' ELSE (#searchCondition2#-1) END
+				GROUP BY
+					MEMBER_CODE
+			) T2 ON T1.ENTER_CODE = T2.MEMBER_CODE
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="searchWord">
+			CONCAT(ENTER_CODE, ENTER_NAME, ENTER_NATION) LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			((ENTER_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			ENTER_SEME = #searchCondition2#)
+		</isNotEmpty>
+		<isNotEmpty prepend="OR" property="searchCondition1">
+			(DELAY_ENTR_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			DELAY_ENTR_SEME = #searchCondition2#))
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			ENTER_REGRADE = #searchCondition3#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			COMPLE_STA = #searchCondition4#
+		</isNotEmpty>
+		<isNotEmpty property="searchType" prepend="AND">
+			ENTER_TYPE = #searchType#
+		</isNotEmpty>
+		<isNotEmpty property="menuType" prepend="AND">
+			<isEqual property="menuType" compareValue="2">
+				ENTER_STATUS = '2'
+			</isEqual>
+			<isEqual property="menuType" compareValue="3" >
+				ENTER_STATUS = '3'
+			</isEqual>
+		</isNotEmpty>
+		AND T1.USE_YN ='N'
+	</sql>
+
+	<sql id="where_adm_std_list">
+		FROM 
+			TB_LCMS_ENTER S3
+		WHERE 
+			CASE ENTER_TYPE
+				WHEN '1' THEN ENTER_STATUS = '2'
+				ELSE 1=1
+			END
+		<isNotEmpty prepend="AND" property="searchWord">
+			CONCAT(ENTER_CODE, ENTER_NAME, ENTER_NATION) LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			((ENTER_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			ENTER_SEME = #searchCondition2#)
+		</isNotEmpty>
+		<isNotEmpty prepend="OR" property="searchCondition1">
+			(DELAY_ENTR_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			DELAY_ENTR_SEME = #searchCondition2#))
+		</isNotEmpty>
+	</sql>
+
+	<!-- 신입학 리스트 cnt  -->
+	<select id="AdmEntranDAO.selectAdmEntranListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmEntranDAO.selectAdmEntranListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+		<include refid="adm_entran_list"/>
+	</select>
+	
+	<!-- 신입학 리스트 -->
+	<select id="AdmEntranDAO.selectAdmEntranList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmEntranList */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, ENTER_NUM
+			, ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, T1.USE_YN
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, CASE ENTER_STATUS WHEN '1' THEN '신청'
+								WHEN '2' THEN '합격'
+								WHEN '3' THEN '불합격' END AS ENTER_STATUS
+			, (SELECT
+					COUNT(*)
+				FROM
+					TB_LCMS_ENTER T2 
+				WHERE 
+					T1.ENTER_NAME = T2.ENTER_NAME
+				AND
+					T1.ENTER_NATION = T2.ENTER_NATION
+				AND
+					T1.ENTER_BIRTH = T2.ENTER_BIRTH) AS ENTER_CNT
+			, ENTER_ETC
+			, CASE DELAY_YN
+				WHEN 'Y' THEN CASE WHEN CONCAT(DELAY_ENTR_YEAR, DELAY_ENTR_SEME) = CONCAT(#searchCondition1#, #searchCondition2#) THEN '연기후입학' ELSE '입학연기' END
+			END AS DELAY_YN
+			, DELAY_ETC
+			, ENTER_REMK
+	]]>
+		<include refid="adm_entran_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 신입학  -->
+	<select id="AdmEntranDAO.selectAdmEntranModify" parameterClass="string" resultClass="enterVO">
+	/* AdmEntranDAO.selectAdmEntranModify */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ			AS enterSeq
+			, ENTER_YEAR		AS enterYear
+			, ENTER_SEME		AS enterSeme
+			, ENTER_NUM			AS enterNum
+			, ENTER_CODE		AS enterCode
+			, ENTER_DATE		AS enterDate
+			, ENTER_NAME		AS enterName
+			, ENTER_NATION		AS enterNation
+			, ENTER_BIRTH		AS enterBirth
+			, ENTER_STD_TYPE	AS enterStdType
+			, ENTER_TEL			AS enterTel
+			, ENTER_EMAIL		AS enterEmail
+			, ENTER_TYPE		AS enterType
+			, ENTER_STATUS		AS enterStatus
+			, ENTER_ETC			AS enterEtc
+			, DELAY_YN			AS delayYn
+			, DELAY_DATE		AS delayDate
+			, DELAY_ETC			AS delayEtc
+			, ENTER_E_NAME		AS enterEName
+			, ENTER_GENDER		AS enterGender
+			, USE_YN			AS useYn
+			, ENTER_REMK		AS enterRemk
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	]]>
+	</select>
+	
+	<!-- 신청이력 리스트 -->
+	<select id="AdmEntranDAO.selectRecoList" parameterClass="enterVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectRecoList */
+	<![CDATA[
+		SELECT
+			ENTER_YEAR
+			, ENTER_SEME
+			, CASE ENTER_SEME WHEN '1' THEN '봄학기'
+							  WHEN '2' THEN '여름학기'
+							  WHEN '3' THEN '가을학기'
+							  WHEN '4' THEN '겨울학기' END AS ENTER_SEME_NM
+			, CASE ENTER_STATUS WHEN '1' THEN '신청'
+								WHEN '2' THEN '합격'
+								WHEN '3' THEN '불합격' END AS ENTER_STATUS
+			, ENTER_ETC
+			, ENTER_REMK
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_NAME = #enterName#
+		AND
+			ENTER_NATION = #enterNation#
+		AND
+			ENTER_BIRTH = #enterBirth#
+	]]>
+	</select>
+	
+	<!-- 신입학 엑셀다운로드 -->
+	<select id="AdmEntranDAO.selectAdmEntranExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmEntranExcel */
+	<![CDATA[
+		SELECT
+			ENTER_NUM
+			, ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, CASE ENTER_STATUS WHEN '1' THEN '신청'
+								WHEN '2' THEN '합격'
+								WHEN '3' THEN '불합격' END AS ENTER_STATUS
+			, (SELECT
+					COUNT(*)
+				FROM
+					TB_LCMS_ENTER T2 
+				WHERE 
+					T1.ENTER_NAME = T2.ENTER_NAME
+				AND
+					T1.ENTER_NATION = T2.ENTER_NATION
+				AND
+					T1.ENTER_BIRTH = T2.ENTER_BIRTH) AS ENTER_CNT
+			, ENTER_ETC
+			, ENTER_REMK
+	]]>
+		<include refid="adm_entran_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+	]]>
+	</select>
+	
+	<!-- 신입학 일련번호 -->
+	<select id="AdmEntranDAO.selectAdmEntranTotCnt" parameterClass="enterVO" resultClass="string">
+	/* AdmEntranDAO.selectAdmEntranTotCnt */
+		SELECT
+			LPAD(IFNULL(MAX(SUBSTRING(ENTER_NUM,7,4)), 0)+1, 4, 0) AS totCnt
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_YEAR = #enterYear#
+		AND
+			ENTER_SEME = #enterSeme#
+	</select>
+	
+	<!-- 신입학 등록 -->
+	<insert id="AdmEntranDAO.insertAdmEntran" parameterClass="enterVO">
+	<selectKey keyProperty="enterSeq" resultClass="string" type="post">
+		(SELECT MAX(ENTER_SEQ) FROM TB_LCMS_ENTER)
+	</selectKey>
+	/* AdmEntranDAO.insertAdmEntran */
+		INSERT INTO TB_LCMS_ENTER(
+			  ENTER_YEAR
+			, ENTER_SEME
+			, ENTER_NUM
+			, ENTER_DATE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_STD_TYPE
+			, ENTER_TYPE
+			, ENTER_TEL
+			, ENTER_EMAIL
+			, ENTER_STATUS
+			, ENTER_E_NAME
+			, ENTER_GENDER
+			, ENTER_REMK
+		)VALUES(
+			  #enterYear#
+			, #enterSeme#
+			, #enterNum#
+			, #enterDate#
+			, #enterName#
+			, #enterNation#
+			, #enterBirth#
+			, #enterStdType#
+			, #enterType#
+			, #enterTel#
+			, #enterEmail#
+			, '1'
+			, #enterEName#
+			, #enterGender#
+			, #enterRemk#
+		)
+	</insert>
+	
+	<!-- 신입학 수정 -->
+	<update id="AdmEntranDAO.updateAdmEntran" parameterClass="enterVO">
+	/* AdmEntranDAO.updateAdmEntran */
+		UPDATE
+			TB_LCMS_ENTER
+		SET
+			ENTER_YEAR = #enterYear#
+			, ENTER_SEME = #enterSeme#
+			, ENTER_DATE = #enterDate#
+			, ENTER_NAME = #enterName#
+			, ENTER_NATION = #enterNation#
+			, ENTER_BIRTH = #enterBirth#
+			, ENTER_STD_TYPE = #enterStdType#
+			, ENTER_TEL = #enterTel#
+			, ENTER_EMAIL = #enterEmail#
+			, ENTER_E_NAME = #enterEName#
+			, ENTER_GENDER = #enterGender#
+		<isNotEmpty property="delayYn">
+			, DELAY_YN = #delayYn#
+			, DELAY_DATE = #delayDate#
+			, DELAY_ETC = #delayEtc#
+		</isNotEmpty>
+		    , ENTER_REMK = #enterRemk#
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	</update>
+	
+	<!-- 신입학 합격&불합격 일괄 저장 -->
+	<update id="AdmEntranDAO.updateAdmAjaxEntranBatch" parameterClass="egovMap">
+	/* AdmEntranDAO.updateAdmAjaxEntranBatch */
+		UPDATE
+			TB_LCMS_ENTER
+		SET
+			ENTER_STATUS = #status#
+		WHERE
+			ENTER_SEQ
+		<iterate prepend="IN" open="(" close=")" conjunction="," property="enterSeq">
+			#enterSeq[]#
+		</iterate>
+	</update>
+	
+	<!-- 신입학 비고 저장 -->
+	<update id="AdmEntranDAO.updateAdmAjaxSaveEtc" parameterClass="egovMap">
+	/* AdmEntranDAO.updateAdmAjaxSaveEtc */
+		UPDATE
+			TB_LCMS_ENTER
+		SET
+			ENTER_ETC = #enterEtc#
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	</update>
+	
+	<!-- 2022-06-01 등록금고지 테이블에 학번 업데이트-->
+	<update id="AdmEntranDAO.updateAdmRegistMemberCode" parameterClass="enterVO">
+	/* AdmEntranDAO.updateAdmAjaxEntranBatch */
+		UPDATE
+			TB_LCMS_REG_FEE
+		SET
+			MEMBER_CODE = #enterCode#
+		WHERE
+			ENTER_NUM = #enterNum#
+	
+	</update>
+	<!-- 끝 -->
+	
+	<!-- 재등록 리스트 cnt  -->
+	<select id="AdmEntranDAO.selectAdmRegistListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmEntranDAO.selectAdmEntranListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+		<include refid="adm_entran_list"/>
+	</select>
+	
+	<!-- 재등록 리스트 -->
+	<select id="AdmEntranDAO.selectAdmRegistList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmRegistList*/
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, ENTER_NUM
+			, ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_REGRADE
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, ENTER_DATE
+			, (SELECT COUNT(*) FROM TB_LCMS_ATTACH WHERE BOARD_SEQ = ENTER_SEQ) FILECOUNT
+			, (SELECT
+					COUNT(*)
+				FROM
+					TB_LCMS_ENTER T2 
+				WHERE 
+					T1.ENTER_NAME = T2.ENTER_NAME
+				AND
+					T1.ENTER_NATION = T2.ENTER_NATION
+				AND
+					T1.ENTER_BIRTH = T2.ENTER_BIRTH) AS ENTER_CNT
+			, ENTER_ETC
+			, COMPLE_STA
+	]]>
+		<include refid="adm_entran_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_REGRADE ASC, ENTER_NAME ASC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 재등록 조회 -->
+	<select id="AdmEntranDAO.selectAdmReistModify" parameterClass="string" resultClass="enterVO">
+	/* AdmEntranDAO.selectAdmReistModify */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ			AS enterSeq
+			, ENTER_YEAR		AS enterYear
+			, ENTER_SEME		AS enterSeme
+			, ENTER_NUM			AS enterNum
+			, ENTER_CODE		AS enterCode
+			, ENTER_NAME		AS enterName
+			, ENTER_NATION		AS enterNation
+			, ENTER_BIRTH		AS enterBirth
+			, ENTER_STD_TYPE 	AS enterStdType
+			, ENTER_TEL			AS enterTel
+			, ENTER_EMAIL		AS enterEmail
+			, ENTER_TYPE		AS enterType
+			, ENTER_STATUS		AS enterStatus
+			, ENTER_REGRADE     AS enterRegrade
+			, ENTER_DATE  		AS enterDate
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	]]>
+	</select>
+
+	<!--  재등록 -->
+	<insert id="AdmEntranDAO.insertAdmRegist" parameterClass="enterVO">
+ 	<selectKey keyProperty="enterSeq" resultClass="string" type="post">
+		(SELECT MAX(ENTER_SEQ) FROM TB_LCMS_ENTER)
+	</selectKey>
+	/* AdmEntranDAO.insertAdmRegist */
+		INSERT INTO TB_LCMS_ENTER(
+			ENTER_YEAR
+			, ENTER_SEME
+			, ENTER_NUM
+			, ENTER_CODE
+			, ENTER_DATE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_STD_TYPE
+			, ENTER_TYPE
+			, ENTER_TEL
+			, ENTER_EMAIL
+			, ENTER_REGRADE
+			, ENTER_STATUS
+		)VALUES(
+			#enterYear#
+			, #enterSeme#
+			, #enterNum#
+			, #enterCode#
+			, #enterDate#
+			, #enterName#
+			, #enterNation#
+			, #enterBirth#
+			, #enterStdType#
+			, '2'
+			, #enterTel#
+			, #enterEmail#
+			, #enterRegrade#
+			, '1'
+		)
+	</insert>
+	
+	<!-- 재등록 일련번호 -->
+	<select id="AdmEntranDAO.selectAdmReistTotCnt" parameterClass="enterVO" resultClass="string">
+	/* AdmEntranDAO.selectAdmReistTotCnt */
+		SELECT
+			LPAD(COUNT(*)+1, 4, 0) AS totCnt
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_YEAR = #enterYear#
+		AND
+			ENTER_SEME = #enterSeme#
+	</select>
+	
+	<!-- 재등록 수정 -->
+		<update id="AdmEntranDAO.updateAdmRegist" parameterClass="enterVO">
+	/* AdmEntranDAO.updateAdmRegist */
+		UPDATE
+			TB_LCMS_ENTER
+		SET
+			ENTER_YEAR = #enterYear#
+			, ENTER_SEME = #enterSeme#
+			, ENTER_DATE = #enterDate#
+			, ENTER_NATION = #enterNation#
+			, ENTER_BIRTH = #enterBirth#
+			, ENTER_STD_TYPE = #enterStdType#
+			, ENTER_TEL = #enterTel#
+			, ENTER_EMAIL = #enterEmail#
+			, ENTER_REGRADE = #enterRegrade#
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	</update>
+
+	<!-- 신청이력 리스트 -->
+	<select id="AdmEntranDAO.selectRegiRecoList" parameterClass="enterVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectRegiRecoList */
+	<![CDATA[
+		SELECT
+			ENTER_YEAR
+			, ENTER_SEME
+			, CASE ENTER_SEME WHEN '1' THEN '봄학기'
+							  WHEN '2' THEN '여름학기'
+							  WHEN '3' THEN '가을학기'
+							  WHEN '4' THEN '겨울학기' END AS ENTER_SEME_NM
+			, CASE ENTER_TYPE   WHEN '1' THEN '신규'
+								WHEN '2' THEN '재등록' END AS ENTER_TYPE
+		    , CASE ENTER_REGRADE WHEN '1' THEN '1'
+		    					 WHEN '2' THEN '2'
+		    					 WHEN '3' THEN '3'
+		    					 WHEN '4' THEN '4'
+		    					 WHEN '5' THEN '5'
+		    					 WHEN '6' THEN '6' END AS ENTER_REGRADE
+		    , ENTER_DATE
+								
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_NAME = #enterName#
+		AND
+			ENTER_NATION = #enterNation#
+		AND
+			ENTER_BIRTH = #enterBirth#
+	]]>
+	</select>
+	
+	<!-- 재등록 신청자 조회 -->
+	<!-- <select id="AdmEntranDAO.selectAdmAjaxStdRegiList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmAjaxStdRegiList */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ			AS enterSeq
+			, ENTER_NUM			AS enterNum
+			, ENTER_CODE		AS enterCode
+			, ENTER_NAME		AS enterName
+			, ENTER_NATION		AS enterNation
+			, ENTER_BIRTH		AS enterBirth
+			, ENTER_STD_TYPE	AS enterStdType
+			, ENTER_TEL			AS enterTel
+			, ENTER_EMAIL		AS enterEmail
+			, ENTER_TYPE		AS enterType
+			, ENTER_STATUS		AS enterStatus
+			, ENTER_ETC			AS enterEtc
+			, ENTER_DATE  		AS enterDate
+		FROM
+			TB_LCMS_ENTER
+		WHERE 
+			ENTER_TYPE = 2
+		
+	]]>
+	<isNotEmpty prepend="AND" property="searchWord">
+		CONCAT(ENTER_CODE, ENTER_NAME) LIKE CONCAT('%', #searchWord#, '%')
+	</isNotEmpty>
+	</select> -->
+	
+	<!-- 학생 목록 조회 -->
+	<select id="AdmEntranDAO.selectAdmAjaxStdRegiList" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmAjaxStdRegiList */
+	<![CDATA[
+		SELECT
+			MEMBER_CODE		AS memberCode
+			, NAME			AS name
+			, E_NAME		AS eName
+			, BIRTH			AS birth
+			, STEP			AS step
+			, STATUS		AS status
+			, NATION		AS nation
+			, TEL			AS tel
+			, EMAIL			AS email
+			, GENDER		AS gender
+			, STD_TYPE 		AS stdType
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_TYPE = 'STD'
+		AND
+			CONCAT(MEMBER_CODE, NAME) LIKE CONCAT('%', #searchWord#, '%')
+	]]>
+	</select>
+
+	
+	<!-- 재등록 엑셀다운로드 -->
+	<select id="AdmEntranDAO.selectAdmRegistExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmRegistExcel */
+	<![CDATA[
+		SELECT
+			ENTER_NUM
+			, ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, CASE ENTER_STATUS WHEN '1' THEN '신청'
+								WHEN '2' THEN '합격'
+								WHEN '3' THEN '불합격' END AS ENTER_STATUS
+			, ENTER_REGRADE
+			, ENTER_DATE
+	]]>
+	<include refid="adm_entran_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+	]]>
+	</select>
+	
+	<!-- 학생명단 리스트 cnt  --> 
+	<select id="AdmEntranDAO.selectAdmEntranStdListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmEntranDAO.selectAdmEntranStdListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+		<include refid="where_adm_std_list"/>
+	</select>
+	
+	<!-- 학생명단 리스트 -->
+	<select id="AdmEntranDAO.selectAdmEntranStdList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmEntranStdList */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, ENTER_NUM
+			, ENTER_YEAR
+			, ENTER_SEME
+			, ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_DATE
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE 
+			, CASE ENTER_TYPE WHEN '1' THEN '신입학'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, CASE ENTER_STATUS WHEN '1' THEN '신청'
+								WHEN '2' THEN '합격'
+								WHEN '3' THEN '불합격' END AS ENTER_STATUS
+			, ENTER_ETC
+			, CASE DELAY_YN
+				WHEN 'Y' THEN CASE WHEN CONCAT(DELAY_ENTR_YEAR, DELAY_ENTR_SEME) = CONCAT(#searchCondition1#, #searchCondition2#) THEN '연기후입학' ELSE '입학연기' END
+			END AS DELAY_STATUS
+	]]>
+		<include refid="where_adm_std_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 학생명단  -->
+	<select id="AdmEntranDAO.selectAdmStdModify" parameterClass="string" resultClass="enterVO">
+	/* AdmEntranDAO.selectAdmStdModify */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ			AS enterSeq
+			, ENTER_NUM			AS enterNum
+			, ENTER_CODE		AS enterCode
+			, ENTER_YEAR		AS enterYear
+			, ENTER_SEME		AS enterSeme
+			, ENTER_NAME		AS enterName
+			, ENTER_NATION		AS enterNation
+			, ENTER_BIRTH		AS enterBirth
+			, ENTER_STD_TYPE	AS enterStdType
+			, ENTER_TEL			AS enterTel
+			, ENTER_EMAIL		AS enterEmail
+			, ENTER_TYPE		AS enterType
+			, ENTER_STATUS		AS enterStatus
+			, ENTER_ETC			AS enterEtc
+			, ENTER_DATE  		AS enterDate
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	]]>
+	</select>
+	
+	<!-- 신청이력 리스트 -->
+	<select id="AdmEntranDAO.selectStdRecoList" parameterClass="enterVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectStdRecoList */
+	<![CDATA[
+		SELECT
+			ENTER_YEAR
+			, ENTER_SEME
+			, CASE ENTER_SEME WHEN '1' THEN '봄학기'
+							  WHEN '2' THEN '여름학기'
+							  WHEN '3' THEN '가을학기'
+							  WHEN '4' THEN '겨울학기' END AS ENTER_SEME_NM
+			, CASE ENTER_TYPE   WHEN '1' THEN '신입학'
+								WHEN '2' THEN '재등록' END AS ENTER_TYPE
+		    , CASE ENTER_REGRADE WHEN '1' THEN '1'
+		    					 WHEN '2' THEN '2'
+		    					 WHEN '3' THEN '3'
+		    					 WHEN '4' THEN '4'
+		    					 WHEN '5' THEN '5'
+		    					 WHEN '6' THEN '6' END AS ENTER_REGRADE
+			, ENTER_DATE					
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_NAME = #enterName#
+		AND
+			ENTER_NATION = #enterNation#
+		AND
+			ENTER_BIRTH = #enterBirth#
+	]]>
+	</select>
+	
+	
+	<!-- 학생명단 엑셀 다운로드 -->
+	<select id="AdmEntranDAO.selectAdmStdListExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmStdListExcel */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, ENTER_NUM
+			, ENTER_CODE
+			, ENTER_YEAR
+			, ENTER_SEME
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_DATE
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE 
+			, CASE ENTER_TYPE WHEN '1' THEN '신입학'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, CASE ENTER_STATUS WHEN '1' THEN '신청'
+								WHEN '2' THEN '합격'
+								WHEN '3' THEN '불합격' END AS ENTER_STATUS
+			, CASE DELAY_YN
+				WHEN 'Y' THEN CASE WHEN CONCAT(DELAY_ENTR_YEAR, DELAY_ENTR_SEME) = CONCAT(#searchCondition1#, #searchCondition2#) THEN '연기후입학' ELSE '입학연기' END
+			END AS DELAY_STATUS
+	]]>
+		<include refid="where_adm_std_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+	]]>
+	</select>
+	
+	<select id="AdmEntranDAO.selectAdmEntranCodeBat" parameterClass="egovMap" resultClass="enterVO">
+	/* AdmEntranDAO.selectAdmEntranCodeBat */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ			AS enterSeq
+			, ENTER_YEAR		AS enterYear
+			, ENTER_SEME		AS enterSeme
+			, ENTER_NUM			AS enterNum
+			, ENTER_CODE		AS enterCode
+			, ENTER_DATE		AS enterDate
+			, ENTER_NAME		AS enterName
+			, ENTER_NATION		AS enterNation	
+			, ENTER_BIRTH		AS enterBirth
+			, ENTER_STD_TYPE	AS enterStdType
+			, ENTER_TYPE		AS enterType
+			, ENTER_TEL			AS enterTel
+			, ENTER_EMAIL		AS enterEmail
+			, ENTER_STATUS		AS enterStatus
+			, ENTER_ETC			AS enterEtc
+			, ENTER_REGRADE		AS enterRegrade
+			, ENTER_E_NAME		AS enterEName
+			, ENTER_GENDER		AS enterGender
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_STATUS = '2'
+		AND
+			(ENTER_CODE IS NULL OR ENTER_CODE = '')
+		AND
+			ENTER_SEQ
+	]]>
+		<iterate open="(" close=")" conjunction="," prepend="IN" property="enterSeq">
+			#enterSeq[]#
+		</iterate>
+	</select>
+	
+	<select id="AdmEntranDAO.selectAdmMCodeCnt" parameterClass="enterVO" resultClass="string">
+	/* AdmEntranDAO.selectAdmMCodeCnt */
+	<![CDATA[
+		SELECT
+			LPAD(IFNULL(MAX(SUBSTRING(MEMBER_CODE,5,3)), 0)+1, 3, 0) AS totCnt
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_TYPE = 'STD'
+		AND
+			SUBSTRING(APP_DATE,3,2) = SUBSTRING(SYSDATE(),3,2)
+		AND
+			STD_TYPE = #enterStdType#
+	]]>
+	</select>
+	
+	<insert id="AdmEntranDAO.insertAdmEntToMem" parameterClass="memberVO">
+	/* AdmEntranDAO.insertAdmEntToMem */
+		INSERT INTO TB_LCMS_MEMBER(
+			MEMBER_CODE
+			, MEMBER_PW
+			, NAME
+			, NATION
+			, BIRTH
+			, STD_TYPE
+			, NA_TEL
+			, EMAIL
+			, MEMBER_TYPE
+			, APP_DATE
+			, STEP
+			, STATUS
+			, DEPART
+			, STD_CURR
+			, FINAL_EDU
+			, E_NAME
+			, GENDER
+		)VALUES(
+			#memberCode#
+			, #memberPw#
+			, #name#
+			, #nation#
+			, #birth#
+			, #stdType#
+			, #naTel#
+			, #email#
+			, 'STD'
+			, SYSDATE()
+			, '1'
+			, '신입'
+			, #nation#
+			, '정규과정'
+			, '고졸'
+			, #eName#
+			, #gender#
+		)
+	</insert>
+	
+	<update id="AdmEntranDAO.updateAdmEntranEnterCode" parameterClass="enterVO">
+	/* AdmEntranDAO.updateAdmEntranEnterCode */
+		UPDATE
+			TB_LCMS_ENTER
+		SET
+			ENTER_CODE = #enterCode#
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	</update>
+	
+	<update id="AdmEntranDAO.updateAdmAjaxSaveStep" parameterClass="egovMap">
+	/* AdmEntranDAO.updateAdmAjaxSaveStep */
+		UPDATE
+			TB_LCMS_MEMBER
+		SET
+			STEP = #step#
+		WHERE
+			MEMBER_CODE IN (
+								SELECT
+									ENTER_CODE
+								FROM
+									TB_LCMS_ENTER
+								WHERE
+									ENTER_SEQ
+								<iterate open="(" close=")" conjunction="," prepend="IN" property="enterSeq">
+									#enterSeq[]#
+								</iterate>
+							)
+	</update>
+	
+	<update id="AdmEntranDAO.updateAdmAjaxSaveStepEnter" parameterClass="egovMap">
+	/* AdmEntranDAO.updateAdmAjaxSaveStepEnter */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_ENTER
+		SET
+			ENTER_REGRADE = #step#
+		WHERE
+			ENTER_SEQ
+	]]>
+		<iterate open="(" close=")" conjunction="," prepend="IN" property="enterSeq">
+			#enterSeq[]#
+		</iterate>
+	</update>
+	
+	<select id="AdmEntranDAO.selectAdmReistOverYn" parameterClass="enterVO" resultClass="string">
+	/* AdmEntranDAO.selectAdmReistOverYn */
+	<![CDATA[
+		SELECT
+			CASE WHEN COUNT(*) > 0 THEN 'Y' ELSE 'N' END
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_TYPE = '2'
+		AND
+			ENTER_YEAR = #enterYear#
+		AND
+			ENTER_SEME = #enterSeme#
+		AND
+			ENTER_CODE = #enterCode#
+	]]>
+	</select>
+	
+	<select id="AdmEntranDAO.selectAdmAjaxSelectStdList" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmAjaxSelectStdList */
+	<![CDATA[
+		SELECT
+			M.MEMBER_CODE
+			, M.NAME
+			, M.E_NAME
+			, M.STATUS
+			, M.STEP
+		FROM
+			TB_LCMS_MEMBER M
+			LEFT JOIN (
+				SELECT
+					ENTER_CODE
+				FROM
+					TB_LCMS_ENTER
+				WHERE
+					ENTER_YEAR = #regYear#
+				AND
+					ENTER_SEME = #regSeme#
+			) E ON M.MEMBER_CODE = E.ENTER_CODE
+			LEFT JOIN (
+				SELECT
+					LM.MEMBER_CODE
+				FROM
+					TB_LCMS_LECT_MAP LM
+					LEFT JOIN TB_LCMS_LECT L ON LM.LECT_SEQ = L.LECT_SEQ
+				WHERE
+					L.LECT_YEAR = #openYear#
+					AND L.LECT_SEM = #openSeme#
+				GROUP BY
+					LM.MEMBER_CODE
+			) LM ON M.MEMBER_CODE = LM.MEMBER_CODE
+		WHERE
+			E.ENTER_CODE IS NULL
+			AND M.MEMBER_TYPE = 'STD'
+	]]>
+		<isEmpty prepend="AND" property="searchWord">
+			LM.MEMBER_CODE IS NOT NULL
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="searchWord">
+			<isEqual property="searchType" compareValue="name">
+				M.NAME LIKE CONCAT('%', #searchWord#, '%')
+			</isEqual>
+			<isEqual property="searchType" compareValue="code">
+				M.MEMBER_CODE LIKE CONCAT('%', #searchWord#, '%')
+			</isEqual>
+		</isNotEmpty>
+	<![CDATA[
+		ORDER BY
+			M.STEP ASC, M.NAME ASC
+	]]>
+	</select>
+	
+	<insert id="AdmEntranDAO.insertAdmAjaxSaveRereg" parameterClass="egovMap">
+	/* AdmEntranDAO.insertAdmAjaxSaveRereg */
+	<![CDATA[
+		INSERT INTO TB_LCMS_ENTER(
+			ENTER_YEAR
+			, ENTER_SEME
+			, ENTER_NUM
+			, ENTER_CODE
+			, ENTER_DATE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_STD_TYPE
+			, ENTER_TYPE
+			, ENTER_TEL
+			, ENTER_EMAIL
+			, ENTER_REGRADE
+			, ENTER_STATUS
+		)
+		SELECT
+			#enterYear#
+			, #enterSeme#
+			, CONCAT(#enterYear#, #enterSeme#, '-',  LPAD(@rownum:=@rownum+1, 4, '0'))
+			, MEMBER_CODE
+			, #enterDate#
+			, NAME
+			, NATION
+			, BIRTH
+			, STD_TYPE
+			, '2'
+			, TEL
+			, EMAIL
+			, STEP
+			, '1'
+		FROM
+			TB_LCMS_MEMBER M
+			, (
+				SELECT
+					@rownum:=IFNULL(MAX(SUBSTRING(ENTER_NUM,7,4)), 0)
+				FROM
+					TB_LCMS_ENTER
+				WHERE
+					ENTER_YEAR = #enterYear#
+					AND ENTER_SEME = #enterSeme#
+			) TMP 
+		WHERE
+			MEMBER_CODE
+	]]>
+		<iterate prepend="IN" open="(" close=")" conjunction="," property="memberCode">
+			#memberCode[]#
+		</iterate>
+	</insert>
+	
+	<update id="AdmEntranDAO.updateAdmEntranAccountCode" parameterClass="enterVO">
+	/* AdmEntranDAO.updateAdmEntranAccountCode */
+	<![CDATA[
+		UPDATE
+			ACCOUNT_CODE
+		SET
+			STUDENT_CODE = #enterCode#
+			, INI_VALUE = '1'
+		WHERE
+			STUDENT_CODE = #enterNum#
+	]]>
+	</update>
+	
+	<!-- 수강신청여부 체크 -->
+	<select id="AdmEntranDAO.selectAdmMemberDelYn" parameterClass="string" resultClass="string">
+	/* AdmEntranDAO.selectAdmMemberDelYn */
+	<![CDATA[
+		SELECT
+			CASE COUNT(*) WHEN 0 THEN 'Y' ELSE 'N' END AS DELETE_YN
+		FROM
+			TB_LCMS_LECT_MAP
+		WHERE
+			MEMBER_CODE = #enterCode#
+	]]>
+	</select>
+	
+	<delete id="AdmEntranDAO.deleteAdmMember" parameterClass="string">
+	/* AdmEntranDAO.deleteAdmMember */
+	<![CDATA[
+		DELETE
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_CODE = #enterCode#
+	]]>
+	</delete>
+	
+	<sql id="adm_delay_list">
+		FROM 
+			TB_LCMS_ENTER S3
+		WHERE 
+			DELAY_YN = 'Y'
+		<isNotEmpty prepend="AND" property="searchWord">
+			CONCAT(ENTER_CODE, ENTER_NAME, ENTER_NATION) LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 입학연기 리스트 cnt  --> 
+	<select id="AdmEntranDAO.selectAdmDelayListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmEntranDAO.selectAdmDelayListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+		<include refid="adm_delay_list"/>
+	</select>
+	
+	<!-- 입학연기 리스트 -->
+	<select id="AdmEntranDAO.selectAdmDelayList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmDelayList */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, ENTER_NUM
+			, ENTER_YEAR
+			, ENTER_SEME
+			, CASE ENTER_SEME
+				WHEN '1' THEN '봄학기'
+				WHEN '2' THEN '여름학기'
+				WHEN '3' THEN '가을학기'
+				WHEN '4' THEN '겨울학기'
+			END AS ENTER_SEME_NM
+			, ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_DATE
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE 
+			, CASE ENTER_TYPE WHEN '1' THEN '신입학'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, CASE ENTER_STATUS WHEN '1' THEN '신청'
+								WHEN '2' THEN '합격'
+								WHEN '3' THEN '불합격' END AS ENTER_STATUS
+			, ENTER_ETC
+			, DELAY_ENTR_YEAR
+			, DELAY_ENTR_SEME
+			, CASE DELAY_ENTR_SEME
+				WHEN '1' THEN '봄학기'
+				WHEN '2' THEN '여름학기'
+				WHEN '3' THEN '가을학기'
+				WHEN '4' THEN '겨울학기'
+			END AS DELAY_ENTR_SEME_NM
+	]]>
+		<include refid="adm_delay_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 입학연기  -->
+	<select id="AdmEntranDAO.selectAdmDelayModify" parameterClass="string" resultClass="enterVO">
+	/* AdmEntranDAO.selectAdmDelayModify */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ			AS enterSeq
+			, ENTER_YEAR		AS enterYear
+			, ENTER_SEME		AS enterSeme
+			, ENTER_NUM			AS enterNum
+			, ENTER_CODE		AS enterCode
+			, ENTER_DATE		AS enterDate
+			, ENTER_NAME		AS enterName
+			, ENTER_NATION		AS enterNation
+			, ENTER_BIRTH		AS enterBirth
+			, ENTER_STD_TYPE	AS enterStdType
+			, ENTER_TEL			AS enterTel
+			, ENTER_EMAIL		AS enterEmail
+			, ENTER_TYPE		AS enterType
+			, ENTER_STATUS		AS enterStatus
+			, ENTER_ETC			AS enterEtc
+			, ENTER_E_NAME		AS enterEName
+			, ENTER_GENDER		AS enterGender
+			, DELAY_YN			AS delayYn
+			, DELAY_DATE		AS delayDate
+			, DELAY_ETC			AS delayEtc
+			, DELAY_ENTR_YEAR	AS delayEntrYear
+			, DELAY_ENTR_SEME	AS delayEntrSeme
+			, DELAY_ENTR_DATE	AS delayEntrDate
+			, DELAY_ENTR_GRADE	AS delayEntrGrade
+			, DELAY_TUIN_YN		AS delayTuinYn
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	]]>
+	</select>
+	
+	<select id="AdmEntranDAO.selectAdmRegistFee" parameterClass="string" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmRegistFee */
+	<![CDATA[
+		SELECT
+			REG_SEQ				AS regSeq
+			, ENTER_NAME		AS enterName
+			, TLE.ENTER_NUM			AS enterNum
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS enterType
+			, TLE.ENTER_CODE	AS memberCode
+			, ENTER_NATION		AS enterNation
+			, ENTER_BIRTH		AS enterBirth
+			, AC.BANK_ACCOUNT	AS bankAccount
+			, REG_ST_YEAR		AS regStYear
+			, CASE REG_ST_SEME WHEN '1' THEN '봄학기'
+							   WHEN '2' THEN '여름학기'
+							   WHEN '3' THEN '가을학기'
+							   WHEN '4' THEN '겨울학기' END AS regStSeme
+			, REG_RG_SEME		AS regRgSeme
+			, REG_FEE			AS regFee
+			, ENTER_FEE			AS enterFee
+			, REG_DATE			AS regDate
+			, REG_SE_DATE		AS regSeDate
+			, PAY_DATE			AS payDate
+			, PAY_FEE			AS payFee
+			, INSU_FEE			AS insuFee
+		FROM
+			TB_LCMS_REG_FEE TLRF LEFT JOIN TB_LCMS_ENTER TLE
+			ON TLRF.ENTER_NUM = TLE.ENTER_NUM
+			LEFT JOIN ACCOUNT_CODE AC
+			ON TLE.ENTER_NUM = AC.STUDENT_CODE OR TLE.ENTER_CODE = AC.STUDENT_CODE
+		WHERE
+			TLRF.ENTER_NUM = #enterNum#
+		ORDER BY
+			REG_SEQ ASC
+		LIMIT 1
+	]]>
+	</select>
+	
+	<!-- 입학연기 수정 -->
+	<update id="AdmEntranDAO.updateAdmDelayUpdate" parameterClass="enterVO">
+	/* AdmEntranDAO.updateAdmDelayUpdate */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_ENTER
+		SET
+			DELAY_ENTR_YEAR		= #delayEntrYear#
+			, DELAY_ENTR_SEME	= #delayEntrSeme#
+			, DELAY_ENTR_DATE	= #delayEntrDate#
+			, DELAY_ENTR_GRADE	= #delayEntrGrade#
+			, DELAY_TUIN_YN		= #delayTuinYn#
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	]]>
+	</update>
+	
+	<!-- 입학연기 엑셀다운로드 -->
+	<select id="AdmEntranDAO.selectAdmDelayExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEntranDAO.selectAdmDelayExcel */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, ENTER_NUM
+			, ENTER_YEAR
+			, ENTER_SEME
+			, CASE ENTER_SEME
+				WHEN '1' THEN '봄학기'
+				WHEN '2' THEN '여름학기'
+				WHEN '3' THEN '가을학기'
+				WHEN '4' THEN '겨울학기'
+			END AS ENTER_SEME_NM
+			, ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_DATE
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE 
+			, CASE ENTER_TYPE WHEN '1' THEN '신입학'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, CASE ENTER_STATUS WHEN '1' THEN '신청'
+								WHEN '2' THEN '합격'
+								WHEN '3' THEN '불합격' END AS ENTER_STATUS
+			, ENTER_ETC
+			, DELAY_ENTR_YEAR
+			, DELAY_ENTR_SEME
+			, CASE DELAY_ENTR_SEME
+				WHEN '1' THEN '봄학기'
+				WHEN '2' THEN '여름학기'
+				WHEN '3' THEN '가을학기'
+				WHEN '4' THEN '겨울학기'
+			END AS DELAY_ENTR_SEME_NM
+	]]>
+		<include refid="adm_delay_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+	]]>
+	</select>
+	
+	<update id="AdmEntranDAO.updateAdmEntranAccEmr" parameterClass="enterVO">
+	/* AdmEntranDAO.updateAdmEntranAccEmr */
+	<![CDATA[
+		UPDATE
+			TBL_EMR_CUSTOMER
+		SET
+			ID1 = #enterCode#
+			, ID2 = #enterCode#
+			, CUSTOMER_GB = #enterCode#
+		WHERE
+			ID1 = #enterNum#
+	]]>
+	</update>
+	
+	<select id="AdmEntranDAO.selectAdmEnroYn" parameterClass="enterVO" resultClass="string">
+	/* AdmEntranDAO.selectAdmEnroYn */
+	<![CDATA[
+		SELECT
+			CASE COUNT(*)
+				WHEN 0 THEN 'N'
+				ELSE 'Y'
+			END AS ENRO_YN
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+			LEFT JOIN TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+		WHERE
+			TLL.LECT_YEAR = #enterYear#
+		AND
+			TLL.LECT_SEM = #enterSeme#
+		AND
+			TLLM.MEMBER_CODE = #enterCode#
+	]]>
+	</select>
+	<!-- 사용여부설정-->
+	
+	<update id="AdmEntranDAO.updateUseYn" parameterClass="enterVO">
+	/* AdmEntranDAO.updateAdmDelayUpdate */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_ENTER
+		SET
+			USE_YN ='Y'
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	]]>
+	</update>
+	<delete id="AdmEntranDAO.deleteAdmRereg" parameterClass="string">
+	/* AdmEntranDAO.deleteAdmRereg */
+	<![CDATA[
+		DELETE
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_SEQ = #enterSeq#
+	]]>
+	</delete>
+
+</sqlMap>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_gr_table">
+		FROM
+			TB_HDA_GRADUATE_REVIEW
+		WHERE
+			1=1
+		<isNotEmpty property="menuType" prepend="AND">
+			GR_MAJOR = #menuType#		
+		</isNotEmpty>	
+		<isEmpty property="menuType" prepend="AND">
+			GR_MAJOR = '01'
+		</isEmpty>
+	</sql>
+	
+	
+	<!-- 목록 -->
+	<select id="AdmGraduateReviewDAO.selectGraduateReviewList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmGraduateReviewDAO.selectGraduateReviewList */
+	<![CDATA[
+		SELECT
+			GR_SEQ
+			, GR_NAME
+			, GR_AFT_SCHOOL
+			, GR_REG_SEMESTER_BEGIN
+			, GR_REG_SEMESTER_END
+			, GR_ACTIVITY
+			, GR_RESULT
+			, GR_URL
+			, GR_REG_DATE
+	]]>	
+	<include refid="adm_gr_table"/>
+	<![CDATA[
+	ORDER BY GR_REG_DATE DESC
+	LIMIT #firstIndex#, #recordCountPerPage#
+	
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmGraduateReviewDAO.selectGraduateReviewListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmGraduateReviewDAO.selectGraduateReviewListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>	
+	<include refid="adm_gr_table"/>
+	</select>
+
+	<!-- 등록 -->
+	<insert id="AdmGraduateReviewDAO.insertGraduateReviewOne" parameterClass="GraduateReviewVO" >
+/* AdmGraduateReviewDAO.insertGraduateReviewOne */
+	<![CDATA[
+		INSERT INTO TB_HDA_GRADUATE_REVIEW(
+			GR_MAJOR
+			, GR_NAME
+			, GR_AFT_SCHOOL
+			, GR_REG_SEMESTER_BEGIN
+			, GR_REG_SEMESTER_END
+			, GR_ACTIVITY
+			, GR_RESULT
+			, GR_URL
+		)VALUES(
+			#grMajor#
+			, #grName#
+			, #grAftSchool#
+			, #grRegSemesterBegin#
+			, #grRegSemesterEnd#
+			, #grActivity#
+			, #grResult#
+			, #grUrl#
+		)
+		
+	]]>	
+	</insert>
+	
+	<!-- 조회 -->
+	<select id="AdmGraduateReviewDAO.selectGraduateReviewOne" parameterClass="String" resultClass="GraduateReviewVO">
+/* AdmGraduateReviewDAO.selectGraduateReviewOne */
+	<![CDATA[
+		SELECT
+			GR_SEQ															as grSeq
+			, GR_NAME														as grName
+			, GR_AFT_SCHOOL													as grAftSchool
+			, GR_REG_SEMESTER_BEGIN											as grRegSemesterBegin
+			, GR_REG_SEMESTER_END			 								as grRegSemesterEnd
+			, GR_ACTIVITY													as grActivity
+			, GR_RESULT														as grResult
+			, GR_URL														as grUrl
+			, GR_REG_DATE													as grRegDate
+		FROM 
+			TB_HDA_GRADUATE_REVIEW
+		WHERE
+			GR_SEQ = #grSeq#
+	]]>	
+	</select>
+	
+	<!-- 수정 -->
+	<update id="AdmGraduateReviewDAO.updateGraduateReviewOne" parameterClass="GraduateReviewVO" >
+/* AdmGraduateReviewDAO.updateGraduateReviewOne */
+	<![CDATA[
+		UPDATE TB_HDA_GRADUATE_REVIEW
+		SET
+			GR_MAJOR = #grMajor#
+			, GR_NAME = #grName# 
+			, GR_AFT_SCHOOL = #grAftSchool#
+			, GR_REG_SEMESTER_BEGIN = #grRegSemesterBegin#
+			, GR_REG_SEMESTER_END = #grRegSemesterEnd#
+			, GR_ACTIVITY = #grActivity#
+			, GR_RESULT = #grResult#
+			, GR_URL = #grUrl#
+		WHERE
+			GR_SEQ = #grSeq#
+	]]>	
+	</update>
+	
+	<!-- 글 삭제 -->
+	<delete id="AdmGraduateReviewDAO.deleteGraduateReviewOne" parameterClass="String">
+/* AdmGraduateReviewDAO.deleteGraduateReviewOne */	
+	<![CDATA[
+		DELETE FROM TB_HDA_GRADUATE_REVIEW
+		WHERE GR_SEQ = #grSeq#
+	]]>
+	</delete>
+
+</sqlMap>

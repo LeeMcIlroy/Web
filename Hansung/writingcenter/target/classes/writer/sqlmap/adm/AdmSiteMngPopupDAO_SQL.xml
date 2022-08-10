@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="adm_popup_table">
+		FROM
+			TB_HSWC_MNG_POPUP
+		WHERE	1=1
+		<isNotEmpty property="searchWord">
+			<isEqual property="searchCondition" prepend="AND" compareValue="title">
+				POP_TITLE LIKE '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 목록 -->
+	<select id="AdmSiteMngPopupDAO.selectSiteMngPopupList" resultClass="egovMap">
+/* admPopupMngDAO.selectPopupList */
+	<![CDATA[
+		SELECT
+			*
+		FROM	
+			(SELECT
+				ROWNUM AS rn
+				, POP_SEQ
+				, POP_TITLE
+				, POP_WIDTH
+				, POP_HEIGHT
+				, POP_TOP
+				, POP_LEFT
+				, POP_SCROLL_YN
+				, POP_RESIZE_YN
+				, POP_CONTENT
+				, POP_VIEW_YN
+				, REG_ID
+				, REG_DATE
+			FROM
+				(SELECT
+					POP_SEQ
+					, POP_TITLE
+					, POP_WIDTH
+					, POP_HEIGHT
+					, POP_TOP
+					, POP_LEFT
+					, POP_SCROLL_YN
+					, POP_RESIZE_YN
+					, POP_CONTENT
+					, POP_VIEW_YN
+					, REG_ID
+					, REG_DATE
+			]]>	
+				<include refid="adm_popup_table"/>
+				ORDER BY REG_DATE DESC
+			<![CDATA[
+				)
+			)t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#	
+	]]>	
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmSiteMngPopupDAO.selectSiteMngPopupListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmSiteMngPopupDAO.selectSiteMngPopupListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_popup_table"/>
+	</select>
+	
+	
+	<!-- 저장 -->
+	<insert id="AdmSiteMngPopupDAO.insertSiteMngPopupOne" parameterClass="popupVO">
+/* AdmSiteMngPopupDAO.insertSiteMngPopupOne */
+	<![CDATA[
+		INSERT INTO TB_HSWC_MNG_POPUP(
+			POP_SEQ
+			, POP_TITLE
+			, POP_WIDTH
+			, POP_HEIGHT
+			, POP_TOP
+			, POP_LEFT
+			, POP_SCROLL_YN
+			, POP_RESIZE_YN
+			, POP_CONTENT
+			, POP_VIEW_YN
+			, REG_ID
+		)VALUES(
+			SEQ_HSWC_MNG_POPUP.NEXTVAL
+			, #popTitle#
+			, #popWidth#
+			, #popHeight#
+			, #popTop#
+			, #popLeft#
+			, #popScrollYn#
+			, #popResizeYn#
+			, #popContent#
+			, #popViewYn#
+			, #regId#
+		)
+	]]>	
+	</insert>
+
+
+	<!-- 삭제 -->
+	<delete id="AdmSiteMngPopupDAO.deleteSiteMngPopupOne" parameterClass="String">
+/* AdmSiteMngPopupDAO.deleteSiteMngPopupOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_MNG_POPUP
+		WHERE POP_SEQ = #popSeq#
+	]]>	
+	</delete>
+	
+	<!-- 조회 -->
+	<select id="AdmSiteMngPopupDAO.selectSiteMngPopupOne" parameterClass="String" resultClass="popupVO">
+/* AdmSiteMngPopupDAO.selectSiteMngPopupOne */
+	<![CDATA[
+		SELECT
+			POP_SEQ AS popSeq
+			, POP_TITLE AS popTitle
+			, POP_WIDTH AS popWidth
+			, POP_HEIGHT AS popHeight
+			, POP_TOP AS popTop
+			, POP_LEFT AS popLeft
+			, POP_SCROLL_YN AS popScrollYn
+			, POP_RESIZE_YN AS popResizeYn
+			, POP_CONTENT AS popContent
+			, POP_VIEW_YN AS popViewYn
+			, REG_ID AS regId
+			, REG_DATE AS regDate
+		FROM
+			TB_HSWC_MNG_POPUP
+		WHERE
+			POP_SEQ=#popSeq#
+	]]>	
+	</select>
+	
+	<!-- 수정 -->
+	<update id="AdmSiteMngPopupDAO.updateSiteMngPopupOne" parameterClass="popupVO">
+/* AdmSiteMngPopupDAO.updateSiteMngPopupOne */
+	<![CDATA[
+		UPDATE
+			TB_HSWC_MNG_POPUP
+		SET
+			POP_TITLE = #popTitle#
+			, POP_WIDTH = #popWidth#
+			, POP_HEIGHT = #popHeight#
+			, POP_TOP = #popTop#
+			, POP_LEFT = #popLeft#
+			, POP_SCROLL_YN = #popScrollYn#
+			, POP_RESIZE_YN = #popResizeYn#
+			, POP_CONTENT = #popContent#
+			, POP_VIEW_YN = #popViewYn#
+			, REG_ID = #regId#
+		WHERE
+			POP_SEQ = #popSeq#
+	]]>	
+	</update>
+</sqlMap>

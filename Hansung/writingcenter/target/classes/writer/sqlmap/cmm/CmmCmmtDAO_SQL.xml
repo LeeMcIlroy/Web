@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- ******************************** 우리반게시판 ********************************-->
+	<!-- 우리반게시판 댓글 listMap -->
+	<resultMap class="egovMap" id="lec_noti_cmmt_listMap">
+		<result property="CMT_SEQ" column="CMT_SEQ"/>
+		<result property="CMT_CONTENT" column="CMT_CONTENT" jdbcType="CLOB" javaType="string"/>
+		<result property="REG_ID" column="REG_ID"/>
+		<result property="REG_NAME" column="REG_NAME"/>
+		<result property="REG_DATE" column="REG_DATE"/>
+		<result property="NT_SEQ" column="NT_SEQ"/>
+	</resultMap>
+	
+	<!-- 우리반게시판 댓글 목록 -->
+	<select id="CmmCmmtDAO.selectLecBoardCommentList" parameterClass="map" resultMap="lec_noti_cmmt_listMap">
+/* CmmCmmtDAO.selectLecBoardCommentList */
+	<![CDATA[
+		SELECT
+			CMT_SEQ
+			, CMT_CONTENT
+			, REG_ID
+			, REG_NAME
+			, REG_DATE
+			, NT_SEQ 
+		FROM (
+			SELECT
+				rownum AS rn
+				, CMT_SEQ
+				, CMT_CONTENT
+				, REG_ID
+				, REG_NAME
+				, REG_DATE
+				, NT_SEQ 
+			FROM (
+				SELECT 
+					CMT_SEQ
+					, CMT_CONTENT
+					, REG_ID
+					, REG_NAME
+					, REG_DATE
+					, NT_SEQ 
+				FROM 
+					TB_HSWC_CLS_NOTI_COMMENT
+				WHERE
+					NT_SEQ = #ntSeq#
+				ORDER BY
+					REG_DATE DESC
+			)
+		) t1
+		WHERE rn BETWEEN (#pageCmmtIndex#*5-4) AND (#pageCmmtIndex#*5)
+	]]>
+	</select>
+	
+	<!-- 우리반게시판 댓글 목록Cnt -->
+	<select id="CmmCmmtDAO.selectLecBoardCommentListCnt" parameterClass="map" resultClass="int">
+/* CmmCmmtDAO.selectLecBoardCommentListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM
+			TB_HSWC_CLS_NOTI_COMMENT
+		WHERE
+			NT_SEQ = #ntSeq#
+	]]>
+	</select>
+
+	<!-- 우리반게시판 댓글 등록 -->
+	<insert id="CmmCmmtDAO.lecBoardCommentInsert" parameterClass="commentVO">
+/* CmmCmmtDAO.lecBoardCommentInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS_NOTI_COMMENT (
+			CMT_SEQ
+			, CMT_CONTENT
+			, REG_ID
+			, REG_NAME
+			, NT_SEQ
+		) VALUES (
+			SEQ_HSWC_CLS_NOTI_COMMENT.nextval
+			, #cmtContent#
+			, #regId#
+			, #regName#
+			, #ntSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 우리반게시판 댓글 삭제 -->
+	<delete id="CmmCmmtDAO.lecBoardCommentDelete" parameterClass="string">
+/* CmmCmmtDAO.lecBoardCommentDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_NOTI_COMMENT
+		WHERE CMT_SEQ = #cmtSeq#
+	]]>
+	</delete>
+
+
+	<!-- ******************************** 우리반게시판 ********************************-->
+	<!-- 과제 댓글 listMap -->
+	<resultMap class="egovMap" id="lec_cls_hmwk_cmmt_listMap">
+		<result property="CMT_SEQ" column="CMT_SEQ"/>
+		<result property="CMT_CONTENT" column="CMT_CONTENT" jdbcType="CLOB" javaType="string"/>
+		<result property="REG_ID" column="REG_ID"/>
+		<result property="REG_NAME" column="REG_NAME"/>
+		<result property="REG_DATE" column="REG_DATE"/>
+		<result property="HMWK_SEQ" column="HMWK_SEQ"/>
+	</resultMap>
+	
+	<!-- 과제 댓글 목록 -->
+	<select id="CmmCmmtDAO.selectLecHomeworkCommentList" parameterClass="map" resultMap="lec_cls_hmwk_cmmt_listMap">
+/* CmmCmmtDAO.selectLecHomeworkCommentList */
+	<![CDATA[
+		SELECT
+			CMT_SEQ
+			, CMT_CONTENT
+			, REG_ID
+			, REG_NAME
+			, REG_DATE
+			, HMWK_SEQ 
+		FROM (
+			SELECT
+				rownum AS rn
+				, CMT_SEQ
+				, CMT_CONTENT
+				, REG_ID
+				, REG_NAME
+				, REG_DATE
+				, HMWK_SEQ 
+			FROM (
+				SELECT 
+					CMT_SEQ
+					, CMT_CONTENT
+					, REG_ID
+					, REG_NAME
+					, REG_DATE
+					, HMWK_SEQ 
+				FROM 
+					TB_HSWC_CLS_HMWK_COMMENT
+				WHERE
+					HMWK_SEQ = #hmwkSeq#
+				ORDER BY
+					REG_DATE DESC
+			)
+		) t1
+		WHERE rn BETWEEN (#pageCmmtIndex#*5-4) AND (#pageCmmtIndex#*5)
+	]]>
+	</select>
+	
+	<!-- 과제 댓글 목록Cnt -->
+	<select id="CmmCmmtDAO.selectLecHomeworkCommentListCnt" parameterClass="map" resultClass="int">
+/* CmmCmmtDAO.selectLecHomeworkCommentListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM 
+			TB_HSWC_CLS_HMWK_COMMENT
+		WHERE
+			HMWK_SEQ = #hmwkSeq#
+	]]>
+	</select>
+	
+	<!-- 과제 댓글 등록 -->
+	<insert id="CmmCmmtDAO.lecHomeworkCommentInsert" parameterClass="commentVO">
+/* CmmCmmtDAO.lecHomeworkCommentInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS_HMWK_COMMENT (
+			CMT_SEQ
+			, CMT_CONTENT
+			, REG_ID
+			, REG_NAME
+			, HMWK_SEQ
+		) VALUES (
+			SEQ_HSWC_CLS_HMWK_COMMENT.nextval
+			, #cmtContent#
+			, #regId#
+			, #regName#
+			, #hmwkSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 과제 댓글 삭제 -->
+	<delete id="CmmCmmtDAO.lecHomeworkCommentDelete" parameterClass="string">
+/* CmmCmmtDAO.lecHomeworkCommentDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_HMWK_COMMENT
+		WHERE CMT_SEQ = #cmtSeq#
+	]]>
+	</delete>
+	
+	<!-- ******************************** 자유게시판 ********************************-->
+	<!-- 자유게시판 listMap -->
+	<resultMap class="egovMap" id="boardMng_free_cmmt_listMap">
+		<result property="CMT_SEQ" column="CMT_SEQ"/>
+		<result property="CMT_CONTENT" column="CMT_CONTENT" jdbcType="CLOB" javaType="string"/>
+		<result property="REG_ID" column="REG_ID"/>
+		<result property="REG_NAME" column="REG_NAME"/>
+		<result property="REG_DATE" column="REG_DATE"/>
+		<result property="BRD_SEQ" column="BRD_SEQ"/>
+	</resultMap>
+	
+	<!-- 자유게시판 목록 -->
+	<select id="CmmCmmtDAO.selectBoardMngFreeCommentList" parameterClass="map" resultMap="boardMng_free_cmmt_listMap">
+/* CmmCmmtDAO.selectBoardMngFreeCommentList */
+	<![CDATA[
+		SELECT
+			CMT_SEQ
+			, CMT_CONTENT
+			, REG_ID
+			, REG_NAME
+			, to_char(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') as REG_DATE
+			, BRD_SEQ 
+		FROM (
+			SELECT
+				rownum AS rn
+				, CMT_SEQ
+				, CMT_CONTENT
+				, REG_ID
+				, REG_NAME
+				, REG_DATE
+				, BRD_SEQ 
+			FROM (
+				SELECT 
+					CMT_SEQ
+					, CMT_CONTENT
+					, REG_ID
+					, REG_NAME
+					, REG_DATE
+					, BRD_SEQ 
+				FROM 
+					TB_HSWC_BOARD_COMMENT
+				WHERE
+					BRD_SEQ = #brdSeq#
+				ORDER BY
+					REG_DATE DESC
+			)
+		) t1
+		WHERE rn BETWEEN (#pageCmmtIndex#*5-4) AND (#pageCmmtIndex#*5)
+	]]>
+	</select>
+	
+	<!-- 자유게시판 목록Cnt -->
+	<select id="CmmCmmtDAO.selectBoardMngFreeCommentListCnt" parameterClass="map" resultClass="int">
+/* CmmCmmtDAO.selectBoardMngFreeCommentListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM 
+			TB_HSWC_BOARD_COMMENT
+		WHERE
+			BRD_SEQ = #brdSeq#
+	]]>
+	</select>
+	
+	<!-- 자유게시판 등록 -->
+	<insert id="CmmCmmtDAO.boardMngFreeCommentInsert" parameterClass="commentVO">
+/* CmmCmmtDAO.boardMngFreeCommentInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_BOARD_COMMENT (
+			CMT_SEQ
+			, CMT_CONTENT
+			, REG_ID
+			, REG_NAME
+			, BRD_SEQ
+		) VALUES (
+			SEQ_HSWC_BOARD_COMMENT.nextval
+			, #cmtContent#
+			, #regId#
+			, #regName#
+			, #brdSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 자유게시판 삭제 -->
+	<delete id="CmmCmmtDAO.boardMngFreeCommentDelete" parameterClass="string">
+/* CmmCmmtDAO.boardMngFreeCommentDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_BOARD_COMMENT
+		WHERE CMT_SEQ = #cmtSeq#
+	]]>
+	</delete>
+</sqlMap>

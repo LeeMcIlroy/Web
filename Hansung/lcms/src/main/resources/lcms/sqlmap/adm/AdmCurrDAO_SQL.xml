@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_statis_list">
+		FROM
+			TB_LCMS_SURVEY
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			SEME = #searchCondition2#
+		</isNotEmpty>
+	</sql>
+
+	<!-- 업무담당자 수업만족도항목 목록Cnt -->
+	<select id="AdmCurrDAO.selectAdmStatisListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmCurrDAO.selectAdmStatisListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+		<include refid="adm_statis_list" />
+	</select>
+
+	<!-- 업무담당자 수업만족도항목 목록 -->
+	<select id="AdmCurrDAO.selectAdmStatisList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCurrDAO.selectAdmStatisList */
+	<![CDATA[
+		SELECT
+			SURVEY_SEQ
+			, YEAR
+			, CASE SEME WHEN '1' THEN '봄학기'
+						WHEN '2' THEN '여름학기'
+						WHEN '3' THEN '가을학기'
+						WHEN '4' THEN '겨울학기' END AS SEME
+			, TITLE
+			, LANG
+			, CONCAT(ST_DATE, ' ', LPAD(ST_HOUR, 2, 0), ':', LPAD(ST_MINU, 2, 0)) AS START_DATE
+			, ST_DATE
+			, ST_HOUR
+			, ST_MINU
+			, CONCAT(ED_DATE, ' ', LPAD(ED_HOUR, 2, 0), ':', LPAD(ED_MINU, 2, 0)) AS END_DATE
+			, ED_DATE
+			, ED_HOUR
+			, ED_MINU
+			, REG_NAME
+			, DATE_FORMAT(REG_DATE, '%Y-%m-%d') AS REG_DATE
+	]]>
+		<include refid="adm_statis_list" />
+	<![CDATA[
+		ORDER BY
+			SURVEY_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+
+	<!-- 업무담당자 수업만족도항목 등록 -->
+	<insert id="AdmCurrDAO.insertAdmSatis" parameterClass="surveyVO">
+	/* AdmCurrDAO.insertAdmSatisUpdate */
+	<selectKey keyProperty="surveySeq" resultClass="string" type="post">
+		SELECT MAX(SURVEY_SEQ) FROM TB_LCMS_SURVEY
+	</selectKey>
+		INSERT INTO TB_LCMS_SURVEY(
+			YEAR
+			, SEME
+			, LANG
+			, TITLE
+			, USE_YN
+			, CONTENT
+			, REG_DATE
+			, REG_NAME
+		)VALUES(
+			#year#
+			, #seme#
+			, #lang#
+			, #title#
+			, #useYn#
+			, #content#
+			, SYSDATE()
+			, #regName#
+		)
+	</insert>
+
+	<!-- 업무담당자 수업만족도항목 조사항목 등록 -->
+	<insert id="AdmCurrDAO.insertAdmSurveyQues" parameterClass="surveyQuesVO">
+	/* AdmCurrDAO.insertAdmSurveyQues */
+		INSERT INTO TB_LCMS_SURVEY_QUES(
+			SURVEY_SEQ
+			, PHR_SEQ
+			, SURVEY_TYPE
+			, QUESTION
+			, ANSWER1
+			, ANSWER2
+			, ANSWER3
+			, ANSWER4
+			, ANSWER5
+			, QUES_NUM
+		)VALUES(
+			#surveySeq#
+			, #phrSeq#
+			, #surveyType#
+			, #question#
+			, #answer1#
+			, #answer2#
+			, #answer3#
+			, #answer4#
+			, #answer5#
+			, #quesNum#
+		)
+	</insert>
+
+	<!-- 업무담당자 수업만족도항목 수정 -->
+	<update id="AdmCurrDAO.updateAdmSatisUpdate" parameterClass="surveyVO">
+	/* AdmCurrDAO.updateAdmSatisUpdate */
+		UPDATE
+			TB_LCMS_SURVEY
+		SET
+			YEAR = #year#
+			, SEME = #seme#
+			, LANG = #lang#
+			, TITLE = #title#
+			, USE_YN = #useYn#
+			, CONTENT = #content#
+		WHERE
+			SURVEY_SEQ = #surveySeq#
+	</update>
+
+	<!-- 업무담당자 수업만족도항목 조사항목 수정 -->
+	<update id="AdmCurrDAO.updateAdmSurveyQues" parameterClass="surveyQuesVO">
+	/* AdmCurrDAO.updateAdmSurveyQues */
+		UPDATE
+			TB_LCMS_SURVEY_QUES
+		SET
+			SURVEY_SEQ = #surveySeq#
+			, PHR_SEQ = #phrSeq#
+			, SURVEY_TYPE = #surveyType#
+			, QUESTION = #question#
+			, ANSWER1 = #answer1#
+			, ANSWER2 = #answer2#
+			, ANSWER3 = #answer3#
+			, ANSWER4 = #answer4#
+			, ANSWER5 = #answer5#
+			, QUES_NUM = #quesNum#
+		WHERE
+			QUES_SEQ = #quesSeq#
+	</update>
+
+	<!-- 업무담당자 수업만족도항목 조회 -->
+	<select id="AdmCurrDAO.selectAdmSatisModify" parameterClass="string" resultClass="surveyVO">
+	/* AdmCurrDAO.selectAdmSatisModify */
+	<![CDATA[
+		SELECT
+			SURVEY_SEQ	AS surveySeq
+			, YEAR		AS year
+			, SEME		AS seme
+			, LANG		AS lang
+			, TITLE		AS title
+			, USE_YN	AS useYn
+			, CONTENT	AS content
+		FROM
+			TB_LCMS_SURVEY
+		WHERE
+			SURVEY_SEQ = #surveySeq#
+	]]>
+	</select>
+
+	<!-- 업무담당자 수업만족도항목 조사항목 조회 -->
+	<select id="AdmCurrDAO.selectAdmSurveyQuesList" parameterClass="string" resultClass="surveyQuesVO">
+	/* AdmCurrDAO.selectAdmSurveyQuesList */
+	<![CDATA[
+		SELECT
+			QUES_SEQ		AS quesSeq
+			, SURVEY_SEQ	AS surveySeq
+			, PHR_SEQ		AS phrSeq
+			, SURVEY_TYPE	AS surveyType
+			, QUESTION		AS question
+			, ANSWER1		AS answer1
+			, ANSWER2		AS answer2
+			, ANSWER3		AS answer3
+			, ANSWER4		AS answer4
+			, ANSWER5		AS answer5
+			, QUES_NUM		AS quesNum
+		FROM
+			TB_LCMS_SURVEY_QUES
+		WHERE
+			SURVEY_SEQ = #surveySeq#
+	]]>
+	</select>
+	
+	<select id="AdmCurrDAO.selectSemeUseYn" parameterClass="string" resultClass="string">
+	/* AdmCurrDAO.selectSemeUseYn */
+	<![CDATA[
+		SELECT
+			CASE WHEN COUNT(*) > 0 THEN 'Y' ELSE 'N' END
+		FROM
+			TB_LCMS_SEME
+		WHERE
+			1=1
+	]]>
+		<isEqual prepend="AND" compareValue="open">
+			OPEN_SEM = 'Y'
+		</isEqual>
+		<isEqual prepend="AND" compareValue="regi">
+			OPEN_REGI = 'Y'
+		</isEqual>
+	</select>
+
+</sqlMap>

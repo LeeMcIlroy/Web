@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+<!-- ******************************** 반_교수 ********************************-->
+	
+	<!-- 나의 강의실 목록 -->
+	<select id="LecDAO.selectMyLecClassList" parameterClass="map" resultClass="classVO">
+/* LecDAO.selectMyLecClassList */
+	<![CDATA[
+		SELECT
+			CLS_SEQ			as clsSeq
+			, CLS_TITLE		as clsTitle
+			, CLS_SORT		as clsSort
+			, DEPT_SEQ		as deptSeq
+			, SMTR_SEQ 		as smtrSeq
+		FROM
+			TB_HSWC_CLS
+		WHERE 
+			CLS_SEQ	in ( SELECT CLS_SEQ FROM TB_HSWC_MYCLASS WHERE MY_HAKBUN = #userVO.memCode# )
+			AND SMTR_SEQ = #searchVO.searchSemester#
+	]]>
+	</select>
+	
+	<!-- 반_교수 조회 -->
+	<select id="LecDAO.selectLecClassOne" parameterClass="string" resultClass="classVO">
+/* LecDAO.selectLecClassOne */
+	<![CDATA[
+		SELECT
+			CLS_SEQ				as clsSeq
+			, CLS_TITLE			as clsTitle
+			, CLS_CONTENT		as clsContent
+			, CLS_SORT			as clsSort
+			, CLS_VIEW_YN		as clsViewYn
+			, CLS_HITCOUNT		as clsHitcount
+			, REG_ID			as regId
+			, REG_NAME			as regName
+			, REG_DATE			as regDate
+			, DEPT_SEQ			as deptSeq
+			, SMTR_SEQ			as smtrSeq
+		FROM 
+			TB_HSWC_CLS
+		WHERE
+			CLS_SEQ = #clsSeq#
+	]]>
+	</select>
+	
+	<!-- 나의 강의실 조회 -->
+	<select id="LecDAO.selectMyLecClassOne" parameterClass="map" resultClass="egovMap">
+/* LecDAO.selectMyLecClassOne */
+	<![CDATA[
+		SELECT
+			MY_SEQ
+			, MY_HAKBUN
+			, CLS_SEQ
+		FROM
+			TB_HSWC_MYCLASS
+		WHERE
+			MY_HAKBUN = #memCode#
+			AND CLS_SEQ = #clsSeq#
+	]]>
+	</select>
+	
+	<!-- 나의 강의실 insert -->
+	<insert id="LecDAO.myLecClassInsert" parameterClass="map">
+/* LecDAO.myLecClassInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_MYCLASS (
+			MY_SEQ
+			, MY_HAKBUN
+			, CLS_SEQ
+		) VALUES (
+			SEQ_HSWC_MYCLASS.nextval
+			, #memCode#
+			, #clsSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 나의 강의실 delete -->
+	<delete id="LecDAO.myLecClassDelete" parameterClass="string">
+/* LecDAO.myLecClassDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_MYCLASS
+		WHERE MY_SEQ = #mySeq#
+	]]>
+	</delete>
+
+
+<!-- ******************************** 주제 ********************************-->
+	
+	<sql id="usr_cls_sbjt_table">
+		FROM
+			TB_HSWC_CLS_SBJT
+		WHERE
+			CLS_SEQ = #searchClass#
+		<isNotEmpty property="searchWord">
+			<isEqual property="searchCondition" compareValue="title" prepend="AND">
+				SBJT_TITLE LIKE '%' || #searchWord# || '%'
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="content" prepend="AND">
+				SBJT_CONTENT LIKE '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+
+	<!-- 주제목록 (반_교수 선택) -->
+	<select id="LecDAO.selectLecSubjectList" parameterClass="searchVO" resultClass="egovMap">
+/* LecDAO.selectLecSubjectList */
+	<![CDATA[
+		SELECT
+			*
+		FROM (
+			SELECT
+				rownum as rn
+				, SBJT_SEQ
+				, SBJT_TITLE
+				, SBJT_CONTENT
+				, SBJT_START_DATE
+				, SBJT_END_DATE
+				, REG_ID
+				, REG_NAME
+				, REG_DATE
+				, SBJT_VIEW_YN
+			FROM (
+				SELECT
+					SBJT_SEQ
+					, SBJT_TITLE
+					, SBJT_CONTENT
+					, SBJT_START_DATE
+					, SBJT_END_DATE
+					, REG_ID
+					, REG_NAME
+					, REG_DATE
+					, SBJT_VIEW_YN
+	]]>
+		<include refid="usr_cls_sbjt_table"/>
+	<![CDATA[
+				ORDER BY
+					SBJT_SORT ASC, REG_DATE DESC
+			)
+		) t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+
+	<!-- 주제목록Cnt (반_교수 선택) -->
+	<select id="LecDAO.selectLecSubjectListCnt" parameterClass="searchVO" resultClass="int">
+/* LecDAO.selectLecSubjectListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="usr_cls_sbjt_table"/>
+	</select>
+	
+	<!-- 주제 조회 -->
+	<select id="LecDAO.selectLecSubjectOne" parameterClass="string" resultClass="subjectVO">
+/* LecDAO.selectLecSubjectOne */
+	<![CDATA[
+		SELECT
+			SBJT_SEQ as sbjtSeq
+			, (SELECT count(*) FROM TB_HSWC_CLS_HMWK WHERE SBJT_SEQ = t1.SBJT_SEQ) as hmwkCnt
+			, SBJT_TITLE as sbjtTitle
+			, SBJT_CONTENT as sbjtContent
+			, SBJT_START_DATE as sbjtStartDate
+			, SBJT_START_TIME as sbjtStartTime
+			, SBJT_END_DATE as sbjtEndDate
+			, SBJT_END_TIME as sbjtEndTime
+			, SBJT_VIEW_YN as sbjtViewYn
+			, SBJT_HITCOUNT as sbjtHitcount
+			, REG_ID as regId
+			, REG_NAME as regName
+			, to_char(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') as regDate
+			, CLS_SEQ as clsSeq
+		FROM
+			TB_HSWC_CLS_SBJT t1
+		WHERE
+			SBJT_SEQ = #sbjtSeq#
+	]]>
+	</select>
+	
+	<!-- 주제 조회_첨부파일 목록 -->
+	<select id="LecDAO.selectLecSbjtUpfileList" parameterClass="string" resultClass="egovMap">
+/* LecDAO.selectLecSbjtUpfileList */
+	<![CDATA[
+		SELECT 
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH 
+		FROM 
+			TB_HSWC_CLS_SBJT_UPFILE
+		WHERE
+			SBJT_SEQ = #sbjtSeq#
+	]]>
+	</select>
+	
+	<!-- 주제 조회_첨부파일 조회 -->
+	<select id="LecDAO.selectLecSbjtUpfileOne" parameterClass="string" resultClass="egovMap">
+/* LecDAO.selectLecSbjtUpfileOne */
+	<![CDATA[
+		SELECT 
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH 
+		FROM 
+			TB_HSWC_CLS_SBJT_UPFILE
+		WHERE
+			UP_SEQ = #upSeq#
+	]]>
+	</select>
+	
+	
+	<!-- ******************************** 과제 ********************************-->
+	<sql id="usr_cls_hmwk_table">
+		FROM 
+			TB_HSWC_CLS_HMWK
+		WHERE 
+			SBJT_SEQ = #searchSubject#
+			<isNotEmpty property="searchWord2">
+				<isEqual property="searchCondition2" compareValue="hmwkNames" prepend="AND">
+					HMWK_NAMES like '%' || #searchWord2# || '%'
+				</isEqual>
+			</isNotEmpty>
+	</sql>
+	
+	<!-- 과제 목록 -->
+	<select id="LecDAO.selectLecHomeworkList" parameterClass="searchVO" resultClass="egovMap">
+/* LecDAO.selectLecHomeworkList */
+	<![CDATA[
+		SELECT 
+			HMWK_SEQ
+			, HMWK_REG_ID
+			, HMWK_REG_NAME
+			, HMWK_REG_DEPT
+			, HMWK_REG_DATE
+			, HMWK_STATUS
+			, HMWK_HITCOUNT
+			, HMWK_NAMES
+			, HMWK_HAKBUNS
+			, HMWK_DEPTS
+			, SBJT_SEQ
+			
+			, (SELECT count(*) FROM TB_HSWC_CLS_HMWK_COMMENT WHERE HMWK_SEQ = t1.HMWK_SEQ) as CMMT_CNT
+		FROM (
+			SELECT
+				rownum AS rn
+				, HMWK_SEQ
+				, HMWK_REG_ID
+				, HMWK_REG_NAME
+				, HMWK_REG_DEPT
+				, HMWK_REG_DATE
+				, HMWK_STATUS
+				, HMWK_HITCOUNT
+				, HMWK_NAMES
+				, HMWK_HAKBUNS
+				, HMWK_DEPTS
+				, SBJT_SEQ
+			FROM (
+				SELECT 
+					HMWK_SEQ
+					, HMWK_REG_ID
+					, HMWK_REG_NAME
+					, HMWK_REG_DEPT
+					, HMWK_REG_DATE
+					, HMWK_STATUS
+					, HMWK_HITCOUNT
+					, HMWK_NAMES
+					, HMWK_HAKBUNS
+					, HMWK_DEPTS
+					, SBJT_SEQ 
+	]]>
+		<include refid="usr_cls_hmwk_table"/>
+	<![CDATA[
+				ORDER BY
+					HMWK_REG_DATE DESC
+			)
+		) t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 과제 목록Cnt -->
+	<select id="LecDAO.selectLecHomeworkListCnt" parameterClass="searchVO" resultClass="int">
+/* LecDAO.selectLecHomeworkListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="usr_cls_hmwk_table"/>
+	</select>
+	
+	<!-- 과제 첨부파일 목록 -->
+	<select id="LecDAO.selectLecHomeworkUpfileList" parameterClass="string" resultClass="egovMap">
+/* LecDAO.selectLecHomeworkUpfileList */
+	<![CDATA[
+		SELECT 
+			UP_SEQ
+			, UP_TYPE
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, REG_DATE
+			, HMWK_SEQ
+			, (SELECT HMWK_REG_ID FROM TB_HSWC_CLS_HMWK WHERE hmwk_seq = t1.HMWK_SEQ) AS HMWK_REG_ID
+		FROM 
+			TB_HSWC_CLS_HMWK_UPFILE t1
+		WHERE
+			HMWK_SEQ = #hmwkSeq#
+	]]>
+	</select>
+	
+	<!-- 과제 조회 -->
+	<select id="LecDAO.selectLecHomeworkOne" parameterClass="string" resultClass="homeworkVO">
+/* LecDAO.selectLecHomeworkOne */
+	<![CDATA[
+		SELECT
+			HMWK_SEQ												as hmwkSeq
+			, HMWK_CONTENT											as hmwkContent
+			, HMWK_REG_ID											as hmwkRegId
+			, HMWK_REG_NAME											as hmwkRegName
+			, HMWK_REG_DEPT											as hmwkRegDept
+			, to_char(HMWK_REG_DATE, 'YYYY-MM-DD HH24:MI:SS')		as hmwkRegDate
+			, HMWK_CONTENT2											as hmwkContent2
+			, HMWK_UPDT_ID											as hmwkUpdtId
+			, HMWK_UPDT_NAME										as hmwkUpdtName
+			, to_char(HMWK_UPDT_DATE, 'YYYY-MM-DD HH24:MI:SS')		as hmwkUpdtDate
+			, HMWK_STATUS											as hmwkStatus
+			, HMWK_HITCOUNT											as hmwkHitcount
+			, HMWK_NAMES											as hmwkNames
+			, HMWK_HAKBUNS											as hmwkHakbuns
+			, HMWK_DEPTS											as hmwkDepts
+			, SBJT_SEQ												as sbjtSeq
+		FROM 
+			TB_HSWC_CLS_HMWK
+		WHERE
+			HMWK_SEQ = #hmwkSeq#
+	]]>
+	</select>
+	
+	<!-- 과제 첨부파일 조회 -->
+	<select id="LecDAO.selectLecHomeworkUpfileOne" parameterClass="string" resultClass="egovMap">
+/* LecDAO.selectLecHomeworkUpfileOne */
+	<![CDATA[
+		SELECT 
+			UP_SEQ
+			, UP_TYPE
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, REG_DATE
+			, HMWK_SEQ
+		FROM 
+			TB_HSWC_CLS_HMWK_UPFILE
+		WHERE
+			UP_SEQ = #upSeq#
+	]]>
+	</select>
+	
+	<!-- 과제 등록 -->
+	<insert id="LecDAO.lecHomeworkInsert" parameterClass="homeworkVO">
+/* LecDAO.lecHomeworkInsert */
+	<selectKey keyProperty="hmwkSeq" resultClass="string" type="pre">
+		select SEQ_HSWC_CLS_HMWK.nextval from dual
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS_HMWK (
+			HMWK_SEQ
+			, HMWK_CONTENT
+			, HMWK_REG_ID
+			, HMWK_REG_NAME
+			, HMWK_REG_DEPT
+			, HMWK_STATUS
+			, HMWK_NAMES
+			, HMWK_HAKBUNS
+			, HMWK_DEPTS
+			, SBJT_SEQ
+		) VALUES (
+			#hmwkSeq#
+			, #hmwkContent#
+			, #hmwkRegId#
+			, #hmwkRegName#
+			, #hmwkRegDept#
+			, '1'
+			, #hmwkNames#
+			, #hmwkHakbuns#
+			, #hmwkDepts#
+			, #sbjtSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 과제 첨부파일 등록 -->
+	<insert id="LecDAO.lecHomeworkUpfileInsert" parameterClass="map">
+/* LecDAO.lecHomeworkUpfileInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS_HMWK_UPFILE (
+			UP_SEQ
+			, UP_TYPE
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, HMWK_SEQ
+		) VALUES (
+			SEQ_HSWC_CLS_HMWK_UPFILE.nextval
+			, 'BEFORE'
+			, #fileInfoVO.fileName#
+			, #fileInfoVO.filePath#
+			, #hmwkSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 과제 수정 -->
+	<update id="LecDAO.lecHomeworkUpdate" parameterClass="homeworkVO">
+/* LecDAO.lecHomeworkUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_CLS_HMWK
+		SET
+			HMWK_CONTENT = #hmwkContent#
+			, HMWK_REG_DEPT = #hmwkRegDept#
+			, HMWK_NAMES = #hmwkNames#
+			, HMWK_HAKBUNS = #hmwkHakbuns#
+			, HMWK_DEPTS = #hmwkDepts#
+		WHERE
+			HMWK_SEQ = #hmwkSeq#
+	]]>
+	</update>
+	
+	<!-- 과제 조회수 증가 -->
+	<update id="LecDAO.lecHomeworkHitcountUpdate" parameterClass="string">
+/* LecDAO.lecHomeworkHitcountUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_CLS_HMWK
+		SET
+			HMWK_HITCOUNT = HMWK_HITCOUNT + 1
+		WHERE
+			HMWK_SEQ = #hmwkSeq#
+	]]>
+	</update>
+	
+	<!-- 과제 상태 수정(첨삭완료확인) -->
+	<update id="LecDAO.lecHomeworkStatusUpdate" parameterClass="string">
+/* LecDAO.lecHomeworkStatusUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_CLS_HMWK
+		SET
+			HMWK_STATUS = '3'
+		WHERE
+			HMWK_SEQ = #hmwkSeq#
+	]]>
+	</update>
+	
+	<!-- 과제 삭제 -->
+	<delete id="LecDAO.lecHomeworkDelete" parameterClass="string">
+/* LecDAO.lecHomeworkDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_HMWK
+		WHERE HMWK_SEQ = #hmwkSeq#
+	]]>
+	</delete>
+	
+	<!-- 과제 첨부파일들 삭제 -->
+	<delete id="LecDAO.lecHomeworkUpFilesDelete" parameterClass="list">
+/* LecDAO.lecHomeworkUpFilesDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_HMWK_UPFILE
+		WHERE UP_SEQ IN (
+	]]>
+		<iterate conjunction=",">
+			#[]#
+		</iterate>
+	<![CDATA[
+			)
+	]]>
+	</delete>
+	
+	<!-- 과제 첨부파일 삭제 -->
+	<delete id="LecDAO.lecHomeworkUpFileDelete" parameterClass="string">
+/* LecDAO.lecHomeworkUpFileDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_HMWK_UPFILE
+		WHERE UP_SEQ = #upSeq#
+	]]>
+	</delete>
+	
+	
+		<!-- ******************************** 우리반게시판 ********************************-->
+	<sql id="usr_cls_noti_table">
+		FROM
+			TB_HSWC_CLS_NOTI
+		WHERE
+			CLS_SEQ = #searchClass#
+		<isNotEmpty property="searchType" prepend="AND">
+			NT_NOTICE_YN = #searchType#
+		</isNotEmpty>
+		<isEqual property="searchType" compareValue="N">
+			<isNotEmpty property="searchWord" >
+				<isEqual property="searchCondition" compareValue="title" prepend="AND">
+					NT_TITLE LIKE '%' || #searchWord# || '%'
+				</isEqual>
+				<isEqual property="searchCondition" compareValue="name" prepend="AND">
+					REG_NAME LIKE '%' || #searchWord# || '%'
+				</isEqual>
+			</isNotEmpty>
+		</isEqual>
+	</sql>
+	
+	<!-- 우리반게시판 목록 -->
+	<select id="LecDAO.selectLecBoardList" parameterClass="searchVO" resultClass="egovMap">
+/* LecDAO.selectLecBoardList */
+	<![CDATA[
+		SELECT
+			NT_SEQ
+			, NT_TITLE
+			, NT_CONTENT
+			, NT_NOTICE_YN
+			, NT_HITCOUNT
+			, REG_ID
+			, REG_NAME
+			, REG_DATE
+			, CLS_SEQ
+			
+			, (SELECT count(*) FROM TB_HSWC_CLS_NOTI_COMMENT WHERE NT_SEQ = t1.NT_SEQ) as CMMT_CNT
+		FROM (
+			SELECT
+				rownum AS rn
+				, NT_SEQ
+				, NT_TITLE
+				, NT_CONTENT
+				, NT_NOTICE_YN
+				, NT_HITCOUNT
+				, REG_ID
+				, REG_NAME
+				, REG_DATE
+				, CLS_SEQ
+			FROM (
+				SELECT 
+					NT_SEQ
+					, NT_TITLE
+					, NT_CONTENT
+					, NT_NOTICE_YN
+					, NT_HITCOUNT
+					, REG_ID
+					, REG_NAME
+					, REG_DATE
+					, CLS_SEQ
+	]]>
+		<include refid="usr_cls_noti_table"/>
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) t1
+	]]>
+	<dynamic>
+		<isEqual property="searchType" compareValue="N">
+			WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+		</isEqual>
+	</dynamic>
+	</select>
+	
+	<!-- 우리반게시판 목록Cnt -->
+	<select id="LecDAO.selectLecBoardListCnt" parameterClass="searchVO" resultClass="int">
+/* LecDAO.selectLecBoardListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="usr_cls_noti_table"/>
+	</select>
+	
+	<!-- 우리반게시판 조회 -->
+	<select id="LecDAO.selectLecBoardOne" parameterClass="string" resultClass="clsNoticeVO">
+/* LecDAO.selectLecBoardOne */
+	<![CDATA[
+		SELECT
+			NT_SEQ as ntSeq
+			, NT_TITLE as ntTitle
+			, NT_CONTENT as ntContent
+			, NT_NOTICE_YN as ntNoticeYn
+			, NT_HITCOUNT as ntHitcount
+			, REG_ID as regId
+			, REG_NAME as regName
+			, to_char(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') as regDate
+			, CLS_SEQ as clsSeq
+		FROM
+			TB_HSWC_CLS_NOTI
+		WHERE
+			NT_SEQ = #ntSeq#
+	]]>
+	</select>
+	
+	<!-- 우리반게시판 첨부파일 목록 -->
+	<select id="LecDAO.selectLecBoardUpfileList" parameterClass="string" resultClass="egovMap">
+/* LecDAO.selectLecBoardUpfileList */
+	<![CDATA[
+		SELECT
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+		FROM
+			TB_HSWC_CLS_NOTI_UPFILE
+		WHERE
+			NT_SEQ = #ntSeq#
+	]]>
+	</select>
+	
+	<!-- 우리반게시판 첨부파일 조회 -->
+	<select id="LecDAO.selectLecBoardUpfileOne" parameterClass="string" resultClass="egovMap">
+/* LecDAO.selectLecBoardUpfileOne */
+	<![CDATA[
+		SELECT 
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH 
+		FROM 
+			TB_HSWC_CLS_NOTI_UPFILE
+		WHERE
+			UP_SEQ = #upSeq#
+	]]>
+	</select>
+	
+	<!-- 우리반게시판 등록 -->
+	<insert id="LecDAO.lecBoardInsert" parameterClass="clsNoticeVO">
+/* LecDAO.lecBoardInsert */
+	<selectKey keyProperty="ntSeq" resultClass="string" type="pre">
+		SELECT SEQ_HSWC_CLS_NOTI.nextval FROM DUAL
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS_NOTI (
+			NT_SEQ
+			, NT_TITLE
+			, NT_CONTENT
+			, NT_NOTICE_YN
+			, REG_ID
+			, REG_NAME
+			, CLS_SEQ
+		) VALUES (
+			#ntSeq#
+			, #ntTitle#
+			, #ntContent#
+			, 'N'
+			, #regId#
+			, #regName#
+			, #clsSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 우리반게시판 첨부파일 등록 -->
+	<insert id="LecDAO.lecBoardUpfileInsert" parameterClass="map">
+/* LecDAO.lecBoardUpfileInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS_NOTI_UPFILE (
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, NT_SEQ
+		) VALUES (
+			SEQ_HSWC_CLS_NOTI_UPFILE.nextval
+			, #fileInfoVO.fileName#
+			, #fileInfoVO.filePath#
+			, #ntSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 우리반게시판 수정 -->
+	<update id="LecDAO.lecBoardUpdate" parameterClass="clsNoticeVO">
+/* LecDAO.lecBoardUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_CLS_NOTI
+		SET
+			NT_TITLE = #ntTitle#
+			, NT_CONTENT = #ntContent#
+		WHERE 
+			NT_SEQ = #ntSeq#
+	]]>
+	</update>
+	
+	<!-- 우리반게시판 조회수 증가 -->
+	<update id="LecDAO.lecBoardHitcountUpdate" parameterClass="string">
+/* LecDAO.lecBoardHitcountUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_CLS_NOTI
+		SET
+			NT_HITCOUNT = NT_HITCOUNT + 1
+		WHERE 
+			NT_SEQ = #ntSeq#
+	]]>
+	</update>
+	
+	<!-- 우리반게시판 삭제 -->
+	<delete id="LecDAO.lecBoardDelete" parameterClass="string">
+/* LecDAO.lecBoardDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_NOTI
+		WHERE NT_SEQ = #ntSeq#
+	]]>
+	</delete>
+	
+	<!-- 우리반게시판 첨부파일들 삭제 -->
+	<delete id="LecDAO.lecBoardUpfilesDelete" parameterClass="list">
+/* LecDAO.lecBoardUpfilesDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_NOTI_UPFILE
+		WHERE UP_SEQ IN (
+	]]>
+		<iterate conjunction=",">
+			#[]#
+		</iterate>
+	<![CDATA[
+		)
+	]]>
+	</delete>
+	
+	<!-- 우리반게시판 첨부파일들 삭제 -->
+	<delete id="LecDAO.lecBoardUpfileDelete" parameterClass="string">
+/* LecDAO.lecBoardUpfileDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CLS_NOTI_UPFILE
+		WHERE UP_SEQ = #upSeq#
+	]]>
+	</delete>
+</sqlMap>

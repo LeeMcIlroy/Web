@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="usr_tc_table">
+		FROM
+			TB_HDA_TEACHER t1
+		WHERE 1=1
+		<isNotEmpty property="menuType" prepend="AND">
+			TC_M_CODE = #menuType#
+		</isNotEmpty>
+		<isNotEmpty property="searchType" prepend="AND">
+			TC_SUBJECT like concat('%', #searchType#, '%')
+		</isNotEmpty>
+	</sql>
+
+	<!-- 교강사 목록 -->
+	<select id="MajorBoardTeacherDAO.selectTeacherList" parameterClass="searchVO" resultClass="egovMap">
+/* MajorBoardTeacherDAO.selectTeacherList */
+	<![CDATA[
+		SELECT
+			TC_SEQ
+			, TC_CONTENT
+			, DATE_FORMAT(TC_REG_DATE, '%Y-%m-%d') as TC_REG_DATE
+			, TURN
+			, TC_M_CODE
+			, TC_SUBJECT
+			, TC_NAME
+			, (SELECT TCUP_SAVE_FILEPATH FROM TB_HDA_TC_UPFILE t2 WHERE t2.TC_SEQ = t1.TC_SEQ) as TCUP_SAVE_FILEPATH
+			, (SELECT TCUP_ORIGIN_FILENAME FROM TB_HDA_TC_UPFILE t2 WHERE t2.TC_SEQ = t1.TC_SEQ) as TCUP_ORIGIN_FILENAME
+		
+	]]>	
+	<include refid="usr_tc_table"/>
+	<![CDATA[
+		ORDER BY TURN = '' ASC, convert(TURN,UNSIGNED) ASC, t1.TC_REG_DATE DESC 
+	]]>
+	</select>
+	
+	<!-- 교강사 목록 cnt -->
+	<select id="MajorBoardTeacherDAO.selectTeacherListCnt" parameterClass="searchVO" resultClass="int">
+/* MajorBoardTeacherDAO.selectTeacherListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		
+	]]>	
+	<include refid="usr_tc_table"/>
+	</select>
+	
+	<!-- 교강사 조회 -->
+	<select id="MajorBoardTeacherDAO.selectTeacherOne" parameterClass="String" resultClass="teacherVO">
+/* MajorBoardTeacherDAO.selectTeacherOne */
+	<![CDATA[
+		SELECT
+			TC_SEQ as tcSeq
+			, TC_CONTENT as tcContent
+			, DATE_FORMAT(TC_REG_DATE, '%Y-%m-%d') as tcRegDate
+			, TURN as turn
+			, TC_M_CODE as tcMCode
+			, TC_SUBJECT as tcSubject
+			, TC_NAME as tcName
+		FROM
+			TB_HDA_TEACHER
+		WHERE
+			TC_SEQ = #tcSeq#		
+	]]>	
+	</select>
+
+	<!-- 첨부파일 조회_(tcSeq) -->
+	<select id="MajorBoardTeacherDAO.selectTeacherUpfileList" parameterClass="String" resultClass="egovMap">
+/* MajorBoardTeacherDAO.selectTeacherUpfileList */
+	<![CDATA[
+		SELECT
+			TCUP_SEQ
+			, TCUP_ORIGIN_FILENAME
+			, TCUP_SAVE_FILEPATH 
+			, TC_SEQ 
+		FROM
+			TB_HDA_TC_UPFILE
+		WHERE
+			TC_SEQ = #tcSeq#
+	]]>	
+	</select>
+	
+	
+	<!--  첨부파일 조회_(tcupSeq) -->
+	<select id="MajorBoardTeacherDAO.selectTeacherUpfileOne" parameterClass="string" resultClass="egovMap">
+/* MajorBoardTeacherDAO.selectTeacherUpfileOne */
+	<![CDATA[
+		SELECT 
+			TCUP_SEQ
+			, TCUP_ORIGIN_FILENAME
+			, TCUP_SAVE_FILEPATH 
+			, TCUP_SAVE_FILENAME 
+			, TC_SEQ 
+		FROM 
+			TB_HDA_TC_UPFILE
+		WHERE
+			TCUP_SEQ = #tcupSeq#
+	]]>
+	</select>
+	
+</sqlMap>

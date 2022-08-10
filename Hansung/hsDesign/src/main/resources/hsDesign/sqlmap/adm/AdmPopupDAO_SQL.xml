@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_popup_table">
+		FROM
+			TB_HDA_POPUP
+		WHERE 
+			1=1
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			POP_USE_YN = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			POP_TITLE LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 팝업관리 목록 -->
+	<select id="AdmPopupDAO.selectAdmPopupList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmPopupDAO.selectAdmPopupList */
+	<![CDATA[
+		SELECT
+			POP_SEQ
+			, POP_TITLE
+			, POP_WIDTH
+			, POP_HEIGHT
+			, POP_TOP
+			, POP_LEFT
+			, POP_SCROLL_YN
+			, POP_RESIZE_YN
+			, POP_CONTENT
+			, POP_USE_YN
+			, DATE_FORMAT(POP_REG_DATE, '%Y-%m-%d %H:%i:%s') as POP_REG_DATE
+			, POP_IMG_NAME
+			, POP_IMG_PATH
+			, POP_TYPE
+	]]>
+	<include refid="adm_popup_table"/>		
+	<![CDATA[
+		ORDER BY
+			POP_USE_YN DESC
+			, POP_REG_DATE DESC
+	]]>
+	<dynamic>
+		LIMIT #firstIndex#, 10
+	</dynamic>	
+	</select>
+	
+	<!-- 팝업관리 목록 Cnt-->
+	<select id="AdmPopupDAO.selectAdmPopupListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmPopupDAO.selectAdmPopupListCnt*/
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_popup_table"/>		
+	</select>
+	
+	<!-- 팝업조회 -->
+	<select id="AdmPopupDAO.selectAdmPopupOne" parameterClass="string" resultClass="popupVO">
+/*AdmPopupDAO.selectAdmPopupOne*/
+	<![CDATA[
+		SELECT
+			POP_SEQ AS popSeq
+			, POP_TITLE AS popTitle
+			, POP_WIDTH AS popWidth
+			, POP_HEIGHT AS popHeight
+			, POP_TOP AS popTop
+			, POP_LEFT AS popLeft
+			, POP_SCROLL_YN AS popScrollYn
+			, POP_RESIZE_YN AS popResizeYn
+			, POP_CONTENT AS popContent
+			, POP_USE_YN AS popUseYn
+			, POP_IMG_NAME AS popImgName
+			, POP_IMG_PATH AS popImgPath
+			, POP_URL as popUrl
+		FROM
+			TB_HDA_POPUP
+		WHERE
+			POP_SEQ = #popSeq#
+	]]>
+	</select>
+	
+	<!-- 팝업 등록 -->
+	<insert id="AdmPopupDAO.insertAdmPopup" parameterClass="popupVO">
+/*AdmPopupDAO.insertAdmPopup*/
+	<![CDATA[
+		INSERT INTO	
+			TB_HDA_POPUP(
+				POP_TITLE
+				, POP_WIDTH
+				, POP_HEIGHT
+				, POP_TOP
+				, POP_LEFT
+				, POP_SCROLL_YN
+				, POP_RESIZE_YN
+				, POP_CONTENT
+				, POP_USE_YN
+				, POP_URL
+			) VALUES (
+				#popTitle#
+				, #popWidth#
+				, #popHeight#
+				, #popTop#
+				, #popLeft#
+				, #popScrollYn#
+				, #popResizeYn#
+				, #popContent#
+				, #popUseYn#
+				, #popUrl#
+			)
+	]]>
+	<selectKey keyProperty="popSeq" resultClass="string" type="post">
+		select LAST_INSERT_ID() as value
+	</selectKey>
+	</insert>
+	
+	<!-- 팝업 수정 -->
+	<update id="AdmPopupDAO.updateAdmPopup" parameterClass="popupVO">
+/*AdmPopupDAO.updateAdmPopup*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_POPUP
+		SET
+			POP_TITLE = #popTitle#
+			, POP_WIDTH = #popWidth#
+			, POP_HEIGHT = #popHeight#
+			, POP_TOP = #popTop#
+			, POP_LEFT = #popLeft#
+			, POP_SCROLL_YN = #popScrollYn#
+			, POP_RESIZE_YN = #popResizeYn#
+			, POP_CONTENT = #popContent#
+			, POP_USE_YN = #popUseYn#
+			, POP_URL = #popUrl#
+		WHERE
+			POP_SEQ = #popSeq#
+	]]>
+	</update>
+	
+	<!-- 팝업 이미지 등록 -->
+	<update id="AdmPopupDAO.updateAdmPopupImg" parameterClass="popupVO">
+/*AdmPopupDAO.updateAdmPopupImg*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_POPUP
+		SET
+			POP_IMG_NAME = #popImgName#
+			, POP_IMG_PATH = #popImgPath#
+		WHERE
+			POP_SEQ = #popSeq#
+	]]>
+	</update>
+	
+	<!-- 팝업 삭제 -->
+	<delete id="AdmPopupDAO.deleteAdmPopup" parameterClass="popupVO">
+/*AdmPopupDAO.deleteAdmPopup*/
+	<![CDATA[
+		DELETE FROM TB_HDA_POPUP WHERE POP_SEQ = #popSeq#
+	]]>
+	</delete>
+	
+	<!-- 배너 사용여부 변경 -->
+	<update id="AdmPopupDAO.updateAdmPopupUseYn" parameterClass="popupVO">
+/*AdmPopupDAO.updateAdmPopupUseYn*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_POPUP
+		SET
+			POP_USE_YN = #popUseYn#
+		WHERE
+			POP_SEQ = #popSeq#
+	]]>
+	</update>
+</sqlMap>

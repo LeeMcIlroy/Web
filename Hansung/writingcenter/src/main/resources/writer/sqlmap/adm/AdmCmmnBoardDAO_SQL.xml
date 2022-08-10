@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_board_table">
+		FROM
+			TB_HSWC_BOARD
+		WHERE
+			1=1
+		AND
+			BRD_NOTICE_YN = 'N'
+		AND
+			TOPIC_YN = 'N'
+		<isNotEmpty property="searchWord">
+			<isEqual property="searchCondition" compareValue="title" prepend="AND">
+				BRD_TITLE LIKE '%' || #searchWord# || '%'
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="content" prepend="AND">
+				BRD_CONTENT LIKE '%' || #searchWord# || '%'
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="regName" prepend="AND">
+				REG_NAME LIKE '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty property="searchType" prepend="AND">
+			BRD_TYPE = #searchType#
+		</isNotEmpty>
+		<isNotEmpty property="searchYear" prepend="AND">
+			OPEN_YEAR = #searchYear#
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 공지글 목록 -->
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardNoticeList" parameterClass="String" resultClass="egovMap">
+/* AdmCmmnBoardDAO.selectCmmnBoardNoticeList */
+	<![CDATA[
+		SELECT
+			BRD_SEQ
+			, BRD_TYPE
+			, BRD_TITLE 
+			, BRD_CONTENT 
+			, BRD_NOTICE_YN 
+			, REG_ID 
+			, REG_NAME 
+			, REG_DATE
+			, BRD_HITCOUNT 
+			, USE_YN
+			, TOPIC_YN
+			, OPEN_YEAR
+			, APP_S_DATE
+			, APP_S_HOUR
+			, APP_S_MINU
+			, APP_E_DATE
+			, APP_E_HOUR
+			, APP_E_MINU
+		FROM
+			TB_HSWC_BOARD
+		WHERE
+			BRD_TYPE = #brdType#
+			AND (BRD_NOTICE_YN = 'Y'
+			OR TOPIC_YN = 'Y')
+		ORDER BY
+			TOPIC_YN DESC, REG_DATE DESC
+	]]>
+	</select>
+
+	<!-- 글 목록 -->
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmCmmnBoardDAO.selectCmmnBoardList */
+	<![CDATA[
+		SELECT
+			*
+		FROM	
+			(SELECT
+				ROWNUM AS rn
+				, BRD_SEQ
+				, BRD_TYPE
+				, BRD_TITLE 
+				, BRD_CONTENT 
+				, BRD_NOTICE_YN 
+				, REG_ID 
+				, REG_NAME 
+				, REG_DATE
+				, BRD_HITCOUNT
+				, USE_YN 
+				, TOPIC_YN
+				, OPEN_YEAR
+				, APP_S_DATE
+				, APP_S_HOUR
+				, APP_S_MINU
+				, APP_E_DATE
+				, APP_E_HOUR
+				, APP_E_MINU
+			FROM
+				(SELECT
+					BRD_SEQ
+					, BRD_TYPE
+					, BRD_TITLE 
+					, BRD_CONTENT 
+					, BRD_NOTICE_YN 
+					, REG_ID 
+					, REG_NAME 
+					, REG_DATE
+					, BRD_HITCOUNT 
+					, USE_YN
+					, TOPIC_YN
+					, OPEN_YEAR
+					, APP_S_DATE
+					, APP_S_HOUR
+					, APP_S_MINU
+					, APP_E_DATE
+					, APP_E_HOUR
+					, APP_E_MINU
+				]]>
+				<include refid="adm_board_table"/>
+				<![CDATA[
+				ORDER BY
+					REG_DATE desc
+				)
+			) t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	
+	<!-- 목록Cnt -->
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmCmmnBoardListDAO.selectCmmnBoardListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_board_table"/>
+	</select>
+	
+	<!-- 글쓰기 -->
+	<insert id="AdmCmmnBoardDAO.insertCmmnBoardOne" parameterClass="boardVO">
+/* AdmCmmnBoardDAO.insertCmmnBoardOne */
+	<selectKey keyProperty="brdSeq" type="pre" resultClass="String" >
+		SELECT SEQ_HSWC_BOARD.nextval FROM DUAL
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_HSWC_BOARD(
+			BRD_SEQ
+			, BRD_TYPE
+			, BRD_TITLE
+			, BRD_CONTENT
+			, BRD_NOTICE_YN
+			, REG_ID
+			, REG_NAME
+			, OPEN_YEAR
+	]]>
+		<isNotEmpty property="useYn">
+			, USE_YN
+		</isNotEmpty>
+		<isNotEmpty property="topicYn">
+			, TOPIC_YN
+		</isNotEmpty>
+		<isNotEmpty property="appSDate">
+			, APP_S_DATE
+			, APP_S_HOUR
+			, APP_S_MINU
+			, APP_E_DATE
+			, APP_E_HOUR
+			, APP_E_MINU
+		</isNotEmpty>
+			, APP_NUM
+			, SUBJECT1
+			, SUBJECT2
+			, SUBJECT3
+	<![CDATA[
+		)VALUES(
+			#brdSeq#
+			, #brdType#
+			, #brdTitle#
+			, #brdContent#
+			, #brdNoticeYn#
+			, #regId#
+			, #regName#
+			, #openYear#
+	]]>
+		<isNotEmpty property="useYn">
+			, #useYn#
+		</isNotEmpty>
+		<isNotEmpty property="topicYn">
+			, #topicYn#
+		</isNotEmpty>
+		<isNotEmpty property="appSDate">
+			, #appSDate#
+			, #appSHour#
+			, #appSMinu#
+			, #appEDate#
+			, #appEHour#
+			, #appEMinu#
+		</isNotEmpty>
+			, #appNum#
+			, #subject1#
+			, #subject2#
+			, #subject3#
+	<![CDATA[
+		)
+	]]>
+	</insert>
+	
+	<!--  첨부파일 등록 -->
+	<insert id="AdmCmmnBoardDAO.insertCmmnBoardUpfileOne" parameterClass="map">
+/* AdmCmmnBoardDAO.insertCmmnBoardUpfileOne */
+	<![CDATA[
+		INSERT INTO TB_HSWC_BOARD_UPFILE (
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, BRD_SEQ
+		) VALUES (
+			SEQ_HSWC_BOARD_UPFILE.nextval
+			, #fileInfoVO.fileName#
+			, #fileInfoVO.filePath#
+			, #brdSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 조회 -->
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardOne" parameterClass="String" resultClass="boardVO">
+/* AdmCmmnBoardDAO.selectCmmnBoardOne */
+	<![CDATA[
+		SELECT
+			BRD_SEQ AS brdSeq
+			, BRD_TYPE AS brdType
+			, BRD_TITLE AS brdTitle
+			, BRD_CONTENT AS brdContent
+			, BRD_NOTICE_YN AS brdNoticeYn
+			, REG_ID AS regId
+			, REG_NAME AS regName
+			, TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS regDate
+			, BRD_HITCOUNT AS brdHitcount
+			, USE_YN AS useYn
+			, TOPIC_YN AS topicYn
+			, TO_CHAR(APP_S_DATE, 'YYYY-MM-DD') AS appSDate
+			, APP_S_HOUR AS appSHour
+			, APP_S_MINU AS appSMinu
+			, TO_CHAR(APP_E_DATE, 'YYYY-MM-DD') AS appEDate
+			, APP_E_HOUR AS appEHour
+			, APP_E_MINU AS appEMinu
+			, APP_NUM AS appNum
+			, OPEN_YEAR AS openYear
+			, SUBJECT1 AS subject1
+			, SUBJECT2 AS subject2
+			, SUBJECT3 AS subject3
+		FROM
+			TB_HSWC_BOARD
+		WHERE
+			BRD_SEQ = #brdSeq#
+	]]>	
+	</select>
+	
+	<!-- 첨부파일 조회_(brdSeq) -->
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardUpfileList" parameterClass="String" resultClass="egovMap">
+/* AdmCmmnBoardDAO.selectCmmnBoardUpfileList */
+	<![CDATA[
+		SELECT
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_NAME 
+			, UP_SAVE_FILE_PATH 
+			, REG_DATE
+			, BRD_SEQ 
+		FROM
+			TB_HSWC_BOARD_UPFILE
+		WHERE
+			BRD_SEQ = #brdSeq#
+		ORDER BY	
+			UP_SEQ ASC
+	]]>	
+	</select>
+	
+	<!-- 글 삭제 -->
+	<delete id="AdmCmmnBoardDAO.deleteCmmnBoardOne" parameterClass="String">
+/* AdmCmmnBoardDAO.deleteCmmnBoardOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_BOARD
+		WHERE BRD_SEQ = #brdSeq#
+	]]>	
+	</delete>
+	
+	<!-- 첨부파일 삭제 -->
+	<delete id="AdmCmmnBoardDAO.deleteCmmnBoardUpfileList" parameterClass="list">
+/* AdmLecDAO.deleteCmmnBoardUpfileList */
+	<![CDATA[
+		DELETE FROM TB_HSWC_BOARD_UPFILE
+		WHERE UP_SEQ IN (
+	]]>
+		<iterate conjunction=",">
+			#[]#
+		</iterate>
+	<![CDATA[
+		)
+	]]>
+	</delete>
+	
+	
+	<!-- 글 수정 -->
+	<update id="AdmCmmnBoardDAO.updateCmmnBoardOne" parameterClass="boardVO">
+/* AdmCmmnBoardDAO.updateCmmnBoardOne */
+	<![CDATA[
+		UPDATE
+			TB_HSWC_BOARD
+		SET
+			BRD_TITLE = #brdTitle#
+			, BRD_CONTENT = #brdContent#
+			, BRD_NOTICE_YN = #brdNoticeYn#
+	]]>
+		<isNotEmpty property="useYn">
+			, USE_YN = #useYn#
+		</isNotEmpty>
+		<isNotEmpty property="topicYn">
+			, TOPIC_YN = #topicYn#
+		</isNotEmpty>
+		<isNotEmpty property="appSDate">
+			, APP_S_DATE = #appSDate#
+			, APP_S_HOUR = #appSHour#
+			, APP_S_MINU = #appSMinu#
+			, APP_E_DATE = #appEDate#
+			, APP_E_HOUR = #appEHour#
+			, APP_E_MINU = #appEMinu#
+		</isNotEmpty>
+			, APP_NUM = #appNum#
+			, SUBJECT1 = #subject1#
+			, SUBJECT2 = #subject2#
+			, SUBJECT3 = #subject3#
+	<![CDATA[
+		WHERE
+			BRD_SEQ = #brdSeq#
+	]]>	
+	</update>
+	
+		<!--  첨부파일 조회_(upSeq) -->
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardUpfileOne" parameterClass="string" resultClass="egovMap">
+/* AdmCmmnBoardDAO.selectCmmnBoardUpfileOne */
+	<![CDATA[
+		SELECT 
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH 
+			, UP_SAVE_FILE_NAME 
+			, REG_DATE
+			, BRD_SEQ 
+		FROM 
+			TB_HSWC_BOARD_UPFILE
+		WHERE
+			UP_SEQ = #upSeq#
+	]]>
+	</select>
+	<!-- /******************* 글쓰기 && 프레젠테이션대회 대회관리 START *******************/ -->
+	<!-- 공지글 목록 -->
+	<select id="AdmCmmnBoardDAO.admBoardMngContestMng" parameterClass="String" resultClass="egovMap">
+/* AdmCmmnBoardDAO.admBoardMngContestMng */
+	<![CDATA[
+		SELECT
+			*
+		FROM
+			TB_HSWC_CONTEST_MANAGER
+	]]>
+	</select>
+	
+	<sql id="adm_board_aply_table">
+		FROM
+			TB_HSWC_CNTST_APLY
+		WHERE
+			1=1
+		AND
+			APLY_CANCEL = 'N'
+		<isNotEmpty prepend="AND" property="searchYear">
+			APLY_YEAR = #searchYear#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchType">
+			APLY_TYPE = #searchType#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchWord">
+			<isEqual property="searchCondition" compareValue="name">
+				APLY_NAME LIKE '%' || #searchWord# || '%'
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="hakbun">
+				APLY_HAKBUN LIKE '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardAplyListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmCmmnBoardDAO.selectCmmnBoardAplyListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+		<include refid="adm_board_aply_table"/>
+	</select>
+	
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardAplyList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCmmnBoardDAO.selectCmmnBoardAplyListCnt */
+	<![CDATA[
+		SELECT
+			*
+		FROM
+			(SELECT
+				ROWNUM AS rn
+				, APLY_SEQ
+				, APLY_NAME
+				, APLY_HAKBUN
+				, APLY_REGIST_YN
+				, APLY_MPHONE
+				, APLY_EMAIL
+				, APLY_DEPT
+				, APLY_GRADE
+				, APLY_TYPE
+				, APLY_YEAR
+				, REG_DATE
+				, BRD_SEQ
+				, TEAM_NAME
+				, TITLE_NUM
+				, APLY_NAME2
+				, APLY_HAKBUN2
+				, APLY_REGIST_YN2
+				, APLY_MPHONE2
+				, APLY_EMAIL2
+				, APLY_DEPT2
+				, APLY_GRADE2
+				, APLY_NAME3
+				, APLY_HAKBUN3
+				, APLY_REGIST_YN3
+				, APLY_MPHONE3
+				, APLY_EMAIL3
+				, APLY_DEPT3
+				, APLY_GRADE3
+			FROM
+				(SELECT
+					APLY_SEQ
+					, APLY_NAME
+					, APLY_HAKBUN
+					, APLY_REGIST_YN
+					, APLY_MPHONE
+					, APLY_EMAIL
+					, APLY_DEPT
+					, APLY_GRADE
+					, APLY_TYPE
+					, APLY_YEAR
+					, TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS REG_DATE
+					, BRD_SEQ
+					, TEAM_NAME
+					, TITLE_NUM
+					, APLY_NAME2
+					, APLY_HAKBUN2
+					, APLY_REGIST_YN2
+					, APLY_MPHONE2
+					, APLY_EMAIL2
+					, APLY_DEPT2
+					, APLY_GRADE2
+					, APLY_NAME3
+					, APLY_HAKBUN3
+					, APLY_REGIST_YN3
+					, APLY_MPHONE3
+					, APLY_EMAIL3
+					, APLY_DEPT3
+					, APLY_GRADE3
+	]]>
+		<include refid="adm_board_aply_table"/>
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+				)
+			) t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardAplyOne" parameterClass="string" resultClass="cntstApplyVO">
+	/* AdmCmmnBoardDAO.selectCmmnBoardAplyOne */
+	<![CDATA[
+		SELECT
+			APLY_SEQ			AS aplySeq
+			, APLY_NAME			AS aplyName
+			, APLY_HAKBUN		AS aplyHakbun
+			, APLY_REGIST_YN	AS aplyRegistYn
+			, APLY_MPHONE		AS aplyMphone
+			, APLY_EMAIL 		AS aplyEmail
+			, APLY_DEPT			AS aplyDept
+			, APLY_GRADE		AS aplyGrade
+			, APLY_TYPE			AS aplyType
+			, APLY_YEAR			AS aplyYear
+			, REG_DATE			AS regDate
+			, BRD_SEQ			AS brdSeq
+			, TEAM_NAME			AS teamName
+			, TITLE_NUM			AS titleNum
+			, APLY_NAME2		AS aplyName2
+			, APLY_HAKBUN2		AS aplyHakbun2
+			, APLY_REGIST_YN2	AS aplyRegistYn2
+			, APLY_MPHONE2		AS aplyMphone2
+			, APLY_EMAIL2		AS aplyEmail2
+			, APLY_DEPT2		AS aplyDept2
+			, APLY_GRADE2		AS aplyGrade2
+			, APLY_NAME3		AS aplyName3
+			, APLY_HAKBUN3		AS aplyHakbun3
+			, APLY_REGIST_YN3	AS aplyRegistYn3
+			, APLY_MPHONE3		AS aplyMphone3
+			, APLY_EMAIL3		AS aplyEmail3
+			, APLY_DEPT3		AS aplyDept3
+			, APLY_GRADE3		AS aplyGrade3
+		FROM
+			TB_HSWC_CNTST_APLY
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	</select>
+	
+	<delete id="AdmCmmnBoardDAO.selectCmmnBoardAplyDelete" parameterClass="string">
+	/* AdmCmmnBoardDAO.selectCmmnBoardAplyDelete */
+	<![CDATA[
+		DELETE
+		FROM
+			TB_HSWC_CNTST_APLY
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	</delete>
+	
+	<select id="AdmCmmnBoardDAO.selectCmmnBoardAplyExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmCmmnBoardDAO.selectCmmnBoardAplyExcel */
+	<![CDATA[
+		SELECT
+			*
+		FROM
+			(SELECT
+				ROWNUM AS rn
+				, APLY_SEQ
+				, APLY_NAME
+				, APLY_HAKBUN
+				, APLY_REGIST_YN
+				, APLY_MPHONE
+				, APLY_EMAIL
+				, APLY_DEPT
+				, APLY_GRADE
+				, APLY_TYPE
+				, APLY_YEAR
+				, REG_DATE
+				, BRD_SEQ
+				, TEAM_NAME
+				, TITLE_NUM
+				, APLY_NAME2
+				, APLY_HAKBUN2
+				, APLY_REGIST_YN2
+				, APLY_MPHONE2
+				, APLY_EMAIL2
+				, APLY_DEPT2
+				, APLY_GRADE2
+				, APLY_NAME3
+				, APLY_HAKBUN3
+				, APLY_REGIST_YN3
+				, APLY_MPHONE3
+				, APLY_EMAIL3
+				, APLY_DEPT3
+				, APLY_GRADE3
+			FROM
+				(SELECT
+					APLY_SEQ
+					, APLY_NAME
+					, APLY_HAKBUN
+					, APLY_REGIST_YN
+					, APLY_MPHONE
+					, APLY_EMAIL
+					, APLY_DEPT
+					, APLY_GRADE
+					, APLY_TYPE
+					, APLY_YEAR
+					, REG_DATE
+					, BRD_SEQ
+					, TEAM_NAME
+					, TITLE_NUM
+					, APLY_NAME2
+					, APLY_HAKBUN2
+					, APLY_REGIST_YN2
+					, APLY_MPHONE2
+					, APLY_EMAIL2
+					, APLY_DEPT2
+					, APLY_GRADE2
+					, APLY_NAME3
+					, APLY_HAKBUN3
+					, APLY_REGIST_YN3
+					, APLY_MPHONE3
+					, APLY_EMAIL3
+					, APLY_DEPT3
+					, APLY_GRADE3
+	]]>
+		<include refid="adm_board_aply_table"/>
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+				)
+			) t1
+	]]>
+	</select>
+	<!-- /******************* 글쓰기 && 프레젠테이션대회 대회관리 END *******************/ -->
+</sqlMap>

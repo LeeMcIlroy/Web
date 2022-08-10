@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="where_stdSchedule">
+		FROM
+		TB_LCMS_LECT
+		<dynamic prepend="WHERE">
+		  <isNotEmpty property="searchMemberCode" prepend="AND">
+		  LECT_CLA_TEA = #searchMemberCode#
+	     </isNotEmpty>
+		<isNotEmpty property="searchCondition5" prepend="AND">
+			LECT_YEAR = #searchCondition5#
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition6" prepend="AND">
+			LECT_SEM = #searchCondition6#
+		</isNotEmpty>
+			</dynamic>
+	</sql>
+
+	<!-- 강의리스트 -->
+	<select id="StdScheduleDAO.stdLectView" parameterClass="searchVO" resultClass="egovMap">
+	/* StdScheduleDAO.stdLectView*/
+	<![CDATA[
+	SELECT K.*,SUBSTRING_INDEX(ROWNUM,'.',1) ROWINDEX FROM
+		(
+	SELECT A.*,@rownum := @rownum+1 AS ROWNUM FROM
+			(SELECT b.LECT_SEQ
+					,b.LECT_NAME
+					,b.LECT_DIVI
+					,b.LECT_CLA_TEA
+					,b.LECT_CLASSROOM
+					,b.LECT_SDATE
+					,b.LECT_EDATE
+					,b.LECT_STATE
+					,b.LECT_YEAR
+					,b.LECT_SEM
+					,b.LECT_PROG
+					,b.LECT_CURR
+					,b.LECT_PER
+					,(SELECT GROUP_CONCAT(DISTINCT LECT_WEEK ORDER BY CASE LECT_WEEK WHEN '월요일' THEN 1
+																					 WHEN '화요일' THEN 2
+																					 WHEN '수요일' THEN 3
+																					 WHEN '목요일' THEN 4
+																					 WHEN '금요일' THEN 5
+																					 WHEN '토요일' THEN 6
+																					 WHEN '일요일' THEN 7 END ASC) 
+					FROM TB_LCMS_LECTTIMETABLE c
+					WHERE c.LECT_CODE = b.LECT_SEQ
+					) AS LECT_WEEK
+					,(SELECT d.NAME FROM TB_LCMS_MEMBER d WHERE d.MEMBER_CODE = b.LECT_CLA_TEA) AS LECT_TEA
+		FROM
+			TB_LCMS_LECT b
+		 INNER JOIN 
+                   TB_LCMS_LECT_MAP a
+                      ON  b.LECT_SEQ = a.LECT_SEQ and a.MEMBER_CODE = #searchMemberCode#)A 
+			,(SELECT @ROWNUM:=0) R ORDER BY  ROWNUM DESC )K
+		WHERE K.LECT_STATE = 'Y'
+	]]>
+		<isNotEmpty property="searchCondition5" prepend="AND">
+			K.LECT_YEAR = #searchCondition5#
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition6" prepend="AND">
+			K.LECT_SEM = #searchCondition6#
+		</isNotEmpty>
+	</select>
+
+
+	<!-- 강의리스트 -->
+	<select id="StdScheduleDAO.selectStdLectTimetables"
+		parameterClass="map" resultClass="lectureTimeTableVO">
+		/* StdScheduleDAO.selectStdLectTimetables*/
+	<![CDATA[
+	
+			SELECT B.LECT_CODE AS lectCode
+					,B.LECT_TBSEQ AS lectTbseq
+					,B.LECT_SCLASS AS lectSclass
+					,B.LECT_ECLASS AS lectEclass
+					,B.LECT_GRAMMAR AS lectGrammar
+					,B.LECT_TEA AS lectTea
+					,(SELECT COUNT(*) FROM TB_LCMS_LECT_MAP WHERE MEMBER_CODE = #memberCode# ) AS lectStdRegiCnt
+				    ,CASE WHEN LECT_WEEK = '월요일' THEN 'mon'
+				          WHEN LECT_WEEK = '화요일' THEN 'tue'
+				          WHEN LECT_WEEK = '수요일' THEN 'wed'
+				          WHEN LECT_WEEK = '목요일' THEN 'thu'
+				          WHEN LECT_WEEK = '금요일' THEN 'fri' END AS lectWeek
+		FROM
+			TB_LCMS_LECTTIMETABLE B
+			 INNER JOIN 
+                   TB_LCMS_LECT_MAP A
+                      ON  B.LECT_CODE = A.LECT_SEQ AND A.MEMBER_CODE = #memberCode#
+                      ORDER BY B.LECT_CODE ASC
+	]]>
+	</select>
+	
+	<!-- 지원한 강의 리스트 -->
+	<select id="StdScheduleDAO.selectStdLectSeq"
+		parameterClass="map" resultClass="egovMap">
+		/* StdScheduleDAO.selectStdLectSeq*/
+	<![CDATA[
+		 SELECT LECT_SEQ FROM TB_LCMS_LECT_MAP
+		   WHERE MEMBER_CODE = #membercode#
+	]]>
+	</select>
+
+</sqlMap>

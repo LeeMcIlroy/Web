@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_webtoon_table">
+		FROM
+			TB_HDA_WEBTOON
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				WC_SEQ = #searchCondition1#				
+			</isNotEmpty>
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition2" compareValue="title">
+					W_TITLE like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition2" compareValue="writer">
+					REG_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="AdmWebtoonDAO.selectWebtoonList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmWebtoonDAO.selectWebtoonList */
+	<![CDATA[
+		SELECT
+			 W_SEQ
+			, WC_SEQ
+			, (SELECT WC_TITLE FROM TB_HDA_WEBTOON_CATEGORY WHERE WC_SEQ = tt.WC_SEQ) as WC_TITLE
+			, W_TITLE
+			, W_TH_IMG_NAME
+			, W_TH_IMG_PATH
+			, W_ORDER
+			, W_COUNT
+			, W_CONTENT
+			, REG_SEQ
+			, REG_NAME
+			, DATE_FORMAT(REG_DATE, '%Y-%m-%d')		as REG_DATE
+		FROM (
+			SELECT
+				W_SEQ
+				, WC_SEQ
+				, W_TITLE
+				, W_TH_IMG_NAME
+				, W_TH_IMG_PATH
+				, W_ORDER
+				, W_COUNT
+				, W_CONTENT
+				, REG_SEQ
+				, REG_NAME
+				, REG_DATE
+	]]>
+			<include refid="adm_webtoon_table"/>
+	<![CDATA[
+			ORDER BY
+				REG_DATE desc
+			LIMIT #firstIndex#, #recordCountPerPage#
+		) tt
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmWebtoonDAO.selectWebtoonListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmWebtoonDAO.selectWebtoonListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="adm_webtoon_table"/>
+	</select>
+
+	<!-- 조회 -->
+	<select id="AdmWebtoonDAO.selectWebtoonOne" parameterClass="string" resultClass="webtoonVO">
+/* AdmWebtoonDAO.selectWebtoonOne */
+	<![CDATA[
+		SELECT
+			W_SEQ				as wSeq
+			, WC_SEQ			as wcSeq
+			, W_TITLE			as wTitle
+			, W_TH_IMG_NAME		as wThImgName
+			, W_TH_IMG_PATH		as wThImgPath
+			, W_ORDER			as wOrder
+			, W_COUNT			as wCount
+			, W_CONTENT			as wContent
+			, REG_SEQ			as regSeq
+			, REG_NAME			as regName
+			, REG_DATE			as regDate
+		FROM TB_HDA_WEBTOON
+		WHERE W_SEQ = #wSeq#
+	]]>
+	</select>
+
+	<!-- 등록 -->
+	<insert id="AdmWebtoonDAO.webtoonInsert" parameterClass="webtoonVO">
+/* AdmWebtoonDAO.webtoonInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_WEBTOON (
+			WC_SEQ
+			, W_TITLE
+			, W_ORDER
+			, W_COUNT
+			, W_CONTENT
+			, REG_SEQ
+			, REG_NAME
+			, REG_DATE
+		) VALUES (
+			#wcSeq#
+			, #wTitle#
+			, #wOrder#
+			, 0
+			, #wContent#
+			, #regSeq#
+			, #regName#
+			, current_timestamp
+		)
+	]]>
+	<selectKey keyProperty="wSeq" resultClass="string" type="post">
+		select LAST_INSERT_ID() as value
+	</selectKey>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmWebtoonDAO.webtoonUpdate" parameterClass="webtoonVO">
+/* AdmWebtoonDAO.webtoonUpdate */
+	<![CDATA[
+		UPDATE TB_HDA_WEBTOON
+		SET
+			W_TITLE = #wTitle#
+			, WC_SEQ = #wcSeq#
+			, W_ORDER = #wOrder#
+			, W_CONTENT = #wContent#
+		WHERE W_SEQ = #wSeq#
+	]]>
+	</update>
+	
+	<!-- 썸네일 등록 -->
+	<update id="AdmWebtoonDAO.webtoonThumbnailInsert" parameterClass="map">
+/* AdmWebtoonDAO.webtoonThumbnailInsert */
+	<![CDATA[
+		UPDATE TB_HDA_WEBTOON
+		SET
+			W_TH_IMG_NAME		= #fileInfoVO.fileName#
+			, W_TH_IMG_PATH		= #fileInfoVO.filePath#
+		WHERE W_SEQ = #wSeq#
+	]]>
+	</update>
+
+	<!-- 삭제 -->
+	<delete id="AdmWebtoonDAO.webtoonDelete" parameterClass="string">
+/* AdmWebtoonDAO.webtoonDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_WEBTOON
+		WHERE W_SEQ = #wSeq#
+	]]>
+	</delete>
+
+<!-- **************************************************************************** 웹툰 카테고리 **************************************************************************** -->
+
+	<sql id="adm_webtoon_category_table">
+		FROM
+			TB_HDA_WEBTOON_CATEGORY t1
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="title">
+					WC_TITLE like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="writer">
+					REG_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+
+	<!-- 카테고리 목록 -->
+	<select id="AdmWebtoonDAO.selectWebtoonCategoryList" parameterClass="searchVO" resultClass="webtoonVO">
+/* AdmWebtoonDAO.selectWebtoonCategoryList */
+	<![CDATA[
+		SELECT
+			WC_SEQ			as wcSeq
+			, WC_TITLE		as wcTitle
+			, WC_ORDER		as wcOrder
+			, REG_SEQ		as regSeq
+			, REG_NAME		as regName
+			, DATE_FORMAT(REG_DATE, '%Y-%m-%d')		as regDate
+			, (SELECT count(*) FROM TB_HDA_WEBTOON WHERE WC_SEQ = t1.WC_SEQ) as webtoonCount
+	]]>
+		<include refid="adm_webtoon_category_table"/>
+	<![CDATA[
+		ORDER BY
+			REG_DATE desc
+	]]>
+<dynamic>
+	<isNotEmpty property="menuType">
+		<isEqual property="menuType" compareValue="MNG">
+			LIMIT #firstIndex#, #recordCountPerPage#
+		</isEqual>
+	</isNotEmpty>
+</dynamic>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmWebtoonDAO.selectWebtoonCategoryListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmWebtoonDAO.selectWebtoonCategoryListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="adm_webtoon_category_table"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmWebtoonDAO.selectWebtoonCategoryOne" parameterClass="string" resultClass="webtoonVO">
+/* AdmWebtoonDAO.selectWebtoonCategoryOne */
+	<![CDATA[
+		SELECT
+			WC_SEQ			as wcSeq
+			, WC_TITLE		as wcTitle
+			, WC_ORDER		as wcOrder
+			, REG_SEQ		as regSeq
+			, REG_NAME		as regName
+			, REG_DATE		as regDate
+			, (SELECT count(*) FROM TB_HDA_WEBTOON WHERE WC_SEQ = t1.WC_SEQ) as webtoonCount
+		FROM
+			TB_HDA_WEBTOON_CATEGORY t1
+		WHERE
+			WC_SEQ = #wcSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmWebtoonDAO.webtoonCategoryInsert" parameterClass="webtoonVO">
+/* AdmWebtoonDAO.webtoonCategoryInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_WEBTOON_CATEGORY (
+			WC_TITLE
+			, REG_SEQ
+			, REG_NAME
+			, REG_DATE
+		) VALUES (
+			#wcTitle#
+			, #regSeq#
+			, #regName#
+			, current_timestamp
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmWebtoonDAO.webtoonCategoryUpdate" parameterClass="webtoonVO">
+/* AdmWebtoonDAO.webtoonCategoryUpdate */
+	<![CDATA[
+		UPDATE TB_HDA_WEBTOON_CATEGORY
+		SET
+			WC_TITLE = #wcTitle#
+		WHERE WC_SEQ = #wcSeq#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmWebtoonDAO.webtoonCategoryDelete" parameterClass="string">
+/* AdmWebtoonDAO.webtoonCategoryDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_WEBTOON_CATEGORY
+		WHERE WC_SEQ = #wcSeq#
+	]]>
+	</delete>
+</sqlMap>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_major_menu">
+		FROM 
+			TB_HDA_MAJOR_MENU t1
+			, TB_HDA_BOARD_CODE t2
+		WHERE
+			t1.BC_SEQ = t2.BC_SEQ
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				t1.M_CODE = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition2" prepend="AND">
+				t1.MM_USE_YN = #searchCondition2#
+			</isNotEmpty>
+	</sql>
+	
+	
+	<!-- 전공메뉴관리 목록 -->
+	<select id="AdmMajorMenuDAO.selectAdmMenuList" parameterClass="searchVO" resultClass="EgovMap">
+/*AdmMajorMenuDAO.selectAdmMenuList*/
+	<![CDATA[
+		SELECT 
+			t1.MM_SEQ
+			, (SELECT M_NAME FROM TB_HDA_MAJOR WHERE M_CODE = t1.M_CODE) AS M_NAME 
+			, t1.BC_SEQ
+			, t2.BC_NAME
+			, (SELECT GROUP_CONCAT((SELECT BC_NAME FROM TB_HDA_BOARD_CODE WHERE BC_SEQ = tt1.BC_SEQ AND BC_USE_YN = "Y")) FROM	TB_HDA_MAJOR_MENU_HEAD tt1 GROUP BY MM_SEQ HAVING MM_SEQ = t1.MM_SEQ) AS BC_HEAD_NAME
+			, t1.MM_SORT_NUM
+			, t1.MM_USE_YN
+	]]>
+	<include refid="adm_major_menu"/>
+	<![CDATA[
+		ORDER BY t1.MM_REG_DTTM DESC, t1.MM_SORT_NUM ASC
+			LIMIT #firstIndex#, #recordCountPerPage# 
+	]]>
+	</select>
+	
+	<!-- 전공메뉴관리 목록 Cnt-->
+	<select id="AdmMajorMenuDAO.selectAdmMenuListCnt" parameterClass="searchVO" resultClass="int">
+/*AdmMajorMenuDAO.selectAdmMenuListCnt*/
+	<![CDATA[
+		SELECT 
+			COUNT(*)
+	]]>
+	<include refid="adm_major_menu"/>
+	</select>
+	
+	<!-- 전공 불러오기 -->
+	<select id="AdmMajorMenuDAO.selectAdmMajorList" resultClass="EgovMap">
+/*AdmMajorList*/
+	<![CDATA[
+		SELECT 
+			M_CODE
+			, M_NAME
+		FROM 
+			TB_HDA_MAJOR
+		ORDER BY M_REG_DTTM ASC
+	]]>
+	</select>
+	
+	<!-- 전공메뉴조회 -->
+	<select id="AdmMajorMenuDAO.selectAdmMenuOne" parameterClass="string" resultClass="menuVO">
+/*AdmMajorMenuDAO.selectAdmMenuOne*/
+	<![CDATA[
+		SELECT
+			MM_SEQ AS mmSeq
+			, BC_SEQ AS bcSeq
+			, M_CODE AS mCode
+			, MM_SORT_NUM As mmSortNum
+			, MM_USE_YN AS mmUseYn
+			, (SELECT  GROUP_CONCAT(BC_SEQ) FROM TB_HDA_MAJOR_MENU_HEAD WHERE MM_SEQ = t1.MM_SEQ GROUP BY MM_SEQ) as bcHead
+		FROM
+			TB_HDA_MAJOR_MENU t1
+		WHERE
+			MM_SEQ = #mmSeq#
+	]]>
+	</select>
+	
+	<!-- 전공메뉴 게시판 조회 -->
+	<select id="AdmMajorMenuDAO.selectMajorMenuBoardList" resultClass="egovMap">
+/*AdmMajorMenuDAO.selectMajorMenuBoardList*/
+	<![CDATA[
+		SELECT 
+			BC_SEQ
+			, BC_NAME
+		FROM 
+			TB_HDA_BOARD_CODE 
+		WHERE 
+			BC_USE_YN = 'Y' 
+		AND ( BC_TYPE = 'A' OR BC_TYPE='B')
+		ORDER BY BC_NAME ASC
+	]]>
+	</select>
+	
+	<!-- 전공메뉴 말머리 조회 -->
+	<select id="AdmMajorMenuDAO.selectMajorMenuHeaderList" resultClass="egovMap">
+/*AdmMajorMenuDAO.selectMajorMenuHeaderList*/
+	<![CDATA[
+		SELECT 
+			BC_SEQ
+			, BC_NAME 
+		FROM 
+			TB_HDA_BOARD_CODE 
+		WHERE 
+			BC_USE_YN = 'Y' 
+		AND ( BC_TYPE = 'A' OR BC_TYPE='H')
+		ORDER BY BC_NAME ASC
+	]]>
+	</select>
+	
+	<!-- 전공메뉴 입력 -->
+	<insert id="AdmMajorMenuDAO.insertAdmMenu" parameterClass="menuVO">
+/* AdmMajorMenuDAO.insertAdmMenu */
+	<selectKey keyProperty="mmSeq" resultClass="String" type="post">
+        SELECT LAST_INSERT_ID()
+    </selectKey>
+	<![CDATA[
+		INSERT INTO TB_HDA_MAJOR_MENU(
+			BC_SEQ
+			, M_CODE
+			, MM_SORT_NUM
+			, MM_USE_YN
+		) VALUES (
+			#bcSeq#
+			, #mCode#
+			, #mmSortNum#
+			, #mmUseYn#
+		)
+	]]>
+	</insert>
+	
+	<!-- 전공말머리 입력 -->
+	<insert id="AdmMajorMenuDAO.insertAdmMenuHead" parameterClass="map">
+/*AdmMajorMenuDAO.insertAdmMenuHead*/
+	<![CDATA[
+		INSERT INTO TB_HDA_MAJOR_MENU_HEAD(
+			MM_SEQ
+			, BC_SEQ
+		) VALUES (
+			#mmSeq#
+			, #head#
+		)
+	]]>
+	</insert>
+	
+	<!-- 전공메뉴 수정 -->
+	<update id="AdmMajorMenuDAO.updateAdmMenu" parameterClass="menuVO">
+/*AdmMajorMenuDAO.updateAdmMenu*/
+	<![CDATA[
+		UPDATE TB_HDA_MAJOR_MENU SET
+			BC_SEQ = #bcSeq#
+			, M_CODE = #mCode#
+			, MM_SORT_NUM = #mmSortNum#
+			, MM_USE_YN = #mmUseYn#
+			, MM_UDP_DTTM = CURRENT_TIMESTAMP
+		WHERE
+			MM_SEQ = #mmSeq#
+	]]>
+	</update>
+	
+	<!-- 전공메뉴 수정시 기존 말머리 삭제 -->
+	<delete id="AdmMajorMenuDAO.deleteAdmMenuHead" parameterClass="string">
+/*AdmMajorMenuDAO.deleteAdmMenuHead*/
+	<![CDATA[
+		DELETE FROM TB_HDA_MAJOR_MENU_HEAD WHERE MM_SEQ = #mmSeq#
+	]]>
+	</delete>
+</sqlMap>

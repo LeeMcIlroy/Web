@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 학기 강의실 목록 -->
+	<select id="AdmCmmDAO.selectSmtrList" parameterClass="searchVO" resultClass="semesterVO" remapResults="true">
+/* AdmCmmDAO.selectSmtrList */
+	<![CDATA[
+		SELECT 
+			SMTR_SEQ as smtrSeq
+			, SMTR_TITLE as smtrTitle
+	]]>
+	<dynamic>
+		<isParameterPresent>
+			<isEmpty property="searchSemester">
+				, CASE 
+					WHEN rownum = 1 THEN
+						'Y'
+					ELSE
+						'N'
+				END AS choiceYn
+			</isEmpty>
+			<isNotEmpty property="searchSemester">
+				, CASE 
+					WHEN SMTR_SEQ = #searchSemester# THEN
+						'Y'
+					ELSE
+						'N'
+				END AS choiceYn
+			</isNotEmpty>
+		</isParameterPresent>
+	</dynamic>
+	<![CDATA[
+		FROM (
+			SELECT
+				rownum AS rn
+				, SMTR_SEQ
+				, SMTR_TITLE
+			FROM (
+				SELECT
+					SMTR_SEQ
+					, SMTR_TITLE
+				FROM
+					TB_HSWC_SMTR
+				WHERE
+					SMTR_VIEW_YN = 'Y'
+				ORDER BY
+					SMTR_SORT asc, SMTR_SEQ desc
+			)
+		)
+	
+	]]>
+	</select>
+
+	<!-- 계열 목록 -->
+	<select id="AdmCmmDAO.selectDeptList" parameterClass="searchVO" resultClass="departmentVO" remapResults="true">
+/* AdmCmmDAO.selectDeptList */
+	<![CDATA[
+		SELECT 
+			DEPT_SEQ		as deptSeq
+			, DEPT_TITLE	as deptTitle
+			, DEPT_SORT		as deptSort
+	]]>
+	<dynamic>
+		<isParameterPresent>
+			<isNotEmpty property="searchSemester">
+				, (
+					SELECT count(*) 
+					FROM TB_HSWC_CLS 
+					WHERE CLS_VIEW_YN = 'Y'
+						AND SMTR_SEQ = #searchSemester#
+						AND DEPT_SEQ = t1.DEPT_SEQ
+					) AS clsCnt
+			</isNotEmpty>
+		</isParameterPresent>
+	</dynamic>
+	<![CDATA[
+		FROM 
+			TB_HSWC_DEPT t1
+		WHERE
+			DEPT_VIEW_YN = 'Y'
+		ORDER BY
+			DEPT_SORT asc
+	]]>
+	</select>
+	
+	<!-- 반_교수 조회 -->
+	<select id="AdmCmmDAO.selectClassOne" parameterClass="string" resultClass="egovMap">
+/* AdmCmmDAO.selectClassOne */
+	<![CDATA[
+		SELECT
+			CLS_TITLE
+			, CLS_LINK
+			, SMTR_SEQ
+			, (SELECT SMTR_TITLE FROM TB_HSWC_SMTR WHERE SMTR_SEQ = t1.SMTR_SEQ) AS SMTR_TITLE
+			, DEPT_SEQ
+			, (SELECT DEPT_TITLE FROM TB_HSWC_DEPT WHERE DEPT_SEQ = T1.DEPT_SEQ) AS DEPT_TITLE
+		FROM
+			TB_HSWC_CLS t1
+		WHERE
+			CLS_SEQ = #clsSeq#
+	]]>
+	</select>
+	
+	<!-- 반_교수 나의 목록 -->
+	<select id="AdmCmmDAO.selectMyClassList" parameterClass="map" resultClass="egovMap">
+/* AdmCmmDAO.selectMyClassList */
+	<![CDATA[
+		SELECT 
+			CLS_SEQ
+			, DEPT_SEQ
+			, (SELECT DEPT_TITLE FROM TB_HSWC_DEPT WHERE DEPT_SEQ = t1.DEPT_SEQ) AS DEPT_TITLE
+			, CLS_TITLE
+		FROM 
+			TB_HSWC_CLS t1
+		WHERE
+			CLS_VIEW_YN = 'Y'
+			AND SMTR_SEQ = #searchVO.searchSemester#
+	]]>
+	<dynamic>
+		<isNotEqual property="adminVO.memLevel" compareValue="1">
+			AND CLS_SEQ IN (
+					SELECT CLS_SEQ 
+					FROM TB_HSWC_CLS_ATHR 
+					WHERE MEM_SEQ = #adminVO.memSeq#
+				)
+		</isNotEqual>
+	</dynamic>
+	<![CDATA[
+		ORDER BY
+			CLS_SORT asc
+	]]>
+	</select>
+
+	<!-- 회원 목록 -->
+	<select id="AdmCmmDAO.selectAdmList" parameterClass="string" resultClass="adminVO">
+/* AdmCmmDAO.selectAdmList */
+	<![CDATA[
+		SELECT
+			MEM_SEQ as memSeq
+			, MEM_CODE as memCode
+			, MEM_NAME as memName
+	]]>
+	<dynamic>
+		<isNotParameterPresent>
+			, 'N' as athrYn
+		</isNotParameterPresent>
+		<isParameterPresent>
+			, CASE 
+				WHEN (SELECT count(*) FROM TB_HSWC_CLS_ATHR WHERE CLS_SEQ = #clsSeq# AND MEM_SEQ = t1.MEM_SEQ) > 0 THEN
+					'Y'
+				ELSE
+					'N'
+			END	as athrYn
+		</isParameterPresent>
+	</dynamic>
+	<![CDATA[
+		FROM
+			TB_HSWC_MEMBER t1
+		WHERE
+			MEM_UPDT_YN = 'Y'
+	]]>
+	</select>
+
+</sqlMap>

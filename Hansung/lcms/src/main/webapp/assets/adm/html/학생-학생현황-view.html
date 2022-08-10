@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+	<title>학사관리시스템</title>
+
+	<link rel="stylesheet" media="screen" href="../css/style.css">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+	<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="../js/front.js"></script>
+	<script>
+		function closeLayer( obj ) {
+			$(obj).parent().parent().hide();
+		}
+
+		$(function(){
+
+			/* 클릭 클릭시 클릭을 클릭한 위치 근처에 레이어가 나타난다. */
+			$('.imgSelect').click(function(e)
+			{
+				var sWidth = window.innerWidth;
+				var sHeight = window.innerHeight;
+
+				var oWidth = $('.popupLayer').width();
+				var oHeight = $('.popupLayer').height();
+
+				// 레이어가 나타날 위치를 셋팅한다.
+				var divLeft = e.clientX + 10;
+				var divTop = e.clientY + 5;
+
+				// 레이어가 화면 크기를 벗어나면 위치를 바꾸어 배치한다.
+				if( divLeft + oWidth > sWidth ) divLeft -= oWidth;
+				if( divTop + oHeight > sHeight ) divTop -= oHeight;
+
+				// 레이어 위치를 바꾸었더니 상단기준점(0,0) 밖으로 벗어난다면 상단기준점(0,0)에 배치하자.
+				if( divLeft < 0 ) divLeft = 0;
+				if( divTop < 0 ) divTop = 0;
+
+				$('.popupLayer').css({
+					"top": divTop,
+					"left": divLeft,
+					"position": "absolute"
+				}).show();
+			});
+
+		});
+	</script>
+</head>
+<body>
+    <header>
+		<div class="top-area">
+			<div class="content-box">
+				<!-- gnd -->
+				<div class="header-info">
+					접속시간 : 2019.10.10 18:20 (20분 경과)
+					<i class="icon-user ml20"></i>
+					<label for="user-pop">홍길동님</label>
+					<input type="checkbox" id="user-pop">
+					<div class="user-popup">
+						<a href="">Profile</a>
+						<a href="">시간연장</a>
+						<a href="">Logout</a>
+					</div>
+				</div>
+				<!-- // gnd -->
+				<div class="header-menu">
+					<!-- logo -->
+					<h1><a href="">학사관리시스</a></h1>
+					<!--// logo -->
+
+					<!-- top menu -->
+					<nav>
+						<a href=""><span>입학</span></a>
+						<a href=""><span>등록</span></a>
+						<a href="" class="on"><span>학생</span></a>
+						<a href=""><span>수업</span></a>
+						<a href=""><span>행정</span></a>
+						<a href=""><span>현황통계</span></a>
+						<a href=""><span>운영</span></a>
+						<a href=""><span>교육과정</span></a>
+					</nav>
+					<!--// top menu -->
+				</div>
+			</div>
+		</div>
+    </header>
+
+	<!-- contents -->
+	<div class="content-box">
+		<div class="contents">
+			<!-- left menu -->
+			<div id="cssmenu">
+				<div class="left-title"><span>학생</span></div>
+				<ul>
+					<!-- 2뎁스 메뉴추가시 li class="has-sub" 추가됨.-->
+				   <li><a href="#" class="on">학생현황</a></li>
+				   <li><a href="#">학적변동</a></li>
+				</ul>
+			</div>
+			<!--// left menu -->
+			<div class="main-content">
+				<div class="title-area">
+					<p class="page-lv01">학생현황 - 학생등록</p>
+					<div class="navi">
+						<span class="icon-home">Home</span>
+						<span>학생</span>
+						<span>학생현황</span>
+					</div>
+				</div>
+
+				<p class="sub-title">기본 정보</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+							<col style="width:10%;" />
+							<col style="width:20%;" />
+							<col style="width:20%;" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th>학번</th>
+								<td>
+									22K2999
+								</td>
+								<th>단계</th>
+								<td>
+									1급
+								</td>
+								<td rowspan="4">
+									이미지
+								</td>
+							</tr>
+							<tr>
+								<th>성명</th>
+								<td colspan="3">
+									홍길동&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HONG GIL DONG
+								</td>
+							</tr>
+							<tr>
+								<th>생년월일</th>
+								<td>
+									1999-0101
+								</td>
+								<th>성별</th>
+								<td>
+									남
+								</td>
+							</tr>
+							<tr>
+								<th>국적</th>
+								<td>
+									대한민국
+								</td>
+								<th>출생국</th>
+								<td>
+									대한민국
+								</td>
+							</tr>
+							<tr>
+								<th>상태</th>
+								<td>
+									재학
+								</td>
+								<th>사진첨부</th>
+								<td colspan="2">
+									<input type="text" value="사진명.jpg" class="input-data" disabled="disabled">
+									<label for="upload_file" class="btn-upload-file">파일업로드</label>
+									<input type="file" class="hidden" id="upload_file"/>
+									<button type="button" >X</button>
+								</td>
+							</tr>
+							<tr>
+								<th>과정</th>
+								<td>
+									정규과정
+								</td>
+								<th>학생구분</th>
+								<td colspan="2">
+									어학연수생
+								</td>
+							</tr>
+							<tr>
+								<th>입학일자</th>
+								<td colspan="4">
+									<input type="text" id="datepicker01" placeholder="0000-00-00">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<p class="sub-title">사용정보</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th><sup>*</sup>비밀번호</th>
+								<td>
+									************************ <button class="normal-btn">비밀번호초기화</button>
+								</td>
+								<th>최근접속일시</th>
+								<td>
+									2019.10.10 11:45
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<p class="sub-title">학력 사항</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th>최종학력</th>
+								<td>
+									고졸
+								</td>
+								<th>학교명</th>
+								<td>
+									시카고주립 고등학교
+								</td>
+							</tr>
+							<tr>
+								<th>국가</th>
+								<td>
+									대한민국
+								</td>
+								<th>재학기간</th>
+								<td>
+									2019.10.10 ~ 2019.10.20
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<p class="sub-title">연수 계획</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th>한국어 연수경험</th>
+								<td>
+									예
+								</td>
+								<th>프로그램 인지경로</th>
+								<td>
+									한성대학교 학생
+								</td>
+							</tr>
+							<tr>
+								<th>연수 예정기간</th>
+								<td colspan="3">
+									2개 학기
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<p class="sub-title">연락처</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:10%;" />
+							<col style="width:35%;" />
+							<col style="width:10%;" />
+							<col style="width:35%;" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th rowspan="2">본국</th>
+								<td class="txt-c">전화번호</td>
+								<td colspan="3">
+									111-1111-1111
+								</td>
+							</tr>
+							<tr>
+								<td class="txt-c">주소</td>
+								<td colspan="3">
+									대한민국 민국시 종로구 명일동 12-12233
+								</td>
+							</tr>
+							<tr>
+								<th rowspan="2">국내 주소</th>
+								<td class="txt-c">전화번호</td>
+								<td>
+									111-1111-1111
+								</td>
+								<th>이메일</th>
+								<td>
+									klpone@hansung.ac.kr
+								</td>
+							</tr>
+							<tr>
+								<td class="txt-c">주소<br />(현거주지)</td>
+								<td colspan="3">
+									<ul>
+										<li class="mb5">02876</li>
+										<li>
+											서울특별시 성북구 삼선교로 16길(삼선동2가) 상상관 지하1층
+
+										</li>
+									</ul>
+								</td>
+							</tr>
+							<tr>
+								<th rowspan="3">비상시 연락처</th>
+								<td class="txt-c">이름</td>
+								<td>
+									홍길동
+								</td>
+								<th>관계</th>
+								<td>
+									친척
+								</td>
+							</tr>
+							<tr>
+								<td class="txt-c">전화번호</td>
+								<td>
+									02-760-4374
+								</td>
+								<th>이메일</th>
+								<td>
+									klpone@hansung.ac.kr
+
+								</td>
+							</tr>
+							<tr>
+								<td class="txt-c">주소</td>
+								<td colspan="3">
+									<ul>
+										<li class="mb5"><input type="text" class="input-data w100px" /> <a href="" class="normal-btn">02876</a></li>
+										<li>
+											서울특별시 성북구 삼선교로 16길(삼선동2가) 상상관 지하1층
+										</li>
+									</ul>
+								</td>
+							</tr>
+
+							<tr>
+								<th rowspan="3">국내 신원보증인</th>
+								<td class="txt-c">이름</td>
+								<td>
+									홍길동
+								</td>
+								<th>관계</th>
+								<td>
+									친척
+								</td>
+							</tr>
+							<tr>
+								<td class="txt-c">전화번호</td>
+								<td>
+									02-760-4374
+								</td>
+								<th>이메일</th>
+								<td>
+									klpone@hansung.ac.kr
+
+								</td>
+							</tr>
+							<tr>
+								<td class="txt-c">주소</td>
+								<td colspan="3">
+									<ul>
+										<li class="mb5"><input type="text" class="input-data w100px" /> <a href="" class="normal-btn">02876</a></li>
+										<li>
+											서울특별시 성북구 삼선교로 16길(삼선동2가) 상상관 지하1층
+										</li>
+									</ul>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<p class="sub-title">비자 및 여권</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th>비자종류</th>
+								<td>
+									D-4
+								</td>
+								<th>한국입국일</th>
+								<td>
+									2019.10.10
+								</td>
+							</tr>
+							<tr>
+								<th>비자발급일자</th>
+								<td>
+									2019.10.10
+								</td>
+								<th>비자만료일자</th>
+								<td>
+									2019.10.10
+								</td>
+							</tr>
+							<tr>
+								<th>외국인등록증발급일</th>
+								<td>
+									2019.10.10
+								</td>
+								<th>외국인등록번호</th>
+								<td>
+									11111111111111
+								</td>
+							</tr>
+							<tr>
+								<th>여권번호</th>
+								<td>
+									11111111111111
+								</td>
+								<th>여권발급일자</th>
+								<td>
+									2019.10.10
+								</td>
+							</tr>
+							<tr>
+								<th>여권유효기간</th>
+								<td colspan="3">
+									2019.10.10
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<p class="sub-title">보험증권및은행</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th>보험회사</th>
+								<td>
+									<input type="text" class="input-data w173px" />
+								</td>
+								<th>증권번호</th>
+								<td>
+									<input type="text" class="input-data w173px" />
+								</td>
+							</tr>
+							<tr>
+								<th>보험가입 기간</th>
+								<td colspan="3">
+									<input type="text" id="datepicker11" placeholder="0000-00-00"> -
+									<input type="text" id="datepicker12" placeholder="0000-00-00">
+								</td>
+							</tr>
+							<tr>
+								<th>은행명</th>
+								<td>
+									<input type="text" class="input-data w173px" />
+								</td>
+								<th>예금주</th>
+								<td>
+									<input type="text" class="input-data w173px" />
+								</td>
+							</tr>
+							<tr>
+								<th>계좌번호</th>
+								<td colspan="3">
+									<input type="text" class="input-data w173px" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+
+				<div class="table-button">
+					<div class="btn-box">
+						<a href="" class="white btn-list">목록</a>
+						<button type="button" class="white btn-save">저장</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--// contents -->
+	<!-- footer -->
+    <footer>
+       <p>COPYRIGHT@2019 HANSUNG UNIVERSITY All Rights Reserved.</p>
+    </footer>
+	<!--// footer -->
+
+</body>
+</html>

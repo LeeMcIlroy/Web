@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_news_table">
+		FROM
+			TB_HDA_MAJOR_BOARD t2
+		WHERE 
+			1=1
+	</sql>
+	
+	<!-- 전공소식관리 목록 -->
+	<select id="AdmNewsDAO.selectAdmNewsList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmNewsDAO.selectAdmNewsList */
+	<![CDATA[
+		SELECT
+			MB_SEQ
+			, M_CODE
+			, case M_CODE when '01' then '실내디자인'
+				  when '02' then '시각디자인'
+				  when '03' then '산업디자인'
+				  when '04' then '디지털아트'
+				  when '05' then '패션디자인'
+				  when '06' then '패션비즈니스'
+				  when '07' then '미용학'
+				  when '11' then '타일디자인시공'
+				  when '12' then '성우콘텐츠크리에이터'
+				  when '13' then '패션전자상거래'
+				  when '14' then '헤어디자이너'
+				  end as DEPT
+			, case when M_CODE like '0%' then 'major'
+				   when M_CODE like '1%' then 'elite'
+				   end as DEPT2
+			, MB_GUBUN1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS MB_GUBUN1_NAME
+			, MB_GUBUN2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = MB_GUBUN2) AS MB_GUBUN2_NAME
+			, MB_TITLE
+			, MB_REG_NAME
+			, MB_COUNT
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as MB_REG_DATE
+			, MB_SORT
+	]]>
+	<include refid="adm_news_table"/>		
+	<![CDATA[
+		AND
+			(SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU t3 WHERE t2.MB_GUBUN1 = t3.MM_SEQ) = 'Y'
+		AND
+			(SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) like '전공소식'
+	]]>
+	<isNotEmpty property="searchType" prepend="AND">
+		M_CODE = #searchType#
+	</isNotEmpty>
+	<isNotEmpty property="searchWord" prepend="AND">
+		MB_TITLE like concat('%', #searchWord#, '%')
+	</isNotEmpty>
+	<![CDATA[
+		ORDER BY
+			t2.MB_REG_DATE DESC
+	]]>
+	<dynamic>
+		LIMIT #firstIndex#, 10
+	</dynamic>	
+	</select>
+	
+	<!-- 전공소식관리 정렬 목록 -->
+	<select id="AdmNewsDAO.selectAdmNewsSortList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmNewsDAO.selectAdmNewsSortList */
+	<![CDATA[
+		SELECT
+			MB_SEQ
+			, M_CODE
+			, case M_CODE when '01' then '실내디자인'
+				  when '02' then '시각디자인'
+				  when '03' then '산업디자인'
+				  when '04' then '디지털아트'
+				  when '05' then '패션디자인'
+				  when '06' then '패션디자인'
+				  when '07' then '미용학'
+				  when '11' then '타일디자인시공'
+				  when '12' then '성우콘텐츠크리에이터'
+				  when '13' then '패션전자상거래'
+				  when '14' then '헤어디자이너'
+				  end as DEPT
+			, case when M_CODE like '0%' then 'major'
+				   when M_CODE like '1%' then 'elite'
+				   end as DEPT2
+			, MB_GUBUN1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS MB_GUBUN1_NAME
+			, MB_GUBUN2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = MB_GUBUN2) AS MB_GUBUN2_NAME
+			, MB_TITLE
+			, MB_REG_NAME
+			, MB_COUNT
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as MB_REG_DATE
+			, MB_SORT
+	]]>
+	<include refid="adm_news_table"/>		
+	<![CDATA[
+		AND
+			(SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU t3 WHERE t2.MB_GUBUN1 = t3.MM_SEQ) = 'Y'
+		AND
+			(SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) like '전공소식'
+		AND
+			MB_SORT <> 0
+		ORDER BY
+			MB_SORT ASC
+	]]>
+	</select>
+	
+	<!-- 전공소식관리 목록 Cnt-->
+	<select id="AdmNewsDAO.selectAdmNewsListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmNewsDAO.selectAdmNewsListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_news_table"/>
+	<![CDATA[
+		AND
+			(SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU t3 WHERE t2.MB_GUBUN1 = t3.MM_SEQ) = 'Y'
+		AND
+			(SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) like '전공소식'
+	]]>
+	<isNotEmpty property="searchType" prepend="AND">
+		M_CODE = #searchType#
+	</isNotEmpty>
+	<isNotEmpty property="searchWord" prepend="AND">
+		MB_TITLE like concat('%', #searchWord#, '%')
+	</isNotEmpty>
+	</select>
+	
+	<!-- 전공소식관리 구분 -->
+	<select id="AdmNewsDAO.selectAdmNewsDeptList" resultClass="egovMap">
+/* AdmNewsDAO.selectAdmNewsDeptList */
+	<![CDATA[
+		SELECT
+			M_CODE
+			, case M_CODE when '01' then '실내디자인'
+				  when '02' then '시각디자인'
+				  when '03' then '산업디자인'
+				  when '04' then '디지털아트'
+				  when '05' then '패션디자인'
+				  when '06' then '패션비즈니스'
+				  when '07' then '미용학'
+				  when '08' then '미용학(one-day)'
+				  when '11' then '타일디자인시공'
+				  when '12' then '성우콘텐츠크리에이터'
+				  when '13' then '패션전자상거래'
+				  when '14' then '헤어디자이너'
+				  end as DEPT
+	]]>
+	<include refid="adm_news_table"/>
+	<![CDATA[
+		AND
+			(SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU t3 WHERE t2.MB_GUBUN1 = t3.MM_SEQ) = 'Y'
+		AND
+			(SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) like '전공소식'
+		GROUP BY
+			t2.M_CODE
+		ORDER BY
+			t2.M_CODE ASC
+	]]>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmNewsDAO.selectAdmNewsOne" parameterClass="String" resultClass="majorBoardVO">
+/* AdmNewsDAO.selectAdmNewsOne */
+	<![CDATA[
+		SELECT
+			MB_SEQ as mbSeq
+			, M_CODE as mCode
+			, MB_GUBUN1 as mbGubun1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS mbGubun1Name
+			, MB_GUBUN2 as mbGubun2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = t2.MB_GUBUN2) AS mbGubun2Name
+			, MB_TITLE as mbTitle
+			, MB_REG_SEQ as mbRegSeq
+			, MB_REG_NAME as mbRegName
+			, MB_COUNT as mbCount
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as mbRegDate
+			, MB_CONTENT mbContent
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as mbthSeq
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as mbthType
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as mbthImgName
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as mbthImgPath
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ) as mbthUrl
+		FROM
+			TB_HDA_MAJOR_BOARD t2
+		WHERE
+			MB_SEQ = #mbSeq#
+	]]>	
+	</select>
+	
+	<!-- 전공소식 정렬 체크 -->
+	<select id="AdmNewsDAO.selectAdmNewsSortChk" parameterClass="majorBoardVO" resultClass="int">
+/* AdmNewsDAO.selectAdmNewsSortChk */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_news_table"/>		
+	<![CDATA[
+		AND
+			MB_SORT = #mbSort#
+		ORDER BY
+			MB_REG_DATE DESC
+	]]>
+	</select>
+	
+	<!-- 전공소식 이전 정렬 변경 -->
+	<update id="AdmNewsDAO.updateAdmNewsPreSort" parameterClass="majorBoardVO">
+/*AdmNewsDAO.updateAdmNewsPreSort*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_MAJOR_BOARD
+		SET
+			MB_SORT = 0
+		WHERE
+			MB_SORT = #mbSort#
+	]]>
+	</update>
+	
+	<!-- 전공소식 정렬 변경 -->
+	<update id="AdmNewsDAO.updateAdmNewsSort" parameterClass="majorBoardVO">
+/*AdmNewsDAO.updateAdmNewsSort*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_MAJOR_BOARD
+		SET
+			MB_SORT = #mbSort#
+		WHERE
+			MB_SEQ = #mbSeq#
+	]]>
+	</update>
+
+</sqlMap>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_banner_table">
+		FROM
+			TB_HDA_BANNER
+		WHERE 
+			1=1
+		AND 
+			BAN_TYPE = #searchCondition1#
+			<isNotEmpty property="searchWord" prepend="AND">
+				BAN_NAME LIKE CONCAT('%', #searchWord#, '%')
+			</isNotEmpty>
+	</sql>
+	
+	<!-- 배너관리 목록 -->
+	<select id="AdmBannerDAO.selectAdmBannerList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmBannerDAO.selectAdmBannerList */
+	<![CDATA[
+		SELECT
+			BAN_SEQ
+			, BAN_NAME
+			, BAN_NEW_WINDOW
+			, BAN_USE_YN
+			, DATE_FORMAT(BAN_REG_DATE, '%Y-%m-%d %H:%i:%s') as BAN_REG_DATE
+			, BAN_TYPE
+			, BAN_ORDER
+			, BAN_URL
+			, BAN_IMG_NAME
+			, BAN_IMG_PATH
+			, BAN_MP4_NAME
+			, BAN_MP4_PATH
+			, BAN_MP4_URL
+	]]>
+	<include refid="adm_banner_table"/>		
+	<![CDATA[
+		ORDER BY
+			BAN_USE_YN DESC
+			, BAN_ORDER ASC
+			, BAN_REG_DATE DESC
+	]]>
+	<dynamic>
+		LIMIT #firstIndex#, 10
+	</dynamic>	
+	</select>
+	
+	<!-- 배너관리 목록 Cnt-->
+	<select id="AdmBannerDAO.selectAdmBannerListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmBannerDAO.selectAdmBannerListCnt*/
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_banner_table"/>		
+	</select>
+	
+	<!-- 배너 조회 -->
+	<select id="AdmBannerDAO.selectAdmBannerOne" parameterClass="string" resultClass="bannerVO">
+/*AdmBannerDAO.selectAdmBannerOne*/
+	<![CDATA[
+		SELECT
+			BAN_SEQ AS banSeq
+			, BAN_NAME AS banName
+			, BAN_NEW_WINDOW AS banNewWindow
+			, BAN_USE_YN AS banUseYn
+			, DATE_FORMAT(BAN_REG_DATE, '%Y-%m-%d') AS banRegDate 
+			, BAN_TYPE AS banType
+			, BAN_ORDER AS banOrder
+			, BAN_URL AS banUrl
+			, BAN_IMG_NAME AS banImgName
+			, BAN_IMG_PATH AS banImgPath
+			, BAN_ADD_NAME1 AS banAddName1
+			, BAN_ADD_NAME2 AS banAddName2
+			, BAN_ADD_NAME3 AS banAddName3
+			, BAN_ADD_URL1 AS banAddUrl1
+			, BAN_ADD_URL2 AS banAddUrl2
+			, BAN_ADD_URL3 AS banAddUrl3
+			, BAN_ADD_WINDOW1 AS banAddWindow1
+			, BAN_ADD_WINDOW2 AS banAddWindow2
+			, BAN_ADD_WINDOW3 AS banAddWindow3
+			, BAN_MP4_NAME AS banMp4Name
+			, BAN_MP4_PATH AS banMp4Path
+			, BAN_MP4_URL AS banMp4Url
+		FROM
+			TB_HDA_BANNER
+		WHERE
+			BAN_SEQ = #banSeq#
+	]]>
+	</select>
+	
+	
+	<!-- 배너등록 -->
+	<insert id="AdmBannerDAO.insertAdmBanner" parameterClass="bannerVO">
+/*AdmBannerDAO.insertAdmBanner*/
+	
+	<![CDATA[
+		INSERT INTO
+			TB_HDA_BANNER(
+				BAN_NAME
+				, BAN_TYPE
+				, BAN_NEW_WINDOW
+				, BAN_ORDER
+				, BAN_USE_YN
+				, BAN_URL
+				, BAN_ADD_NAME1
+				, BAN_ADD_NAME2
+				, BAN_ADD_NAME3
+				, BAN_ADD_URL1
+				, BAN_ADD_URL2
+				, BAN_ADD_URL3
+				, BAN_ADD_WINDOW1
+				, BAN_ADD_WINDOW2
+				, BAN_ADD_WINDOW3
+				, BAN_MP4_URL
+			) VALUES (
+				#banName#
+				, #banType#
+				, #banNewWindow#
+				, #banOrder#
+				, #banUseYn#
+				, #banUrl#
+				, #banAddName1#
+				, #banAddName2#
+				, #banAddName3#
+				, #banAddUrl1#
+				, #banAddUrl2#
+				, #banAddUrl3#
+				, #banAddWindow1#
+				, #banAddWindow2#
+				, #banAddWindow3#
+				, #banMp4Url#
+			)
+	]]>
+	<selectKey keyProperty="banSeq" resultClass="string" type="post">
+		select LAST_INSERT_ID() as value
+	</selectKey>
+	</insert>
+	
+	<!-- 배너 수정 -->
+	<update id="AdmBannerDAO.updateAdmBanner" parameterClass="bannerVO">
+/*AdmBannerDAO.updateAdmBanner*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_BANNER
+		SET
+			BAN_NAME = #banName#
+			, BAN_NEW_WINDOW = #banNewWindow#
+			, BAN_ORDER = #banOrder#
+			, BAN_USE_YN = #banUseYn#
+			, BAN_URL = #banUrl#
+			, BAN_ADD_NAME1 = #banAddName1#
+			, BAN_ADD_NAME2 = #banAddName2#
+			, BAN_ADD_NAME3 = #banAddName3#
+			, BAN_ADD_URL1 = #banAddUrl1#
+			, BAN_ADD_URL2 = #banAddUrl2#
+			, BAN_ADD_URL3 = #banAddUrl3#
+			, BAN_ADD_WINDOW1 = #banAddWindow1#
+			, BAN_ADD_WINDOW2 = #banAddWindow2#
+			, BAN_ADD_WINDOW3 = #banAddWindow3#
+			, BAN_MP4_URL = #banMp4Url#
+	]]>
+		<isNotEmpty property="banMp4Path">
+			, BAN_MP4_NAME = NULL
+			, BAN_MP4_PATH = NULL
+		</isNotEmpty>
+	<![CDATA[
+		WHERE
+			BAN_SEQ = #banSeq#
+	]]>
+	</update>
+	
+	<!-- 배너 사용여부 변경 -->
+	<update id="AdmBannerDAO.updateAdmBannerUseYn" parameterClass="bannerVO">
+/*AdmBannerDAO.updateAdmBannerUseYn*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_BANNER
+		SET
+			BAN_USE_YN = #banUseYn#
+		WHERE
+			BAN_SEQ = #banSeq#
+	]]>
+	</update>
+	
+	<!--**************************** sp ****************************-->
+	<!-- 표출개수 제한 -->
+	<procedure id="AdmBannerDAO.updateAdmBannerSpYn" resultClass="bannerVO">
+/* AdmBannerDAO.updateAdmBannerSpYn */
+	<![CDATA[
+		{
+			CALL SP_HSDESIGN_BANNER_YN(#banType#, #banSeq#)
+		}
+	]]>
+	</procedure>
+	
+	<!-- 배너 이미지 등록 -->
+	<update id="AdmBannerDAO.updateAdmBannerImg" parameterClass="bannerVO">
+	/*AdmBannerDAO.updateAdmBannerImg*/
+	<![CDATA[
+		UPDATE
+			TB_HDA_BANNER
+		SET
+	]]>
+	<isNotEmpty property="banImgName">
+		<isNotEmpty property="banImgPath">
+			BAN_IMG_NAME = #banImgName#
+			, BAN_IMG_PATH = #banImgPath#
+		</isNotEmpty>
+	</isNotEmpty>
+	<isNotEmpty property="banMp4Name">
+		<isNotEmpty property="banMp4Path">
+			BAN_MP4_NAME = #banMp4Name#
+			, BAN_MP4_PATH = #banMp4Path#
+		</isNotEmpty>
+	</isNotEmpty>
+	<![CDATA[
+		WHERE
+			BAN_SEQ = #banSeq#
+	]]>
+	</update>
+	
+	<!-- 배너 삭제 -->
+	<delete id="AdmBannerDAO.deleteAdmBanner" parameterClass="bannerVO">
+/*AdmBannerDAO.deleteAdmBanner*/
+	<![CDATA[
+		DELETE FROM TB_HDA_BANNER WHERE BAN_SEQ = #banSeq#
+	]]>
+	</delete>
+</sqlMap>

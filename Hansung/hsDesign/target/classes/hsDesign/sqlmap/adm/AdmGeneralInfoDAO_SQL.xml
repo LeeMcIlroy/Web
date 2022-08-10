@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_general_edu">
+		FROM
+			TB_HDA_GENERAL_EDU T
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="title">
+					GE_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="expense">
+					GE_EXPENSE like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition2" prepend="AND">
+				<isEqual property="searchCondition2" compareValue="aply"> GE_TYPE = '1' </isEqual>
+				<isEqual property="searchCondition2" compareValue="ready"> GE_TYPE = '2' </isEqual>
+				<isEqual property="searchCondition2" compareValue="finish"> GE_TYPE = '3' </isEqual>
+			</isNotEmpty>
+			
+						
+			<isNotEmpty property="searchCondition4" prepend="AND">
+				<isEqual property="searchCondition4" compareValue="2022"> GE_YEAR = '2022' </isEqual>
+				<isEqual property="searchCondition4" compareValue="2021"> GE_YEAR = '2021' </isEqual>
+				<isEqual property="searchCondition4" compareValue="2020"> GE_YEAR = '2020' </isEqual>
+				<isEqual property="searchCondition4" compareValue="2019"> GE_YEAR = '2019' </isEqual>
+				<isEqual property="searchCondition4" compareValue="2018"> GE_YEAR = '2018' </isEqual>
+				<isEqual property="searchCondition4" compareValue="2017"> GE_YEAR = '2017' </isEqual>
+				<isEqual property="searchCondition4" compareValue="2016"> GE_YEAR = '2016' </isEqual>
+				<isEqual property="searchCondition4" compareValue="2015"> GE_YEAR = '2015' </isEqual>
+			</isNotEmpty>
+			
+			<isNotEmpty property="searchCondition3" prepend="AND">
+				<isEqual property="searchCondition3" compareValue="1학기"> GE_SEMESTER = '1학기' </isEqual>
+				<isEqual property="searchCondition3" compareValue="하계학기"> GE_SEMESTER = '하계학기' </isEqual>
+				<isEqual property="searchCondition3" compareValue="2학기"> GE_SEMESTER = '2학기' </isEqual>
+				<isEqual property="searchCondition3" compareValue="동계학기"> GE_SEMESTER = '동계학기' </isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 목록 -->
+	<select id="AdmGeneralInfoDAO.selectGeneralInfoList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmGeneralInfoDAO.selectGeneralInfoList */
+	<![CDATA[
+		SELECT
+			GE_SEQ
+			, GE_NAME
+			, GE_TYPE
+			, GE_LECTURE_BEGIN
+			, GE_LECTURE_END
+			, GE_LECTURE_BEGIN_TM
+			, GE_LECTURE_END_TM
+			, GE_EXPENSE
+			, GE_CONTENT
+			, GE_REG_DATE
+			, GE_APLY_BEGIN
+			, GE_APLY_END
+			, GE_CLASSROME
+			, GE_TEACHER
+			, GE_CLASSTIME
+			, GE_YEAR
+			, GE_SEMESTER
+			, (
+				SELECT
+					GEUP_SEQ
+				FROM
+					TB_HDA_GE_UPFILE T2
+				WHERE
+					T2.GE_SEQ = T.GE_SEQ
+			) AS GEUP_SEQ
+	]]>
+		<include refid="adm_general_edu"/>
+	<![CDATA[
+		ORDER BY
+			GE_LECTURE_BEGIN desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmGeneralInfoDAO.selectGeneralInfoListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmGeneralInfoDAO.selectGeneralInfoListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_general_edu"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmGeneralInfoDAO.selectGeneralInfoOne" parameterClass="string" resultClass="generalEduVO">
+/* AdmGeneralInfoDAO.selectGeneralInfoOne */
+	<![CDATA[
+		SELECT
+			GE_SEQ												as geSeq
+			, GE_NAME											as geName
+			, case
+				when GE_TYPE = '1' then 'aply'		when GE_TYPE = '2' then 'ready'		when GE_TYPE = '3' then 'finish'		else ''
+			end	as geType
+			
+			, GE_LECTURE_BEGIN									as geLectureBegin
+			, case
+				when weekday(GE_LECTURE_BEGIN) = 0 then '월'		when weekday(GE_LECTURE_BEGIN) = 1 then '화'	when weekday(GE_LECTURE_BEGIN) = 2 then '수'
+				when weekday(GE_LECTURE_BEGIN) = 3 then '목'		when weekday(GE_LECTURE_BEGIN) = 4 then '금'	when weekday(GE_LECTURE_BEGIN) = 5 then '토'
+				when weekday(GE_LECTURE_BEGIN) = 6 then '일'	else ''
+			end as geLectureBeginWeek
+			
+			, GE_LECTURE_END									as geLectureEnd
+			, case
+				when weekday(GE_LECTURE_END) = 0 then '월'	when weekday(GE_LECTURE_END) = 1 then '화'	when weekday(GE_LECTURE_END) = 2 then '수'
+				when weekday(GE_LECTURE_END) = 3 then '목'	when weekday(GE_LECTURE_END) = 4 then '금'	when weekday(GE_LECTURE_END) = 5 then '토'
+				when weekday(GE_LECTURE_END) = 6 then '일'	else ''
+			end as geLectureEndWeek
+			
+			, GE_EXPENSE										as geExpense
+			, GE_CONTENT										as geContent
+			, DATE_FORMAT(GE_REG_DATE, '%Y-%m-%d %H:%i')		as geRegDate
+			
+			, GE_APLY_BEGIN										as geAplyBegin
+			, case
+				when weekday(GE_APLY_BEGIN) = 0 then '월'	when weekday(GE_APLY_BEGIN) = 1 then '화'	when weekday(GE_APLY_BEGIN) = 2 then '수'
+				when weekday(GE_APLY_BEGIN) = 3 then '목'	when weekday(GE_APLY_BEGIN) = 4 then '금'	when weekday(GE_APLY_BEGIN) = 5 then '토'
+				when weekday(GE_APLY_BEGIN) = 6 then '일'	else ''
+			end as geAplyBeginWeek
+			
+			, GE_APLY_END										as geAplyEnd
+			, case
+				when weekday(GE_APLY_END) = 0 then '월'	when weekday(GE_APLY_END) = 1 then '화'	when weekday(GE_APLY_END) = 2 then '수'
+				when weekday(GE_APLY_END) = 3 then '목'	when weekday(GE_APLY_END) = 4 then '금'	when weekday(GE_APLY_END) = 5 then '토'
+				when weekday(GE_APLY_END) = 6 then '일'	else ''
+			end as geAplyEndWeek
+			
+			, GE_CLASSROME										as geClassrome
+			, GE_TEACHER										as geTeacher
+			, GE_CLASSTIME										as geClasstime
+			, GE_YEAR											as geYear
+			, GE_SEMESTER										as geSemester
+		FROM
+			TB_HDA_GENERAL_EDU
+		WHERE
+			GE_SEQ = #geSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmGeneralInfoDAO.generalInfoInsert" parameterClass="generalEduVO">
+/* AdmGeneralInfoDAO.generalInfoInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_GENERAL_EDU (
+			GE_NAME
+			, GE_TYPE
+			, GE_APLY_BEGIN
+			, GE_APLY_END
+			, GE_LECTURE_BEGIN
+			, GE_LECTURE_END
+			, GE_EXPENSE
+			, GE_CONTENT
+			, GE_REG_DATE
+			, GE_CLASSROME
+			, GE_TEACHER
+			, GE_CLASSTIME
+			, GE_YEAR
+			, GE_SEMESTER
+		) VALUES (
+			#geName#
+			, case
+				when #geType# = 'aply' then '1'
+				when #geType# = 'ready' then '2'
+				when #geType# = 'finish' then '3'
+				else '0'
+			end
+			, #geAplyBegin#
+			, #geAplyEnd#
+			, #geLectureBegin#
+			, #geLectureEnd#
+			, #geExpense#
+			, #geContent#
+			, CURRENT_TIMESTAMP
+			, #geClassrome#
+			, #geTeacher#
+			, #geClasstime#
+			, #geYear#
+			, #geSemester#
+		)
+	]]>
+	<selectKey keyProperty="geSeq" resultClass="string" type="post">
+		select LAST_INSERT_ID() as value
+	</selectKey>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmGeneralInfoDAO.generalInfoUpdate" parameterClass="generalEduVO">
+/* AdmGeneralInfoDAO.generalInfoUpdate */
+	<![CDATA[
+		UPDATE TB_HDA_GENERAL_EDU
+		SET
+			GE_NAME					= #geName#
+			, GE_TYPE 				= case
+										when #geType# = 'aply' then '1'
+										when #geType# = 'ready' then '2'
+										when #geType# = 'finish' then '3'
+										else '0' end
+			, GE_LECTURE_BEGIN		= #geLectureBegin#
+			, GE_LECTURE_END		= #geLectureEnd#
+			, GE_APLY_BEGIN			= #geAplyBegin#
+			, GE_APLY_END			= #geAplyEnd#
+			, GE_CONTENT			= #geContent#
+			, GE_EXPENSE			= #geExpense#
+			, GE_CLASSROME			= #geClassrome#
+			, GE_TEACHER			= #geTeacher#
+			, GE_CLASSTIME			= #geClasstime#
+			, GE_YEAR				= #geYear#
+			, GE_SEMESTER			= #geSemester# 
+		WHERE
+			GE_SEQ = #geSeq#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmGeneralInfoDAO.generalInfoDelete" parameterClass="string">
+/* AdmGeneralInfoDAO.generalInfoDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_GENERAL_EDU
+		WHERE GE_SEQ = #geSeq#
+	]]>
+	</delete>
+	
+	<!-- ***************************************** 첨부파일 ***************************************** -->
+	<!-- 목록 -->
+	<select id="AdmGeneralInfoDAO.selectGeneralInfoUpfileList" parameterClass="string" resultClass="egovMap">
+/* AdmGeneralInfoDAO.selectGeneralInfoUpfileList */
+	<![CDATA[
+		SELECT
+			GEUP_SEQ
+			, GEUP_ORIGIN_FILENAME
+			, GEUP_SAVE_FILEPATH
+			, GE_SEQ
+		FROM
+			TB_HDA_GE_UPFILE
+		WHERE
+			GE_SEQ = #geSeq#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmGeneralInfoDAO.selectGeneralInfoUpfileListCnt" parameterClass="string" resultClass="int">
+/* AdmGeneralInfoDAO.selectGeneralInfoUpfileListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM
+			TB_HDA_GE_UPFILE
+		WHERE
+			GE_SEQ = #geSeq#
+	]]>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmGeneralInfoDAO.selectGeneralInfoUpfileOne" parameterClass="string" resultClass="geUpfileVO">
+/* AdmGeneralInfoDAO.selectGeneralInfoUpfileOne */
+	<![CDATA[
+		SELECT
+			GEUP_SEQ					as geupSeq
+			, GEUP_ORIGIN_FILENAME		as geupOriginFilename
+			, GEUP_SAVE_FILEPATH		as geupSaveFilepath
+			, GE_SEQ					as geSeq
+		FROM
+			TB_HDA_GE_UPFILE
+		WHERE
+			GEUP_SEQ = #geupSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmGeneralInfoDAO.generalInfoUpfileInsert" parameterClass="map">
+/* AdmGeneralInfoDAO.generalInfoUpfileInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_GE_UPFILE (
+			GEUP_ORIGIN_FILENAME
+			, GEUP_SAVE_FILEPATH
+			, GE_SEQ
+		) VALUES (
+			#fileInfoVO.fileName#
+			, #fileInfoVO.filePath#
+			, #geSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 삭제 -->
+	<delete id="AdmGeneralInfoDAO.generalInfoUpfileDelete" parameterClass="string">
+/* AdmGeneralInfoDAO.generalInfoUpfileDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_GE_UPFILE
+		WHERE GEUP_SEQ = #geupSeq#
+	]]>
+	</delete>
+</sqlMap>

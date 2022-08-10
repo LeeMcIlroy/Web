@@ -1,0 +1,872 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<insert id="CmmDAO.insertAttachFile" parameterClass="attachVO">
+	/* CmmDAO.insertAttachFile */
+		INSERT INTO TB_LCMS_ATTACH(
+			BOARD_SEQ
+			, BOARD_TYPE
+			, ORG_FILE_NAME
+			, REG_FILE_NAME
+			, REG_NAME
+			, REG_DATE
+		)VALUES(
+			#boardSeq#
+			, #boardType#
+			, #orgFileName#
+			, #regFileName#
+			, #regName#
+			, SYSDATE()
+		)
+	</insert>
+	
+	<select id="CmmDAO.selectAttachOne" parameterClass="string" resultClass="attachVO">
+	/* CmmDAO.selectAttachOne */
+	<![CDATA[
+		SELECT
+			ATTACH_SEQ		AS attachSeq
+			, BOARD_SEQ		AS boardSeq
+			, BOARD_TYPE	AS boardType
+			, ORG_FILE_NAME	AS orgFileName
+			, REG_FILE_NAME	AS regFileName
+		FROM
+			TB_LCMS_ATTACH
+		WHERE
+			ATTACH_SEQ = #fileId#
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectAttachList" parameterClass="egovMap" resultClass="attachVO">
+	/* CmmDAO.selectAttachList */
+	<![CDATA[
+		SELECT
+			ATTACH_SEQ		AS attachSeq
+			, BOARD_SEQ		AS boardSeq
+			, BOARD_TYPE	AS boardType
+			, ORG_FILE_NAME	AS orgFileName
+			, REG_FILE_NAME	AS regFileName
+		FROM
+			TB_LCMS_ATTACH
+		WHERE
+			BOARD_SEQ = #boardSeq#
+		AND
+			BOARD_TYPE = #boardType#
+	]]>
+	</select>
+	
+	<!--조회한 해당 첨부파일 Cnt -->
+	<select id="CmmDAO.selectAttachListCnt" parameterClass="string" resultClass="int">
+/* CmmDAO.selectAttachListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM
+			TB_LCMS_ATTACH
+		WHERE
+			BOARD_SEQ = #boardSeq#
+	]]>
+	</select>
+	
+	<delete id="CmmDAO.deleteAttachFile" parameterClass="string">
+	/* CmmDAO.deleteAttachFile */
+		DELETE FROM
+			TB_LCMS_ATTACH
+		WHERE
+			ATTACH_SEQ = #attachSeq#
+	</delete>
+	
+	<!-- 연도 목록 -->
+	<select id="CmmDAO.selectYearList" resultClass="string">
+	/* CmmDAO.selectYearList */
+	<![CDATA[
+		SELECT
+			SEM_YEAR
+		FROM
+			TB_LCMS_SEME
+		GROUP BY
+			SEM_YEAR
+		ORDER BY
+			SEM_YEAR DESC
+	]]>
+	</select>
+
+	<!-- 학기 목록 -->
+	<select id="CmmDAO.selectSemeList" resultClass="egovMap" parameterClass="string">
+	/* CmmDAO.selectSemeList */
+	<![CDATA[
+		SELECT
+			SEMESTER
+			, CASE SEMESTER WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS SEME_NM
+		FROM
+			TB_LCMS_SEME
+		WHERE
+			SEM_YEAR = #year#
+		GROUP BY
+			SEMESTER
+		ORDER BY
+			SEMESTER ASC
+	]]>
+	</select>
+	
+	<!-- 교육과정 목록 -->
+	<select id="CmmDAO.selectCurrList" resultClass="string">
+	/* CmmDAO.selectCurrList */
+	<![CDATA[
+		SELECT
+			CURR_NAME
+		FROM
+			TB_LCMS_CURR
+		WHERE
+			CURR_STATE = 'Y'
+	]]>
+	</select>
+	
+	<!-- 개설 학기 조회 -->
+	<select id="CmmDAO.selectOpenSeme" resultClass="egovMap">
+	<![CDATA[
+		SELECT
+			SEM_CODE
+			, SEM_YEAR
+			, SEMESTER
+			, SEM_HAKGI
+			, LEC_ATTEND_S
+			, LEC_ATTEND_E
+			, VALUATION_S
+			, VALUATION_E
+			, REGIST_S
+			, REGIST_E
+			, ENTER_REGI_S
+			, ENTER_REGI_E
+			, OPEN_SEM
+			, OPEN_REGI
+			, DORM_S
+			, DORM_E
+			, DORM_INC_S
+			, DORM_INC_E
+		FROM
+			TB_LCMS_SEME
+		WHERE
+			OPEN_SEM = 'Y'
+	]]>
+	</select>
+
+	<!-- 신청 학기 조회 -->
+	<select id="CmmDAO.selectRegiSeme" resultClass="egovMap">
+	<![CDATA[
+		SELECT
+			SEM_CODE
+			, SEM_YEAR
+			, SEMESTER
+			, SEM_HAKGI
+			, LEC_ATTEND_S
+			, LEC_ATTEND_E
+			, VALUATION_S
+			, VALUATION_E
+			, REGIST_S
+			, REGIST_E
+			, ENTER_REGI_S
+			, ENTER_REGI_E
+			, OPEN_SEM
+			, OPEN_REGI
+			, DORM_S
+			, DORM_E
+			, DORM_INC_S
+			, DORM_INC_E
+		FROM
+			TB_LCMS_SEME
+		WHERE
+			OPEN_REGI = 'Y'
+	]]>
+	</select>
+
+	<!-- 학기 조회 -->
+	<select id="CmmDAO.selectLectSeme" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+		SELECT
+			SEM_CODE
+			, SEM_YEAR
+			, SEMESTER
+			, SEM_HAKGI
+			, LEC_ATTEND_S
+			, LEC_ATTEND_E
+			, VALUATION_S
+			, VALUATION_E
+			, REGIST_S
+			, REGIST_E
+			, ENTER_REGI_S
+			, ENTER_REGI_E
+			, OPEN_SEM
+			, OPEN_REGI
+			, DORM_S
+			, DORM_E
+			, DORM_INC_S
+			, DORM_INC_E
+		FROM
+			TB_LCMS_SEME TLS
+			LEFT JOIN TB_LCMS_LECT TLL ON TLS.SEM_YEAR = TLL.LECT_YEAR AND TLS.SEMESTER = TLL.LECT_SEM
+		WHERE
+			TLL.LECT_SEQ = #lectSeq#
+	]]>
+	</select>
+	
+	<insert id="CmmDAO.insertAdmLog" parameterClass="logVO">
+	/* CmmDAO.insertAdmLog */
+		INSERT INTO TB_LCMS_LOG(
+			REG_ID
+			, MEMBER_CODE
+			, LOG_CONT
+			, ACCE_IP
+			, REG_DATE
+			, NAME
+			, E_NAME
+		)VALUES(
+			#regId#
+			, #memberCode#
+			, #logCont#
+			, #acceIp#
+			, SYSDATE()
+		<isNotEmpty property="memberCode">
+			, (SELECT NAME FROM TB_LCMS_MEMBER WHERE MEMBER_CODE = #memberCode#)
+		</isNotEmpty>
+		<isEmpty property="memberCode">
+			, '학생현황'
+		</isEmpty>
+			, (SELECT E_NAME FROM TB_LCMS_MEMBER WHERE MEMBER_CODE = #memberCode#)
+		)
+	</insert>
+	
+	<!-- 수업만족도항목 조사유형 목록 -->
+	<select id="CmmDAO.selectQuesPhrList" resultClass="egovMap">
+	/* CmmDAO.selectQuesPhrList */
+	<![CDATA[
+		SELECT
+			PHR_SEQ
+			, PHR_TITLE
+		FROM
+			TB_LCMS_QUES_PHR
+		WHERE
+			USE_YN = 'Y'
+	]]>
+	</select>
+	
+	<!-- 학생 목록 조회 -->
+	<select id="CmmDAO.selectStdList" parameterClass="egovMap" resultClass="egovMap">
+	/* CmmDAO.selectStdList */
+	<![CDATA[
+		SELECT
+			TLLM.MEMBER_CODE
+			, NAME
+			, E_NAME
+			, BIRTH
+			, STEP
+			, STATUS
+			, NATION
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+			LEFT JOIN TB_LCMS_MEMBER TLM
+			ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			1=1
+	]]>
+		<isNotEmpty prepend="AND" property="selLectCode">
+			LECT_SEQ = #selLectCode#
+			<isNotEmpty prepend="AND" property="searchType">
+				<isEqual property="searchType" compareValue="CONSULT">
+					TLLM.MEMBER_CODE NOT IN (
+												SELECT
+													MEMBER_CODE
+												FROM
+													TB_LCMS_CONSULT
+												WHERE
+													LECT_SEQ = #selLectCode#
+											)
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+	<![CDATA[
+		AND
+			CONCAT(TLLM.MEMBER_CODE, NAME) LIKE CONCAT('%', #searchWord#, '%')
+	]]>
+	</select>
+
+	<!-- 학생 목록 조회 -->
+	<select id="CmmDAO.selectAdmStdList" parameterClass="string" resultClass="egovMap">
+	/* CmmDAO.selectAdmStdList */
+	<![CDATA[
+		SELECT
+			MEMBER_CODE
+			, NAME
+			, E_NAME
+			, BIRTH
+			, STEP
+			, STATUS
+			, NATION
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_TYPE = 'STD'
+		AND
+			CONCAT(MEMBER_CODE, NAME) LIKE CONCAT('%', #searchWord#, '%')
+	]]>
+	</select>
+	
+	<!-- 강의 강사 조회 -->
+	<select id="CmmDAO.selectProfList" parameterClass="string" resultClass="egovMap">
+	/* CmmDAO.selectProfList */
+	<![CDATA[
+		SELECT DISTINCT
+			LECT_TEA
+			, NAME
+		FROM
+			TB_LCMS_LECTTIMETABLE TLL
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLL.LECT_TEA = TLM.MEMBER_CODE
+		WHERE
+			LECT_CODE = #lectSeq#
+	]]>
+	</select>
+	
+	<!-- 국적 목록 -->
+	<select id="CmmDAO.selectNationList" resultClass="string">
+	/* CmmDAO.selectNationList */
+	<![CDATA[
+		SELECT
+			NATION_NM
+		FROM
+			TB_LCMS_NATION
+		ORDER BY
+			NATION_NM ASC
+	]]>
+	</select>
+	
+	<!-- 국적 등록 -->
+	<insert id="CmmDAO.insertCode" parameterClass="egovMap">
+	/* CmmDAO.insertNation */
+		INSERT INTO TB_LCMS_CODE(
+			NAME
+			, PURPOSE
+		)VALUES(
+			#newNation#
+			, #purpose#
+		)
+	</insert>
+	
+	<!-- 분반 등록 -->
+	<insert id="CmmDAO.insertDivi" parameterClass="String">
+	/* CmmDAO.insertDivi */
+		INSERT INTO TB_LCMS_CODE(
+			NAME
+			, PURPOSE
+		)VALUES(
+			#newDivi#
+			, 'division'
+		)
+	</insert>
+	<!-- 강의실 등록 -->
+	<insert id="CmmDAO.insertClass" parameterClass="String">
+	/* CmmDAO.insertClass */
+		INSERT INTO TB_LCMS_CODE(
+			NAME
+			, PURPOSE
+		)VALUES(
+			#newClass#
+			, 'class'
+		)
+	</insert>
+	<!-- 코드 값 가져오기 : 국가-nation / 분반 - division -->
+	<select id="CmmDAO.codeList" parameterClass="string" resultClass="egovMap">
+		SELECT NAME, SEQ, PURPOSE FROM TB_LCMS_CODE  WHERE PURPOSE = #purpose# ORDER BY NAME ASC
+	</select>
+	
+	<!-- 과목의 급수가 몇급인지 구할때 --> 
+	<select id="CmmDAO.selectGradeList" resultClass="egovMap" parameterClass="string">
+	/* CmmDAO.selectGradeList */
+	<![CDATA[	
+		SELECT 
+			B.GRADE 
+		FROM 
+			TB_LCMS_LECT A
+			, TB_LCMS_LECT_MAP B 
+		WHERE 
+			A.LECT_SEQ = B.LECT_SEQ 
+		AND 
+			A.LECT_SEM = #seme# 
+		GROUP BY 
+			B.GRADE 
+		ORDER BY  
+			B.GRADE
+	]]>
+	</select>
+	<!-- 과목의 분반지 구할때 --> 
+	<select id="CmmDAO.selectDiviList" resultClass="egovMap" parameterClass="string">
+	/* CmmDAO.selectDiviList */
+	<![CDATA[	
+		SELECT 
+			LECT_DIVI 
+		FROM 
+			TB_LCMS_LECT A
+			, TB_LCMS_LECT_MAP B 
+		WHERE 
+			A.LECT_SEQ = B.LECT_SEQ
+	 	AND	
+	 		B.GRADE = #grade#
+		GROUP BY 
+			LECT_DIVI 
+		ORDER BY 
+			LECT_DIVI
+	]]>
+	</select>
+	
+	<!-- 프로그램 목록 -->
+	<select id="CmmDAO.selectProgList" resultClass="string">
+	/* CmmDAO.selectProgList */
+	<![CDATA[
+		SELECT
+			PROG_NAME
+		FROM
+			TB_LCMS_PROG
+		WHERE
+			PROG_STATE = 'Y'
+		ORDER BY
+			PROG_SEQ DESC
+	]]>
+	</select>
+	
+	<!-- 교과목 목록 -->
+	<select id="CmmDAO.selectCourList" parameterClass="string" resultClass="string">
+	/* CmmDAO.selectCourList */
+	<![CDATA[
+		SELECT
+			COUR_NAME
+		FROM
+			TB_LCMS_COUR
+		WHERE
+			COUR_PRO = #searchCondition4#
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectLectTimeList" parameterClass="string" resultClass="egovMap">
+	/* CmmDAO.selectLectTimeList */
+	<![CDATA[
+		SELECT DISTINCT
+			SUBSTRING(LECT_WEEK, 1, 1) AS LECT_WEEK
+			, CASE LECT_WEEK
+				WHEN '일요일' THEN '1'
+				WHEN '월요일' THEN '2'
+				WHEN '화요일' THEN '3'
+				WHEN '수요일' THEN '4'
+				WHEN '목요일' THEN '5'
+				WHEN '금요일' THEN '6'
+				WHEN '토요일' THEN '7'
+			END AS LECT_WEEK_NUM
+		FROM
+			TB_LCMS_LECTTIMETABLE
+		WHERE
+			LECT_CODE = #lectSeq#
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectTimeList" parameterClass="egovMap" resultClass="egovMap">
+	/* CmmDAO.selectTimeList */
+	<![CDATA[
+		SELECT
+			CLSTM_CODE
+			, CLSTM_NAME
+		FROM
+			TB_LCMS_CLSTM
+		WHERE
+			CLSTM_STATE = 'Y'
+		AND
+			CLSTM_NAME = #lectProg#
+		AND
+			CLSTM_YEAR = #semYear#
+		AND
+			CLSTM_SEME = #semester#
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectAdmAttendPopList" parameterClass="string" resultClass="egovMap">
+	/* CmmDAO.selectAdmAttendPopList */
+	<![CDATA[
+		SELECT
+			TLA.MEMBER_CODE
+			, ATTEND
+			, ATT_DATE
+			, LECT_CLASS
+		FROM
+			TB_LCMS_ATTEND TLA
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN (
+				SELECT
+					MEMBER_SEQ
+					, MAX(FUNC_DATE) AS FUNC_DATE
+				FROM
+					TB_LCMS_FUNC
+				WHERE
+					(FUNC_STATE = '자퇴' OR FUNC_STATE = '행방불명' OR FUNC_STATE = '퇴학')
+				AND
+					CONCAT(YEAR, SEMESTER) = (
+						SELECT
+							CONCAT(LECT_YEAR, LECT_SEM)
+						FROM
+							TB_LCMS_LECT
+						WHERE
+							LECT_SEQ = #lectSeq#
+					)
+				GROUP BY
+					MEMBER_SEQ
+			) TLF ON TLM.MEMBER_SEQ = TLF.MEMBER_SEQ AND TLF.FUNC_DATE <= TLA.ATT_DATE
+		WHERE
+			LECT_SEQ = #lectSeq#
+		AND
+			TLF.MEMBER_SEQ IS NULL
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectAdmAttPopMemberList" parameterClass="String" resultClass="egovMap">
+	/* CmmDAO.selectAdmAttPopMemberList */
+	<![CDATA[
+		SELECT 
+			B.MEMBER_CODE 
+			, B.NAME
+			, IFNULL((
+				SELECT
+					ROUND(
+							(
+								(
+									COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+								)/COUNT(*)
+							)*100, 2
+						)
+				FROM
+					TB_LCMS_ATTEND TLA
+				WHERE
+					TLA.LECT_SEQ = A.LECT_SEQ
+				AND
+					TLA.MEMBER_CODE = A.MEMBER_CODE
+				AND
+				(
+					F.FUNC_STATE IS NULL OR TLA.ATT_DATE < F.FUNC_DATE
+				)
+			),0) AS AVG_ATTEND
+			, IFNULL((
+				SELECT
+					COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+				FROM
+					TB_LCMS_ATTEND TLA
+				WHERE
+					TLA.LECT_SEQ = A.LECT_SEQ
+				AND
+					TLA.MEMBER_CODE = A.MEMBER_CODE
+				AND
+				(
+					F.FUNC_STATE IS NULL OR TLA.ATT_DATE < F.FUNC_DATE
+				)
+			),0) AS CNT_ATTEND
+			, IFNULL((
+				SELECT
+					COUNT(*)
+				FROM
+					TB_LCMS_ATTEND TLA
+				WHERE
+					TLA.LECT_SEQ = A.LECT_SEQ
+				AND
+					TLA.MEMBER_CODE = A.MEMBER_CODE
+				AND
+				(
+					F.FUNC_STATE IS NULL OR TLA.ATT_DATE < F.FUNC_DATE
+				)
+			),0) AS TOT_ATTEND
+			, F.FUNC_STATE
+		FROM 
+			TB_LCMS_LECT_MAP A
+		LEFT JOIN
+			TB_LCMS_LECT C ON A.LECT_SEQ = C.LECT_SEQ
+		LEFT JOIN
+			TB_LCMS_SEME D ON C.LECT_YEAR = D.SEM_YEAR AND C.LECT_SEM = D.SEMESTER
+		JOIN 
+			TB_LCMS_MEMBER B 
+			ON A.MEMBER_CODE = B.MEMBER_CODE 
+		LEFT JOIN (
+			SELECT
+				MEMBER_SEQ
+				, MAX(FUNC_DATE) AS FUNC_DATE
+				, MAX(FUNC_STATE) AS FUNC_STATE
+			FROM
+				TB_LCMS_FUNC T1
+			WHERE
+			(
+				T1.FUNC_STATE = '자퇴' OR T1.FUNC_STATE = '행방불명' OR T1.FUNC_STATE = '퇴학'
+			)
+			GROUP BY
+				MEMBER_SEQ
+		) F ON B.MEMBER_SEQ = F.MEMBER_SEQ AND D.ENTER_REGI_S <= F.FUNC_DATE AND D.ENTER_REGI_E >= F.FUNC_DATE
+		WHERE
+			A.LECT_SEQ = #lectSeq#
+		ORDER BY
+			B.NAME ASC
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectAdmLecture" parameterClass="string" resultClass="egovMap">
+	/* CmmDAO.selectAdmLecture */
+	<![CDATA[
+		SELECT
+			LECT_NAME
+			, LECT_DIVI
+			, LECT_YEAR
+			, LECT_SEM
+			, LECT_PROG
+			, CASE LECT_SEM
+				WHEN '1' THEN '봄학기'
+				WHEN '2' THEN '여름학기'
+				WHEN '3' THEN '가을학기'
+				WHEN '4' THEN '겨울학기'
+			END AS LECT_SEM_NM
+			, LECT_SDATE
+			, LECT_EDATE
+		FROM
+			TB_LCMS_LECT
+		WHERE
+			LECT_SEQ = #lectSeq#
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectMeetLogPop" parameterClass="egovMap" resultClass="egovMap">
+	/* CmmDAO.selectMeetLogPop */
+	<![CDATA[
+		SELECT
+			MEET_SEQ
+			, YEAR
+			, SEMESTER
+			, CASE SEMESTER
+				WHEN '1' THEN '봄학기'
+				WHEN '2' THEN '여름학기'
+				WHEN '3' THEN '가을학기'
+				WHEN '4' THEN '겨울학기'
+			END AS SEME_NM
+			, WEEK
+			, GRADE
+			, THIS_SUBJECT
+			, THIS_STD_MNG
+			, THIS_ETC
+			, NEXT_SUBJECT
+			, NEXT_STD_MNG
+			, NEXT_ETC
+			, NOTICE
+			, REG_DATE
+			, REG_NAME
+			, PART_PROF
+			, PROG
+		FROM
+			TB_LCMS_MEET_LOG
+		WHERE
+			MEET_SEQ = #meetSeq#
+		AND
+			PROG = #prog#
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectMeetWeekPop" parameterClass="egovMap" resultClass="egovMap">
+	/* CmmDAO.selectMeetWeekPop */
+	<![CDATA[
+		SELECT
+			DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)
+			), '%m/%d') AS MONDAY
+			, DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)+1
+			), '%m/%d') AS TUESDAY
+			, DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)+2
+			), '%m/%d') AS WEDNESDAY
+			, DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)+3
+			), '%m/%d') AS THURSDAY
+			, DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)+4
+			), '%m/%d') AS FRIDAY
+			, TLLT.LECT_GRADE
+			, TLLT.WEEK
+			, TLLT.PROF_NAME
+		FROM
+			TB_LCMS_SEME TLS
+			, (
+				SELECT
+					TLL.LECT_GRADE
+					, #week# AS WEEK
+					, GROUP_CONCAT(DISTINCT TLM.NAME) AS PROF_NAME
+				FROM
+					TB_LCMS_LECTTIMETABLE TLLT
+					LEFT JOIN TB_LCMS_LECT TLL ON TLLT.LECT_CODE = TLL.LECT_SEQ
+					LEFT JOIN TB_LCMS_MEMBER TLM ON TLLT.LECT_TEA = TLM.MEMBER_CODE
+				WHERE
+					TLL.LECT_STATE = 'Y'
+				AND
+					TLL.LECT_GRADE = #grade#
+				AND
+					TLL.LECT_YEAR = #year#
+				AND
+					TLL.LECT_SEM = #semester#
+				GROUP BY
+					TLL.LECT_GRADE
+			) TLLT
+		WHERE
+			SEM_YEAR = #year#
+		AND
+			SEMESTER = #semester#
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectMeetProfList" parameterClass="string" resultClass="egovMap">
+	/* CmmDAO.selectMeetProfList */
+	<![CDATA[
+		SELECT
+			MPROF_SEQ
+			, MEET_SEQ
+			, LECT_SEQ
+			, CLASS_NUM
+			, MON_PROF_CODE
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER TLM
+				WHERE
+					TLM.MEMBER_CODE = TLMP.MON_PROF_CODE
+			) AS MON_PROF_NAME
+			, TUE_PROF_CODE
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER TLM
+				WHERE
+					TLM.MEMBER_CODE = TLMP.TUE_PROF_CODE
+			) AS TUE_PROF_NAME
+			, WED_PROF_CODE
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER TLM
+				WHERE
+					TLM.MEMBER_CODE = TLMP.WED_PROF_CODE
+			) AS WED_PROF_NAME
+			, THU_PROF_CODE
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER TLM
+				WHERE
+					TLM.MEMBER_CODE = TLMP.THU_PROF_CODE
+			) AS THU_PROF_NAME
+			, FRI_PROF_CODE
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER TLM
+				WHERE
+					TLM.MEMBER_CODE = TLMP.FRI_PROF_CODE
+			) AS FRI_PROF_NAME
+		FROM
+			TB_LCMS_MEET_PROF TLMP
+		WHERE
+			MEET_SEQ = #meetSeq#
+	]]>
+	</select>
+	
+	<select id="CmmDAO.selectGradeLectList" parameterClass="egovMap" resultClass="egovMap">
+	/* CmmDAO.selectGradeLectList */
+	<![CDATA[
+		SELECT
+			LECT_SEQ
+			, LECT_NAME
+			, LECT_DIVI
+			, LECT_GRADE
+		FROM
+			TB_LCMS_LECT
+		WHERE
+			LECT_STATE = 'Y'
+		AND
+			LECT_GRADE = #grade#
+		AND
+			LECT_YEAR = #year#
+		AND
+			LECT_SEM = #semester#
+		AND
+			LECT_PROG = #prog#
+	]]>
+	</select>
+	
+	<insert id="CmmDAO.insertLoginLog" parameterClass="egovMap">
+	/* CmmDAO.insertLoginLog */
+	<![CDATA[
+		INSERT INTO TB_LCMS_LOGIN_LOG(
+			LOGIN_ID
+			, NAME
+			, LOGIN_TYPE
+			, ACCE_IP
+			, ACCE_DATE
+		)VALUES(
+			#loginId#
+			, #name#
+			, #loginType#
+			, #acceIp#
+			, SYSDATE()
+		)
+	]]>
+	</insert>
+	
+</sqlMap>

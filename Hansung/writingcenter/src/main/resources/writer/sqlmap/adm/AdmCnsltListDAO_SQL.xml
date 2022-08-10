@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_cnslt_aply_table">
+		FROM
+			TB_HSWC_CNSLT_APLY t1
+				join TB_HSWC_CNSLT_SCHDUL t2 on t2.SCH_SEQ = t1.SCH_SEQ
+		WHERE 1=1
+		<isNotEmpty property="searchType" prepend="AND">
+			t1.APLY_STATUS = #searchType#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition" compareValue="1">
+				t1.APLY_NAME like '%' || #searchWord# || '%' 
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="2">
+				t1.UPDT_NAME like '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty property="startDate" prepend="AND">
+		<![CDATA[
+			t2.SCH_YMD >= #startDate#
+		]]>
+		</isNotEmpty>
+		<isNotEmpty property="endDate" prepend="AND">
+		<![CDATA[
+			t2.SCH_YMD <= #endDate#
+		]]>
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 상담신청 목록 -->
+	<select id="AdmCnsltListDAO.selectCnsltListList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmCnsltListDAO.selectCnsltListList */
+	<![CDATA[
+		SELECT
+			APLY_SEQ
+			, APLY_TYPE
+			, APLY_NAME
+			, APLY_COURSE_NAME
+			, APLY_STATUS
+			, REG_DATE
+			, UPDT_ID
+			, UPDT_NAME
+			, UPDT_DATE
+			
+			, SCH_SEQ
+			, SCH_YMD
+		FROM (
+			SELECT
+				rownum AS rn
+				, APLY_SEQ
+				, APLY_TYPE
+				, APLY_NAME
+				, APLY_COURSE_NAME
+				, APLY_STATUS
+				, REG_DATE
+				, UPDT_ID
+				, UPDT_NAME
+				, UPDT_DATE
+				, SCH_SEQ
+				, SCH_YMD
+			FROM (
+				SELECT 
+					t1.APLY_SEQ
+					, t1.APLY_TYPE
+					, t1.APLY_NAME
+					, t1.APLY_COURSE_NAME
+					, t1.APLY_STATUS
+					, t1.REG_DATE
+					, t1.UPDT_ID
+					, t1.UPDT_NAME
+					, t1.UPDT_DATE
+					, t1.SCH_SEQ 
+					
+					, t2.SCH_YMD
+	]]>
+		<include refid="adm_cnslt_aply_table"/>	
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) tt
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+
+	<!-- 상담신청 목록Cnt -->
+	<select id="AdmCnsltListDAO.selectCnsltListListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmCnsltListDAO.selectCnsltListListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_cnslt_aply_table"/>
+	</select>
+
+	<!-- 상담신청 첨부파일 목록 -->
+	<select id="AdmCnsltListDAO.selectCnsltListUpfileList" parameterClass="string" resultClass="egovMap">
+/* AdmCnsltListDAO.selectCnsltListUpfileList */
+	<![CDATA[
+		SELECT
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, REG_DATE
+			, APLY_SEQ
+			, UP_TYPE
+		FROM
+			TB_HSWC_CNSLT_APLY_UPFILE
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	</select>
+
+	<resultMap class="cnsltApplyVO" id="adm_cnslt_aply_listMap">
+		<result property="aplySeq" column="APLY_SEQ"/>
+		<result property="aplyType" column="APLY_TYPE"/>
+		<result property="aplyUsrType" column="APLY_USR_TYPE"/>
+		<result property="aplyGrade" column="APLY_GRADE"/>
+		<result property="aplyHakbun" column="APLY_HAKBUN"/>
+		<result property="aplyDept" column="APLY_DEPT"/>
+		<result property="aplyName" column="APLY_NAME"/>
+		<result property="aplyMphone" column="APLY_MPHONE"/>
+		<result property="aplyCourseName" column="APLY_COURSE_NAME"/>
+		<result property="aplyStatus" column="APLY_STATUS"/>
+		<result property="regDate" column="REG_DATE"/>
+		<result property="aplyAdmMemo" column="APLY_ADM_MEMO" jdbcType="CLOB" javaType="string"/>
+		<result property="updtId" column="UPDT_ID"/>
+		<result property="updtName" column="UPDT_NAME"/>
+		<result property="updtDate" column="UPDT_DATE"/>
+		<result property="schSeq" column="SCH_SEQ"/>
+		<result property="schYmd" column="SCH_YMD"/>
+		<result property="schHm" column="SCH_HM"/>
+		<result property="aplyCollege" column="APLY_COLLEGE"/>
+		<result property="aplyRegistYn" column="APLY_REGIST_YN"/>
+	</resultMap>
+
+	<!-- 상담신청 조회 -->
+	<select id="AdmCnsltListDAO.selectCnsltListOne" parameterClass="string" resultMap="adm_cnslt_aply_listMap">
+/* AdmCnsltListDAO.selectCnsltListOne */
+	<![CDATA[
+		SELECT 
+			APLY_SEQ
+			, APLY_TYPE
+			, APLY_USR_TYPE
+			, APLY_GRADE
+			, APLY_HAKBUN
+			, APLY_DEPT
+			, APLY_NAME
+			, APLY_MPHONE
+			, APLY_COURSE_NAME
+			, APLY_STATUS
+			, REG_DATE
+			, APLY_ADM_MEMO
+			, UPDT_ID
+			, UPDT_NAME
+			, TO_CHAR(UPDT_DATE, 'YYYY-MM-DD') AS UPDT_DATE
+			, SCH_SEQ
+			, (SELECT SCH_YMD FROM TB_HSWC_CNSLT_SCHDUL WHERE SCH_SEQ = t1.SCH_SEQ) as SCH_YMD
+			, (SELECT SCH_HM FROM TB_HSWC_CNSLT_SCHDUL WHERE SCH_SEQ = t1.SCH_SEQ) as SCH_HM
+			
+			, (SELECT DEPT_TITLE FROM TB_HSWC_DEPT WHERE DEPT_SEQ = t1.APLY_COLLEGE) as APLY_COLLEGE
+			, APLY_REGIST_YN
+		FROM 
+			TB_HSWC_CNSLT_APLY t1
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	</select>
+
+	<!-- 상담신청 공통 답변 조회 -->
+	<select id="AdmCnsltListDAO.selectCnsltListTotOne" parameterClass="string" resultClass="cnsltApplyVO">
+/* AdmCnsltListDAO.selectCnsltListTotOne */
+	<![CDATA[
+		SELECT
+			TANS_SEQ 	as tansSeq
+			, TANS1		as tans1
+			, TANS2		as tans2
+		FROM
+			TB_HSWC_CNSLT_TOT_ANS
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	</select>
+
+	<!-- 상담신청 재학생 답변 조회 -->
+	<select id="AdmCnsltListDAO.selectCnsltListRegiOne" parameterClass="string" resultClass="cnsltApplyVO">
+/* AdmCnsltListDAO.selectCnsltListRegiOne */
+	<![CDATA[
+		SELECT
+			ANS_SEQ			as regiAnsSeq
+			, ANS1			as regiAns1
+			, ANS1_TXT		as regiAns1Txt
+			, ANS2			as regiAns2
+			, ANS3_A		as regiAns3A
+			, ANS3_B		as regiAns3B
+			, ANS3_C		as regiAns3C
+			, ANS3_D		as regiAns3D
+			, ANS3_E		as regiAns3E
+			, ANS3_F		as regiAns3F
+			, ANS3_G		as regiAns3G
+			, ANS3_H		as regiAns3H
+			, ANS3_I		as regiAns3I
+			, ANS3_TXT		as regiAns3Txt
+			, ANS4_TXT		as regiAns4Txt
+			, ANS5_TXT		as regiAns5Txt
+		FROM
+			TB_HSWC_CNSLT_REGI_ANS
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	</select>
+	
+	<!-- 상담신청 외국인 답변 조회 -->
+	<select id="AdmCnsltListDAO.selectCnsltListOverOne" parameterClass="string" resultClass="cnsltApplyVO">
+/* AdmCnsltListDAO.selectCnsltListOverOne */
+	<![CDATA[
+		SELECT
+			ANS_SEQ			as overAnsSeq
+			, ANS1			as overAns1
+			, ANS1_TXT		as overAns1Txt
+			, ANS2_A		as overAns2A
+			, ANS2_B		as overAns2B
+			, ANS2_C		as overAns2C
+			, ANS2_D		as overAns2D
+			, ANS2_E		as overAns2E
+			, ANS2_F		as overAns2F
+			, ANS2_TXT		as overAns2Txt
+			, ANS3			as overAns3
+		FROM
+			TB_HSWC_CNSLT_OVER_ANS
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	</select>
+	
+	<!-- 상담신청 첨부파일 조회 -->
+	<select id="AdmCnsltListDAO.selectCnsltListUpfileOne" parameterClass="string" resultClass="egovMap">
+/* AdmCnsltListDAO.selectCnsltListUpfileOne */
+	<![CDATA[
+		SELECT
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, REG_DATE
+			, APLY_SEQ
+		FROM
+			TB_HSWC_CNSLT_APLY_UPFILE
+		WHERE
+			UP_SEQ = #upSeq#
+	]]>
+	</select>
+	
+	<!-- 상담신청 수정 -->
+	<update id="AdmCnsltListDAO.cnsltListUpdate" parameterClass="cnsltApplyVO">
+/* AdmCnsltListDAO.cnsltListUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_CNSLT_APLY
+		SET
+			APLY_STATUS = #aplyStatus#
+			, APLY_ADM_MEMO = #aplyAdmMemo#
+	]]>
+		<dynamic>
+			<isEqual property="updtYn" compareValue="N">
+				, UPDT_DATE = sysdate
+			</isEqual>
+		</dynamic>
+	<![CDATA[
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	</update>
+	<!-- 상담신청 삭제 -->
+	<delete id="AdmCnsltListDAO.cnsltListDelete" parameterClass="string">
+/* AdmCnsltListDAO.cnsltListUpdate */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CNSLT_APLY
+		
+		WHERE
+			APLY_SEQ = #aplySeq#
+	]]>
+	
+	</delete>
+	
+	
+	<!-- 엑셀 다운로드 -->
+	<select id="AdmCnsltListDAO.selectExcelList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmCnsltListDAO.selectExcelList */
+	<![CDATA[
+		SELECT
+			rn
+			, APLY_SEQ
+			, APLY_TYPE
+			, case
+				when APLY_USR_TYPE = 'REGI' then '재학생'
+				when APLY_USR_TYPE = 'OVER' then '외국인'
+				else ''
+			end as APLY_USR_TYPE
+			, APLY_GRADE
+			, APLY_HAKBUN
+			, APLY_DEPT
+			, APLY_NAME
+			, APLY_MPHONE
+			, APLY_COURSE_NAME
+			, APLY_STATUS
+			, case
+				when APLY_STATUS = '1' then '신청완료'
+				when APLY_STATUS = '2' then '상담완료'
+				when APLY_STATUS = '3' then '불참'
+				when APLY_STATUS = '4' then '상담취소'
+				when APLY_STATUS = '5' then '상담불가'
+				else '오류'
+			end as APLY_STATUS2
+			, to_char(REG_DATE, 'YYYY-MM-DD') as REG_DATE
+			, UPDT_ID
+			, UPDT_NAME
+			, UPDT_DATE
+			
+			, SCH_SEQ
+			, SCH_YMD
+			
+			, APLY_COLLEGE
+			, APLY_REGIST_YN
+		FROM (
+			SELECT
+				rownum AS rn
+				, APLY_SEQ
+				, APLY_TYPE
+				, APLY_USR_TYPE
+				, APLY_GRADE
+				, APLY_HAKBUN
+				, APLY_DEPT
+				, APLY_NAME
+				, APLY_MPHONE
+				, APLY_COURSE_NAME
+				, APLY_STATUS
+				, REG_DATE
+				, UPDT_ID
+				, UPDT_NAME
+				, UPDT_DATE
+				, SCH_SEQ
+				, SCH_YMD
+				, APLY_COLLEGE
+				, APLY_REGIST_YN
+			FROM (
+				SELECT 
+					t1.APLY_SEQ
+					, t1.APLY_TYPE
+					, t1.APLY_USR_TYPE
+					, t1.APLY_GRADE
+					, t1.APLY_HAKBUN
+					, t1.APLY_DEPT
+					, t1.APLY_NAME
+					, t1.APLY_MPHONE
+					, t1.APLY_COURSE_NAME
+					, t1.APLY_STATUS
+					, t1.REG_DATE
+					, t1.UPDT_ID
+					, t1.UPDT_NAME
+					, t1.UPDT_DATE
+					, t1.SCH_SEQ 
+					
+					, t2.SCH_YMD
+					
+					, (SELECT DEPT_TITLE FROM TB_HSWC_DEPT WHERE DEPT_SEQ = t1.APLY_COLLEGE) as APLY_COLLEGE
+					, case
+						when t1.APLY_REGIST_YN = 'Y' then '재학'
+						when t1.APLY_REGIST_YN = 'N' then '휴학'
+						else ''
+					end as APLY_REGIST_YN
+	]]>
+		<include refid="adm_cnslt_aply_table"/>	
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) tt
+	]]>
+	</select>
+	
+	<!-- **************************************** 2017-07-28 추가 **************************************** -->
+	<sql id="adm_cnsltStatus_where">
+		WHERE 
+			APLY_STATUS != 4 /* 상담취소(4)는 제외*/
+			AND APLY_USR_TYPE = #searchType#
+		<dynamic>
+			<isNotEmpty property="startDate" prepend="AND">
+			<![CDATA[
+				REG_DATE >= TO_DATE(#startDate#,'YYYY-MM-DD')
+			]]>
+			</isNotEmpty>
+			<isNotEmpty property="endDate" prepend="AND">
+			<![CDATA[
+				REG_DATE <= TO_DATE(#endDate#,'YYYY-MM-DD')
+			]]>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	<!-- 상담 현황 조회 -->
+	<select id="AdmCnsltListDAO.selectCnsltListStatusOne" parameterClass="searchVO" resultClass="egovMap" remapResults="true">
+/* AdmCnsltListDAO.selectCnsltListStatusOne */
+	<dynamic>
+		<isNotEmpty property="searchType">
+			<isEqual property="searchType" compareValue="REGI">
+				SELECT
+					nvl(sum(ANS1_0), 0)			AS TOT_ANS1_0
+					, nvl(sum(ANS1_1), 0)		AS TOT_ANS1_1
+					, nvl(sum(ANS1_2), 0)		AS TOT_ANS1_2
+					, nvl(sum(ANS1_3), 0)		AS TOT_ANS1_3
+					, nvl(sum(ANS1_4), 0)		AS TOT_ANS1_4
+					, nvl(sum(ANS1_5), 0)		AS TOT_ANS1_5
+					, nvl(sum(ANS1_6), 0)		AS TOT_ANS1_6
+					, nvl(sum(ANS1_7), 0)		AS TOT_ANS1_7
+					, nvl(sum(ANS1_8), 0)		AS TOT_ANS1_8
+					, nvl(sum(ANS1_9), 0)		AS TOT_ANS1_9
+					, nvl(sum(ANS1_a), 0)		AS TOT_ANS1_a
+					, nvl(sum(ANS1_b), 0)		AS TOT_ANS1_b
+					
+					, nvl(sum(ANS2_1), 0)		AS TOT_ANS2_1
+					, nvl(sum(ANS2_2), 0)		AS TOT_ANS2_2
+					, nvl(sum(ANS2_3), 0)		AS TOT_ANS2_3
+					, nvl(sum(ANS2_4), 0)		AS TOT_ANS2_4
+					
+					, nvl(sum(ANS3_A), 0)		AS TOT_ANS3_A
+					, nvl(sum(ANS3_B), 0)		AS TOT_ANS3_B
+					, nvl(sum(ANS3_C), 0)		AS TOT_ANS3_C
+					, nvl(sum(ANS3_D), 0)		AS TOT_ANS3_D
+					, nvl(sum(ANS3_E), 0)		AS TOT_ANS3_E
+					, nvl(sum(ANS3_F), 0)		AS TOT_ANS3_F
+					, nvl(sum(ANS3_G), 0)		AS TOT_ANS3_G
+					, nvl(sum(ANS3_H), 0)		AS TOT_ANS3_H
+					, nvl(sum(ANS3_I), 0)		AS TOT_ANS3_I
+					
+					, nvl(sum(TANS1_1), 0)		AS TOT_TANS1_1
+					, nvl(sum(TANS1_2), 0)		AS TOT_TANS1_2
+					
+					, nvl(sum(TANS2_1), 0)		AS TOT_TANS2_1
+					, nvl(sum(TANS2_2), 0)		AS TOT_TANS2_2
+					, nvl(sum(TANS2_3), 0)		AS TOT_TANS2_3
+					, nvl(sum(TANS2_4), 0)		AS TOT_TANS2_4
+					, nvl(sum(TANS2_5), 0)		AS TOT_TANS2_5
+				FROM (
+					SELECT
+						CASE WHEN t2.ANS1 = '0' THEN 1 ELSE 0 END AS ANS1_0
+						, CASE WHEN t2.ANS1 = '1' THEN 1 ELSE 0 END AS ANS1_1
+						, CASE WHEN t2.ANS1 = '2' THEN 1 ELSE 0 END AS ANS1_2
+						, CASE WHEN t2.ANS1 = '3' THEN 1 ELSE 0 END AS ANS1_3
+						, CASE WHEN t2.ANS1 = '4' THEN 1 ELSE 0 END AS ANS1_4
+						, CASE WHEN t2.ANS1 = '5' THEN 1 ELSE 0 END AS ANS1_5
+						, CASE WHEN t2.ANS1 = '6' THEN 1 ELSE 0 END AS ANS1_6
+						, CASE WHEN t2.ANS1 = '7' THEN 1 ELSE 0 END AS ANS1_7
+						, CASE WHEN t2.ANS1 = '8' THEN 1 ELSE 0 END AS ANS1_8
+						, CASE WHEN t2.ANS1 = '9' THEN 1 ELSE 0 END AS ANS1_9
+						, CASE WHEN t2.ANS1 = 'a' THEN 1 ELSE 0 END AS ANS1_a
+						, CASE WHEN t2.ANS1 = 'b' THEN 1 ELSE 0 END AS ANS1_b
+						
+						, CASE WHEN t2.ANS2 = '1' THEN 1 ELSE 0 END AS ANS2_1
+						, CASE WHEN t2.ANS2 = '2' THEN 1 ELSE 0 END AS ANS2_2
+						, CASE WHEN t2.ANS2 = '3' THEN 1 ELSE 0 END AS ANS2_3
+						, CASE WHEN t2.ANS2 = '4' THEN 1 ELSE 0 END AS ANS2_4
+						
+						, ANS3_A, ANS3_B, ANS3_C
+						, ANS3_D, ANS3_E, ANS3_F
+						, ANS3_G, ANS3_H, ANS3_I
+						
+						, CASE WHEN t3.TANS1 = '1' THEN 1 ELSE 0 END AS TANS1_1
+						, CASE WHEN t3.TANS1 = '2' THEN 1 ELSE 0 END AS TANS1_2
+						
+						, CASE WHEN t3.TANS2 = '1' THEN 1 ELSE 0 END AS TANS2_1
+						, CASE WHEN t3.TANS2 = '2' THEN 1 ELSE 0 END AS TANS2_2
+						, CASE WHEN t3.TANS2 = '3' THEN 1 ELSE 0 END AS TANS2_3
+						, CASE WHEN t3.TANS2 = '4' THEN 1 ELSE 0 END AS TANS2_4
+						, CASE WHEN t3.TANS2 = '5' THEN 1 ELSE 0 END AS TANS2_5
+					FROM
+						TB_HSWC_CNSLT_APLY t1
+						JOIN TB_HSWC_CNSLT_REGI_ANS t2 ON t2.APLY_SEQ = t1.APLY_SEQ
+						JOIN TB_HSWC_CNSLT_TOT_ANS t3 ON t3.APLY_SEQ = t1.APLY_SEQ
+				<include refid="adm_cnsltStatus_where"/>
+				) tt
+			</isEqual>
+			<isEqual property="searchType" compareValue="OVER">
+				SELECT
+					nvl(sum(ANS1_0), 0)			AS TOT_ANS1_0
+					, nvl(sum(ANS1_1), 0)		AS TOT_ANS1_1
+					, nvl(sum(ANS1_2), 0)		AS TOT_ANS1_2
+					, nvl(sum(ANS1_3), 0)		AS TOT_ANS1_3
+					, nvl(sum(ANS1_4), 0)		AS TOT_ANS1_4
+					, nvl(sum(ANS1_5), 0)		AS TOT_ANS1_5
+					, nvl(sum(ANS1_6), 0)		AS TOT_ANS1_6
+					, nvl(sum(ANS1_7), 0)		AS TOT_ANS1_7
+					, nvl(sum(ANS1_8), 0)		AS TOT_ANS1_8
+					
+					, nvl(sum(ANS2_A), 0)		AS TOT_ANS2_A
+					, nvl(sum(ANS2_B), 0)		AS TOT_ANS2_B
+					, nvl(sum(ANS2_C), 0)		AS TOT_ANS2_C
+					, nvl(sum(ANS2_D), 0)		AS TOT_ANS2_D
+					, nvl(sum(ANS2_E), 0)		AS TOT_ANS2_E
+					, nvl(sum(ANS2_F), 0)		AS TOT_ANS2_F
+					
+					, nvl(sum(ANS3_1), 0)		AS TOT_ANS3_1
+					, nvl(sum(ANS3_2), 0)		AS TOT_ANS3_2
+					, nvl(sum(ANS3_3), 0)		AS TOT_ANS3_3
+					, nvl(sum(ANS3_4), 0)		AS TOT_ANS3_4
+					
+					, nvl(sum(TANS1_1), 0)		AS TOT_TANS1_1
+					, nvl(sum(TANS1_2), 0)		AS TOT_TANS1_2
+					
+					, nvl(sum(TANS2_1), 0)		AS TOT_TANS2_1
+					, nvl(sum(TANS2_2), 0)		AS TOT_TANS2_2
+					, nvl(sum(TANS2_3), 0)		AS TOT_TANS2_3
+					, nvl(sum(TANS2_4), 0)		AS TOT_TANS2_4
+					, nvl(sum(TANS2_5), 0)		AS TOT_TANS2_5
+				FROM (
+					SELECT
+						CASE WHEN t2.ANS1 = '0' THEN 1 ELSE 0 END AS ANS1_0
+						, CASE WHEN t2.ANS1 = '1' THEN 1 ELSE 0 END AS ANS1_1
+						, CASE WHEN t2.ANS1 = '2' THEN 1 ELSE 0 END AS ANS1_2
+						, CASE WHEN t2.ANS1 = '3' THEN 1 ELSE 0 END AS ANS1_3
+						, CASE WHEN t2.ANS1 = '4' THEN 1 ELSE 0 END AS ANS1_4
+						, CASE WHEN t2.ANS1 = '5' THEN 1 ELSE 0 END AS ANS1_5
+						, CASE WHEN t2.ANS1 = '6' THEN 1 ELSE 0 END AS ANS1_6
+						, CASE WHEN t2.ANS1 = '7' THEN 1 ELSE 0 END AS ANS1_7
+						, CASE WHEN t2.ANS1 = '8' THEN 1 ELSE 0 END AS ANS1_8
+						
+						, ANS2_A, ANS2_B, ANS2_C
+						, ANS2_D, ANS2_E, ANS2_F
+						
+						, CASE WHEN t2.ANS3 = '1' THEN 1 ELSE 0 END AS ANS3_1
+						, CASE WHEN t2.ANS3 = '2' THEN 1 ELSE 0 END AS ANS3_2
+						, CASE WHEN t2.ANS3 = '3' THEN 1 ELSE 0 END AS ANS3_3
+						, CASE WHEN t2.ANS3 = '4' THEN 1 ELSE 0 END AS ANS3_4
+						
+						, CASE WHEN t3.TANS1 = '1' THEN 1 ELSE 0 END AS TANS1_1
+						, CASE WHEN t3.TANS1 = '2' THEN 1 ELSE 0 END AS TANS1_2
+						
+						, CASE WHEN t3.TANS2 = '1' THEN 1 ELSE 0 END AS TANS2_1
+						, CASE WHEN t3.TANS2 = '2' THEN 1 ELSE 0 END AS TANS2_2
+						, CASE WHEN t3.TANS2 = '3' THEN 1 ELSE 0 END AS TANS2_3
+						, CASE WHEN t3.TANS2 = '4' THEN 1 ELSE 0 END AS TANS2_4
+						, CASE WHEN t3.TANS2 = '5' THEN 1 ELSE 0 END AS TANS2_5
+					FROM
+						TB_HSWC_CNSLT_APLY t1
+						JOIN TB_HSWC_CNSLT_OVER_ANS t2 ON t2.APLY_SEQ = t1.APLY_SEQ
+						JOIN TB_HSWC_CNSLT_TOT_ANS t3 ON t3.APLY_SEQ = t1.APLY_SEQ
+				<include refid="adm_cnsltStatus_where"/>
+				) tt
+			</isEqual>
+		</isNotEmpty>
+	</dynamic>
+	</select>
+	
+	<!-- 상담신청 첨부파일 등록 -->
+	<insert id="AdmCnsltListDAO.cnsltRequestUpfileInsert" parameterClass="map">
+/* AdmCnsltListDAO.cnsltRequestUpfileInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CNSLT_APLY_UPFILE (
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, APLY_SEQ
+			, UP_TYPE
+		) VALUES (
+			SEQ_HSWC_CNSLT_APLY_UPFILE.nextval
+			, #fileInfoVO.fileName#
+			, #fileInfoVO.filePath#
+			, #aplySeq#
+			, #upType#
+		)
+	]]>
+	</insert>
+	
+	<!-- 상담 첨부파일 목록 -->
+	<select id="AdmCnsltListDAO.selectCnsltUpfileList" parameterClass="egovMap" resultClass="egovMap">
+/* AdmCnsltListDAO.selectCnsltUpfileList */
+	<![CDATA[
+		SELECT
+			UP_SEQ
+			, UP_ORIGIN_FILE_NAME
+			, UP_SAVE_FILE_PATH
+			, REG_DATE
+			, APLY_SEQ
+		FROM
+			TB_HSWC_CNSLT_APLY_UPFILE
+		WHERE
+			UP_SEQ
+	]]>	
+		<iterate conjunction="," prepend="IN" open="(" close=")" property="upFileDelChk">
+			#upFileDelChk[]#
+		</iterate>
+	</select>
+	
+	<!-- 상담 첨부파일 삭제 -->
+	<delete id="AdmCnsltListDAO.deleteCnsltUpfileList" parameterClass="egovMap">
+/* AdmCnsltListDAO.deleteCnsltUpfileList */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CNSLT_APLY_UPFILE
+		WHERE UP_SEQ IN (
+	]]>
+		<iterate conjunction="," property="upFileDelChk">
+			#upFileDelChk[]#
+		</iterate>
+	<![CDATA[
+		)
+	]]>
+	</delete>
+</sqlMap>

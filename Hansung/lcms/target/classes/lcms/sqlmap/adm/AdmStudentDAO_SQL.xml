@@ -1,0 +1,1171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="adm_stud_list">
+		FROM 
+			TB_LCMS_MEMBER TLM 
+		LEFT JOIN 
+			(
+				SELECT
+					MEMBER_CODE
+				FROM
+					TB_LCMS_LECT_MAP TLLM
+					LEFT JOIN TB_LCMS_LECT TLL ON TLL.LECT_SEQ = TLLM.LECT_SEQ
+				WHERE
+					1=1
+				<isNotEmpty prepend="AND" property="searchCondition1">
+					TLL.LECT_YEAR = #searchCondition1#
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="searchCondition2">
+					TLL.LECT_SEM = #searchCondition2#
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="searchCondition3">
+					TLLM.GRADE = #searchCondition3#
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="searchCondition4">
+					TLL.LECT_DIVI = #searchCondition4#
+				</isNotEmpty>
+				GROUP BY
+					MEMBER_CODE
+			) TLLM ON TLM.MEMBER_CODE = TLLM.MEMBER_CODE
+		WHERE
+			MEMBER_TYPE = 'STD'
+		<isNotEmpty prepend="AND" property="searchWord">
+			(TLM.NAME LIKE CONCAT ('%',#searchWord#,'%') OR TLM.MEMBER_CODE LIKE CONCAT ('%',#searchWord#,'%') OR TLM.NATION LIKE CONCAT ('%',#searchWord#,'%') OR TLM.STATUS LIKE CONCAT ('%',#searchWord#,'%'))
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLLM.MEMBER_CODE IS NOT NULL
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			TLLM.MEMBER_CODE IS NOT NULL
+		</isNotEmpty>
+	</sql>
+		
+	<!-- 학생 리스트 -->
+	<select id="AdmStudentDAO.StudList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStudentDAO.StudList */
+	<![CDATA[
+		SELECT DISTINCT
+			MEMBER_SEQ, MEMBER_TYPE, TLM.MEMBER_CODE , MEMBER_PW
+			, STEP, NAME, E_NAME, BIRTH, GENDER, NATION, DEPART, STATUS, PIC, STD_CURR, TP_STEP, TP_SCORE, TP_DATE
+			, CASE STD_TYPE WHEN '1' THEN '교환학생'
+							WHEN '2' THEN '어학연수생'
+							WHEN '3' THEN '학부생(유학생)'
+							WHEN '4' THEN '대학원(유학생)' END AS STD_TYPE
+			, APP_DATE, LOGIN_DATE_TIME, FINAL_EDU, FE_SCHOOLNAME, FE_COUNTRY, FE_DATE_S, FE_DATE_E, TR_EXPERIENCE, TR_GETPATH
+			, TR_TERM, NA_SNS, NA_TEL, NA_ADDR, TEL, EMAIL, POST, ADDR1, ADDR2, EMER_NAME, EMER_RELATION, TEL_EMER, EMAIL_EMER
+			, POST_EMER, ADDR1_EMER, ADDR2_EMER, GUAR_NAME, GUAR_RELATION, TEL_GUAR, EMAIL_GUAR, POST_GUAR, ADDR1_GUAR, ADDR2_GUAR
+			, VISA1, VISA2, ENTRY_DATE, ISSUE_DATE, EXPIRY_DATE, RC_IS_DATE, AES_DECRYPT(UNHEX(RC_CODE), TLM.MEMBER_CODE) AS RC_CODE
+			, AES_DECRYPT(UNHEX(P_NUMBER), TLM.MEMBER_CODE) AS P_NUMBER, P_IS_DATE, P_VALIDITY, INS_COMPANY
+			, STOCK_NUMBER, INS_SDATE, INS_EDATE, B_NAME, B_ACCOUNT, AES_DECRYPT(UNHEX(B_NUMBER), TLM.MEMBER_CODE) AS B_NUMBER
+			,(SELECT COUNT(*) FROM TB_LCMS_MEMBER)
+	]]>
+	<include refid="adm_stud_list"/>
+	<![CDATA[ 
+		ORDER BY
+	]]>
+		<isNotEmpty property="searchCondition6">
+			<isEqual property="searchCondition6" compareValue="ASC">
+				TLM.MEMBER_CODE ASC
+			</isEqual>
+			<isEqual property="searchCondition6" compareValue="DESC">
+				TLM.MEMBER_CODE DESC
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition7">
+			<isEqual property="searchCondition7" compareValue="ASC">
+				TLM.NAME ASC
+			</isEqual>
+			<isEqual property="searchCondition7" compareValue="DESC">
+				TLM.NAME DESC
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition8">
+			<isEqual property="searchCondition8" compareValue="ASC">
+				TLM.STATUS ASC
+			</isEqual>
+			<isEqual property="searchCondition8" compareValue="DESC">
+				TLM.STATUS DESC
+			</isEqual>
+		</isNotEmpty>
+	<![CDATA[
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 멤버 등록자  cnt -->
+	<select id="AdmStudentDAO.StudListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmStudentDAO.StudListCnt */
+	<![CDATA[
+		SELECT 
+			COUNT(DISTINCT TLM.MEMBER_SEQ) TOTALCNT
+		]]>
+		<include refid="adm_stud_list"/>
+		<![CDATA[
+			AND TLM.MEMBER_TYPE = 'STD'
+	]]>
+	</select>
+
+	<!-- 조회 -->
+	<select id="AdmStudentDAO.selectStudMember" parameterClass="string" resultClass="memberVO"  remapResults="true">
+	/* AdmStudentDAO.selectStudMember */
+	<![CDATA[
+		SELECT 
+			MEMBER_SEQ			AS	memberSeq		,
+			MEMBER_CODE			AS	memberCode		,
+			STEP				AS	step		,
+			NAME				AS	name		,
+			E_NAME				AS	eName		,
+			BIRTH				AS	birth		,
+			GENDER				AS	gender		,
+			NATION				AS	nation		,
+			DEPART				AS	depart		,
+			STATUS				AS	status		,
+			PIC					AS	pic		,
+			TP_STEP				AS	tpStep		,
+			TP_SCORE			AS	tpScore		,
+			TP_DATE				AS	tpDate		,
+			STD_CURR			AS	stdCurr		,
+			STD_TYPE			AS	stdType		,
+			APP_DATE			AS	appDate		,
+			MEMBER_PW			AS	memberPw		,
+			LOGIN_DATE_TIME		AS	loginDateTime		,
+			FINAL_EDU			AS	finalEdu		,
+			FE_SCHOOLNAME		AS	feSchoolname		,
+			FE_COUNTRY			AS	feCountry		,
+			FE_DATE_S			AS	feDateS		,
+			FE_DATE_E			AS	feDateE		,
+			TR_EXPERIENCE		AS	trExperience		,
+			TR_GETPATH			AS	trGetpath		,
+			TR_TERM				AS	trTerm		,
+			NA_SNS				AS	naSns		,
+			NA_TEL				AS	naTel		,
+			NA_ADDR				AS	naAddr		,
+			TEL					AS	tel		,
+			EMAIL				AS	email		,
+			POST				AS	post		,
+			ADDR1				AS	addr1		,
+			ADDR2				AS	addr2		,
+			EMER_NAME			AS	emerName		,
+			EMER_RELATION		AS	emerRelation		,
+			TEL_EMER			AS	telEmer		,
+			EMAIL_EMER			AS	emailEmer		,
+			POST_EMER			AS	postEmer		,
+			ADDR1_EMER			AS	addr1Emer		,
+			ADDR2_EMER			AS	addr2Emer		,
+			GUAR_NAME			AS	guarName		,
+			GUAR_RELATION		AS	guarRelation		,
+			TEL_GUAR			AS	telGuar		,
+			EMAIL_GUAR			AS	emailGuar		,
+			POST_GUAR			AS	postGuar		,
+			ADDR1_GUAR			AS	addr1Guar		,
+			ADDR2_GUAR			AS	addr2Guar		,
+			VISA1				AS	visa1		,
+			VISA2				AS	visa2		,
+			ENTRY_DATE			AS	entryDate		,
+			ISSUE_DATE			AS	issueDate		,
+			EXPIRY_DATE			AS	expiryDate		,
+			RC_IS_DATE			AS	rcIsDate		,
+			AES_DECRYPT(UNHEX(RC_CODE), MEMBER_CODE)				AS	rcCode		,
+			AES_DECRYPT(UNHEX(P_NUMBER), MEMBER_CODE)			AS	pNumber		,
+			P_IS_DATE			AS	pIsDate		,
+			P_VALIDITY			AS	pValidity		,
+			INS_COMPANY			AS	insCompany		,
+			STOCK_NUMBER		AS	stockNumber		,
+			INS_SDATE			AS	insSdate		,
+			INS_EDATE			AS	insEdate		,
+			B_NAME				AS	bName		,
+			B_ACCOUNT			AS	bAccount		,
+			AES_DECRYPT(UNHEX(B_NUMBER), MEMBER_CODE)			AS	bNumber		,
+			IMG_PATH			AS	imgPath		,
+			IMG_NAME			AS	imgName
+		FROM 
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_SEQ = #memberSeq#
+	]]>
+	</select>
+
+	<!-- 추가 -->
+	<!-- 로그인데이터 추가해야됨 -->
+	<insert id="AdmStudentDAO.insertStudent" parameterClass="memberVO">
+	/* AdmStudentDAO.insertStudent */
+		<selectKey keyProperty="memberSeq" resultClass="string" type="post">
+			SELECT MAX(MEMBER_SEQ) FROM TB_LCMS_MEMBER
+		</selectKey>
+		INSERT INTO TB_LCMS_MEMBER 
+			(
+			MEMBER_TYPE
+			,MEMBER_CODE
+			,STEP
+			,NAME
+			,E_NAME
+			,BIRTH
+			,GENDER
+			,NATION
+			,DEPART
+			,STATUS
+			,PIC
+			, TP_STEP
+			, TP_SCORE
+			, TP_DATE
+			,STD_CURR
+			,STD_TYPE
+			,APP_DATE
+			,MEMBER_PW
+			,FINAL_EDU
+			,FE_SCHOOLNAME
+			,FE_COUNTRY
+			,FE_DATE_S
+			,FE_DATE_E
+			,TR_EXPERIENCE
+			,TR_GETPATH
+			,TR_TERM
+			, NA_SNS
+			,NA_TEL
+			,NA_ADDR
+			,TEL
+			,EMAIL
+			,POST
+			,ADDR1
+			,ADDR2
+			,EMER_NAME
+			,EMER_RELATION
+			,TEL_EMER
+			,EMAIL_EMER
+			,POST_EMER
+			,ADDR1_EMER
+			,ADDR2_EMER
+			,GUAR_NAME
+			,GUAR_RELATION
+			,TEL_GUAR
+			,EMAIL_GUAR
+			,POST_GUAR
+			,ADDR1_GUAR
+			,ADDR2_GUAR
+			,VISA1
+			,VISA2
+			,ENTRY_DATE
+			,ISSUE_DATE
+			,EXPIRY_DATE
+			,RC_IS_DATE
+			,RC_CODE
+			,P_NUMBER
+			,P_IS_DATE
+			,P_VALIDITY
+			,INS_COMPANY
+			,STOCK_NUMBER
+			,INS_SDATE
+			,INS_EDATE
+			,B_NAME
+			,B_ACCOUNT
+			,B_NUMBER
+			) 
+		VALUES
+			(
+			'STD'
+			,#memberCode#
+			,#step#
+			,#name#
+			,#eName#
+			,#birth#
+			,#gender#
+			,#nation#
+			,#depart#
+			,#status#
+			,#pic#
+			,#tpStep#
+			,#tpScore#
+			,#tpDate#
+			,#stdCurr#
+			,#stdType#
+			,#appDate#
+			,#memberPw#
+			,#finalEdu#
+			,#feSchoolname#
+			,#feCountry#
+			,#feDateS#
+			,#feDateE#
+			,#trExperience#
+			,#trGetpath#
+			,#trTerm#
+			,#naSns#
+			,#naTel#
+			,#naAddr#
+			,#tel#
+			,#email#
+			,#post#
+			,#addr1#
+			,#addr2#
+			,#emerName#
+			,#emerRelation#
+			,#telEmer#
+			,#emailEmer#
+			,#postEmer#
+			,#addr1Emer#
+			,#addr2Emer#
+			,#guarName#
+			,#guarRelation#
+			,#telGuar#
+			,#emailGuar#
+			,#postGuar#
+			,#addr1Guar#
+			,#addr2Guar#
+			,#visa1#
+			,#visa2#
+			,#entryDate#
+			,#issueDate#
+			,#expiryDate#
+			,#rcIsDate#
+			,HEX(AES_ENCRYPT(#rcCode#, #memberCode#))
+			,HEX(AES_ENCRYPT(#pNumber#, #memberCode#))
+			,#pIsDate#
+			,#pValidity#
+			,#insCompany#
+			,#stockNumber#
+			,#insSdate#
+			,#insEdate#
+			,#bName#
+			,#bAccount#
+		<isNotEmpty property="bNumber">
+			,HEX(AES_ENCRYPT(#bNumber#, #memberCode#))
+		</isNotEmpty>
+			)
+			 
+	</insert>
+	
+	<!-- 학생 수정 -->
+	<update id="AdmStudentDAO.updateStudent" parameterClass="MemberVO">
+		UPDATE
+			TB_LCMS_MEMBER
+		SET 
+			MEMBER_CODE			= #memberCode#
+			,STEP				= #step#
+			,NAME				= #name#
+			,E_NAME				= #eName#
+			,BIRTH				= #birth#
+			,GENDER				= #gender#
+			,NATION				= #nation#
+			,DEPART				= #depart#
+			,STATUS				= #status#
+			,PIC				= #pic#
+			, TP_STEP			= #tpStep#
+			, TP_SCORE			= #tpScore#
+			, TP_DATE			= #tpDate#
+			,STD_CURR			= #stdCurr#
+			,STD_TYPE			= #stdType#
+			,APP_DATE			= #appDate#
+			,FINAL_EDU			= #finalEdu#
+			,FE_SCHOOLNAME		= #feSchoolname#
+			,FE_COUNTRY			= #feCountry#
+			,FE_DATE_S			= #feDateS#
+			,FE_DATE_E			= #feDateE#
+			,TR_EXPERIENCE		= #trExperience#
+			,TR_GETPATH			= #trGetpath#
+			,TR_TERM			= #trTerm#
+			,NA_SNS				= #naSns#
+			,NA_TEL				= #naTel#
+			,NA_ADDR			= #naAddr#
+			,TEL				= #tel#
+			,EMAIL				= #email#
+			,POST				= #post#
+			,ADDR1				= #addr1#
+			,ADDR2				= #addr2#
+			,EMER_NAME			= #emerName#
+			,EMER_RELATION		= #emerRelation#
+			,TEL_EMER			= #telEmer#
+			,EMAIL_EMER			= #emailEmer#
+			,POST_EMER			= #postEmer#
+			,ADDR1_EMER			= #addr1Emer#
+			,ADDR2_EMER			= #addr2Emer#
+			,GUAR_NAME			= #guarName#
+			,GUAR_RELATION		= #guarRelation#
+			,TEL_GUAR			= #telGuar#
+			,EMAIL_GUAR			= #emailGuar#
+			,POST_GUAR			= #postGuar#
+			,ADDR1_GUAR			= #addr1Guar#
+			,ADDR2_GUAR			= #addr2Guar#
+			,VISA1				= #visa1#
+			,VISA2				= #visa2#		
+			,ENTRY_DATE			= #entryDate#
+			,ISSUE_DATE			= #issueDate#			
+			,EXPIRY_DATE		= #expiryDate#
+			,RC_IS_DATE			= #rcIsDate#
+			,RC_CODE			= HEX(AES_ENCRYPT(#rcCode#, #memberCode#))
+			,P_NUMBER			= HEX(AES_ENCRYPT(#pNumber#, #memberCode#))
+			,P_IS_DATE			= #pIsDate#
+			,P_VALIDITY			= #pValidity#
+			,INS_COMPANY		= #insCompany#
+			,STOCK_NUMBER		= #stockNumber#
+			,INS_SDATE			= #insSdate#
+			,INS_EDATE			= #insEdate#
+			,B_NAME				= #bName#
+			,B_ACCOUNT			= #bAccount#
+			,B_NUMBER			= HEX(AES_ENCRYPT(#bNumber#, #memberCode#))
+		WHERE 
+			MEMBER_SEQ = #memberSeq#
+	</update>
+
+	<!-- 학생 이미지 수정 -->
+	<update id="AdmStudentDAO.updateStudentImg" parameterClass="MemberVO">
+		UPDATE
+			TB_LCMS_MEMBER
+		SET 
+			IMG_PATH = #imgPath#
+			, IMG_NAME = #imgName#
+		WHERE 
+			MEMBER_SEQ = #memberSeq#
+	</update>
+	
+	<select id="AdmStudentDAO.selectAdmAjaxStudCheck" parameterClass="string" resultClass="int">
+	/* AdmStudentDAO.selectAdmAjaxStudCheck */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_CODE = #memberCode#
+		AND
+			MEMBER_TYPE = 'STD'
+	]]>
+	</select>
+	
+	<delete id="AdmStudentDAO.deleteStudent" parameterClass="String">
+		DELETE FROM TB_LCMS_MEMBER WHERE MEMBER_CODE = #MemberCode#
+	</delete>
+	
+	<update id="AdmStudentDAO.updateAdmAjaxStudClearPw" parameterClass="memberVO">
+	/* AdmStudentDAO.updateAdmAjaxStudClearPw */
+		UPDATE
+			TB_LCMS_MEMBER
+		SET
+			MEMBER_PW = #memberPw#
+		WHERE
+			MEMBER_CODE = #memberCode#
+	</update>
+	
+	<!-- 일련번호 -->
+	<select id="AdmStudentDAO.selectAdmMemTotCnt" parameterClass="memberVO" resultClass="string">
+	/* AdmStudentDAO.selectAdmMemTotCnt */
+		SELECT
+			LPAD(IFNULL(MAX(SUBSTRING(MEMBER_CODE,5,3)), 0)+1, 3, 0) AS totCnt
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_TYPE = 'STD'
+		AND
+			SUBSTRING(APP_DATE,3,2) = SUBSTRING(#appDate#,3,2)
+		AND
+			STD_TYPE = #stdType#
+	</select>
+	
+		
+	<!-- 학생현황 엑셀다운로드 -->
+	<select id="AdmStudentDAO.selectAdmStatusExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStudentDAO.selectAdmStatusExcel */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT DISTINCT
+			MEMBER_SEQ,
+			TLM.MEMBER_CODE,	STEP,	NAME,	E_NAME,	BIRTH,	GENDER,	NATION,	DEPART,	STATUS,	PIC, TP_STEP, TP_SCORE, TP_DATE, STD_CURR,	
+			CASE STD_TYPE WHEN '1' THEN '교환학생'
+							WHEN '2' THEN '어학연수생'
+							WHEN '3' THEN '학부생(유학생)'
+							WHEN '4' THEN '대학원(유학생)' END AS STD_TYPE,	
+			APP_DATE, MEMBER_PW,	LOGIN_DATE_TIME,	FINAL_EDU,	FE_SCHOOLNAME,	FE_COUNTRY,	FE_DATE_S,	FE_DATE_E,	TR_EXPERIENCE,	TR_GETPATH,
+			TR_TERM, NA_SNS,	NA_TEL,	NA_ADDR,	TEL,	EMAIL,	POST,	ADDR1,	ADDR2,	EMER_NAME,	EMER_RELATION,	TEL_EMER,	EMAIL_EMER,
+			POST_EMER,	ADDR1_EMER,	ADDR2_EMER,	GUAR_NAME,	GUAR_RELATION,	TEL_GUAR,	EMAIL_GUAR,	POST_GUAR,	ADDR1_GUAR,	ADDR2_GUAR,
+			VISA1,	VISA2,	ENTRY_DATE,	ISSUE_DATE,	EXPIRY_DATE,	RC_IS_DATE,	AES_DECRYPT(UNHEX(RC_CODE), TLM.MEMBER_CODE) AS RC_CODE,	AES_DECRYPT(UNHEX(P_NUMBER), TLM.MEMBER_CODE) AS P_NUMBER,	P_IS_DATE,	P_VALIDITY,	INS_COMPANY,
+			STOCK_NUMBER,	INS_SDATE,	INS_EDATE,	B_NAME,	B_ACCOUNT,	AES_DECRYPT(UNHEX(B_NUMBER), TLM.MEMBER_CODE) AS B_NUMBER	
+				,(SELECT 
+						COUNT(*) 
+					FROM 
+						TB_LCMS_MEMBER)
+			]]>
+	<include refid="adm_stud_list"/>
+	<![CDATA[
+			ORDER BY TLM.MEMBER_CODE DESC
+			)a
+	]]>
+	</select>
+	
+	
+<!-- 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// -->
+
+
+
+	<sql id="adm_funcmem_list">
+		FROM 
+			TB_LCMS_FUNC B
+		LEFT JOIN
+			TB_LCMS_MEMBER A ON A.MEMBER_SEQ = B.MEMBER_SEQ 
+		WHERE
+			FUNC_DATE BETWEEN #searchCondition1# AND #searchCondition2#
+		<isNotEmpty prepend="AND" property="searchWord">
+			(NAME LIKE CONCAT ('%',#searchWord#,'%') OR MEMBER_CODE LIKE CONCAT ('%',#searchWord#,'%') OR NATION LIKE CONCAT ('%',#searchWord#,'%'))
+		</isNotEmpty>
+<!-- 		<isNotEmpty property="searchCondition1" prepend="AND">
+			FUNC_DATE &gt;= #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition2" prepend="AND">
+			FUNC_DATE &lt;= #searchCondition2#
+		</isNotEmpty> -->
+	</sql>
+	<sql id="adm_func_list">
+		FROM 
+			TB_LCMS_FUNC B
+		LEFT JOIN
+			TB_LCMS_MEMBER A ON A.MEMBER_SEQ = B.MEMBER_SEQ 
+		WHERE 
+			 1=1
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			<isNotEmpty property="searchCondition2" >
+			FUNC_DATE BETWEEN #searchCondition1# AND #searchCondition2#
+			</isNotEmpty>
+		</isNotEmpty>
+		
+	</sql>
+	
+	<!-- 학적 리스트 -->
+	<select id="AdmStudentDAO.FuncList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStudentDAO.FuncList */
+	<![CDATA[
+		SELECT 
+			FUNC_SEQ, A.MEMBER_SEQ,
+			MEMBER_CODE,	STEP,	NAME,	E_NAME,	BIRTH,	GENDER,	NATION,	DEPART,	STATUS,	PIC,	STD_CURR,	STD_TYPE,	APP_DATE, TP_STEP, TP_SCORE, TP_DATE,
+			MEMBER_PW,	LOGIN_DATE_TIME,	FINAL_EDU,	FE_SCHOOLNAME,	FE_COUNTRY,	FE_DATE_S,	FE_DATE_E,	TR_EXPERIENCE,	TR_GETPATH,
+			TR_TERM, NA_SNS,	NA_TEL,	NA_ADDR,	TEL,	EMAIL,	POST,	ADDR1,	ADDR2,	EMER_NAME,	EMER_RELATION,	TEL_EMER,	EMAIL_EMER,
+			POST_EMER,	ADDR1_EMER,	ADDR2_EMER,	GUAR_NAME,	GUAR_RELATION,	TEL_GUAR,	EMAIL_GUAR,	POST_GUAR,	ADDR1_GUAR,	ADDR2_GUAR,
+			VISA1,	VISA2,	ENTRY_DATE,	ISSUE_DATE,	EXPIRY_DATE,	RC_IS_DATE,	AES_DECRYPT(UNHEX(RC_CODE), MEMBER_CODE) AS RC_CODE,	AES_DECRYPT(UNHEX(P_NUMBER), MEMBER_CODE) AS P_NUMBER,	P_IS_DATE,	P_VALIDITY,	INS_COMPANY,
+			STOCK_NUMBER,	INS_SDATE,	INS_EDATE,	B_NAME,	B_ACCOUNT,	AES_DECRYPT(UNHEX(B_NUMBER), MEMBER_CODE) AS B_NUMBER,(SELECT COUNT(*) FROM TB_LCMS_MEMBER),
+			B.FUNC_SEQ	,B.FUNC_DATE,B.FUNC_CHANGE_DATE,B.FUNC_REASON,B.FUNC_STATE, B.FUNC_WRITER
+	]]>
+	<include refid="adm_funcmem_list"/>
+	<!-- <dynamic prepend="ORDER BY">
+		<isNotEmpty property="searchCondition5">
+			STATUS ASC
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition6">
+			STATUS DESC
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition7">
+			NAME ASC
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition8">
+			NAME DESC
+		</isNotEmpty>
+	</dynamic> -->
+	<![CDATA[		
+		ORDER BY
+			FUNC_DATE DESC, MEMBER_CODE ASC
+		LIMIT
+			#firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+		<!-- 학적 리스트.학적 -->
+	<select id="AdmStudentDAO.FuncList2" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStudentDAO.FuncList */
+	<![CDATA[
+		SELECT 
+			FUNC_SEQ 
+			,FUNC_DATE
+			,FUNC_CHANGE_DATE
+			,FUNC_REASON
+			,FUNC_STATE
+			, FUNC_WRITER
+			, B.MEMBER_SEQ
+			,(SELECT COUNT(*) FROM TB_LCMS_FUNC)
+			]]>
+	<include refid="adm_func_list"/>
+	<![CDATA[ GROUP BY  FUNC_DATE, FUNC_CHANGE_DATE	]]>
+	<dynamic prepend="ORDER BY">
+		<isNotEmpty property="searchCondition3">
+			FUNC_DATE ASC
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition4">
+			FUNC_DATE DESC
+		</isNotEmpty>
+	</dynamic>
+	</select>	
+	
+	<!-- 학적변동  cnt -->
+	<select id="AdmStudentDAO.FuncListCnt" parameterClass="searchVO" resultClass="int">
+	/*AdmStudentDAO.FuncListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*) TOTALCNT
+		]]>
+	<include refid="adm_funcmem_list"/>
+	</select>		
+	<!-- 학적변동 /학적부분 cnt -->
+	<select id="AdmStudentDAO.FuncList2Cnt" parameterClass="searchVO" resultClass="int">
+	/*AdmStudentDAO.FuncListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*) TOTALCNT
+		FROM 
+			TB_LCMS_FUNC
+		]]>
+	</select>	
+
+	
+	<!-- 조회/학생 -->
+	<select id="AdmStudentDAO.selectMemberOne" parameterClass="string" resultClass="memberVO">
+	/* AdmStudentDAO.selectFuncMember */
+	<![CDATA[
+		SELECT 
+			MEMBER_SEQ			AS	memberSeq		,
+			MEMBER_CODE			AS	memberCode		,
+			STEP				AS	step		,
+			NAME				AS	name		,
+			E_NAME				AS	eName		,
+			BIRTH				AS	birth		,
+			GENDER				AS	gender		,
+			NATION				AS	nation		,
+			DEPART				AS	depart		,
+			STATUS				AS	status		,
+			PIC					AS	pic		,
+			TP_STEP				AS	tpStep		,
+			TP_SCORE			AS	tpScore		,
+			TP_DATE				AS	tpDate		,
+			STD_CURR			AS	stdCurr		,
+			STD_TYPE			AS	stdType		,
+			APP_DATE			AS	appDate		,
+			MEMBER_PW			AS	memberPw		,
+			LOGIN_DATE_TIME		AS	loginDateTime		,
+			FINAL_EDU			AS	finalEdu		,
+			FE_SCHOOLNAME		AS	feSchoolname		,
+			FE_COUNTRY			AS	feCountry		,
+			FE_DATE_S			AS	feDateS		,
+			FE_DATE_E			AS	feDateE		,
+			TR_EXPERIENCE		AS	trExperience		,
+			TR_GETPATH			AS	trGetpath		,
+			TR_TERM				AS	trTerm		,
+			NA_SNS				AS	naSns		,
+			NA_TEL				AS	naTel		,
+			NA_ADDR				AS	naAddr		,
+			TEL					AS	tel		,
+			EMAIL				AS	email		,
+			POST				AS	post		,
+			ADDR1				AS	addr1		,
+			ADDR2				AS	addr2		,
+			EMER_NAME			AS	emerName		,
+			EMER_RELATION		AS	emerRelation		,
+			TEL_EMER			AS	telEmer		,
+			EMAIL_EMER			AS	emailEmer		,
+			POST_EMER			AS	postEmer		,
+			ADDR1_EMER			AS	addr1Emer		,
+			ADDR2_EMER			AS	addr2Emer		,
+			GUAR_NAME			AS	guarName		,
+			GUAR_RELATION		AS	guarRelation		,
+			TEL_GUAR			AS	telGuar		,
+			EMAIL_GUAR			AS	emailGuar		,
+			POST_GUAR			AS	postGuar		,
+			ADDR1_GUAR			AS	addr1Guar		,
+			ADDR2_GUAR			AS	addr2Guar		,
+			VISA1				AS	visa1		,
+			VISA2				AS	visa2		,
+			ENTRY_DATE			AS	entryDate		,
+			ISSUE_DATE			AS	issueDate		,
+			EXPIRY_DATE			AS	expiryDate		,
+			RC_IS_DATE			AS	rcIsDate		,
+			AES_DECRYPT(UNHEX(RC_CODE), MEMBER_CODE)				AS	rcCode		,
+			AES_DECRYPT(UNHEX(P_NUMBER), MEMBER_CODE)			AS	pNumber		,
+			P_IS_DATE			AS	pIsDate		,
+			P_VALIDITY			AS	pValidity		,
+			INS_COMPANY			AS	insCompany		,
+			STOCK_NUMBER		AS	stockNumber		,
+			INS_SDATE			AS	insSdate		,
+			INS_EDATE			AS	insEdate		,
+			B_NAME				AS	bName		,
+			B_ACCOUNT			AS	bAccount		,
+			AES_DECRYPT(UNHEX(B_NUMBER), MEMBER_CODE)			AS	bNumber
+		FROM 
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_SEQ = #memberSeq#
+	]]>
+	</select>
+	<!-- 조회/학적 -->
+	<select id="AdmStudentDAO.selectFuncList" parameterClass="string" resultClass="funcVO">
+	/* AdmStudentDAO.selectFuncList */
+	<![CDATA[
+		SELECT 
+			FUNC_SEQ			AS	funcSeq
+			, MEMBER_SEQ		AS	memberSeq
+			, FUNC_DATE			AS	funcDate
+			, FUNC_CHANGE_DATE	AS	funcChangeDate
+			, FUNC_REASON		AS	funcReason
+			, FUNC_STATE		AS	funcState
+			, FUNC_WRITER  		AS  funcWriter
+			, FUNC_BEF_STATE	AS	funcBefState
+			, YEAR				AS	year
+			, CASE SEMESTER WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS semester
+		FROM 
+			TB_LCMS_FUNC
+		WHERE
+			FUNC_SEQ = #funcSeq#
+	]]>
+	</select>
+	<!-- 학적 리스트 상세보기 -->
+	<select id="AdmStudentDAO.selectAdmFuncList" parameterClass="string" resultClass="funcVO">
+	/* AdmStudentDAO.selectAdmFuncList */
+	<![CDATA[
+		SELECT 
+    		FUNC_SEQ			AS	funcSeq
+			,MEMBER_SEQ			AS	memberSeq
+			,FUNC_DATE			AS	funcDate
+			,FUNC_CHANGE_DATE	AS	funcChangeDate
+			,FUNC_REASON		AS	funcReason
+			,FUNC_STATE			AS	funcState
+			,FUNC_WRITER  		AS  funcWriter
+			,YEAR				AS	year
+			,SEMESTER			AS	semester
+    	FROM 
+    		TB_LCMS_FUNC
+    	WHERE 
+    		MEMBER_SEQ = #memberSeq#
+    	ORDER BY FUNC_DATE
+	]]>	
+	</select>
+<!-- 	학적변동 추가 -->
+	<insert id="AdmStudentDAO.insertFunc" parameterClass="funcVO">
+	/* AdmStudentDAO.insertFunc */
+		<selectKey keyProperty="funcSeq" resultClass="string" type="post">
+			SELECT MAX(FUNC_SEQ) FROM TB_LCMS_FUNC
+		</selectKey>
+		INSERT INTO TB_LCMS_FUNC(
+			MEMBER_SEQ
+			,FUNC_DATE
+			,FUNC_CHANGE_DATE
+			,FUNC_REASON
+			,FUNC_STATE
+			,FUNC_WRITER
+			,FUNC_BEF_STATE
+			,YEAR
+			,SEMESTER
+		)VALUES(
+			#memberSeq#
+			,#funcDate#
+			,NOW()
+			,#funcReason#
+			,#funcState#
+			,#funcWriter#
+			,(
+				SELECT
+					STATUS
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_SEQ = #memberSeq#
+			)
+			,#year#
+			,#semester#
+		)
+	</insert>
+	<!-- 학생 수정 -->
+	<update id="AdmStudentDAO.updateFuncState" parameterClass="MemberVO">
+		UPDATE
+			TB_LCMS_MEMBER
+		SET 
+			STATUS	= #status#
+		WHERE 
+			MEMBER_SEQ = #memberSeq#
+	</update>
+	
+<!-- 	첨부파일 조회 -->
+	<select id="AdmStudentDAO.selectAttachList" parameterClass="string" resultClass="attachVO">
+	/* AdmStudentDAO.selectAttachList */
+		<![CDATA[
+		SELECT
+			ATTACH_SEQ		AS attachSeq
+			, BOARD_SEQ		AS boardSeq
+			, BOARD_TYPE	AS boardType
+			, ORG_FILE_NAME	AS orgFileName
+			, REG_FILE_NAME	AS regFileName
+		FROM
+			TB_LCMS_ATTACH
+		WHERE
+			ATTACH_SEQ = (SELECT MAX(ATTACH_SEQ) FROM TB_LCMS_ATTACH WHERE BOARD_SEQ = #boardSeq#)
+		AND 
+			BOARD_TYPE = 'FUNC'
+]]>
+	</select>	
+		
+	<delete id="AdmStudentDAO.deleteFunc" parameterClass="String">
+		DELETE FROM TB_LCMS_FUNC WHERE FUNC_SEQ = #funcSeq#
+	</delete>
+	<delete id="AdmStudentDAO.deleteFuncFile" parameterClass="string">
+	/* AdmStudentDAO.deleteFuncFile */
+		DELETE FROM
+			TB_LCMS_ATTACH
+		WHERE
+			BOARD_SEQ = #boardSeq#
+		AND
+			BOARD_TYPE = 'FUNC'
+	</delete>
+	
+	<!-- 멤버리스트 값 가져오기 -->
+	<select id="AdmStudentDAO.memberList" parameterClass="searchVO" resultClass="egovMap">
+		SELECT 
+			MEMBER_SEQ, MEMBER_CODE, NAME, E_NAME, TEL, STEP, NATION, BIRTH 
+		FROM 
+			TB_LCMS_MEMBER 
+		WHERE
+			MEMBER_TYPE = 'STD'
+	 	AND 
+	 		STATUS NOT IN('자퇴','행방불명','퇴학') 
+	 	ORDER BY 
+	 		MEMBER_SEQ ASC
+	</select>
+	
+<!-- 학적 학생리스트 검색 -->
+	<select id="AdmStudentDAO.admAjaxStudSearch" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStudentDAO.admAjaxStudSearch */
+	<![CDATA[
+		SELECT
+			MEMBER_SEQ, MEMBER_CODE, NAME, E_NAME, TEL, STEP, NATION, BIRTH, STATUS 
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_TYPE = 'STD'
+	]]>
+	<isNotEmpty prepend="AND" property="searchWord">
+		<isEqual property="searchType" compareValue="name">
+			NAME LIKE CONCAT ('%', #searchWord#, '%')
+		</isEqual>
+		<isEqual property="searchType" compareValue="eName">
+			E_NAME LIKE CONCAT ('%', #searchWord#, '%')
+		</isEqual>
+		<isEqual property="searchType" compareValue="code">
+			MEMBER_CODE LIKE CONCAT ('%', #searchWord#, '%')
+		</isEqual>
+		<isEqual property="searchType" compareValue="nation">
+			NATION LIKE CONCAT ('%', #searchWord#, '%')
+		</isEqual>
+	</isNotEmpty>
+	</select>
+	
+	<!-- 학적변동 엑셀다운로드 -->
+	<select id="AdmStudentDAO.selectAdmFuncExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStudentDAO.selectAdmFuncExcel */
+	<![CDATA[
+		SELECT 
+			A.MEMBER_SEQ
+			, STATUS
+			, MEMBER_CODE
+			, NAME
+			, E_NAME
+			, NATION
+			, STEP
+			, B.FUNC_DATE
+			, B.FUNC_CHANGE_DATE
+			, B.FUNC_WRITER
+		FROM 
+			TB_LCMS_MEMBER A, TB_LCMS_FUNC B 
+		WHERE MEMBER_TYPE = 'STD' AND STATUS IN ('자퇴','퇴학','행방불명') AND A.MEMBER_SEQ = B.MEMBER_SEQ 
+		AND 
+			FUNC_SEQ = ANY(SELECT MAX(FUNC_SEQ) FROM TB_LCMS_FUNC GROUP BY MEMBER_SEQ)
+	]]>
+		<isNotEmpty prepend="AND" property="searchWord">
+			(NAME LIKE CONCAT ('%',#searchWord#,'%') OR MEMBER_CODE LIKE CONCAT ('%',#searchWord#,'%') OR NATION LIKE CONCAT ('%',#searchWord#,'%'))
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			<isNotEmpty property="searchCondition2" >
+			FUNC_DATE BETWEEN #searchCondition1# AND #searchCondition2#
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			FUNC_DATE &gt; #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition2" prepend="AND">
+			FUNC_DATE &lt; #searchCondition2#
+		</isNotEmpty>
+			<![CDATA[	GROUP BY A.MEMBER_SEQ, B.FUNC_DATE, B.FUNC_CHANGE_DATE, B.FUNC_SEQ, B.FUNC_WRITER ]]>
+	</select>
+	
+	<select id="AdmStudentDAO.selectAdmFuncMaxSeq" parameterClass="string" resultClass="string">
+	/* AdmStudentDAO.selectAdmFuncMaxSeq */
+	<![CDATA[
+		SELECT
+			MAX(FUNC_SEQ) AS FUNC_SEQ
+		FROM
+			TB_LCMS_FUNC
+		WHERE
+			MEMBER_SEQ = #memberSeq#
+	]]>
+	</select>
+	
+	<select id="AdmStudentDAO.selectStudLectList" parameterClass="memberVO" resultClass="egovMap">
+	/* AdmStudentDAO.selectStudLectList */
+	<![CDATA[
+		SELECT
+			LECT_YEAR
+			, CASE LECT_SEM WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS LECT_SEM
+			, LECT_NAME
+			, LECT_DIVI
+			, GRADE
+			, CASE
+				WHEN TLF.MEMBER_SEQ IS NULL THEN
+					CASE COMPLE_STA
+						WHEN '0' THEN '미산정'
+						WHEN '1' THEN '수료'
+						WHEN '2' THEN '유급'
+					END
+				ELSE TLF.FUNC_STATE
+			END AS COMPLE_STA
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLM.MEMBER_CODE = TLLM.MEMBER_CODE
+		LEFT JOIN
+			TB_LCMS_SEME TLS ON TLL.LECT_YEAR = TLS.SEM_YEAR AND TLL.LECT_SEM = TLS.SEMESTER
+		LEFT JOIN (
+			SELECT
+				MEMBER_SEQ
+				, MAX(FUNC_STATE) AS FUNC_STATE
+				, MAX(FUNC_DATE) AS FUNC_DATE
+			FROM
+				TB_LCMS_FUNC
+			WHERE
+			(
+				FUNC_STATE = '자퇴' OR FUNC_STATE = '행방불명' OR FUNC_STATE = '퇴학'
+			)
+			GROUP BY
+				MEMBER_SEQ
+		) TLF ON TLM.MEMBER_SEQ = TLF.MEMBER_SEQ AND TLS.ENTER_REGI_S <= TLF.FUNC_DATE AND TLS.ENTER_REGI_E >= TLF.FUNC_DATE
+		WHERE
+			TLLM.MEMBER_CODE = #memberCode#
+	]]>
+	</select>
+	<select id="AdmStudentDAO.selectStudRegiList" parameterClass="memberVO" resultClass="egovMap">
+	/* AdmStudentDAO.selectStudRegiList */
+	<![CDATA[
+		SELECT
+			LECT_YEAR
+			, CASE LECT_SEM WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS LECT_SEM
+			, LECT_NAME
+			, LECT_DIVI
+			, GRADE
+			, CASE
+				WHEN TLF.MEMBER_SEQ IS NULL THEN
+					CASE COMPLE_STA
+						WHEN '0' THEN '미산정'
+						WHEN '1' THEN '수료'
+						WHEN '2' THEN '유급'
+					END
+				ELSE TLF.FUNC_STATE
+			END AS COMPLE_STA
+			, TLM.STEP
+			, (
+						SELECT
+							ROUND(
+								(
+									(
+										COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+									)/200
+								)*100, 2
+							)
+						FROM
+							TB_LCMS_ATTEND TLA
+						WHERE
+							TLA.LECT_SEQ = TLLM.LECT_SEQ
+						AND
+							TLA.MEMBER_CODE = TLLM.MEMBER_CODE
+					) AS GRADE_ATTND
+			, (
+						SELECT 
+							ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4,0)
+						FROM
+							TB_LCMS_GRADE TLG
+						WHERE
+							TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+						AND
+							TLG.LECT_CODE = TLLM.LECT_SEQ
+						AND
+							GRADE_GUBUN = 1
+					) AS MIDTERM
+					, (
+						SELECT 
+							ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4,0)
+						FROM
+							TB_LCMS_GRADE TLG
+						WHERE
+							TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+						AND
+							TLG.LECT_CODE = TLLM.LECT_SEQ
+						AND
+							GRADE_GUBUN = 2
+					) AS FINALS
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLM.MEMBER_CODE = TLLM.MEMBER_CODE
+		LEFT JOIN
+			TB_LCMS_SEME TLS ON TLL.LECT_YEAR = TLS.SEM_YEAR AND TLL.LECT_SEM = TLS.SEMESTER
+		LEFT JOIN (
+			SELECT
+				MEMBER_SEQ
+				, MAX(FUNC_STATE) AS FUNC_STATE
+				, MAX(FUNC_DATE) AS FUNC_DATE
+			FROM
+				TB_LCMS_FUNC
+			WHERE
+			(
+				FUNC_STATE = '자퇴' OR FUNC_STATE = '행방불명' OR FUNC_STATE = '퇴학'
+			)
+			GROUP BY
+				MEMBER_SEQ
+		) TLF ON TLM.MEMBER_SEQ = TLF.MEMBER_SEQ AND TLS.ENTER_REGI_S <= TLF.FUNC_DATE AND TLS.ENTER_REGI_E >= TLF.FUNC_DATE
+		WHERE
+			TLLM.MEMBER_CODE = #memberCode#
+	]]>
+	</select>
+	<select id="AdmStudentDAO.selectGradeList" parameterClass="memberVO" resultClass="egovMap">
+	/* AdmStudentDAO.selectGradeList */
+	<![CDATA[
+		SELECT
+			T.*
+			, ROUND((MID_SPEAK+FIN_SPEAK)/2, 0)		AS AVG_SPEAK
+			, ROUND((MID_WRITE+FIN_WRITE)/2, 0)		AS AVG_WRITE
+			, ROUND((MID_LISTEN+FIN_LISTEN)/2, 0)	AS AVG_LISTEN
+			, ROUND((MID_READ+FIN_READ)/2, 0)		AS AVG_READ
+			, ROUND((ROUND((MID_SPEAK+MID_WRITE+MID_LISTEN+MID_READ)/4, 0)+ROUND((FIN_SPEAK+FIN_WRITE+FIN_LISTEN+FIN_READ)/4, 0))/2, 0) AS AVG_TOTAL
+		FROM
+		(
+			SELECT
+				A.GRADE_EXPR_SPEAK		AS MID_SPEAK
+				, A.GRADE_EXPR_WRITE	AS MID_WRITE
+				, A.GRADE_COMP_LISTEN	AS MID_LISTEN
+				, A.GRADE_COMP_READ		AS MID_READ
+				, B.GRADE_EXPR_SPEAK	AS FIN_SPEAK
+				, B.GRADE_EXPR_WRITE	AS FIN_WRITE
+				, B.GRADE_COMP_LISTEN	AS FIN_LISTEN
+				, B.GRADE_COMP_READ		AS FIN_READ
+				, LECT_YEAR
+				, CASE LECT_SEM WHEN '1' THEN '봄학기'
+								WHEN '2' THEN '여름학기'
+								WHEN '3' THEN '가을학기'
+								WHEN '4' THEN '겨울학기' END AS LECT_SEM
+				, LECT_NAME
+				, LECT_DIVI
+				, C.MEMBER_CODE
+				, NAME
+			FROM
+				TB_LCMS_GRADE A 
+				JOIN TB_LCMS_GRADE B
+				ON A.LECT_CODE = B.LECT_CODE
+				AND A.MEMBER_CODE = B.MEMBER_CODE
+				JOIN TB_LCMS_MEMBER C
+				ON A.MEMBER_CODE = C.MEMBER_CODE
+				JOIN TB_LCMS_LECT D
+				ON A.LECT_CODE = D.LECT_SEQ
+			WHERE
+				A.GRADE_GUBUN = '1'
+			AND
+				B.GRADE_GUBUN = '2'
+			AND
+				A.MEMBER_CODE = #memberCode#
+		) T
+	]]>
+	</select>
+	
+	<select id="AdmStudentDAO.selectStudConsulList" parameterClass="memberVO" resultClass="egovMap">
+	/* AdmStudentDAO.selectStudConsulList */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ		AS CONSULTSEQ
+			, LECT_SEQ		AS LECTSEQ
+			, TLC.MEMBER_CODE	AS MEMBERCODE
+			, CASE REG_TYPE WHEN '1' THEN (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_ADMIN T
+				WHERE
+					T.ADMIN_ID = PROF_CODE
+			) WHEN '2' THEN (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER T
+				WHERE
+					T.MEMBER_CODE = PROF_CODE
+			) END AS PROFCODE
+			, CONSULT_DATE	AS CONSULTDATE
+			, CASE CONSULT_TYPE WHEN '1' THEN '출결'
+								WHEN '2' THEN '성적'
+								WHEN '3' THEN '수업'
+								WHEN '4' THEN '기타' END AS CONSULTTYPE
+			, PLACE			AS PLACE
+			, CONTENT		AS CONTENT
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			TLM.MEMBER_CODE = #memberCode# 
+		ORDER BY CONSULT_DATE DESC
+	]]>
+	</select>
+	
+	<select id="AdmStudentDAO.clearList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStudentDAO.clearList */
+	<![CDATA[
+		SELECT DISTINCT
+			MEMBER_SEQ, MEMBER_TYPE, TLM.MEMBER_CODE , MEMBER_PW
+			, STEP, NAME, E_NAME, BIRTH, GENDER, NATION, DEPART, STATUS, PIC, STD_CURR, TP_STEP, TP_SCORE, TP_DATE
+			, CASE STD_TYPE WHEN '1' THEN '교환학생'
+							WHEN '2' THEN '어학연수생'
+							WHEN '3' THEN '학부생(유학생)'
+							WHEN '4' THEN '대학원(유학생)' END AS STD_TYPE
+			, APP_DATE, LOGIN_DATE_TIME, FINAL_EDU, FE_SCHOOLNAME, FE_COUNTRY, FE_DATE_S, FE_DATE_E, TR_EXPERIENCE, TR_GETPATH
+			, TR_TERM, NA_SNS, NA_TEL, NA_ADDR, TEL, EMAIL, POST, ADDR1, ADDR2, EMER_NAME, EMER_RELATION, TEL_EMER, EMAIL_EMER
+			, POST_EMER, ADDR1_EMER, ADDR2_EMER, GUAR_NAME, GUAR_RELATION, TEL_GUAR, EMAIL_GUAR, POST_GUAR, ADDR1_GUAR, ADDR2_GUAR
+			, VISA1, VISA2, ENTRY_DATE, ISSUE_DATE, EXPIRY_DATE, RC_IS_DATE, AES_DECRYPT(UNHEX(RC_CODE), TLM.MEMBER_CODE) AS RC_CODE, AES_DECRYPT(UNHEX(P_NUMBER), TLM.MEMBER_CODE) AS P_NUMBER, P_IS_DATE, P_VALIDITY, INS_COMPANY
+			, STOCK_NUMBER, INS_SDATE, INS_EDATE, B_NAME, B_ACCOUNT, AES_DECRYPT(UNHEX(B_NUMBER), TLM.MEMBER_CODE) AS B_NUMBER
+			,(SELECT COUNT(*) FROM TB_LCMS_MEMBER)
+	]]>
+	<include refid="adm_stud_list"/>
+	</select>
+	
+	<update id="AdmStudentDAO.clearUpdate" parameterClass="egovMap">
+	/* AdmStudentDAO.clearUpdate */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_MEMBER
+		SET
+			MEMBER_PW = #encrypt#
+		WHERE
+			MEMBER_CODE = #memberCode#
+	]]>
+	</update>
+	
+	<update id="AdmStudentDAO.updateLoginFailClear" parameterClass="string">
+	/* AdmStudentDAO.updateLoginFailClear */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_MEMBER
+		SET
+			LOGIN_FAIL = '0'
+		WHERE
+			MEMBER_CODE = #memberCode#
+	]]>
+	</update>
+</sqlMap>

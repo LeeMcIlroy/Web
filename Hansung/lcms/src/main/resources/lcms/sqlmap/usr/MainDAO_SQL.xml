@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<!-- 갤러리, 공지사항 배너 리스트 조회 -->
+	<select id="MainDAO.selectBoardList" resultClass="egovMap" parameterClass="string" remapResults="true">
+/* MainDAO.selectBoardList */
+	<![CDATA[
+		SELECT
+			BOARD_SEQ
+			, TITLE
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d')	AS REG_DTTM
+	]]>
+		<isEqual compareValue="GA">
+			, (
+				SELECT
+					REPLACE(REG_FILE_NAME, '\\', '/')
+				FROM
+					TB_KLP_ATTACH
+				WHERE
+					BOARD_SEQ = t1.BOARD_SEQ
+				) AS REG_FILE_NAME
+		</isEqual>
+	<![CDATA[
+		FROM
+			TB_KLP_BOARD t1
+		WHERE
+			BOARD_TYPE = #boardType#
+		ORDER BY
+			BOARD_SEQ DESC
+	]]>
+		<isEqual compareValue="GA">
+		LIMIT
+			0, 4
+		</isEqual>
+		<isEqual compareValue="NO">
+		LIMIT
+			0, 3
+		</isEqual>
+	</select>
+
+	<!-- 배너 리스트 조회 -->
+	<select id="MainDAO.selectBannerList" resultClass="egovMap">
+/* MainDAO.selectBannerList */
+	<![CDATA[
+		SELECT
+			BANNER_SEQ
+			, BANNER_URL
+			, REPLACE(REG_FILE_NAME, '\\', '/') AS REG_FILE_NAME
+		FROM
+			TB_KLP_BANNER
+		WHERE
+			USE_YN = 'Y'
+		AND
+			BANNER_TYPE = 'MA'
+		ORDER BY
+			BANNER_SORT ASC
+	]]>
+	</select>
+</sqlMap>

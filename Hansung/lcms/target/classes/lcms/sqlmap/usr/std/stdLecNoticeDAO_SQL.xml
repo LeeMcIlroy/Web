@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!--강의공지 리스트 -->
+	<select id="StdLecNoticeDAO.selectStdLecNoticeList" parameterClass="lecClssNoticeVO"
+		resultClass="egovMap">
+		/* StdLecNoticeDAO.selectStdLecNoticeList */
+	<![CDATA[
+				SELECT 
+			a.* FROM 
+			( 
+				SELECT LCNOTI_SEQ
+				     , LECT_CODE
+				     , LCNOTI_GUBUN
+				     , LCNOTI_WRITER
+				     , DATE_FORMAT(LCNOTI_DATE,'%Y.%m.%d') AS LCNOTI_DATE
+				     , LCNOTI_HIT
+				     , LCNOTI_CONTENT
+				     , LCNOTI_TITLE
+				     , LCNOTI_TOP
+				  FROM 
+				  	TB_LCMS_CLSS_NOTICE
+		      ORDER BY LCNOTI_TOP desc, LCNOTI_SEQ DESC, LCNOTI_DATE DESC 
+			)a
+				  WHERE 
+				  	LECT_CODE = #lectCode#
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>
+
+	<!-- 강의공지  cnt -->
+	<select id="StdLecNoticeDAO.selectStdLecNoticeListCnt" parameterClass="lecClssNoticeVO"
+		resultClass="int">
+		/*StdLecNoticeDAO.selectStdLecNoticeListCnt */
+	<![CDATA[
+		SELECT 
+			COUNT(*) AS TOTALCNT
+		FROM 
+			TB_LCMS_CLSS_NOTICE
+		WHERE 
+			LECT_CODE = #lectCode#
+	]]>	
+	</select>
+	<!-- ***************************************************** -->
+	<!--학생 공지 **상단** 리스트
+	<select id="StdNoticeDAO.selectTopLecNotiList" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* StdNoticeDAO.selectTopNotiList */
+	<![CDATA[
+		 SELECT NOTI_SEQ ,
+		NOTI_GUBUN ,
+		NOTI_WRITER ,
+		DATE_FORMAT(NOTI_DATE,'%Y.%m.%d')NOTI_DATE ,
+		NOTI_TITLE,
+		NOTI_TOP,
+		IFNULL(NOTI_STDHIT,'0') NOTI_STDHIT  FROM TB_LCMS_NOTICE
+		WHERE NOTI_TOP = 'Y' AND NOTI_GUBUN IN ('전체','학생')
+		 ORDER BY  NOTI_DATE DESC
+	]]>
+	</select> -->
+	
+		<!-- 학생  **상단** 공지사항 cnt 
+	<select id="StdNoticeDAO.selectTopLecNotiListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*StdNoticeDAO.selectTopNotiListCnt */
+	<![CDATA[
+		SELECT COUNT(*) AS TOPNOTICNT
+	 FROM TB_LCMS_NOTICE
+		WHERE NOTI_TOP = 'Y' AND NOTI_GUBUN IN ('전체','학생')
+	]]>
+	</select>-->
+	
+<!-- 	강의공지 상세보기 -->
+	<select id="StdLecNoticeDAO.selectstdnoticeOne" parameterClass="string" resultClass="egovMap">
+	/* StdLecNoticeDAO.selectstdnoticeOne */
+	<![CDATA[
+		SELECT 
+	    	LCNOTI_SEQ
+			 , LECT_CODE
+			 , LCNOTI_GUBUN
+			 , LCNOTI_WRITER
+			 , DATE_FORMAT(LCNOTI_DATE,'%Y.%m.%d %H:%i:%S') AS LCNOTI_DATE
+			 , LCNOTI_HIT
+			 , LCNOTI_CONTENT
+			 , LCNOTI_TITLE
+			 , LCNOTI_TOP
+	    FROM TB_LCMS_CLSS_NOTICE 
+	   WHERE LCNOTI_SEQ = #lcnotiSeq#
+	]]>
+	</select>
+	
+<!-- 조회수 증가 -->
+	<update id="StdLecNoticeDAO.updateStdNotiHits" parameterClass="string">
+		/* StdLecNoticeDAO.updateStdNotiHits */
+	<![CDATA[
+		UPDATE TB_LCMS_CLSS_NOTICE
+		   SET LCNOTI_HIT = COALESCE(LCNOTI_HIT+1,'1')
+		WHERE
+			LCNOTI_SEQ = #lcnotiSeq#
+	]]>
+	</update>
+
+</sqlMap>

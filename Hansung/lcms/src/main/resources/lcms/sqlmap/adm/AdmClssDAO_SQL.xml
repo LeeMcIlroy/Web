@@ -1,0 +1,3339 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="adm_enro_list">
+		FROM
+			TB_LCMS_LECT TLL
+		LEFT JOIN
+			TB_LCMS_CLSS_SYLLA TLCS ON TLL.LECT_SEQ = TLCS.CLSS_SEQ
+		LEFT JOIN
+			(
+				SELECT
+					LECT_CODE
+					, GROUP_CONCAT(DISTINCT NAME) AS PROF_NAME
+				FROM
+					TB_LCMS_LECTTIMETABLE A
+				LEFT JOIN
+					TB_LCMS_MEMBER B ON A.LECT_TEA = B.MEMBER_CODE
+				GROUP BY
+					LECT_CODE
+			) TLLT ON TLL.LECT_SEQ = TLLT.LECT_CODE
+		WHERE
+			LECT_STATE = 'Y'
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition2" prepend="AND">
+			LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition3" prepend="AND">
+			LECT_CURR = #searchCondition3#
+		</isNotEmpty>
+	</sql>
+	
+	<sql id="adm_std_list">
+		FROM
+			TB_LCMS_LECT_MAP TLLM LEFT JOIN TB_LCMS_MEMBER TLM
+			ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			TLLM.LECT_SEQ = #searchType#
+	</sql>
+	
+	<sql id="adm_compl_list">
+		FROM
+			TB_LCMS_LECT_MAP TLLM LEFT JOIN TB_LCMS_LECT TLL
+			ON TLL.LECT_SEQ = TLLM.LECT_SEQ
+			LEFT JOIN TB_LCMS_MEMBER TLM
+			ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN(
+				SELECT
+					LECT_CODE
+					, MEMBER_CODE
+					, CASE
+						WHEN COUNT(*) = 2 THEN
+							MAX(CASE GRADE_GUBUN
+								WHEN '1' THEN ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4, 0)
+							END)
+						ELSE '미산정'
+					END AS MID_GRADE
+					, MAX(CASE GRADE_GUBUN
+						WHEN '2' THEN ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4, 0)
+					END) AS FIN_GRADE
+				FROM
+					TB_LCMS_GRADE
+				GROUP BY
+					LECT_CODE, MEMBER_CODE
+			) TLG ON TLG.LECT_CODE = TLLM.LECT_SEQ AND TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+			LEFT JOIN (
+				SELECT
+					LECT_SEQ
+					, MEMBER_CODE
+					, ROUND(
+								(
+									(
+										COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+									)
+								)*100, 2
+							) AS ATTEND
+				FROM
+					TB_LCMS_ATTEND
+				GROUP BY
+					LECT_SEQ, MEMBER_CODE
+			) TLA ON TLA.LECT_SEQ = TLLM.LECT_SEQ AND TLA.MEMBER_CODE = TLLM.MEMBER_CODE
+			LEFT JOIN TB_LCMS_SEME TLS
+			ON TLL.LECT_YEAR = TLS.SEM_YEAR AND TLL.LECT_SEM = TLS.SEMESTER
+			LEFT JOIN (
+				SELECT
+					MEMBER_SEQ
+					, MAX(FUNC_DATE) AS FUNC_DATE
+				FROM
+					TB_LCMS_FUNC
+				WHERE
+				(
+					FUNC_STATE = '자퇴' OR FUNC_STATE = '행방불명' OR FUNC_STATE = '퇴학'
+				)
+				GROUP BY
+					MEMBER_SEQ
+			) TLF ON TLM.MEMBER_SEQ = TLF.MEMBER_SEQ AND TLS.ENTER_REGI_S <![CDATA[<=]]> TLF.FUNC_DATE AND TLS.ENTER_REGI_E >= TLF.FUNC_DATE
+			LEFT JOIN (
+				SELECT
+					CLSTM_YEAR
+					, CLSTM_SEME
+					, CLSTM_NAME
+					, COUNT(*) AS CLSTM_CNT
+				FROM
+					TB_LCMS_CLSTM
+				GROUP BY
+					CLSTM_YEAR, CLSTM_SEME, CLSTM_NAME
+			) TLC ON TLS.SEM_YEAR = TLC.CLSTM_YEAR AND TLS.SEMESTER = TLC.CLSTM_SEME AND TLL.LECT_PROG = TLC.CLSTM_NAME
+		WHERE
+			TLF.MEMBER_SEQ IS NULL
+		AND
+			TLL.LECT_STATE = 'Y'
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			TLL.LECT_CURR = #searchCondition3#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			TLL.LECT_PROG = #searchCondition4#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition5">
+			TLL.LECT_NAME = #searchCondition5#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition6">
+			TLL.LECT_DIVI = #searchCondition6#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchWord">
+			CONCAT(TLLM.MEMBER_CODE, NAME, NATION, STATUS) LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+	</sql>
+	
+	<sql id="adm_grade_list">
+		FROM
+			TB_LCMS_LECT TLL
+		LEFT JOIN
+			(
+				SELECT
+					LECT_CODE
+					, GROUP_CONCAT(DISTINCT NAME) AS LECT_TEA
+				FROM
+					TB_LCMS_LECTTIMETABLE A
+				LEFT JOIN
+					TB_LCMS_MEMBER B ON A.LECT_TEA = B.MEMBER_CODE
+				GROUP BY
+					LECT_CODE
+			) TLLT ON TLL.LECT_SEQ = TLLT.LECT_CODE
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		AND
+			LECT_STATE = 'Y'
+	</sql>
+	
+	<!-- 업무담당자 수강신청 리스트 Cnt -->
+	<select id="AdmClssDAO.selectAdmEnroListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmEnroListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_enro_list"/>
+	</select>
+
+	<!-- 업무담당자 수강신청 리스트 -->
+	<select id="AdmClssDAO.selectAdmEnroList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmEnroList */
+	<![CDATA[
+		SELECT
+			TLL.LECT_SEQ
+			, LECT_NAME
+			, LECT_DIVI
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER TLM
+				WHERE
+					TLM.MEMBER_CODE = TLL.LECT_CLA_TEA
+			) AS LECT_CLA_TEA
+			, LECT_CLASSROOM
+			, LECT_PER
+			, LECT_SDATE
+			, LECT_EDATE
+			, LECT_STATE
+			, LECT_YEAR
+			, LECT_SEM
+			, LECT_PROG
+			, LECT_CURR
+			, (
+				SELECT
+					COUNT(*)
+				FROM
+					TB_LCMS_LECT_MAP TLLM
+				WHERE
+					TLLM.LECT_SEQ = TLL.LECT_SEQ
+			) AS LECT_STD_CNT
+			, PROF_NAME
+			, CASE WHEN TLCS.SYLLA_SEQ IS NULL THEN '미등록' ELSE '완료' END AS SYLLA_YN
+	]]>
+	<include refid="adm_enro_list"/>
+	<![CDATA[
+		ORDER BY
+			LECT_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 수강신청 조회 -->
+	<select id="AdmClssDAO.selectAdmEnroView" parameterClass="string" resultClass="lectureVO">
+	/* AdmClssDAO.selectAdmEnroView */
+	<![CDATA[
+		SELECT
+			LECT_SEQ			AS lectSeq
+			, LECT_NAME			AS lectName
+			, LECT_DIVI			AS lectDivi
+			, LECT_CLA_TEA		AS lectClaTea
+			, LECT_CLASSROOM	AS lectClassroom
+			, LECT_PER			AS lectPer
+			, LECT_SDATE		AS lectSdate
+			, LECT_EDATE		AS lectEdate
+			, LECT_STATE		AS lectState
+			, LECT_YEAR			AS lectYear
+			, LECT_SEM			AS lectSem
+			, LECT_PROG			AS lectProg
+			, LECT_CURR			AS lectCurr
+			, LECT_TEA_CON		AS lectTeaCon
+			, TLM.NAME			AS lectClaTeaNm
+		FROM
+			TB_LCMS_LECT TLL
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLL.LECT_CLA_TEA = TLM.MEMBER_CODE
+			LEFT JOIN(
+				SELECT
+					LECT_CODE
+					, GROUP_CONCAT(DISTINCT NAME) AS LECT_TEA_CON
+				FROM
+					TB_LCMS_LECTTIMETABLE A
+				LEFT JOIN
+					TB_LCMS_MEMBER B ON A.LECT_TEA = B.MEMBER_CODE
+				GROUP BY
+					LECT_CODE
+			) TLLT ON TLL.LECT_SEQ = TLLT.LECT_CODE
+		WHERE
+			LECT_SEQ = #lectSeq#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 수강생 현황 리스트Cnt -->
+	<select id="AdmClssDAO.selectAdmStdListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmStdListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_std_list"/>
+	</select>
+	
+	<!-- 업무담당자 수강생 현황 리스트 -->
+	<select id="AdmClssDAO.selectAdmStdList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmStdList */
+	<![CDATA[
+		SELECT
+			TLLM.MAP_SEQ
+			, TLM.MEMBER_CODE
+			, TLM.NAME
+			, TLM.E_NAME
+			, TLM.TEL
+			, TLM.MOBILE
+	]]>
+	<include refid="adm_std_list"/>
+	<![CDATA[
+		ORDER BY
+			TLLM.MAP_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 수강신청작업 학생 리스트 -->
+	<select id="AdmClssDAO.selectAdmAjaxStdList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmAjaxStdList */
+	<![CDATA[
+		SELECT
+			MEMBER_CODE
+			, NAME
+			, E_NAME
+			, TEL
+			, MOBILE
+			, STEP
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_TYPE = 'STD'
+		AND
+			MEMBER_CODE NOT IN (
+									SELECT
+										MEMBER_CODE
+									FROM
+										TB_LCMS_LECT_MAP
+									WHERE
+										LECT_SEQ = #menuType#
+								)
+		AND
+			MEMBER_CODE IN (
+								SELECT
+									ENTER_CODE
+								FROM
+									TB_LCMS_ENTER TLE
+									LEFT JOIN TB_LCMS_LECT TLL ON CASE DELAY_YN
+																	WHEN 'Y' THEN TLL.LECT_YEAR = TLE.DELAY_ENTR_YEAR AND TLL.LECT_SEM = TLE.DELAY_ENTR_SEME
+																	ELSE TLL.LECT_YEAR = TLE.ENTER_YEAR AND TLL.LECT_SEM = TLE.ENTER_SEME
+																  END
+								WHERE
+									TLL.LECT_SEQ = #menuType#
+							)
+	]]>
+	<isNotEmpty prepend="AND" property="searchWord">
+		<isEqual property="searchType" compareValue="name">
+			NAME LIKE CONCAT ('%', #searchWord#, '%')
+		</isEqual>
+		<isEqual property="searchType" compareValue="code">
+			MEMBER_CODE LIKE CONCAT ('%', #searchWord#, '%')
+		</isEqual>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="searchCondition1">
+		STEP = #searchCondition1#
+	</isNotEmpty>
+	</select>
+	
+	<!-- 업무담당자 수강신청작업 -->
+	<insert id="AdmClssDAO.insertAdmAjaxStdMapSave" parameterClass="egovMap">
+	/* AdmClssDAO.insertAdmAjaxStdMapSave */
+		INSERT INTO TB_LCMS_LECT_MAP(
+			LECT_SEQ
+			, MEMBER_CODE
+			, GRADE
+		)VALUES(
+			#lectSeq#
+			, #memberCode#
+			, (
+				SELECT
+					STEP
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = #memberCode#
+			)
+		)
+	</insert>
+	
+	<!-- 업무담당자 수료산청 리스트Cnt -->
+	<select id="AdmClssDAO.selectAdmComplListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmComplListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_compl_list"/>
+	</select>
+	
+	<!-- 업무담당자 수료산정 리스트 FN_TOT_DATE_NUM(TLS.ENTER_REGI_S, TLS.ENTER_REGI_E, TLC.CLSTM_CNT) -->
+	<select id="AdmClssDAO.selectAdmComplList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmComplList */
+	<![CDATA[
+		SELECT
+			TLL.LECT_NAME
+			, TLL.LECT_DIVI
+			, TLM.MEMBER_CODE
+			, TLM.NAME
+			, TLLM.GRADE AS STEP
+			, TLM.NATION
+			, TLLM.MAP_SEQ
+			, TLLM.COMPLE_STA
+			, CASE TLLM.COMPLE_STA WHEN '0' THEN '미산정'
+								   WHEN '1' THEN '수료'
+								   WHEN '2' THEN '유급' END AS COMPLE_STA_NM
+			, CASE TLG.MID_GRADE
+				WHEN '미산정' THEN '미산정'
+				ELSE ROUND((TLG.MID_GRADE+TLG.FIN_GRADE)/2, 0)
+			END AS GRADE
+			, CASE
+				WHEN TLA.ATTEND != '' AND TLA.ATTEND IS NOT NULL THEN ROUND(TLA.ATTEND/200, 2)
+			END AS ATTEND
+			, COMPLE_NUM
+	]]>
+	<include refid="adm_compl_list"/>
+	<![CDATA[
+		ORDER BY
+			TLL.LECT_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+
+	<!-- 업무담당자 수료산정 리스트 -->
+	<select id="AdmClssDAO.selectAdmComplExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmComplExcel */
+	<![CDATA[
+		SELECT
+			TLL.LECT_NAME
+			, TLL.LECT_DIVI
+			, TLM.MEMBER_CODE
+			, TLM.NAME
+			, TLLM.GRADE AS STEP
+			, TLM.NATION
+			, TLLM.MAP_SEQ
+			, TLLM.COMPLE_STA
+			, CASE TLLM.COMPLE_STA WHEN '0' THEN '미산정'
+								   WHEN '1' THEN '수료'
+								   WHEN '2' THEN '유급' END AS COMPLE_STA_NM
+			, TLG.GRADE
+			, CASE
+				WHEN TLA.ATTEND != '' AND TLA.ATTEND IS NOT NULL THEN ROUND(TLA.ATTEND/FN_TOT_DATE_NUM(TLS.ENTER_REGI_S, TLS.ENTER_REGI_E, TLC.CLSTM_CNT), 2)
+			END AS ATTEND
+			, COMPLE_NUM
+	]]>
+	<include refid="adm_compl_list"/>
+	<![CDATA[
+		ORDER BY
+			TLL.LECT_SEQ DESC
+	]]>
+	</select>
+	
+	<!-- 업무담당자 수료산정 신청결과 수정 -->
+	<update id="AdmClssDAO.updateAdmCompl" parameterClass="egovMap">
+	/* AdmClssDAO.updateAdmCompl */
+		UPDATE
+			TB_LCMS_LECT_MAP
+		SET
+			COMPLE_STA = #compleSta#
+		WHERE
+			MAP_SEQ
+		<iterate prepend="IN" open="(" close=")" conjunction="," property="mapSeq">
+			#mapSeq[]#
+		</iterate>
+	</update>
+	
+	<select id="AdmClssDAO.selectAdmAjaxComplNumList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmAjaxComplNumList */
+	<![CDATA[
+		SELECT
+			MAP_SEQ
+			, LECT_YEAR
+			, LECT_SEM
+			, GRADE
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_LECT TLM ON TLLM.LECT_SEQ = TLM.LECT_SEQ
+		WHERE
+			LECT_YEAR = #searchCondition1#
+		AND
+			LECT_SEM = #searchCondition2#
+		AND
+			COMPLE_NUM IS NULL
+		AND
+			COMPLE_STA = '1'
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmAjaxComplNumCnt" parameterClass="egovMap" resultClass="string">
+	/* AdmClssDAO.selectAdmAjaxComplNumCnt */
+	<![CDATA[
+		SELECT
+			IFNULL(MAX(COMPLE_NUM),0)+1 AS COMPLE_CNT
+		FROM
+			(
+				SELECT
+					LECT_SEQ
+					, GRADE
+					, CAST(SUBSTR(COMPLE_NUM,13) AS UNSIGNED) AS COMPLE_NUM
+				FROM
+					TB_LCMS_LECT_MAP
+			) TLLM
+		LEFT JOIN
+			TB_LCMS_LECT TLM ON TLLM.LECT_SEQ = TLM.LECT_SEQ
+		WHERE
+			LECT_YEAR = #lectYear#
+		AND
+			LECT_SEM = #lectSem#
+		AND
+			GRADE = #grade#
+	]]>
+	</select>
+	
+	<update id="AdmClssDAO.updateAdmAjaxComplNum" parameterClass="egovMap">
+	/* AdmClssDAO.updateAdmAjaxComplNum */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_LECT_MAP
+		SET
+			COMPLE_NUM = #compleNum#
+		WHERE
+			MAP_SEQ = #mapSeq#
+	]]>
+	</update>
+	
+	<update id="AdmClssDAO.updateMemberStatus" parameterClass="egovMap">
+	/* AdmClssDAO.updateMemberStatus */
+		UPDATE
+			TB_LCMS_MEMBER
+		SET
+		<isEqual property="compleSta" compareValue="1">
+			STATUS = '수료'
+		</isEqual>
+		<isEqual property="compleSta" compareValue="2">
+			STATUS = '유급'
+		</isEqual>
+		WHERE
+			MEMBER_CODE IN (
+								SELECT
+									MEMBER_CODE
+								FROM
+									TB_LCMS_LECT_MAP
+								WHERE
+									MAP_SEQ
+								<iterate prepend="IN" open="(" close=")" conjunction="," property="mapSeq">
+									#mapSeq[]#
+								</iterate>
+							)
+	</update>
+	
+	<insert id="AdmClssDAO.insertAdmFuncStatus" parameterClass="egovMap">
+	/* AdmClssDAO.insertAdmFuncStatus */
+		INSERT INTO TB_LCMS_FUNC(
+			MEMBER_SEQ
+			,FUNC_DATE
+			,FUNC_CHANGE_DATE
+			,FUNC_STATE
+			,FUNC_REASON
+			,FUNC_WRITER
+			,FUNC_BEF_STATE
+		)VALUES
+		<iterate open="(" close=")" conjunction="),(" property="mapSeq">
+			(
+				SELECT
+					MEMBER_SEQ
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = (
+									SELECT
+										MEMBER_CODE
+									FROM
+										TB_LCMS_LECT_MAP
+									WHERE
+										MAP_SEQ = #mapSeq[]#
+								)
+			)
+			, SYSDATE()
+			, SYSDATE()
+			<isEqual property="compleSta" compareValue="1">
+				, '수료'
+			</isEqual>
+			<isEqual property="compleSta" compareValue="2">
+				, '유급'
+			</isEqual>
+			, '수료산정'
+			, #funcWriter#
+			, (
+				SELECT
+					STATUS
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = (
+									SELECT
+										MEMBER_CODE
+									FROM
+										TB_LCMS_LECT_MAP
+									WHERE
+										MAP_SEQ = #mapSeq[]#
+								)
+			)
+		</iterate>
+	</insert>
+	
+	<insert id="AdmClssDAO.insertAdmFuncStatusStdMap" parameterClass="egovMap">
+	/* AdmClssDAO.insertAdmFuncStatusStdMap */
+		INSERT INTO TB_LCMS_FUNC(
+			MEMBER_SEQ
+			,FUNC_DATE
+			,FUNC_CHANGE_DATE
+			,FUNC_STATE
+			,FUNC_REASON
+			,FUNC_WRITER
+			,FUNC_BEF_STATE
+		)VALUES(
+			(
+				SELECT
+					MEMBER_SEQ
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = #memberCode#
+			)
+			, SYSDATE()
+			, SYSDATE()
+			, '재학'
+			, '수강신청'
+			, #funcWriter#
+			, (
+				SELECT
+					STATUS
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = #memberCode#
+			)
+		)
+	</insert>
+	
+	<sql id="adm_attend_list">
+		FROM
+			(
+				SELECT
+					MEMBER_CODE
+					, ATT_DATE
+					, LECT_SEQ
+					, COUNT(CASE WHEN ATT_ETC != '' THEN 1 END) CNT_ETC
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					1=1
+			<isNotEmpty prepend="AND" property="searchCondition3">
+				<isEqual property="searchCondition3" compareValue="2">
+					ATTEND = '2'
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startDate">
+				ATT_DATE >= #startDate#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endDate">
+				ATT_DATE <![CDATA[<=]]> #endDate#
+			</isNotEmpty>
+				GROUP BY
+					MEMBER_CODE, ATT_DATE, LECT_SEQ
+			) TLA
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLL.LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			TLL.LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			TLL.LECT_CURR = #searchCondition4#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition5">
+			TLL.LECT_PROG = #searchCondition5#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition6">
+			TLL.LECT_NAME = #searchCondition6#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition7">
+			TLL.LECT_DIVI = #searchCondition7#
+		</isNotEmpty>
+		AND 
+			TLL.LECT_STATE = 'Y'
+	</sql>
+	
+	<!-- 업무담당자 출결 리스트Cnt -->
+	<select id="AdmClssDAO.selectAdmAttendListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmAttendListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_attend_list"/>
+	</select>
+	
+	<!-- 업무담당자 출결 리스트 -->
+	<select id="AdmClssDAO.selectAdmAttendList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmAttendList */
+	<![CDATA[
+		SELECT
+			TLA.LECT_SEQ
+			, TLA.ATT_DATE
+			, TLL.LECT_NAME
+			, TLL.LECT_DIVI
+			, TLM.MEMBER_CODE
+			, TLM.NAME
+			, (
+				SELECT
+					CASE WHEN ATT_ETC IS NULL THEN 'N' ELSE 'Y' END
+				FROM
+					TB_LCMS_ATTEND_ETC TLAE
+				WHERE
+					TLAE.LECT_SEQ = TLA.LECT_SEQ
+				AND
+					TLAE.MEMBER_CODE = TLA.MEMBER_CODE
+				AND
+					TLAE.ATT_DATE = TLA.ATT_DATE
+			) AS ETC_YN
+	]]>
+	<include refid="adm_attend_list"/>
+	<![CDATA[
+		ORDER BY
+			TLA.ATT_DATE DESC, TLL.LECT_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmAtteTimeList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmAtteTimeList */
+	<![CDATA[
+		SELECT
+			ATT_SEQ
+			, LECT_SEQ
+			, MEMBER_CODE
+			, CASE ATTEND WHEN '1' THEN '출석'
+						  WHEN '2' THEN '결석'
+						  WHEN '3' THEN '지각' END AS ATTEND
+			, ATT_DATE
+			, ATT_ETC
+			, LECT_TBSEQ
+			, LECT_CLASS
+		FROM
+			TB_LCMS_ATTEND
+		WHERE
+			1=1
+	]]>
+		<isNotEmpty prepend="AND" property="startDate">
+			ATT_DATE >= #startDate#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			ATT_DATE <![CDATA[<=]]> #endDate#
+		</isNotEmpty>
+		<isNotNull prepend="AND" property="searchList">
+			MEMBER_CODE
+			<iterate prepend="IN" open="(" close=")" conjunction="," property="searchList">
+				#searchList[].memberCode#
+			</iterate>
+			AND LECT_SEQ
+			<iterate prepend="IN" open="(" close=")" conjunction="," property="searchList">
+				#searchList[].lectSeq#
+			</iterate>
+		</isNotNull>
+	<![CDATA[
+		ORDER BY
+			ATT_DATE DESC, LECT_SEQ DESC
+	]]>
+	</select>
+	
+	<!-- 업무담당자 성적 리스트Cnt -->
+	<select id="AdmClssDAO.selectAdmGradeListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmGradeListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_grade_list"/>
+	</select>
+	
+	<!-- 업무담당자 성적 리스트 -->
+	<select id="AdmClssDAO.selectAdmGradeList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmGradeList */
+	<![CDATA[
+		SELECT
+			TLL.LECT_SEQ
+			, LECT_NAME
+			, LECT_DIVI
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = LECT_CLA_TEA
+			) AS LECT_CLA_TEA
+			, LECT_CLASSROOM
+			, (
+				SELECT
+					COUNT(*)
+				FROM
+					TB_LCMS_LECT_MAP TLLM
+				WHERE
+					TLLM.LECT_SEQ = TLL.LECT_SEQ
+			) AS ATT_CNT
+			, (
+				SELECT
+					IFNULL(SUM(T.CNT),0)
+				FROM(
+					SELECT
+						CASE WHEN COUNT(MEMBER_CODE) = 2 THEN 1 ELSE 0 END AS CNT 
+						, LECT_CODE
+					FROM
+						TB_LCMS_GRADE TLG
+					GROUP BY
+						TLG.MEMBER_CODE, TLG.LECT_CODE
+				) T
+				WHERE
+					T.LECT_CODE = TLL.LECT_SEQ
+			) AS GRADE_USED
+			, LECT_TEA
+			, IFNULL(GRADE_YN, 'N') AS GRADE_YN
+			, IFNULL(ADMIS_YN, 'N') AS ADMIS_YN
+	]]>
+	<include refid="adm_grade_list"/>
+	<![CDATA[
+		ORDER BY
+			TLL.LECT_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<sql id="adm_consul_list">
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLC.LECT_SEQ = TLL.LECT_SEQ
+		WHERE
+			LECT_STATE = 'Y'
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLC.YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			TLC.SEMESTER = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			TLL.LECT_CURR = #searchCondition3#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			TLL.LECT_PROG = #searchCondition4#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition5">
+			TLL.LECT_NAME = #searchCondition5#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition6">
+			TLL.LECT_DIVI = #searchCondition6#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchWord">
+			CONCAT(TLM.MEMBER_CODE, TLM.NAME, TLM.NATION) LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 업무담당자 상담 목록Cnt -->
+	<select id="AdmClssDAO.selectAdmConsulListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmConsulListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_consul_list"/>
+	</select>
+
+	<!-- 업무담당자 상담 목록 -->
+	<select id="AdmClssDAO.selectAdmConsulList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmConsulList */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ
+			, CONSULT_DATE
+			, CASE REG_TYPE WHEN '1' THEN (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_ADMIN T
+				WHERE
+					T.ADMIN_ID = PROF_CODE
+			) WHEN '2' THEN (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER T
+				WHERE
+					T.MEMBER_CODE = PROF_CODE
+			) END AS PROF_NAME
+			, CASE CONSULT_TYPE WHEN '1' THEN '출결'
+								WHEN '2' THEN '성적'
+								WHEN '3' THEN '수업'
+								WHEN '4' THEN '기타' END AS CONSULT_TYPE
+			, TLC.MEMBER_CODE
+			, NAME
+			, E_NAME
+			, STEP
+			, LPAD(ST_HOUR, 2, 0) AS ST_HOUR
+			, LPAD(ST_MINU, 2, 0) AS ST_MINU
+			, LPAD(ED_HOUR, 2, 0) AS ED_HOUR
+			, LPAD(ED_MINU, 2, 0) AS ED_MINU
+			, PLACE
+	]]>
+	<include refid="adm_consul_list"/>
+	<![CDATA[
+		ORDER BY
+			CONSULT_DATE DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 출결 마지막 교시 조회 -->
+	<select id="AdmClssDAO.selectAdmClstmList" parameterClass="searchVO" resultClass="string">
+	/* AdmClssDAO.selectAdmClstmList */
+	<![CDATA[
+		SELECT
+			CLSTM_CODE
+		FROM
+			TB_LCMS_CLSTM
+		WHERE
+			CLSTM_STATE = 'Y'
+		AND
+			CLSTM_YEAR = #searchCondition1#
+		AND
+			CLSTM_SEME = #searchCondition2#
+		AND
+			CLSTM_NAME = #searchCondition5#
+		ORDER BY
+			CLSTM_CODE ASC
+	]]>
+	</select>
+	
+	<!-- 업무담당자 출결 비고 조회 -->
+	<select id="AdmClssDAO.selectAdmAjaxAtteEtc" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmAjaxAtteEtc */
+	<![CDATA[
+		SELECT
+			ETC_SEQ
+			, LECT_SEQ
+			, MEMBER_CODE
+			, ATT_DATE
+			, ATT_ETC
+			, TLA.ATTACH_SEQ
+			, TLA.BOARD_TYPE
+			, TLA.ORG_FILE_NAME
+			, TLA.REG_FILE_NAME
+		FROM
+			TB_LCMS_ATTEND_ETC TLAE
+			LEFT JOIN(
+				SELECT
+					ATTACH_SEQ
+					, BOARD_SEQ
+					, BOARD_TYPE
+					, ORG_FILE_NAME
+					, REG_FILE_NAME
+				FROM
+					TB_LCMS_ATTACH
+				WHERE
+					BOARD_TYPE = 'ETC'
+			) TLA ON TLAE.ETC_SEQ = TLA.BOARD_SEQ
+		WHERE
+			LECT_SEQ = #lectSeq#
+		AND
+			MEMBER_CODE = #memberCode#
+		AND
+			ATT_DATE = #attDate#
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmAdminList" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmAdminList */
+	<![CDATA[
+		SELECT
+			ADMIN_ID
+			, NAME
+		FROM
+			TB_LCMS_ADMIN
+		WHERE
+			USE_YN = 'Y'
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmConsulModify" parameterClass="string" resultClass="consultVO">
+	/* AdmClssDAO.selectAdmConsulModify */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ			AS consultSeq
+			, LECT_SEQ			AS lectSeq
+			, TLC.MEMBER_CODE	AS memberCode
+			, PROF_CODE			AS profCode
+			, CONSULT_DATE		AS consultDate
+			, CONSULT_TYPE		AS consultType
+			, ST_HOUR			AS stHour
+			, ST_MINU			AS stMinu
+			, ED_HOUR			AS edHour
+			, ED_MINU			AS edMinu
+			, PLACE				AS place
+			, CONTENT			AS content
+			, NAME				AS name
+			, E_NAME			AS eName
+			, STATUS			AS status
+			, STEP				AS step
+			, NATION			AS nation
+			, YEAR				AS year
+			, SEMESTER			AS semester
+			, REG_TYPE			AS regType
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			CONSULT_SEQ = #consultSeq# 
+	]]>
+	</select>
+	
+	<!-- 업무담당자 상담 등록 -->
+	<insert id="AdmClssDAO.insertAdmConsult" parameterClass="consultVO">
+	<selectKey keyProperty="consultSeq" resultClass="string" type="post">
+		SELECT MAX(CONSULT_SEQ) FROM TB_LCMS_CONSULT
+	</selectKey>
+	/* AdmClssDAO.insertAdmConsult */
+		INSERT INTO TB_LCMS_CONSULT(
+			MEMBER_CODE
+			, PROF_CODE
+			, CONSULT_DATE
+			, CONSULT_TYPE
+			, PLACE
+			, CONTENT
+			, REG_DATE
+			, YEAR
+			, SEMESTER
+			, REG_TYPE
+		)VALUES(
+			#memberCode#
+			, #profCode#
+			, #consultDate#
+			, #consultType#
+			, #place#
+			, #content#
+			, SYSDATE()
+			, #year#
+			, #semester#
+			, '1'
+		)
+	</insert>
+	
+	<!-- 업무담당자 상담 수정 -->
+	<update id="AdmClssDAO.updateAdmConsult" parameterClass="consultVO">
+	/* AdmClssDAO.updateAdmConsult */
+		UPDATE
+			TB_LCMS_CONSULT
+		SET
+			CONSULT_DATE	= #consultDate#
+			, PROF_CODE		= #profCode#
+			, CONSULT_TYPE	= #consultType#
+			, PLACE			= #place#
+			, CONTENT		= #content#
+			, YEAR			= #year#
+			, SEMESTER		= #semester#
+		WHERE
+			CONSULT_SEQ		= #consultSeq#
+	</update>
+	
+	<!-- 상담이력 삭제 -->
+	<delete id="AdmClssDAO.deleteAdmConsul" parameterClass="egovMap">
+	/* AdmClssDAO.deleteAdmConsul */
+	<![CDATA[
+		DELETE
+		FROM
+			TB_LCMS_CONSULT
+		WHERE
+			CONSULT_SEQ = #consultSeq# 
+	]]>
+	</delete>
+	
+	<!-- 업무담당자 상담 조회 -->
+	<select id="AdmClssDAO.selectAdmConsulView" parameterClass="string" resultClass="consultVO">
+	/* AdmClssDAO.selectAdmConsulView */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ		AS consultSeq
+			, LECT_SEQ		AS lectSeq
+			, TLC.MEMBER_CODE	AS memberCode
+			, CASE REG_TYPE WHEN '1' THEN (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_ADMIN T
+				WHERE
+					T.ADMIN_ID = PROF_CODE
+			) WHEN '2' THEN (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER T
+				WHERE
+					T.MEMBER_CODE = PROF_CODE
+			) END AS profCode
+			, CONSULT_DATE	AS consultDate
+			, CASE CONSULT_TYPE WHEN '1' THEN '출결'
+								WHEN '2' THEN '성적'
+								WHEN '3' THEN '수업'
+								WHEN '4' THEN '기타' END AS consultType
+			, LPAD(ST_HOUR, 2, 0) AS stHour
+			, LPAD(ST_MINU, 2, 0) AS stMinu
+			, LPAD(ED_HOUR, 2, 0) AS edHour
+			, LPAD(ED_MINU, 2, 0) AS edMinu
+			, PLACE			AS place
+			, CONTENT		AS content
+			, NAME			AS name
+			, E_NAME		AS eName
+			, STATUS		AS status
+			, STEP			AS step
+			, NATION		AS nation
+			, YEAR			AS year
+			, SEMESTER		AS semester
+			, REG_TYPE		AS regType
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			CONSULT_SEQ = #consultSeq# 
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmConsulPop" parameterClass="string" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmConsulPop */
+	<![CDATA[
+		SELECT
+			CONSULT_SEQ		AS consultSeq
+			, LECT_SEQ		AS lectSeq
+			, TLC.MEMBER_CODE	AS memberCode
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = PROF_CODE
+			) AS profCode
+			, CONSULT_DATE	AS consultDate
+			, CASE CONSULT_TYPE WHEN '1' THEN '출결'
+								WHEN '2' THEN '성적'
+								WHEN '3' THEN '수업'
+								WHEN '4' THEN '기타' END AS consultType
+			, LPAD(ST_HOUR, 2, 0) AS stHour
+			, LPAD(ST_MINU, 2, 0) AS stMinu
+			, LPAD(ED_HOUR, 2, 0) AS edHour
+			, LPAD(ED_MINU, 2, 0) AS edMinu
+			, PLACE			AS place
+			, CONTENT		AS content
+			, NAME			AS name
+			, E_NAME		AS eName
+			, STATUS		AS status
+			, STEP			AS step
+			, NATION		AS nation
+		FROM
+			TB_LCMS_CONSULT TLC
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLC.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			TLC.MEMBER_CODE = #memberCode#
+		ORDER BY CONSULT_DATE DESC
+	]]>
+	</select>
+	
+	<!-- 결석자 현황 >상단 테이블 cnt -->
+	<select id="AdmClssDAO.selectAbsentStatusList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAbsentStatusList */
+	<![CDATA[
+		SELECT
+			TLA.ATT_DATE
+			, LECT_NAME
+			, LECT_DIVI
+			, COUNT(*) CNT
+			, ATTEND
+		FROM
+			(
+				SELECT
+					MEMBER_CODE
+					, ATT_DATE
+					, LECT_SEQ
+					, ATTEND
+					, COUNT(*) AS ABSENT_CNT
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					MEMBER_CODE, ATT_DATE, LECT_SEQ, ATTEND
+			) TLA
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+		LEFT JOIN (
+			SELECT
+				CLSTM_YEAR
+				, CLSTM_SEME
+				, CLSTM_NAME
+				, COUNT(*) AS CLSS_CNT
+			FROM
+				TB_LCMS_CLSTM
+			WHERE
+				CLSTM_STATE = 'Y'
+			GROUP BY
+				CLSTM_YEAR, CLSTM_SEME, CLSTM_NAME
+		) TLC ON TLC.CLSTM_YEAR = TLL.LECT_YEAR AND TLC.CLSTM_SEME = TLL.LECT_SEM AND TLC.CLSTM_NAME = TLL.LECT_PROG
+		LEFT JOIN (
+				SELECT LECT_CODE, MIN(LECT_ECLASS) AS MIN_CLSS_CNT FROM TB_LCMS_LECTTIMETABLE GROUP BY LECT_CODE
+				) TLLTB ON TLA.LECT_SEQ = TLLTB.LECT_CODE
+		WHERE
+			ABSENT_CNT >= MIN_CLSS_CNT
+		AND
+			LECT_STATE = 'Y'
+	]]>
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			ATT_DATE &gt;= #searchCondition3#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			ATT_DATE &lt;= #searchCondition4#
+		</isNotEmpty>
+	<![CDATA[			
+		GROUP BY 
+			ATT_DATE
+			, LECT_NAME
+			, LECT_DIVI
+			, ATTEND
+		ORDER BY
+			ATT_DATE ASC
+	]]>
+	</select>
+	
+	<!-- 결석자 현황 >상단 테이블 totcnt -->
+	<select id="AdmClssDAO.selectAbsentStatusTot" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAbsentStatusTot */
+	<![CDATA[
+		SELECT
+			LECT_NAME
+			, LECT_DIVI
+			, COUNT(*) TOTCNT
+		FROM
+			(
+				SELECT
+					MEMBER_CODE
+					, ATT_DATE
+					, LECT_SEQ
+					, COUNT(*) AS ABSENT_CNT
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					MEMBER_CODE, ATT_DATE, LECT_SEQ
+			) TLA
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+		LEFT JOIN (
+			SELECT
+				CLSTM_YEAR
+				, CLSTM_SEME
+				, CLSTM_NAME
+				, COUNT(*) AS CLSS_CNT
+			FROM
+				TB_LCMS_CLSTM
+			WHERE
+				CLSTM_STATE = 'Y'
+			GROUP BY
+				CLSTM_YEAR, CLSTM_SEME, CLSTM_NAME
+		) TLC ON TLC.CLSTM_YEAR = TLL.LECT_YEAR AND TLC.CLSTM_SEME = TLL.LECT_SEM AND TLC.CLSTM_NAME = TLL.LECT_PROG
+		LEFT JOIN (
+				SELECT LECT_CODE, MIN(LECT_ECLASS) AS MIN_CLSS_CNT FROM TB_LCMS_LECTTIMETABLE GROUP BY LECT_CODE
+				) TLLTB ON TLA.LECT_SEQ = TLLTB.LECT_CODE
+		WHERE
+			ABSENT_CNT = MIN_CLSS_CNT
+		AND
+			LECT_STATE = 'Y'
+	]]>
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			ATT_DATE &gt;= #searchCondition3#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			ATT_DATE &lt;= #searchCondition4#
+		</isNotEmpty>
+	<![CDATA[			
+		GROUP BY 
+			LECT_NAME
+			, LECT_DIVI
+	]]>
+	</select>
+	<!-- 결석자 현황 >과목명 -->
+	<select id="AdmClssDAO.selectAbsentLectList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAbsentLectList */
+	<![CDATA[
+		SELECT
+			LECT_SEQ
+			, LECT_NAME
+			, LECT_DIVI
+			, LECT_GRADE
+		FROM
+			TB_LCMS_LECT			
+		WHERE
+			LECT_STATE = 'Y'
+		AND 
+			LECT_YEAR = #searchCondition1#
+		AND 
+			LECT_SEM = #searchCondition2#
+		ORDER BY
+			LECT_GRADE ASC, LECT_DIVI ASC
+	]]>
+	</select>
+	<!-- 결석자 현황 >하단 학생리스트 -->
+	<select id="AdmClssDAO.selectAbsentStdList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAbsentStdList */
+	<![CDATA[
+		SELECT
+			TLL.LECT_NAME
+			, TLL.LECT_DIVI
+			, TLM.MEMBER_CODE
+			, TLM.NAME
+			, TLM.NATION
+			, TLM.GENDER
+			, GROUP_CONCAT(CONCAT(ATT_DATE,'(',SUBSTR( _UTF8'일월화수목금토', DAYOFWEEK(ATT_DATE), 1),')') ORDER BY ATT_DATE) DT
+			, LECT_GRADE
+			, ROUND(T.AVG_ATTE, 2) as AVG_ATTE
+			, ABSE_CNT
+		FROM
+			(
+				SELECT
+					MEMBER_CODE
+					, ATT_DATE
+					, LECT_SEQ
+					, COUNT(*) AS ABSENT_CNT
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					MEMBER_CODE, ATT_DATE, LECT_SEQ
+			) TLA
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+		LEFT JOIN
+			(
+				SELECT
+					TLA2.MEMBER_CODE
+					, TLA2.LECT_SEQ
+					, (COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)) AS ATTE_CNT
+					, (COUNT(CASE WHEN ATTEND = '2' THEN 1 END)+TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)) AS ABSE_CNT
+					, (
+						(
+							COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+						)
+					)/COUNT(*)*100  AS AVG_ATTE
+				FROM
+					TB_LCMS_ATTEND TLA2
+				GROUP BY
+					TLA2.MEMBER_CODE, TLA2.LECT_SEQ
+			) T ON T.MEMBER_CODE = TLM.MEMBER_CODE AND T.LECT_SEQ = TLL.LECT_SEQ
+		LEFT JOIN (
+			SELECT
+				CLSTM_YEAR
+				, CLSTM_SEME
+				, CLSTM_NAME
+				, COUNT(*) AS CLSS_CNT
+			FROM
+				TB_LCMS_CLSTM
+			WHERE
+				CLSTM_STATE = 'Y'
+			GROUP BY
+				CLSTM_YEAR, CLSTM_SEME, CLSTM_NAME
+		) TLC ON TLC.CLSTM_YEAR = TLL.LECT_YEAR AND TLC.CLSTM_SEME = TLL.LECT_SEM AND TLC.CLSTM_NAME = TLL.LECT_PROG
+		LEFT JOIN (
+				SELECT LECT_CODE, MIN(LECT_ECLASS) AS MIN_CLSS_CNT FROM TB_LCMS_LECTTIMETABLE GROUP BY LECT_CODE
+				) TLLTB ON TLA.LECT_SEQ = TLLTB.LECT_CODE
+		WHERE
+			ABSENT_CNT >= MIN_CLSS_CNT
+		AND
+			LECT_STATE = 'Y'
+	]]>
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			ATT_DATE &gt;= #searchCondition3#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			ATT_DATE &lt;= #searchCondition4#
+		</isNotEmpty>
+	<![CDATA[			
+		GROUP BY 
+			LECT_NAME
+			, LECT_DIVI
+			, MEMBER_CODE
+			, NAME
+			, NATION
+			, GENDER
+			, LECT_GRADE
+			, AVG_ATTE
+			, ABSE_CNT
+	ORDER BY
+		LECT_NAME ASC, LECT_DIVI ASC
+	]]>
+	</select>
+	
+	<!-- 결석자 현황 > 결석자 상담 Pop -->
+	<select id="AdmClssDAO.admAjaxAbsentPoPSearchList" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmClssDAO.admAjaxAbsentPoPSearchList*/
+	<![CDATA[
+		SELECT
+			TLA.LECT_SEQ
+			, TLA.ATT_DATE
+			, CASE DAYOFWEEK(REPLACE(TLA.ATT_DATE, '-', '')) 
+				WHEN '1' THEN '일'
+				WHEN '2' THEN '월'
+				WHEN '3' THEN '화'
+				WHEN '4' THEN '수'
+				WHEN '5' THEN '목'
+				WHEN '6' THEN '금'
+				WHEN '7' THEN '토'
+			END AS ATT_WEEK
+			, TLM.MEMBER_CODE
+			, TLL.LECT_GRADE
+			, TLM.NAME
+			, TLM.NATION
+			, TLM.GENDER
+			, TLL.LECT_DIVI
+			, TLAC.ABSENT_SEQ
+			, TLAC.FIRST_YN
+			, TLAC.FIRST_SELOR_CODE
+			, TLAC.FIRST_SELOR_NAME
+			, TLAC.FIRST_TEL
+			, TLAC.FIRST_SNS
+			, TLAC.FIRST_TEAM
+			, TLAC.FIRST_ETC
+			, TLAC.FIRST_REASON
+			, TLAC.FIRST_FOLUP
+			, TLAC.SECOND_YN
+			, TLAC.SECOND_SELOR_CODE
+			, TLAC.SECOND_SELOR_NAME
+			, TLAC.SECOND_TEL
+			, TLAC.SECOND_SNS
+			, TLAC.SECOND_TEAM
+			, TLAC.SECOND_ETC
+			, TLAC.SECOND_REASON
+			, TLAC.SECOND_FOLUP
+			, (
+				SELECT
+					CASE COUNT(*) WHEN 0 THEN 'N' ELSE 'Y' END
+				FROM
+					TB_LCMS_ATTEND_ETC TLAE
+				WHERE
+					TLAE.LECT_SEQ = TLA.LECT_SEQ
+				AND
+					TLAE.MEMBER_CODE = TLM.MEMBER_CODE
+			) AS ETC_YN
+		FROM
+			(
+				SELECT
+					LECT_SEQ
+					, MEMBER_CODE
+					, ATT_DATE
+					, COUNT(*) AS ABSENT_CNT
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					LECT_SEQ, MEMBER_CODE, ATT_DATE
+			) TLA
+			LEFT JOIN TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN TB_LCMS_ABSENT_CONSULT TLAC ON TLA.LECT_SEQ = TLAC.LECT_SEQ AND TLA.MEMBER_CODE = TLAC.MEMBER_CODE AND TLA.ATT_DATE = TLAC.ABSENT_DATE
+			LEFT JOIN (
+				SELECT
+					CLSTM_YEAR
+					, CLSTM_SEME
+					, COUNT(*) AS CLSS_CNT
+				FROM
+					TB_LCMS_CLSTM
+				WHERE
+					CLSTM_STATE = 'Y'
+				GROUP BY
+					CLSTM_YEAR, CLSTM_SEME
+			) TLC ON TLC.CLSTM_YEAR = TLL.LECT_YEAR AND TLC.CLSTM_SEME = TLL.LECT_SEM
+		LEFT JOIN (
+				SELECT LECT_CODE, MIN(LECT_ECLASS) AS MIN_CLSS_CNT FROM TB_LCMS_LECTTIMETABLE GROUP BY LECT_CODE
+				) TLLTB ON TLA.LECT_SEQ = TLLTB.LECT_CODE
+		WHERE
+			ABSENT_CNT = MIN_CLSS_CNT
+		AND
+			TLM.MEMBER_CODE = #memberCode#
+		]]>
+		<isNotEmpty prepend="AND" property="year">
+			TLL.LECT_YEAR = #year#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sem">
+			TLL.LECT_SEM = #sem#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sDate">
+			TLA.ATT_DATE >= #sDate#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="eDate">
+			TLA.ATT_DATE <![CDATA[<=]]> #eDate#
+		</isNotEmpty>
+	<![CDATA[
+		ORDER BY
+			TLA.ATT_DATE DESC, TLM.NAME ASC
+	]]>
+	</select>
+	
+	<!-- 결석경고 리스트-->
+	<select id="AdmClssDAO.selectadmAbsWrnList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectadmAbsWrnList */
+	<![CDATA[
+		SELECT
+			TLL.LECT_NAME
+			, TLL.LECT_DIVI
+			, TLM.MEMBER_CODE
+			, TLM.MEMBER_SEQ
+			, TLM.NAME
+			, TLM.NATION
+			, TLM.GENDER
+			, LECT_GRADE
+			, ROUND(T.AVG_ATTE, 2) as AVG_ATTE
+			, ABSE_CNT
+		FROM
+			(
+				SELECT
+					MEMBER_CODE
+					, ATT_DATE
+					, LECT_SEQ
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					MEMBER_CODE, ATT_DATE, LECT_SEQ
+			) TLA
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+		LEFT JOIN
+			(
+				SELECT
+					TLA2.MEMBER_CODE
+					, TLA2.LECT_SEQ
+					, (COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)) AS ATTE_CNT
+					, (COUNT(CASE WHEN ATTEND = '2' THEN 1 END)+TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)) AS ABSE_CNT
+					, (
+						(
+							COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+						)
+					)/COUNT(*)*100  AS AVG_ATTE
+				FROM
+					TB_LCMS_ATTEND TLA2
+				GROUP BY
+					TLA2.MEMBER_CODE, TLA2.LECT_SEQ
+			) T ON T.MEMBER_CODE = TLM.MEMBER_CODE AND T.LECT_SEQ = TLL.LECT_SEQ
+		WHERE
+			LECT_STATE = 'Y'
+		AND 
+			STATUS NOT IN ('자퇴','퇴학','행방불명')
+	]]>
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			ABSE_CNT &gt;= #searchCondition3#
+		</isNotEmpty>
+	<![CDATA[			
+		GROUP BY 
+			LECT_NAME
+			, LECT_DIVI
+			, MEMBER_CODE
+			, MEMBER_SEQ
+			, NAME
+			, NATION
+			, GENDER
+			, LECT_GRADE
+			, AVG_ATTE
+			, ABSE_CNT
+	ORDER BY
+		LECT_NAME ASC, LECT_DIVI ASC
+	]]>
+	</select>
+	
+	<!-- 결석자 현황 >하단 학생리스트 -->
+	<select id="AdmClssDAO.selectAbsWrnHstrList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAbsWrnHstrList */
+	<![CDATA[
+		SELECT 
+			GROUP_CONCAT(ABS_SEQ) ABS_SEQ
+			,ABS_YEAR
+			,CASE ABS_SEM 	WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS ABS_SEM
+			,CONCAT(ABS_DATE,'(',SUBSTR( _UTF8'일월화수목금토', DAYOFWEEK(ABS_DATE), 1),')') ABS_DATE
+			,ABS_PRS
+			,GROUP_CONCAT(CONCAT(ABS_GRADE,' ',ABS_DIVI,' ', ABS_NAME, '(',ABS_ABSE_CNT ,')')) ABS_TRG_PRS
+			,GROUP_CONCAT(MEMBER_CODE) MEMBER_CODE
+		FROM 
+			TB_LCMS_ABS_WRN
+	]]>	
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="searchCondition1">
+				ABS_YEAR = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="searchCondition2">
+				ABS_SEM = #searchCondition2#
+			</isNotEmpty>
+		</dynamic>
+	<![CDATA[
+		GROUP BY 
+			ABS_YEAR
+			, ABS_SEM
+			, ABS_PRS
+			, ABS_DATE
+			, ABS_TB_SEQ
+		ORDER BY 
+			ABS_DATE DESC
+			, ABS_SEQ DESC
+	]]>
+	</select>
+	<!-- 업무담당자 결석경고 추가-->
+	<insert id="AdmClssDAO.admAjaxAddWrn" parameterClass="egovMap">
+	/* AdmClssDAO.admAjaxAddWrn */
+	<![CDATA[
+		INSERT INTO TB_LCMS_ABS_WRN
+			( ABS_YEAR
+			, ABS_SEM
+			, ABS_DATE
+			, ABS_PRS
+			, ABS_GRADE
+			, ABS_DIVI
+			, ABS_NAME
+			, ABS_ABSE_CNT
+			, MEMBER_CODE
+			, LECT_SEQ
+			, ABS_TB_SEQ
+			)
+		VALUES
+			( #absYear#
+			, #absSem#
+			, #absDate#
+			, #absPrs#
+			, #absGrade#
+			, #absDivi#
+			, #absName#
+			, #absAbseCnt#
+			, #memberCode#
+			, #lectSeq#
+			, #absTbSeq#
+			)
+	]]>
+	</insert>
+	<!-- 결석경고 삭제 -->
+	<delete id="AdmClssDAO.deleteAdmAjaxAbsWrnDel" parameterClass="egovMap">
+	/* AdmClssDAO.deleteAdmAjaxAbsWrnDel */
+	<![CDATA[
+		DELETE
+			FROM
+				TB_LCMS_ABS_WRN
+			WHERE
+				ABS_SEQ
+	]]>
+		<iterate open="(" close=")" conjunction="," prepend="IN" property="absSeq">
+			#absSeq[]#
+		</iterate>
+	</delete>
+	<!-- tbSeq cnt -->
+	<select id="AdmClssDAO.selectadmAbsWrnTbSeq" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectadmAbsWrnTbSeq */
+	<![CDATA[
+		SELECT 
+			IFNULL (MAX(ABS_TB_SEQ),0) AS ABS_TB_SEQ
+		FROM 
+			TB_LCMS_ABS_WRN
+	]]>
+	</select>
+	<!-- 결석자 현황 >하단 학생리스트 인쇄 -->
+	<select id="AdmClssDAO.selectAdmPopWrnList" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmPopWrnList */
+	<![CDATA[
+		SELECT 
+			ABS_SEQ
+			,ABS_YEAR
+			,CASE ABS_SEM 	WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS ABS_SEM
+			,ABS_PRS
+			,ABS_GRADE
+			,ABS_DIVI
+			,ABS_NAME
+			,ABS_ABSE_CNT
+			,MEMBER_CODE
+		FROM 
+			TB_LCMS_ABS_WRN
+		WHERE ABS_SEQ 
+	]]>	
+		<iterate open="(" close=")" conjunction="," prepend="IN" property="absSeq">
+			#absSeq[]#
+		</iterate>
+		<isNotEmpty prepend="AND" property="year">
+			ABS_YEAR = #year#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seme">
+			ABS_SEM = #seme#
+		</isNotEmpty>
+	<![CDATA[
+		ORDER BY 
+			ABS_DATE DESC
+			, ABS_SEQ DESC
+	]]>
+	</select>
+	<!-- 결석경고용 lectSeq찾기 -->
+	<select id="AdmClssDAO.selectAbsWrnLectSeq" parameterClass="egovMap" resultClass="String">
+	/* AdmClssDAO.selectAbsWrnLectSeq */
+	<![CDATA[
+		SELECT 
+			LECT_SEQ 
+		FROM 
+			TB_LCMS_LECT 
+		WHERE 
+			LECT_NAME = #lectName# 
+		AND 
+			LECT_DIVI = #lectDivi#
+		AND 
+			LECT_YEAR = #lectYear#
+		AND 
+			LECT_SEM = #lectSem#
+	]]>
+	</select>
+	
+	
+	<sql id="adm_grade_dtl">
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+			LEFT JOIN TB_LCMS_MEMBER TLM
+			ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+			
+			INNER JOIN TB_LCMS_LECT B
+			ON B.LECT_SEQ  = TLLM.LECT_SEQ
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="searchLecture">
+			TLLM.LECT_SEQ = #searchLecture#
+		</isNotEmpty>
+	</sql>
+
+	<!-- 성적 리스트 -->
+	<select id="AdmClssDAO.admGradeDtl" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.admGradeDtl */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT 
+					TLLM.LECT_SEQ
+					, TLLM.MEMBER_CODE
+					, NAME
+					, E_NAME
+					, NATION AS FE_COUNTRY
+					, TEL
+					, (
+						SELECT 
+							ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4,0)
+						FROM
+							TB_LCMS_GRADE TLG
+						WHERE
+							TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+						AND
+							TLG.LECT_CODE = TLLM.LECT_SEQ
+						AND
+							GRADE_GUBUN = 1
+					) AS MIDTERM
+					, (
+						SELECT 
+							ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4,0)
+						FROM
+							TB_LCMS_GRADE TLG
+						WHERE
+							TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+						AND
+							TLG.LECT_CODE = TLLM.LECT_SEQ
+						AND
+							GRADE_GUBUN = 2
+					) AS FINALS
+					, 
+					 CASE  WHEN B.LECT_NAME='온라인반' THEN
+					 (
+						 SELECT
+							ROUND(
+									(
+										(
+											COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+										)/150
+									)*100, 2
+								)
+						FROM
+							TB_LCMS_ATTEND TLA
+						WHERE
+							TLA.LECT_SEQ = TLLM.LECT_SEQ
+						AND
+							TLA.MEMBER_CODE = TLLM.MEMBER_CODE
+					) ELSE 
+						 (
+						 SELECT
+							ROUND(
+									(
+										(
+											COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+										)/200
+									)*100, 2
+								)
+						FROM
+							TB_LCMS_ATTEND TLA
+						WHERE
+							TLA.LECT_SEQ = TLLM.LECT_SEQ
+						AND
+							TLA.MEMBER_CODE = TLLM.MEMBER_CODE
+					) END AS GRADE_ATTND
+	]]>
+	<include refid="adm_grade_dtl"/>
+	<![CDATA[
+				ORDER BY
+					MEMBER_CODE DESC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 성적 cnt -->
+	<select id="AdmClssDAO.admGradeDtlCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.admGradeDtl */
+	<![CDATA[
+		SELECT
+			COUNT(*) AS TOTALCNT
+	]]>
+	<include refid="adm_grade_dtl"/>
+	</select>
+	
+	<update id="AdmClssDAO.updateAdmStdStatus" parameterClass="string">
+	/* AdmClssDAO.updateAdmStdStatus */
+		UPDATE
+			TB_LCMS_MEMBER
+		SET
+			STATUS = '재학'
+		WHERE
+			MEMBER_CODE = #mCode#
+	</update>
+	
+	<select id="AdmClssDAO.selectAdmAjaxGradeCnt" parameterClass="egovMap" resultClass="int">
+	/* AdmClssDAO.selectAdmAjaxGradeCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_LCMS_LECT
+		WHERE
+			GRADE_YN != 'Y'
+		AND
+			LECT_SEQ
+	]]>
+		<iterate open="(" close=")" conjunction="," prepend="IN" property="lectSeq">
+			#lectSeq[]#
+		</iterate>
+	</select>
+	
+	<update id="AdmClssDAO.updateAdmAjaxGradeAdmis" parameterClass="egovMap">
+	/* AdmClssDAO.updateAdmAjaxGradeAdmis */
+		UPDATE
+			TB_LCMS_LECT
+		SET
+			ADMIS_YN = 'Y'
+			, ADMIS_ID = #memberCode#
+		WHERE
+			LECT_SEQ
+		<iterate open="(" close=")" conjunction="," prepend="IN" property="lectSeq">
+			#lectSeq[]#
+		</iterate>
+	</update>
+	
+	<select id="AdmClssDAO.selectAdmCompleYn" parameterClass="egovMap" resultClass="string">
+	/* AdmClssDAO.selectAdmCompleYn */
+	<![CDATA[
+		SELECT
+			CASE WHEN GROUP_CONCAT(STATUS) LIKE '%N%' THEN 'N' ELSE 'Y' END
+		FROM
+		(
+			SELECT
+				CASE WHEN (
+					SELECT
+						CASE WHEN COUNT(*) = 2 THEN ROUND((SUM(GRADE_EXPR_SPEAK)+SUM(GRADE_EXPR_WRITE)+SUM(GRADE_COMP_LISTEN)+SUM(GRADE_COMP_READ))/8,0) ELSE 0 END
+					FROM
+						TB_LCMS_GRADE TLG
+					WHERE
+						TLG.LECT_CODE = TLLM.LECT_SEQ
+					AND
+						TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+				) < 70 THEN 'N' WHEN(
+					SELECT
+						ROUND(
+							(
+								(
+									COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+								)/200
+							)*100, 2
+						)
+					FROM
+						TB_LCMS_ATTEND TLA
+					WHERE
+						TLA.LECT_SEQ = TLLM.LECT_SEQ
+					AND
+						TLA.MEMBER_CODE = TLLM.MEMBER_CODE
+				) < 80 THEN 'N' WHEN (
+					SELECT
+						CASE WHEN MIN(GRADE_EXPR_SPEAK) < 60 THEN 'N'
+							 WHEN MIN(GRADE_EXPR_WRITE) < 60 THEN 'N'
+							 WHEN MIN(GRADE_COMP_LISTEN) < 60 THEN 'N'
+							 WHEN MIN(GRADE_COMP_READ) < 60 THEN 'N' END
+					FROM
+						TB_LCMS_GRADE TLG
+					WHERE
+						TLG.LECT_CODE = TLLM.LECT_SEQ
+					AND
+						TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+				) = 'N' THEN 'N' ELSE 'Y' END AS STATUS
+			FROM
+				TB_LCMS_LECT_MAP TLLM
+			WHERE
+				MAP_SEQ
+	]]>
+			<iterate open="(" close=")" conjunction="," prepend="IN" property="mapSeq">
+				#mapSeq[]#
+			</iterate>
+	<![CDATA[
+		) T
+		GROUP BY
+			STATUS
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.admGradeView" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmClssDAO.admGradeView */
+	<![CDATA[
+		SELECT
+			T.MID_SPEAK
+			, T.MID_WRITE
+			, T.MID_LISTEN
+			, T.MID_READ
+			, T.FIN_SPEAK
+			, T.FIN_WRITE
+			, T.FIN_LISTEN
+			, T.FIN_READ
+			, LECT_YEAR
+			, CASE LECT_SEM WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS LECT_SEM
+			, LECT_NAME
+			, LECT_DIVI
+			, NAME
+			, C.MEMBER_CODE
+			, ROUND((MID_SPEAK+FIN_SPEAK)/2, 0)		AS AVG_SPEAK
+			, ROUND((MID_WRITE+FIN_WRITE)/2, 0)		AS AVG_WRITE
+			, ROUND((MID_LISTEN+FIN_LISTEN)/2, 0)	AS AVG_LISTEN
+			, ROUND((MID_READ+FIN_READ)/2, 0)		AS AVG_READ
+			, ROUND((ROUND((MID_SPEAK+MID_WRITE+MID_LISTEN+MID_READ)/4, 0)+ROUND((FIN_SPEAK+FIN_WRITE+FIN_LISTEN+FIN_READ)/4, 0))/2, 0) AS AVG_TOTAL
+		FROM
+			TB_LCMS_LECT D
+			, TB_LCMS_MEMBER C
+			LEFT JOIN (
+				SELECT
+					A.GRADE_EXPR_SPEAK		AS MID_SPEAK
+					, A.GRADE_EXPR_WRITE	AS MID_WRITE
+					, A.GRADE_COMP_LISTEN	AS MID_LISTEN
+					, A.GRADE_COMP_READ		AS MID_READ
+					, B.GRADE_EXPR_SPEAK	AS FIN_SPEAK
+					, B.GRADE_EXPR_WRITE	AS FIN_WRITE
+					, B.GRADE_COMP_LISTEN	AS FIN_LISTEN
+					, B.GRADE_COMP_READ		AS FIN_READ
+					, A.MEMBER_CODE
+				FROM
+					TB_LCMS_GRADE A 
+					LEFT JOIN TB_LCMS_GRADE B
+					ON A.LECT_CODE = B.LECT_CODE AND A.GRADE_GUBUN = '1' AND B.GRADE_GUBUN = '2'
+					AND A.MEMBER_CODE = B.MEMBER_CODE
+				WHERE
+					A.LECT_CODE = #lectSeq#
+				AND
+					B.LECT_CODE = #lectSeq#
+				AND
+					A.MEMBER_CODE = #memberCode#
+			) T ON C.MEMBER_CODE = T.MEMBER_CODE
+		WHERE
+			C.MEMBER_CODE = #memberCode#
+		AND
+			D.LECT_SEQ = #lectSeq#
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmAjaxStdMapDelYn" parameterClass="egovMap" resultClass="string">
+	/* AdmClssDAO.selectAdmAjaxStdMapDelYn */
+	<![CDATA[
+		SELECT
+			CASE WHEN SUM((SELECT COUNT(*) FROM TB_LCMS_ATTEND TLA WHERE TLA.LECT_SEQ = TLLM.LECT_SEQ AND TLA.MEMBER_CODE = TLLM.MEMBER_CODE)) > 0 
+					  || SUM((SELECT COUNT(*) FROM TB_LCMS_GRADE TLG WHERE TLG.LECT_CODE = TLLM.LECT_SEQ AND TLG.MEMBER_CODE = TLLM.MEMBER_CODE)) > 0 THEN 'N'
+					  ELSE 'Y' END
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		WHERE
+			MAP_SEQ
+	]]>
+		<iterate open="(" close=")" conjunction="," prepend="IN" property="mapSeq">
+			#mapSeq[]#
+		</iterate>
+	</select>
+	
+	<delete id="AdmClssDAO.deleteAdmAjaxStdMapDel" parameterClass="egovMap">
+	/* AdmClssDAO.deleteAdmAjaxStdMapDel */
+	<![CDATA[
+		DELETE
+		FROM
+			TB_LCMS_LECT_MAP
+		WHERE
+			MAP_SEQ
+	]]>
+		<iterate open="(" close=")" conjunction="," prepend="IN" property="mapSeq">
+			#mapSeq[]#
+		</iterate>
+	</delete>
+	
+	<sql id="adm_satis_list">
+		FROM
+			TB_LCMS_LECT TLL
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLL.LECT_CLA_TEA = TLM.MEMBER_CODE
+		LEFT JOIN
+			(
+				SELECT
+					LECT_CODE
+					, GROUP_CONCAT(DISTINCT NAME) AS TEA_NAME
+				FROM
+					TB_LCMS_LECTTIMETABLE A
+				LEFT JOIN
+					TB_LCMS_MEMBER B ON A.LECT_TEA = B.MEMBER_CODE
+				GROUP BY
+					LECT_CODE
+			) TLLT ON TLL.LECT_SEQ = TLLT.LECT_CODE
+		LEFT JOIN
+			(
+				SELECT
+					TLLM.LECT_SEQ
+					, COUNT(TLLM.LECT_SEQ) AS ENRO_NUM
+					, COUNT(TLSA.LECT_SEQ) AS ANSW_NUM
+					, ROUND(AVG(AVG_ANSW),2) AS AVG_ANSW
+					, ROUND(SUM(SUM_ANSW),2) AS SUM_ANSW
+				FROM
+					TB_LCMS_LECT_MAP TLLM
+				LEFT JOIN
+					(
+						SELECT
+							LECT_SEQ
+							, MEMBER_CODE
+							, AVG(ANSWER) AS AVG_ANSW
+							, SUM(ANSWER) AS SUM_ANSW
+						FROM
+							TB_LCMS_SURVEY_ANSW
+						WHERE
+							SURVEY_TYPE = '1'
+						AND
+							QUES_TYPE = 'LEC'
+						GROUP BY LECT_SEQ, MEMBER_CODE
+					) TLSA ON TLLM.LECT_SEQ = TLSA.LECT_SEQ AND TLLM.MEMBER_CODE = TLSA.MEMBER_CODE
+				GROUP BY
+					TLLM.LECT_SEQ
+			) T ON TLL.LECT_SEQ = T.LECT_SEQ
+		WHERE
+			TLL.LECT_STATE = 'Y'
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLL.LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			TLL.LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+	</sql>
+	
+	<select id="AdmClssDAO.selectAdmSatisListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmSatisListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+		<include refid="adm_satis_list"/>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmSatisList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmSatisList */
+	<![CDATA[
+		SELECT
+			TLL.LECT_SEQ
+			, TLL.LECT_NAME
+			, TLL.LECT_DIVI
+			, TLM.NAME
+			, TLLT.TEA_NAME
+			, IFNULL(T.ENRO_NUM,0) AS ENRO_NUM
+			, IFNULL(T.ANSW_NUM,0) AS ANSW_NUM
+			, IFNULL(T.AVG_ANSW,0) AS AVG_ANSW
+			, IFNULL(T.SUM_ANSW,0) AS SUM_ANSW
+	]]>
+		<include refid="adm_satis_list"/>
+	<![CDATA[
+		ORDER BY
+			TLL.LECT_NAME DESC, TLL.LECT_DIVI DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmSurveyList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmSurveyList */
+	<![CDATA[
+		SELECT
+			TLS.SURVEY_SEQ
+			, TLS.YEAR
+			, TLS.SEME
+			, CASE TLS.SEME WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END SEME_NM
+			, TITLE
+			, TLS.LANG
+			, IFNULL(TLSA.CNT_ANSW, 0) AS CNT_ANSW
+			, REG_NAME
+			, REG_DATE
+		FROM
+			TB_LCMS_SURVEY TLS
+		LEFT JOIN
+			(
+				SELECT
+					SURVEY_SEQ
+					, COUNT(DISTINCT MEMBER_CODE) AS CNT_ANSW
+				FROM
+					TB_LCMS_SURVEY_ANSW
+				WHERE
+					SURVEY_TYPE = '1'
+				AND
+					QUES_TYPE = 'LEC'
+				GROUP BY
+					SURVEY_SEQ
+			) TLSA ON TLS.SURVEY_SEQ = TLSA.SURVEY_SEQ
+		WHERE
+			TLS.USE_YN = 'Y'
+	]]>
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLS.YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			TLS.SEME = #searchCondition2#
+		</isNotEmpty>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmStatisTotalList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmStatisTotalList */
+	<![CDATA[
+		SELECT
+			QUESTION
+			, (
+				SELECT
+					ROUND(IFNULL(AVG(ANSWER), 0), 2)
+				FROM
+					TB_LCMS_SURVEY_ANSW	TLSA
+				LEFT JOIN
+					TB_LCMS_SURVEY T ON TLSA.SURVEY_SEQ = T.SURVEY_SEQ
+				WHERE
+					TLSA.QUES_NUM = TLSQ.QUES_NUM
+				AND
+					T.YEAR = TLS.YEAR
+				AND
+					T.SEME = TLS.SEME
+			) AS AVG_NUM
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_SURVEY TLS ON TLSQ.SURVEY_SEQ = TLS.SURVEY_SEQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		WHERE
+			YEAR = #searchCondition1#
+		AND
+			SEME = #searchCondition2#
+		AND
+			SURVEY_TYPE = '1'
+		AND
+			LANG = 'Korean'
+		AND
+			QUES_TYPE = 'LEC'
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmSatisView" parameterClass="searchVO" resultClass="egovMap" remapResults="true">
+	/* AdmClssDAO.selectAdmSatisView */
+	<![CDATA[
+		SELECT
+			TLS.SURVEY_SEQ
+			, TLS.YEAR
+			, TLS.SEME
+			, CASE TLS.SEME WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS SEME_NM
+			, TLS.LANG
+			, TLS.TITLE
+			, TLS.USE_YN
+			, TLS.CONTENT
+	]]>
+		<isNotEmpty property="searchLecture">
+			, TLL.LECT_NAME
+			, TLL.LECT_DIVI
+		</isNotEmpty>
+		<isNotEmpty property="searchMemberCode">
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = #searchMemberCode#
+			) AS PROF_NAME
+		</isNotEmpty>
+	<![CDATA[
+		FROM
+			TB_LCMS_SURVEY TLS
+	]]>
+		<isNotEmpty property="searchLecture">
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLL.LECT_YEAR = TLS.YEAR AND TLL.LECT_SEM = TLS.SEME
+		</isNotEmpty>
+		WHERE
+			TLS.LANG = 'Korean'
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLS.YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			TLS.SEME = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchLecture">
+			TLL.LECT_SEQ = #searchLecture#
+		</isNotEmpty>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmSatisScoreList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmSatisScoreList */
+	<![CDATA[
+		SELECT
+			QUESTION
+			, (
+				SELECT
+					ROUND(IFNULL(AVG(ANSWER), 0), 2)
+				FROM
+					TB_LCMS_SURVEY_ANSW	TLSA
+				LEFT JOIN
+					TB_LCMS_SURVEY A ON TLSA.SURVEY_SEQ = A.SURVEY_SEQ
+				WHERE
+					TLSA.QUES_NUM = TLSQ.QUES_NUM
+	]]>
+				<isNotEmpty prepend="AND" property="searchLecture">
+					LECT_SEQ = #searchLecture#
+				</isNotEmpty>
+				<isEmpty prepend="AND" property="searchLecture">
+					A.YEAR = TLS.YEAR
+				AND
+					A.SEME = TLS.SEME
+				</isEmpty>
+				<isNotEmpty prepend="AND" property="searchMemberCode">
+					PROF_CODE = #searchMemberCode#
+				</isNotEmpty>
+	<![CDATA[
+			) AS AVG_NUM
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_SURVEY TLS ON TLSQ.SURVEY_SEQ = TLS.SURVEY_SEQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		WHERE
+			YEAR = #searchCondition1#
+		AND
+			SEME = #searchCondition2#
+		AND
+			SURVEY_TYPE = '1'
+		AND
+			LANG = 'Korean'
+		AND
+			QUES_TYPE = #searchType#
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmSatisQuesList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmSatisQuesList */
+	<![CDATA[
+		SELECT
+			TLSQ.QUES_SEQ
+			, TLQP.PHR_TITLE
+			, TLSQ.QUESTION
+			, TLSQ.ANSWER1
+			, TLSQ.ANSWER2
+			, TLSQ.ANSWER3
+			, TLSQ.ANSWER4
+			, TLSQ.ANSWER5
+			, IFNULL(TLSA.TOT_CNT, 0) AS TOT_CNT
+			, IFNULL(TLSA.CNT1, 0) AS CNT1
+			, IFNULL(TLSA.CNT2, 0) AS CNT2
+			, IFNULL(TLSA.CNT3, 0) AS CNT3
+			, IFNULL(TLSA.CNT4, 0) AS CNT4
+			, IFNULL(TLSA.CNT5, 0) AS CNT5
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		LEFT JOIN
+			(
+				SELECT
+					QUES_NUM
+					, COUNT(*) AS TOT_CNT
+					, COUNT(CASE ANSWER WHEN '1' THEN 1 END) AS CNT1
+					, COUNT(CASE ANSWER WHEN '2' THEN 1 END) AS CNT2
+					, COUNT(CASE ANSWER WHEN '3' THEN 1 END) AS CNT3
+					, COUNT(CASE ANSWER WHEN '4' THEN 1 END) AS CNT4
+					, COUNT(CASE ANSWER WHEN '5' THEN 1 END) AS CNT5
+				FROM
+					TB_LCMS_SURVEY_ANSW A
+					LEFT JOIN TB_LCMS_SURVEY B ON A.SURVEY_SEQ = B.SURVEY_SEQ
+				WHERE
+					1=1
+	]]>
+				<isNotEmpty prepend="AND" property="searchLecture">
+					LECT_SEQ = #searchLecture#
+				</isNotEmpty>
+				<isEmpty prepend="AND" property="searchLecture">
+					YEAR = #searchCondition1#
+				AND
+					SEME = #searchCondition2#
+				</isEmpty>
+				<isNotEmpty prepend="AND" property="searchMemberCode">
+					PROF_CODE = #searchMemberCode#
+				</isNotEmpty>
+	<![CDATA[
+				GROUP BY
+					QUES_NUM
+			) TLSA ON TLSQ.QUES_NUM = TLSA.QUES_NUM
+		WHERE
+			TLSQ.SURVEY_TYPE = #searchCondition7#
+		AND
+			TLQP.QUES_TYPE = #searchType#
+		AND
+			TLSQ.SURVEY_SEQ = #searchCondition8#
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmStatisTxtList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmStatisTxtList */
+	<![CDATA[
+		SELECT
+			TLSQ.QUES_SEQ
+			, TLQP.PHR_TITLE
+			, TLSQ.QUESTION
+			, TLSA.ANSWER_TXT
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		LEFT JOIN
+			TB_LCMS_SURVEY_ANSW TLSA ON TLSQ.QUES_NUM = TLSA.QUES_NUM
+		LEFT JOIN
+			TB_LCMS_SURVEY TLS ON TLSA.SURVEY_SEQ = TLS.SURVEY_SEQ
+		WHERE
+			TLSQ.SURVEY_TYPE = '3'
+		AND
+			TLQP.QUES_TYPE = #searchType#
+		AND
+			TLSQ.SURVEY_SEQ = #searchCondition8#
+	]]>
+		<isNotEmpty prepend="AND" property="searchLecture">
+			TLSA.LECT_SEQ = #searchLecture#
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="searchLecture">
+			TLS.YEAR = #searchCondition1#
+		AND
+			TLS.SEME = #searchCondition2#
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="searchMemberCode">
+			TLSA.PROF_CODE = #searchMemberCode#
+		</isNotEmpty>
+	<![CDATA[
+		ORDER BY
+			TLQP.PHR_TITLE ASC
+			, TLSQ.QUESTION ASC
+	]]>
+	</select>
+	
+	<sql id="adm_satis_prf_list">
+		FROM
+			TB_LCMS_LECTTIMETABLE TLLT
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLLT.LECT_TEA = TLM.MEMBER_CODE
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLL.LECT_SEQ = TLLT.LECT_CODE
+		LEFT JOIN
+			(
+				SELECT
+					PROF_CODE
+					, COUNT(DISTINCT MEMBER_CODE) AS ANSW_CNT
+				FROM
+					TB_LCMS_SURVEY_ANSW
+				WHERE
+					QUES_TYPE = 'PRF'
+				AND
+					SURVEY_TYPE = '1'
+				GROUP BY
+					PROF_CODE
+			) TLSA ON TLLT.LECT_TEA = TLSA.PROF_CODE
+		WHERE
+			TLL.LECT_YEAR = #searchCondition1#
+		AND
+			TLL.LECT_SEM = #searchCondition2#
+		AND 
+			LECT_TEA NOT IN ('513066')
+		AND 
+			TLL.LECT_STATE = 'Y'
+	</sql>
+	
+	<select id="AdmClssDAO.selectAdmSatisPrfListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmSatisPrfListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(DISTINCT TLLT.LECT_TEA)
+	]]>
+	<include refid="adm_satis_prf_list"/>
+	</select>
+
+	<select id="AdmClssDAO.selectAdmSatisPrfList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmSatisPrfList */
+	<![CDATA[
+		SELECT DISTINCT
+			TLLT.LECT_TEA
+			, TLM.NAME
+			, IFNULL(ANSW_CNT, 0) AS ANSW_CNT
+	]]>
+	<include refid="adm_satis_prf_list"/>
+	<![CDATA[
+		ORDER BY
+			TLLT.LECT_TEA ASC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<sql id="adm_satis_prf_lect_list">
+		FROM
+			TB_LCMS_LECTTIMETABLE TLLT
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLLT.LECT_TEA = TLM.MEMBER_CODE
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLL.LECT_SEQ = TLLT.LECT_CODE
+		LEFT JOIN
+			(
+				SELECT
+					LECT_SEQ
+					, PROF_CODE
+					, COUNT(DISTINCT MEMBER_CODE) AS ANSW_CNT
+				FROM
+					TB_LCMS_SURVEY_ANSW A
+				LEFT JOIN
+					TB_LCMS_SURVEY B ON A.SURVEY_SEQ = B.SURVEY_SEQ
+				WHERE
+					QUES_TYPE = 'PRF'
+				AND
+					SURVEY_TYPE = '1'
+				AND
+					B.YEAR = #searchCondition1#
+				AND
+					B.SEME = #searchCondition2#
+				GROUP BY
+					LECT_SEQ, PROF_CODE
+			) TLSA ON TLLT.LECT_TEA = TLSA.PROF_CODE AND TLLT.LECT_CODE = TLSA.LECT_SEQ
+		WHERE
+			TLL.LECT_YEAR = #searchCondition1#
+		AND
+			TLL.LECT_SEM = #searchCondition2#
+	</sql>
+
+	<select id="AdmClssDAO.selectAdmSatisPrfLectListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmSatisPrfLectListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_satis_prf_lect_list"/>
+	</select>
+
+	<select id="AdmClssDAO.selectAdmSatisPrfLectList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmSatisPrfLectList */
+	<![CDATA[
+		SELECT
+			TLL.LECT_SEQ
+			, TLL.LECT_NAME
+			, TLL.LECT_DIVI
+			, TLLT.LECT_TEA
+			, TLM.NAME
+			, IFNULL(ANSW_CNT, 0) AS ANSW_CNT
+	]]>
+	<include refid="adm_satis_prf_lect_list"/>
+	<![CDATA[
+		ORDER BY
+			TLM.NAME DESC
+		LIMIT
+			#firstIndex2#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmStatisPrfQuesList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmStatisPrfQuesList */
+	<![CDATA[
+		SELECT
+			PROF_CODE
+			, TLSQ.QUES_SEQ
+			, ROUND(IFNULL(AVG(ANSWER), 0), 1) AS AVG_ANSW
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_SURVEY TLS ON TLSQ.SURVEY_SEQ = TLS.SURVEY_SEQ
+		LEFT JOIN
+			TB_LCMS_SURVEY_ANSW TLSA ON TLSQ.QUES_SEQ = TLSA.QUES_SEQ
+		WHERE
+			TLS.YEAR = #searchCondition1#
+		AND
+			TLS.SEME = #searchCondition2#
+		AND
+			TLSQ.SURVEY_TYPE = '1'
+		AND
+			TLS.LANG = 'Korean'
+		AND
+			TLSA.QUES_TYPE = 'PRF'
+		GROUP BY
+			PROF_CODE, TLSQ.QUES_SEQ
+	]]>
+	</select>
+
+	<select id="AdmClssDAO.selectAdmStatisPrfLectQuesList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmStatisPrfLectQuesList */
+	<![CDATA[
+		SELECT
+			TLSA.LECT_SEQ
+			, PROF_CODE
+			, ROUND(IFNULL(AVG(ANSWER), 0), 2) AS AVG_ANSW
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_SURVEY TLS ON TLSQ.SURVEY_SEQ = TLS.SURVEY_SEQ
+		LEFT JOIN
+			(
+				SELECT
+					LECT_SEQ
+					, QUES_NUM
+					, PROF_CODE
+					, ROUND(AVG(IFNULL(ANSWER, 0)), 2) AS ANSWER
+				FROM
+					TB_LCMS_SURVEY_ANSW A
+				LEFT JOIN
+					TB_LCMS_SURVEY B ON A.SURVEY_SEQ = B.SURVEY_SEQ
+				WHERE
+					B.YEAR = #searchCondition1#
+				AND
+					B.SEME = #searchCondition2#
+				AND
+					QUES_TYPE = 'PRF'
+				AND
+					SURVEY_TYPE = '1'
+				GROUP BY
+					LECT_SEQ, PROF_CODE, QUES_NUM 
+			) TLSA ON TLSQ.QUES_NUM = TLSA.QUES_NUM
+		WHERE
+			TLS.YEAR = #searchCondition1#
+		AND
+			TLS.SEME = #searchCondition2#
+		AND
+			TLSQ.SURVEY_TYPE = '1'
+		AND
+			TLSA.LECT_SEQ IS NOT NULL
+		GROUP BY
+			TLSA.LECT_SEQ, PROF_CODE
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmStatisLectList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmStatisLectList */
+	<![CDATA[
+		SELECT
+			LECT_SEQ
+			, LECT_NAME
+			, LECT_DIVI
+		FROM
+			TB_LCMS_LECT
+		WHERE
+			LECT_STATE = 'Y'
+		AND 
+			LECT_YEAR = #searchCondition1#
+		AND 
+			LECT_SEM = #searchCondition2#
+		ORDER BY
+			LECT_NAME ASC, LECT_DIVI ASC
+	]]>
+	</select>
+	<!-- 수업>수강신청>인쇄>상단강의정보 -->
+	<select id="AdmClssDAO.selectAdmStdPrtList" parameterClass="String" resultClass="egovMap">
+		SELECT
+			A.LECT_SEQ,
+			A.LECT_YEAR,
+		 	A.LECT_SEM,
+			A.LECT_DIVI,
+			A.LECT_PER,
+			A.LECT_NAME,
+			B.NAME AS LECT_CLA_TEA
+		FROM 
+			TB_LCMS_LECT A
+		JOIN 
+			TB_LCMS_MEMBER B 
+		ON 
+			A.LECT_CLA_TEA = B.MEMBER_CODE 
+		AND 
+			LECT_SEQ = #lectSeq#
+	</select>
+	<!-- 수업>수강신청>인쇄>하단 학생정보-->
+	<select id="AdmClssDAO.selectAdmStudent" parameterClass="String" resultClass="egovMap">
+		SELECT 
+			A.LECT_SEQ,
+			B.MEMBER_CODE, 
+			B.IMG_PATH, 
+			B.IMG_NAME, 
+			B.NAME, 
+			B.NATION,
+			B.GENDER, 
+			B.TEL, 
+			B.EMAIL, 
+			B.ADDR1, 
+			B.ADDR2, 
+			B.MEMBER_SEQ,
+			B.NA_SNS 
+		FROM 
+			TB_LCMS_LECT_MAP A
+		JOIN 
+			TB_LCMS_MEMBER B 
+		ON A.MEMBER_CODE = B.MEMBER_CODE 
+		AND LECT_SEQ = #lectSeq#
+	</select>
+	
+	<sql id="adm_absCounsel_list">
+		FROM
+			(
+				SELECT
+					LECT_SEQ
+					, MEMBER_CODE
+					, ATT_DATE
+					, COUNT(*) AS ABSENT_CNT
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					LECT_SEQ, MEMBER_CODE, ATT_DATE
+			) TLA
+			LEFT JOIN TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN TB_LCMS_ABSENT_CONSULT TLAC ON TLA.LECT_SEQ = TLAC.LECT_SEQ AND TLA.MEMBER_CODE = TLAC.MEMBER_CODE AND TLA.ATT_DATE = TLAC.ABSENT_DATE
+			LEFT JOIN (
+				SELECT
+					CLSTM_YEAR
+					, CLSTM_SEME
+					, CLSTM_NAME
+					, COUNT(*) AS CLSS_CNT
+				FROM
+					TB_LCMS_CLSTM
+				WHERE
+					CLSTM_STATE = 'Y'
+				GROUP BY
+					CLSTM_YEAR, CLSTM_SEME, CLSTM_NAME
+			) TLC ON TLC.CLSTM_YEAR = TLL.LECT_YEAR AND TLC.CLSTM_SEME = TLL.LECT_SEM AND TLC.CLSTM_NAME = TLL.LECT_PROG
+		LEFT JOIN (
+				SELECT LECT_CODE, MIN(LECT_ECLASS) AS MIN_CLSS_CNT FROM TB_LCMS_LECTTIMETABLE GROUP BY LECT_CODE
+				) TLLTB ON TLA.LECT_SEQ = TLLTB.LECT_CODE
+		WHERE
+			ABSENT_CNT >= MIN_CLSS_CNT
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLL.LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			TLL.LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			TLL.LECT_CURR = #searchCondition3#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			TLL.LECT_PROG = #searchCondition4#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition5">
+			TLL.LECT_NAME = #searchCondition5#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition6">
+			TLL.LECT_DIVI = #searchCondition6#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="startDate">
+			TLA.ATT_DATE >= #startDate#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			TLA.ATT_DATE <![CDATA[<=]]> #endDate#
+		</isNotEmpty>
+		AND 
+			LECT_STATE = 'Y'
+	</sql>
+
+	<!-- 강사 결석자상담 목록Cnt -->
+	<select id="AdmClssDAO.selectAdmAbsCounselListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmClssDAO.selectAdmAbsCounselListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_absCounsel_list"/>
+	</select>
+	
+	<!-- 강사 결석자상담 목록 -->
+	<select id="AdmClssDAO.selectAdmAbsCounselList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmAbsCounselList */
+	<![CDATA[
+		SELECT
+			TLA.LECT_SEQ
+			, TLA.ATT_DATE
+			, CASE DAYOFWEEK(REPLACE(TLA.ATT_DATE, '-', '')) 
+				WHEN '1' THEN '일'
+				WHEN '2' THEN '월'
+				WHEN '3' THEN '화'
+				WHEN '4' THEN '수'
+				WHEN '5' THEN '목'
+				WHEN '6' THEN '금'
+				WHEN '7' THEN '토'
+			END AS ATT_WEEK
+			, TLM.MEMBER_CODE
+			, TLL.LECT_GRADE
+			, TLM.NAME
+			, TLM.NATION
+			, TLM.GENDER
+			, TLL.LECT_DIVI
+			, TLAC.ABSENT_SEQ
+			, TLAC.FIRST_YN
+			, TLAC.FIRST_SELOR_CODE
+			, TLAC.FIRST_SELOR_NAME
+			, TLAC.FIRST_TEL
+			, TLAC.FIRST_SNS
+			, TLAC.FIRST_TEAM
+			, TLAC.FIRST_ETC
+			, TLAC.FIRST_REASON
+			, TLAC.FIRST_FOLUP
+			, TLAC.SECOND_YN
+			, TLAC.SECOND_SELOR_CODE
+			, TLAC.SECOND_SELOR_NAME
+			, TLAC.SECOND_TEL
+			, TLAC.SECOND_SNS
+			, TLAC.SECOND_TEAM
+			, TLAC.SECOND_ETC
+			, TLAC.SECOND_REASON
+			, TLAC.SECOND_FOLUP
+			, (
+				SELECT
+					CASE COUNT(*) WHEN 0 THEN 'N' ELSE 'Y' END
+				FROM
+					TB_LCMS_ATTEND_ETC TLAE
+				WHERE
+					TLAE.LECT_SEQ = TLA.LECT_SEQ
+				AND
+					TLAE.MEMBER_CODE = TLM.MEMBER_CODE
+			) AS ETC_YN
+	]]>
+	<include refid="adm_absCounsel_list"/>
+	<![CDATA[
+		ORDER BY
+			TLA.ATT_DATE DESC, TLM.NAME ASC
+	]]>
+	</select>
+	
+	<!-- 업무담당자 결석자 상담 엑셀 리스트 -->
+	<select id="AdmClssDAO.selectAdmAbsComplExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmAbsComplExcel */
+	<![CDATA[
+		SELECT
+			TLA.LECT_SEQ
+			, TLL.LECT_GRADE
+			, TLL.LECT_DIVI
+			, TLA.ATT_DATE
+			, CASE DAYOFWEEK(REPLACE(TLA.ATT_DATE, '-', '')) 
+				WHEN '1' THEN '일'
+				WHEN '2' THEN '월'
+				WHEN '3' THEN '화'
+				WHEN '4' THEN '수'
+				WHEN '5' THEN '목'
+				WHEN '6' THEN '금'
+				WHEN '7' THEN '토'
+			END AS ATT_WEEK
+			, TLM.MEMBER_CODE
+			, TLL.LECT_GRADE
+			, TLM.NAME
+			, TLM.NATION
+			, TLM.GENDER
+			, TLL.LECT_DIVI
+			, TLAC.ABSENT_SEQ
+			, TLAC.FIRST_YN
+			, TLAC.FIRST_SELOR_CODE
+			, TLAC.FIRST_SELOR_NAME
+			, TLAC.FIRST_TEL
+			, TLAC.FIRST_SNS
+			, TLAC.FIRST_TEAM
+			, TLAC.FIRST_ETC
+			, TLAC.FIRST_REASON
+			, TLAC.FIRST_FOLUP
+			, TLAC.SECOND_YN
+			, TLAC.SECOND_SELOR_CODE
+			, TLAC.SECOND_SELOR_NAME
+			, TLAC.SECOND_TEL
+			, TLAC.SECOND_SNS
+			, TLAC.SECOND_TEAM
+			, TLAC.SECOND_ETC
+			, TLAC.SECOND_REASON
+			, TLAC.SECOND_FOLUP
+			, (
+				SELECT
+					CASE COUNT(*) WHEN 0 THEN 'N' ELSE 'Y' END
+				FROM
+					TB_LCMS_ATTEND_ETC TLAE
+				WHERE
+					TLAE.LECT_SEQ = TLA.LECT_SEQ
+				AND
+					TLAE.MEMBER_CODE = TLM.MEMBER_CODE
+			) AS ETC_YN
+	]]>
+	<include refid="adm_absCounsel_list"/>
+	<![CDATA[
+		ORDER BY
+			TLA.ATT_DATE DESC, TLM.NAME ASC
+	]]>
+	</select>
+	
+	<!-- 관리자 결석자상담 조회 -->
+	<select id="AdmClssDAO.selectAdmAbsCounselModify" parameterClass="string" resultClass="absentConsultVO">
+	/* AdmClssDAO.selectAdmAbsCounselModify */
+	<![CDATA[
+		SELECT
+			ABSENT_SEQ			AS absentSeq
+			, ATT_SEQ			AS attSeq
+			, LECT_SEQ			AS lectSeq
+			, LECT_NAME			AS lectName
+			, LECT_DIVI			AS lectDivi
+			, MEMBER_CODE		AS memberCode
+			, MEMBER_NAME		AS memberName
+			, MEMBER_GRADE		AS memberGrade
+			, MEMBER_NATION		AS memberNation
+			, ABSENT_DATE		AS absentDate
+			, FIRST_YN			AS firstYn
+			, FIRST_SELOR_CODE	AS firstSelorCode
+			, FIRST_SELOR_NAME	AS firstSelorName
+			, FIRST_TEL			AS firstTel
+			, FIRST_SNS			AS firstSns
+			, FIRST_TEAM		AS firstTeam
+			, FIRST_ETC			AS firstEtc
+			, FIRST_REASON		AS firstReason
+			, FIRST_FOLUP		AS firstFolup
+			, SECOND_YN			AS secondYn
+			, SECOND_SELOR_CODE	AS secondSelorCode
+			, SECOND_SELOR_NAME	AS secondSelorName
+			, SECOND_TEL		AS secondTel
+			, SECOND_SNS		AS secondSns
+			, SECOND_TEAM		AS secondTeam
+			, SECOND_ETC		AS secondEtc
+			, SECOND_REASON		AS secondReason
+			, SECOND_FOLUP		AS secondFolup
+		FROM
+			TB_LCMS_ABSENT_CONSULT
+		WHERE
+			ABSENT_SEQ = #absentSeq#
+	]]>
+	</select>
+	
+	<!-- 관리자 결석자상담 결석자 데이터 조회 -->
+	<select id="AdmClssDAO.selectAdmAbsCounselNew" parameterClass="egovMap" resultClass="absentConsultVO">
+	/* AdmClssDAO.selectAdmAbsCounselNew */
+	<![CDATA[
+		SELECT
+			TLL.LECT_SEQ		AS lectSeq
+			, TLL.LECT_NAME		AS lectName
+			, TLL.LECT_DIVI		AS lectDivi
+			, TLM.MEMBER_CODE	AS memberCode
+			, TLM.NAME			AS memberName
+			, TLM.STEP			AS memberGrade
+			, TLM.NATION		AS memberNation
+			, TLA.ATT_DATE		AS absentDate
+			, T.ATT_RATE		AS attRate
+		FROM
+			(
+				SELECT
+					LECT_SEQ
+					, MEMBER_CODE
+					, ATT_DATE
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					LECT_SEQ, MEMBER_CODE, ATT_DATE
+			) TLA
+			LEFT JOIN TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN(
+				SELECT
+					MEMBER_CODE
+					, LECT_SEQ
+					, ROUND(COUNT(ATTEND)/200*100, 2) AS ATT_RATE
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '1'
+				GROUP BY
+					MEMBER_CODE, LECT_SEQ
+			) T ON TLA.MEMBER_CODE = T.MEMBER_CODE AND TLA.LECT_SEQ = T.LECT_SEQ
+		WHERE
+			TLA.LECT_SEQ = #lectSeq#
+		AND
+			TLA.ATT_DATE = #attDate#
+		AND
+			TLA.MEMBER_CODE = #memberCode#
+	]]>
+	</select>
+	
+	<!-- 관리자 결석자상담 등록 -->
+	<insert id="AdmClssDAO.insertAdmAbsCounselSubmit" parameterClass="absentConsultVO">
+	/* AdmClssDAO.insertAdmAbsCounselSubmit */
+	<![CDATA[
+		INSERT INTO TB_LCMS_ABSENT_CONSULT(
+			LECT_SEQ
+			, LECT_NAME
+			, LECT_DIVI
+			, MEMBER_CODE
+			, MEMBER_NAME
+			, MEMBER_GRADE
+			, MEMBER_NATION
+			, ABSENT_DATE
+			, SECOND_YN
+			, SECOND_SELOR_CODE
+			, SECOND_SELOR_NAME
+			, SECOND_TEL
+			, SECOND_SNS
+			, SECOND_TEAM
+			, SECOND_ETC
+			, SECOND_REASON
+			, SECOND_FOLUP
+		)VALUES(
+			#lectSeq#
+			, #lectName#
+			, #lectDivi#
+			, #memberCode#
+			, #memberName#
+			, #memberGrade#
+			, #memberNation#
+			, #absentDate#
+			, 'Y'
+			, #secondSelorCode#
+			, #secondSelorName#
+			, #secondTel#
+			, #secondSns#
+			, #secondTeam#
+			, #secondEtc#
+			, #secondReason#
+			, #secondFolup#
+		)
+	]]>
+	</insert>
+	
+	<!-- 관리자 결석자상담 수정 -->
+	<update id="AdmClssDAO.updateAdmAbsCounselSubmit" parameterClass="absentConsultVO">
+	/* AdmClssDAO.updateAdmAbsCounselSubmit */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_ABSENT_CONSULT
+		SET
+			SECOND_YN			= 'Y'
+			, SECOND_SELOR_CODE	= #secondSelorCode#
+			, SECOND_SELOR_NAME	= #secondSelorName#
+			, SECOND_TEL		= #secondTel#
+			, SECOND_SNS		= #secondSns#
+			, SECOND_TEAM		= #secondTeam#
+			, SECOND_ETC		= #secondEtc#
+			, SECOND_REASON		= #secondReason#
+			, SECOND_FOLUP		= #secondFolup#
+		WHERE
+			ABSENT_SEQ			= #absentSeq#
+	]]>
+	</update>
+	
+	<select id="AdmClssDAO.admAjaxAbsCounselEtcList" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmClssDAO.admAjaxAbsCounselEtcList */
+	<![CDATA[
+		SELECT
+			TLAE.ETC_SEQ
+			, TLAE.LECT_SEQ
+			, TLAE.MEMBER_CODE
+			, TLM.NAME
+			, TLAE.ATT_DATE
+			, TLAE.ATT_ETC
+			, TLA.ATTACH_SEQ
+			, TLA.BOARD_TYPE
+			, TLA.ORG_FILE_NAME
+			, TLA.REG_FILE_NAME
+		FROM
+			TB_LCMS_ATTEND_ETC TLAE
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLAE.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN(
+				SELECT
+					ATTACH_SEQ
+					, BOARD_SEQ
+					, BOARD_TYPE
+					, ORG_FILE_NAME
+					, REG_FILE_NAME
+				FROM
+					TB_LCMS_ATTACH
+				WHERE
+					BOARD_TYPE = 'ETC'
+			) TLA ON TLAE.ETC_SEQ = TLA.BOARD_SEQ
+		WHERE
+			TLAE.LECT_SEQ = #lectSeq#
+		AND
+			TLAE.MEMBER_CODE = #memberCode#
+	]]>
+	</select>
+	<!-- 결석경고 리스트-->
+	<select id="AdmClssDAO.selectAdmDvsList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmDvsList */
+	<![CDATA[
+		SELECT 
+			LECT_SEQ
+			, LECT_GRADE
+			, LECT_DIVI
+			, LECT_CLASSROOM
+			, NAME
+			, LECT_YEAR
+			, CASE LECT_SEM WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS LECT_SEM
+		FROM 
+			TB_LCMS_LECT TLL, TB_LCMS_MEMBER TLM 
+	]]>
+	<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			LECT_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			LECT_SEM = #searchCondition2#
+		</isNotEmpty>
+	</dynamic>
+	<![CDATA[
+		AND TLL.LECT_CLA_TEA = TLM.MEMBER_CODE
+		ORDER BY LECT_GRADE, LECT_DIVI
+	]]>
+	</select>
+	<!-- 분반표 -->
+	<select id="AdmClssDAO.selectDvsStudent" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmClssDAO.selectDvsStudent */
+	<![CDATA[
+		SELECT
+			A.LECT_SEQ
+			, LECT_GRADE
+			, LECT_DIVI
+			, LECT_CLASSROOM
+			, (SELECT NAME FROM TB_LCMS_MEMBER TLM WHERE TLM.MEMBER_CODE = C.LECT_CLA_TEA) NAME
+			, LECT_YEAR
+			, CASE LECT_SEM WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS LECT_SEM
+			, GROUP_CONCAT(
+				DISTINCT CASE STD_TYPE
+					WHEN '2' THEN
+						CASE (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE)
+							WHEN 1 THEN CONCAT(NAME,'(',IFNULL (NATION,""),', ',IFNULL (GENDER,""), ')')
+						END
+				END
+			) AS TYPE1
+			, GROUP_CONCAT(
+				DISTINCT CASE STD_TYPE
+					WHEN '2' THEN
+						CASE 
+							WHEN (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE) > 1 AND (COMPLE_STA = 0 OR COMPLE_STA = 1) THEN CONCAT(NAME,'(',IFNULL (NATION,""),', ',IFNULL (GENDER,""), ')')
+						END
+				END
+			) AS TYPE2
+			, GROUP_CONCAT(
+				DISTINCT CASE STD_TYPE
+					WHEN '2' THEN
+						CASE 
+							WHEN (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE) > 1 AND COMPLE_STA = 2 THEN CONCAT(NAME,'(',IFNULL (NATION,""),', ',IFNULL (GENDER,""), ')')
+						END
+				END
+			) AS TYPE3
+			, GROUP_CONCAT(
+				DISTINCT CASE STD_TYPE
+					WHEN '1' THEN
+							CASE (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE)
+								WHEN 1 THEN CONCAT(NAME,'(',IFNULL (NATION,""),', ',IFNULL (GENDER,""), ')')
+							END
+				END
+			) AS TYPE4
+			, GROUP_CONCAT(
+				DISTINCT CASE STD_TYPE
+					WHEN '1' THEN
+						CASE 
+							WHEN (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE) > 1 THEN CONCAT(NAME,'(',IFNULL (NATION,""),', ',IFNULL (GENDER,""), ')')
+						END
+				END
+			) AS TYPE5
+			, GROUP_CONCAT(
+				DISTINCT CASE STD_TYPE
+					WHEN '3' THEN CONCAT(NAME,'(',IFNULL (NATION,""),', ',IFNULL (GENDER,""), ')') 
+					WHEN '4' THEN CONCAT(NAME,'(',IFNULL (NATION,""),', ',IFNULL (GENDER,""), ')') END
+			) AS TYPE6
+			, COUNT(*) CNT
+			,COUNT(DISTINCT CASE STD_TYPE
+					WHEN '2' THEN
+							CASE (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE)
+								WHEN 1 THEN NAME
+							END
+				END) CNT1
+			,COUNT(DISTINCT CASE STD_TYPE
+					WHEN '2' THEN
+						CASE 
+							WHEN (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE) > 1 AND (COMPLE_STA = 0 OR COMPLE_STA = 1) THEN NAME
+						END
+				END) CNT2
+			,COUNT(DISTINCT CASE STD_TYPE
+					WHEN '2' THEN
+						CASE 
+							WHEN (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE) > 1 AND COMPLE_STA = 2 THEN NAME
+						END
+				END) CNT3
+			,COUNT(DISTINCT CASE STD_TYPE
+					WHEN '1' THEN
+							CASE (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE)
+								WHEN 1 THEN NAME
+							END
+				END) CNT4
+			,COUNT(DISTINCT CASE STD_TYPE
+					WHEN '1' THEN
+						CASE 
+							WHEN (SELECT COUNT(*) FROM TB_LCMS_LECT_MAP T1 WHERE T1.MEMBER_CODE = B.MEMBER_CODE) > 1 THEN NAME
+						END
+				END) CNT5
+			,COUNT(DISTINCT CASE STD_TYPE
+					WHEN '3' THEN NAME
+					WHEN '4' THEN NAME END
+					) CNT6
+		FROM
+			TB_LCMS_LECT_MAP A
+		JOIN TB_LCMS_MEMBER B ON A.MEMBER_CODE = B.MEMBER_CODE
+		JOIN TB_LCMS_LECT C ON A.LECT_SEQ = C.LECT_SEQ
+	]]>
+	<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="lectYear">
+			LECT_YEAR = #lectYear#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lectSem">
+			LECT_SEM = #lectSem#
+		</isNotEmpty>
+	</dynamic>
+	<![CDATA[
+		AND 
+			LECT_STATE = 'Y'
+		GROUP BY 
+			A.LECT_SEQ,LECT_GRADE, LECT_DIVI 
+		ORDER BY 
+			LECT_GRADE, LECT_DIVI
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmSatisPrfExcelList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmSatisPrfExcelList */
+	<![CDATA[
+		SELECT DISTINCT
+			TLLT.LECT_TEA
+			, TLM.NAME
+			, IFNULL(ANSW_CNT, 0) AS ANSW_CNT
+	]]>
+	<include refid="adm_satis_prf_list"/>
+	<![CDATA[
+		ORDER BY
+			TLLT.LECT_TEA ASC
+	]]>
+	</select>
+	<select id="AdmClssDAO.selectAdmSatisExcelList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmSatisExcelList */
+	<![CDATA[
+		SELECT	DISTINCT
+			 C.LECT_NAME
+            ,C.LECT_SEQ
+            ,C.LECT_DIVI
+			,A.MEMBER_CODE
+			,B.NAME
+			,B.E_NAME
+			,B.TEL
+			,B.MOBILE
+            
+		FROM		TB_LCMS_LECT_MAP A 
+
+					LEFT JOIN 	TB_LCMS_MEMBER B
+		ON			A.MEMBER_CODE = B.MEMBER_CODE
+			INNER JOIN  TB_LCMS_LECT C
+		ON			A.LECT_SEQ	  = C.LECT_SEQ
+
+		WHERE       C.LECT_YEAR = #searchCondition1# 
+		AND 		C.LECT_SEM  = #searchCondition2#
+		AND			A.MEMBER_CODE NOT IN( SELECT		B.MEMBER_CODE
+									 		FROM		TB_LCMS_SURVEY_ANSW A 
+														LEFT OUTER JOIN TB_LCMS_MEMBER B
+									 		ON			B.MEMBER_CODE = A.MEMBER_CODE
+														INNER JOIN  TB_LCMS_LECT C
+								 			ON			C.LECT_SEQ	= A.LECT_SEQ
+									 		WHERE 		C.LECT_YEAR = #searchCondition1# 
+									 		AND 	   	C.LECT_SEM  = #searchCondition2#
+									)
+
+		ORDER BY C.LECT_SEQ DESC
+
+
+		
+	]]>
+	</select>
+	<select id="AdmClssDAO.selectAdmMeetLogList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmClssDAO.selectAdmMeetLogList */
+	<![CDATA[
+		SELECT
+			TLML.MEET_SEQ
+			, T.LECT_GRADE
+			, T.PROF_NAME
+			, T.LECT_DIVI
+			, TLML.PART_PROF
+			, CASE TLML.SUBMIS_YN
+				WHEN 'Y' THEN '제출'
+				WHEN 'N' THEN '미제출'
+				ELSE '미작성'
+			END AS SUBMIS_YN
+		FROM
+			(
+				SELECT
+					TLL.LECT_GRADE
+					, TLL.LECT_YEAR
+					, TLL.LECT_SEM
+					, TLL.LECT_PROG
+					, GROUP_CONCAT(DISTINCT TLM.NAME) AS PROF_NAME
+					, GROUP_CONCAT(DISTINCT TLL.LECT_DIVI) AS LECT_DIVI
+				FROM
+					TB_LCMS_LECT TLL
+					LEFT JOIN TB_LCMS_LECTTIMETABLE TLLT ON TLL.LECT_SEQ = TLLT.LECT_CODE
+					LEFT JOIN TB_LCMS_MEMBER TLM ON TLLT.LECT_TEA = TLM.MEMBER_CODE
+				WHERE
+					TLL.LECT_STATE = 'Y'
+				AND
+					TLL.LECT_YEAR = #searchCondition1#
+				AND
+					TLL.LECT_SEM = #searchCondition2#
+				AND
+					TLL.LECT_PROG = #searchCondition4#
+				GROUP BY
+					TLL.LECT_YEAR, TLL.LECT_SEM, TLL.LECT_GRADE, TLL.LECT_PROG
+			) T
+			LEFT JOIN (
+				SELECT
+					MEET_SEQ
+					, SUBMIS_YN
+					, GRADE
+					, YEAR
+					, SEMESTER
+					, PART_PROF
+				FROM
+					TB_LCMS_MEET_LOG
+				WHERE
+					WEEK = #searchCondition3#
+				AND
+					PROG = #searchCondition4#
+			) TLML ON T.LECT_GRADE = TLML.GRADE AND T.LECT_YEAR = TLML.YEAR AND T.LECT_SEM = TLML.SEMESTER
+		ORDER BY
+			T.LECT_GRADE ASC
+	]]>
+	</select>
+	
+	<select id="AdmClssDAO.selectAdmMeetLogWeekList" parameterClass="searchVO" resultClass="string">
+	/* AdmClssDAO.selectAdmMeetLogWeekList */
+	<![CDATA[
+		SELECT
+			WEEK
+		FROM
+			TB_LCMS_WEEK
+		WHERE
+			YEAR = #searchCondition1#
+		AND
+			SEMESTER = #searchCondition2#
+		AND
+			PROG = #searchCondition4#
+	]]>
+	</select>
+</sqlMap>

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="lec_attnd_list">
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+		LEFT JOIN
+			(
+				SELECT
+					TLA.MEMBER_CODE
+					, TLA.LECT_SEQ
+					, COUNT(*) TOT_ATTEND
+					, (COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)) AS ATTE_CNT
+					, (COUNT(CASE WHEN ATTEND = '2' THEN 1 END)+TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)) AS ABSE_CNT
+					, ROUND(
+								(
+									(
+										COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+									)/COUNT(*)
+								)*100, 2
+							) AS AVG_ATTE
+				FROM
+					TB_LCMS_ATTEND TLA
+				GROUP BY
+					TLA.MEMBER_CODE, TLA.LECT_SEQ
+			) T ON T.MEMBER_CODE = TLLM.MEMBER_CODE AND T.LECT_SEQ = TLLM.LECT_SEQ
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="menuType">
+			T.LECT_SEQ = #menuType#
+		</isNotEmpty>
+	</sql>
+
+	<!-- 교사 출결 목록Cnt -->
+	<select id="LecAttndDAO.selectLecAttndListCnt" parameterClass="searchVO" resultClass="int">
+	/* LecAttndDAO.selectLecAttndListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="lec_attnd_list"/>
+	</select>
+	
+	<!-- 교사 출결 목록 -->
+	<select id="LecAttndDAO.selectLecAttndList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecAttndDAO.selectLecAttndList */
+	<![CDATA[
+		SELECT
+			TLM.MEMBER_CODE
+			, NAME
+			, ATTE_CNT
+			, ABSE_CNT
+			, ROUND(AVG_ATTE, 2) AS AVG_ATTE
+			, TOT_ATTEND
+	]]>
+	<include refid="lec_attnd_list"/>
+	<![CDATA[
+		ORDER BY
+			NAME ASC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 교사 출결 수업시간 조회 -->
+	<select id="LecAttndDAO.selectLectTime" parameterClass="egovMap" resultClass="egovMap">
+	/* LecAttndDAO.selectLectTime */
+	<![CDATA[
+		SELECT
+			LECT_TBSEQ
+			, LECT_WEEK
+			, LECT_SCLASS
+			, LECT_ECLASS
+			, LECT_GRAMMAR
+			, LECT_TEA
+		FROM
+			TB_LCMS_LECTTIMETABLE
+		WHERE
+			LECT_CODE = #lectSeq#
+		AND
+			LECT_WEEK = (CASE DAYOFWEEK(REPLACE(#attDate#, '-', '')) WHEN '1' THEN '일요일'
+																	 WHEN '2' THEN '월요일'
+																	 WHEN '3' THEN '화요일'
+																	 WHEN '4' THEN '수요일'
+																	 WHEN '5' THEN '목요일'
+																	 WHEN '6' THEN '금요일'
+																	 WHEN '7' THEN '토요일' END)
+		ORDER BY
+			LECT_SCLASS ASC
+	]]>
+	</select>
+	
+	<!-- 교사 출결 학생 조회 -->
+	<select id="LecAttndDAO.selectLecAttndMemberView" parameterClass="egovMap" resultClass="egovMap">
+	/* LecAttndDAO.selectLecAttndMemberView */
+	<![CDATA[
+		SELECT
+			TLM.MEMBER_CODE
+			, NAME
+			, E_NAME
+			, TEL
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+			LEFT JOIN TB_LCMS_MEMBER TLM
+			ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN (
+				SELECT DISTINCT
+					MEMBER_SEQ
+				FROM
+					TB_LCMS_FUNC
+				WHERE
+					FUNC_DATE <= #attDate#
+				AND 
+				(
+					FUNC_STATE = '자퇴' OR FUNC_STATE = '행방불명' OR FUNC_STATE = '퇴학'
+				)
+				AND
+					CONCAT(YEAR, SEMESTER) = (
+						SELECT
+							CONCAT(LECT_YEAR, LECT_SEM)
+						FROM
+							TB_LCMS_LECT
+						WHERE
+							LECT_SEQ = #lectSeq#
+					)
+			) TLF ON TLM.MEMBER_SEQ = TLF.MEMBER_SEQ
+		WHERE
+			TLLM.LECT_SEQ = #lectSeq#
+		AND
+			TLF.MEMBER_SEQ IS NULL
+	]]>
+	</select>
+	
+	<!-- 교사 출결 조회 -->
+	<select id="LecAttndDAO.selectLecAttndView" parameterClass="egovMap" resultClass="attendVO">
+	/* LecAttndDAO.selectLecAttndView */
+	<![CDATA[
+		SELECT
+			ATT_SEQ			AS attSeq
+			, LECT_SEQ		AS lectSeq
+			, MEMBER_CODE	AS memberCode
+			, ATTEND		AS attend
+			, ATT_DATE		AS attDate
+			, ATT_ETC		AS attEtc
+			, LECT_TBSEQ	AS lectTbseq
+			, LECT_CLASS	AS lectClass
+		FROM
+			TB_LCMS_ATTEND
+		WHERE
+			LECT_SEQ = #lectSeq#
+		AND
+			ATT_DATE = #attDate#
+	]]>
+	</select>
+	
+	<!-- 교사 출결 수정 -->
+	<update id="LecAttndDAO.updateLecAttnd" parameterClass="attendVO">
+	/* LecAttndDAO.updateLecAttnd */
+		UPDATE
+			TB_LCMS_ATTEND
+		SET
+			ATTEND = #attend#
+			, ATT_ETC = #attEtc#
+		WHERE
+			ATT_SEQ = #attSeq#
+	</update>
+	
+	<!-- 교사 출결 등록 -->
+	<insert id="LecAttndDAO.insertLecAttnd" parameterClass="attendVO">
+	/* LecAttndDAO.insertLecAttnd */
+		INSERT INTO TB_LCMS_ATTEND(
+			LECT_SEQ
+			, MEMBER_CODE
+			, ATTEND
+			, ATT_DATE
+			, LECT_TBSEQ
+			, LECT_CLASS
+		)VALUES(
+			#lectSeq#
+			, #memberCode#
+			, #attend#
+			, #attDate#
+			, #lectTbseq#
+			, #lectClass#
+		)
+	</insert>
+	
+	<!-- 교사 출결 비고 조회 -->
+	<select id="LecAttndDAO.selectLecAjaxAttndEtc" parameterClass="egovMap" resultClass="egovMap">
+	/* LecAttndDAO.selectLecAjaxAttndEtc */
+	<![CDATA[
+		SELECT
+			ETC_SEQ
+			, LECT_SEQ
+			, MEMBER_CODE
+			, ATT_DATE
+			, ATT_ETC
+		FROM
+			TB_LCMS_ATTEND_ETC
+		WHERE
+			LECT_SEQ = #lectSeq#
+		AND
+			MEMBER_CODE = #memberCode#
+		AND
+			ATT_DATE = #attDate#
+	]]>
+	</select>
+	
+	<!-- 교사 출결 비고 수정 -->
+	<update id="LecAttndDAO.updateLecAjaxAttndEtc" parameterClass="attendVO">
+	/* LecAttndDAO.updateLecAjaxAttndEtc */
+		UPDATE
+			TB_LCMS_ATTEND_ETC
+		SET
+			ATT_ETC = #attEtc#
+		WHERE
+			ETC_SEQ = #etcSeq#
+	</update>
+	
+	<insert id="LecAttndDAO.insertLecAjaxAttndEtc" parameterClass="attendVO">
+	/* LecAttndDAO.insertLecAjaxAttndEtc */
+	<selectKey keyProperty="etcSeq" resultClass="string" type="post">
+		SELECT MAX(ETC_SEQ) FROM TB_LCMS_ATTEND_ETC
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_LCMS_ATTEND_ETC(
+			LECT_SEQ
+			, MEMBER_CODE
+			, ATT_DATE
+			, ATT_ETC
+		)VALUES(
+			#lectSeq#
+			, #memberCode#
+			, #attDate#
+			, #attEtc#
+		)
+	]]>
+	</insert>
+	
+	<select id="LecAttndDAO.lecAjaxAttndEtcList" parameterClass="string" resultClass="egovMap">
+	/* LecAttndDAO.lecAjaxAttndEtcList */
+	<![CDATA[
+		SELECT
+			TLAE.ETC_SEQ
+			, TLAE.LECT_SEQ
+			, TLAE.MEMBER_CODE
+			, TLM.NAME
+			, TLAE.ATT_DATE
+			, TLAE.ATT_ETC
+			, TLA.ATTACH_SEQ
+			, TLA.BOARD_TYPE
+			, TLA.ORG_FILE_NAME
+			, TLA.REG_FILE_NAME
+		FROM
+			TB_LCMS_ATTEND_ETC TLAE
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLAE.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN(
+				SELECT
+					ATTACH_SEQ
+					, BOARD_SEQ
+					, BOARD_TYPE
+					, ORG_FILE_NAME
+					, REG_FILE_NAME
+				FROM
+					TB_LCMS_ATTACH
+				WHERE
+					BOARD_TYPE = 'ETC'
+			) TLA ON TLAE.ETC_SEQ = TLA.BOARD_SEQ
+		WHERE
+			TLAE.LECT_SEQ = #lectSeq#
+	]]>
+	</select>
+	
+</sqlMap>

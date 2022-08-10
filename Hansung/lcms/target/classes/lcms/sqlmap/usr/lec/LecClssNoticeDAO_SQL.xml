@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 강의공지 리스트 -->
+	<select id="LecClssNoticeDAO.LecClssNoticeList" parameterClass="lecClssNoticeVO" resultClass="egovMap">
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT LCNOTI_SEQ
+				     , LECT_CODE
+				     , LCNOTI_GUBUN
+				     , LCNOTI_WRITER
+				     , DATE_FORMAT(STR_TO_DATE(lcnoti_date, '%Y-%m-%d'),'%Y-%m-%d') LCNOTI_DATE
+				     , LCNOTI_HIT
+				     , LCNOTI_CONTENT
+				     , LCNOTI_TITLE
+				     , LCNOTI_TOP
+				     ,(SELECT COUNT(*) FROM TB_LCMS_ATTACH WHERE BOARD_TYPE = 'LEC' AND BOARD_SEQ = LCNOTI_SEQ) FILECOUNT
+				  FROM 
+				  	TB_LCMS_CLSS_NOTICE
+		      ORDER BY LCNOTI_TOP desc, LCNOTI_SEQ DESC, LCNOTI_DATE DESC 
+			)a
+				  WHERE 
+				  	LECT_CODE = #lectCode#
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 강의공지 cnt -->
+	<select id="LecClssNoticeDAO.LecClssNoticeListCnt" parameterClass="lecClssNoticeVO" resultClass="int">
+	<![CDATA[
+		SELECT 
+			COUNT(*) AS TOTALCNT
+		FROM 
+			TB_LCMS_CLSS_NOTICE
+		WHERE 
+			LECT_CODE = #lectCode#
+	]]>	
+	</select>
+	
+	<!-- 강의공지 상세보기 -->
+	<select id="LecClssNoticeDAO.selectLcnotiOne" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+	    SELECT 
+	    	LCNOTI_SEQ
+			 , LECT_CODE
+			 , LCNOTI_GUBUN
+			 , LCNOTI_WRITER
+			 , DATE_FORMAT(LCNOTI_DATE,'%Y.%m.%d %H:%i:%S')LCNOTI_DATE
+			 , LCNOTI_HIT
+			 , LCNOTI_CONTENT
+			 , LCNOTI_TITLE
+			 , LCNOTI_TOP
+	    FROM TB_LCMS_CLSS_NOTICE 
+	   WHERE LCNOTI_SEQ = #lcnotiSeq#
+	]]>	
+	</select>
+	
+    <!-- 조회수 증가 -->
+   	<update id="LecClssNoticeDAO.updateLcnotiHits" parameterClass="string">
+	<![CDATA[
+		UPDATE TB_LCMS_CLSS_NOTICE
+		   SET LCNOTI_HIT = COALESCE(LCNOTI_HIT+1,'1')
+		WHERE
+			LCNOTI_SEQ = #lcnotiSeq#
+	]]>
+    </update>
+	
+	<!-- 강의공지 등록 -->
+	<insert id="LecClssNoticeDAO.lecClssAddNoti" parameterClass="lecClssNoticeVO">
+		<selectKey keyProperty="lcnotiSeq" resultClass="string" type="post">
+			SELECT MAX(LCNOTI_SEQ) FROM TB_LCMS_CLSS_NOTICE
+		</selectKey>
+		<![CDATA[
+			INSERT INTO TB_LCMS_CLSS_NOTICE(
+				LECT_CODE
+				,LCNOTI_GUBUN
+				,LCNOTI_WRITER
+				,LCNOTI_DATE
+				,LCNOTI_HIT
+				,LCNOTI_CONTENT
+				,LCNOTI_TITLE
+				,LCNOTI_TOP
+			)VALUES(
+				#lectCode#
+				,#lcnotiGubun#
+				,#lcnotiWriter#
+				,NOW()
+				,0
+				,#lcnotiContent#
+				,#lcnotiTitle#
+				,#lcnotiTop#
+			) 
+		]]>	
+	</insert>
+	
+	<!-- 강의공지 수정 -->
+	<update id="LecClssNoticeDAO.lecClssEditNoti" parameterClass="lecClssNoticeVO">
+		UPDATE
+			TB_LCMS_CLSS_NOTICE
+		SET 
+			LCNOTI_GUBUN		=	#lcnotiGubun#
+			,LCNOTI_CONTENT	=	#lcnotiContent#
+			,LCNOTI_TITLE		=	#lcnotiTitle#
+			,LCNOTI_TOP		=	#lcnotiTop#
+		WHERE 
+			LCNOTI_SEQ = #lcnotiSeq#
+	</update>
+	
+<!-- 	강의공지 삭제 -->
+	<delete id="LecClssNoticeDAO.deletelecNotice" parameterClass="String">
+		DELETE FROM TB_LCMS_CLSS_NOTICE WHERE lcnoti_seq = #lcnotiSeq#
+	</delete>
+		<!-- 조회 -->
+	<select id="LecClssNoticeDAO.selectlecClssNotice" parameterClass="string" resultClass="lecClssNoticeVO">
+	/* LecClssNoticeDAO.selectlecClssNotice */
+	<![CDATA[
+		SELECT 
+			LCNOTI_SEQ				as	lcnotiSeq
+			, LECT_CODE				as	lectCode
+			, LCNOTI_GUBUN			as	lcnotiGubun
+			, LCNOTI_WRITER			as	lcnotiWriter
+			, LCNOTI_DATE			as	lcnotiDate				
+			, LCNOTI_HIT			as	lcnotiHit
+			, LCNOTI_CONTENT		as	lcnotiContent
+			, LCNOTI_TITLE			as	lcnotiTitle
+			, LCNOTI_TOP			as	lcnotiTop
+		FROM 
+			TB_LCMS_CLSS_NOTICE
+		WHERE
+			LCNOTI_SEQ = #lcnotiSeq#
+	]]>
+	</select>
+	
+	<!-- 강의공지 첨부파일 리스트 -->
+	<select id="LecClssNoticeDAO.selectAttachListFiles" parameterClass="searchVO" resultClass="egovMap">
+	<![CDATA[
+		SELECT 
+			A.BOARD_SEQ 
+			,B.* 
+		FROM 
+			TB_LCMS_ATTACH A
+			, TB_LCMS_CLSS_NOTICE B 
+		WHERE
+			BOARD_TYPE='LEC' 
+		AND 
+			A.BOARD_SEQ = B.LCNOTI_SEQ 
+		AND
+			A.BOARD_TYPE = 'LEC'
+	]]>	
+	</select>
+	
+	<!-- 교사 수업 학생평가 목록 -->
+	<select id="LecClssNoticeDAO.selectLecClssAppraiseList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssNoticeDAO.selectLecClssAppraiseList */
+	<![CDATA[
+		SELECT
+			EVAL_SEQ
+			, TLM.MEMBER_CODE
+			, NAME
+			, E_NAME
+			, NATION
+			, TEL
+			, CASE WHEN EVAL_SEQ IS NULL THEN '' ELSE '완료' END AS EVAL_YN
+			, EVAL_DATE
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+		LEFT JOIN
+			TB_LCMS_EVAL TLE ON TLLM.LECT_SEQ = TLE.LECT_SEQ AND TLM.MEMBER_CODE = TLE.MEMBER_CODE
+		WHERE
+			TLLM.LECT_SEQ = #searchLecture#
+	]]>
+	</select>
+	
+	<!-- 교사 수업 학생평가 통계 -->
+	<select id="LecClssNoticeDAO.selectLecClssAppraiseStat" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssNoticeDAO.selectLecClssAppraiseStat */
+	<![CDATA[
+		SELECT
+			COUNT(*) AS TOT_CNT
+			, COUNT(CASE WHEN EVAL_SEQ IS NOT NULL THEN 1 END) PRO_CNT
+			, COUNT(CASE WHEN EVAL_SEQ IS NULL THEN 1 END) NPRO_CNT
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_EVAL TLE ON TLLM.LECT_SEQ = TLE.LECT_SEQ AND TLLM.MEMBER_CODE = TLE.MEMBER_CODE
+		WHERE
+			TLLM.LECT_SEQ = #searchLecture#
+	]]>
+	</select>
+	
+	<!-- 교사 수업 학생평가 조회 -->
+	<select id="LecClssNoticeDAO.selectLecClssAppraiseView" parameterClass="string" resultClass="evalVO">
+	/* LecClssNoticeDAO.selectLecClssAppraiseView */
+	<![CDATA[
+		SELECT
+			EVAL_SEQ AS evalSeq
+			, TLE.MEMBER_CODE AS memberCode
+			, CONCAT(EVAL_DATE, (CASE DAYOFWEEK(EVAL_DATE) WHEN '1' THEN '(일)'
+												  WHEN '2' THEN '(월)'
+												  WHEN '3' THEN '(화)'
+												  WHEN '4' THEN '(수)'
+												  WHEN '5' THEN '(목)'
+												  WHEN '6' THEN '(금)'
+												  WHEN '7' THEN '(토)' END)) AS evalDate
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = PROF_CODE
+			) AS profCode
+			, NAME		AS name
+			, E_NAME	AS eName
+			, STATUS	AS status
+			, STEP		AS step
+			, NATION	AS nation
+			, CONTENT	AS content
+		FROM
+			TB_LCMS_EVAL TLE
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLE.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			EVAL_SEQ = #evalSeq#
+	]]>
+	</select>
+
+	<!-- 교사 수업 학생평가 조회 -->
+	<select id="LecClssNoticeDAO.selectLecClssAppraiseOne" parameterClass="string" resultClass="evalVO">
+	/* LecClssNoticeDAO.selectLecClssAppraiseOne */
+	<![CDATA[
+		SELECT
+			EVAL_SEQ			AS evalSeq
+			, TLE.MEMBER_CODE	AS memberCode
+			, EVAL_DATE			AS evalDate
+			, PROF_CODE 		AS profCode
+			, NAME				AS name
+			, E_NAME			AS eName
+			, STATUS			AS status
+			, STEP				AS step
+			, NATION			AS nation
+			, CONTENT			AS content
+		FROM
+			TB_LCMS_EVAL TLE
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLE.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			EVAL_SEQ = #evalSeq#
+	]]>
+	</select>
+	
+	<!-- 교수 수업 학생평가 등록 -->
+	<insert id="LecClssNoticeDAO.insertLecClssAppraise" parameterClass="evalVO">
+	<selectKey keyProperty="evalSeq" resultClass="string" type="post">
+		SELECT MAX(EVAL_SEQ) FROM TB_LCMS_EVAL
+	</selectKey>
+	/* LecClssNoticeDAO.insertLecClssAppraise */
+		INSERT INTO TB_LCMS_EVAL(
+			LECT_SEQ
+			, EVAL_DATE
+			, MEMBER_CODE
+			, PROF_CODE
+			, CONTENT
+		)VALUES(
+			#lectSeq#
+			, #evalDate#
+			, #memberCode#
+			, #profCode#
+			, #content#
+		)
+	</insert>
+	
+	<update id="LecClssNoticeDAO.updateLecClssAppraise" parameterClass="evalVO">
+	/* LecClssNoticeDAO.updateLecClssAppraise */
+		UPDATE
+			TB_LCMS_EVAL
+		SET
+			EVAL_DATE = #evalDate#
+			, MEMBER_CODE = #memberCode#
+			, PROF_CODE = #profCode#
+			, CONTENT = #content#
+		WHERE
+			EVAL_SEQ = #evalSeq#
+	</update>
+
+</sqlMap>

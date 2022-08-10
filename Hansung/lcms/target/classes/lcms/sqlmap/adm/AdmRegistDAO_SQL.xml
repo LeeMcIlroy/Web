@@ -1,0 +1,909 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="adm_acco_list">
+		FROM
+			TB_LCMS_ENTER TLE
+			LEFT JOIN ACCOUNT_CODE AC
+			ON TLE.ENTER_NUM = AC.STUDENT_CODE OR TLE.ENTER_CODE = AC.STUDENT_CODE
+		WHERE
+			ENTER_STATUS = '2'
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			((ENTER_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			ENTER_SEME = #searchCondition2#)
+		</isNotEmpty>
+		<isNotEmpty prepend="OR" property="searchCondition1">
+			(DELAY_ENTR_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			DELAY_ENTR_SEME = #searchCondition2#))
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="menuType">
+			<isEqual property="menuType" compareValue="1">
+				AC.BANK_ACCOUNT IS NULL
+			</isEqual>
+			<isEqual property="menuType" compareValue="2">
+				AC.BANK_ACCOUNT IS NOT NULL
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 업무담당자 가상계좌발급 목록Cnt -->
+	<select id="AdmRegistDAO.selectAdmAccoListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmRegistDAO.selectAdmAccoListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_acco_list"/>
+	</select>
+	
+	<!-- 업무담당자 가상계좌발급 목록 -->
+	<select id="AdmRegistDAO.selectAdmAccoList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmAccoList */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, TLE.ENTER_NUM
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, ENTER_DATE
+			, IFNULL(AC.BANK_ACCOUNT, '미부여') AS BANK_ACCOUNT
+			, DATE_FORMAT(AC.START_DATE, '%Y-%m-%d %H:%i') AS START_DATE
+	]]>
+	<include refid="adm_acco_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 가상계좌 발급처리 -->
+	<update id="AdmRegistDAO.updateAdmAccoSave" parameterClass="string">
+	/* AdmRegistDAO.updateAdmAccoSave */
+		UPDATE
+			ACCOUNT_CODE
+		SET
+			STUDENT_CODE = (
+								SELECT
+									CASE WHEN ENTER_CODE IS NULL OR ENTER_CODE = '' THEN ENTER_NUM ELSE ENTER_CODE END
+								FROM
+									TB_LCMS_ENTER
+								WHERE
+									ENTER_SEQ = #seq#
+							)
+			, START_DATE = SYSDATE()
+			, INI_VALUE = '1'
+		WHERE
+			STUDENT_CODE = ''
+		LIMIT
+			1
+	</update>
+
+	<!-- 업무담당자 가상계좌 발급처리 -->
+	<update id="AdmRegistDAO.updateAdmAccoSaveOne" parameterClass="string">
+	/* AdmRegistDAO.updateAdmAccoSaveOne */
+		UPDATE
+			ACCOUNT_CODE
+		SET
+			STUDENT_CODE = #studentCode#
+			, START_DATE = SYSDATE()
+		WHERE
+			STUDENT_CODE = ''
+		LIMIT
+			1
+	</update>
+	
+	<select id="AdmRegistDAO.selectAdmAccount" parameterClass="string" resultClass="string">
+	/* AdmRegistDAO.selectAdmAccount */
+	<![CDATA[
+		SELECT
+			BANK_ACCOUNT
+		FROM
+			ACCOUNT_CODE
+		WHERE
+			STUDENT_CODE = #studentCode#
+	]]>
+	</select>
+	
+	<sql id="adm_tui_list">
+		FROM
+			TB_LCMS_ENTER TLE 
+		LEFT JOIN
+			(
+				SELECT
+					*
+				FROM
+					TB_LCMS_REG_FEE
+				WHERE
+					CONCAT(REG_ST_YEAR, REG_ST_SEME) <![CDATA[<=]]> CONCAT(#searchCondition1#, #searchCondition2#)
+				AND
+					CASE WHEN REG_RG_SEME+REG_ST_SEME-1 > 4 THEN CONCAT(REG_ST_YEAR+1, REG_RG_SEME+REG_ST_SEME-5)
+															ELSE CONCAT(REG_ST_YEAR, REG_RG_SEME+REG_ST_SEME-1) END >= CONCAT(#searchCondition1#, #searchCondition2#)
+			) TLRF ON TLRF.ENTER_NUM = TLE.ENTER_NUM OR TLRF.MEMBER_CODE = TLE.ENTER_CODE
+		LEFT JOIN
+			ACCOUNT_CODE AC ON TLE.ENTER_NUM = AC.STUDENT_CODE OR TLE.ENTER_CODE = AC.STUDENT_CODE
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			((ENTER_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			ENTER_SEME = #searchCondition2#)
+		</isNotEmpty>
+		<isNotEmpty prepend="OR" property="searchCondition1">
+			(DELAY_ENTR_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			DELAY_ENTR_SEME = #searchCondition2#))
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchWord">
+			CONCAT(TLE.ENTER_CODE, TLE.ENTER_NAME, TLE.ENTER_NATION) LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+			<!-- AND ENTER_STATUS = '2' -->
+		
+		
+	</sql>
+	
+	<!-- 업무담당자 등록금고지 목록Cnt -->
+	<select id="AdmRegistDAO.selectAdmTuinotiListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmRegistDAO.selectAdmTuinotiListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_tui_list"/>
+	</select>
+
+	<!-- 업무담당자 등록금고지 목록 -->
+	<select id="AdmRegistDAO.selectAdmTuinotiList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmTuinotiList */
+	<![CDATA[
+		SELECT
+			REG_SEQ
+			, TLE.ENTER_NUM
+			, TLE.ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, REG_FEE
+			, ENTER_FEE
+			, REG_RG_SEME
+			, CASE DELAY_TUIN_YN 
+				WHEN 'Y' THEN
+					CASE WHEN REG_RG_SEME+DELAY_ENTR_SEME-1 > 4 THEN CONCAT(DELAY_ENTR_YEAR+1,'년 ',(
+																							CASE REG_RG_SEME+DELAY_ENTR_SEME-5 WHEN 1 THEN '봄학기'
+																															   WHEN 2 THEN '여름학기'
+																															   WHEN 3 THEN '가을학기'
+																															   WHEN 4 THEN '겨울학기' END 
+																						),'까지',' (',REG_RG_SEME,')')
+																ELSE CONCAT(DELAY_ENTR_YEAR,'년 ',(
+																							CASE REG_RG_SEME+DELAY_ENTR_SEME-1 WHEN 1 THEN '봄학기'
+																															   WHEN 2 THEN '여름학기'
+																															   WHEN 3 THEN '가을학기'
+																															   WHEN 4 THEN '겨울학기' END 
+																						),'까지',' (',REG_RG_SEME,')') END
+				ELSE
+					CASE WHEN REG_RG_SEME+REG_ST_SEME-1 > 4 THEN CONCAT(REG_ST_YEAR+1,'년 ',(
+																							CASE REG_RG_SEME+REG_ST_SEME-5 WHEN 1 THEN '봄학기'
+																														   WHEN 2 THEN '여름학기'
+																														   WHEN 3 THEN '가을학기'
+																														   WHEN 4 THEN '겨울학기' END 
+																						),'까지',' (',REG_RG_SEME,')')
+															ELSE CONCAT(REG_ST_YEAR,'년 ',(
+																							CASE REG_RG_SEME+REG_ST_SEME-1 WHEN 1 THEN '봄학기'
+																														   WHEN 2 THEN '여름학기'
+																														   WHEN 3 THEN '가을학기'
+																														   WHEN 4 THEN '겨울학기' END 
+																						),'까지',' (',REG_RG_SEME,')') END
+			END AS REG_RG_YEAR
+			, IFNULL(CONCAT(SUBSTR(AC.BANK_ACCOUNT,1,3),'-',SUBSTR(AC.BANK_ACCOUNT,4,6),'-',SUBSTR(AC.BANK_ACCOUNT,10,2),'-',SUBSTR(AC.BANK_ACCOUNT,12)), '미부여') AS BANK_ACCOUNT
+			, INSU_FEE
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE_NM
+			, ENTER_STD_TYPE
+			, CASE WHEN REG_SEQ IS NOT NULL AND (REG_ST_YEAR != #searchCondition1# OR REG_ST_SEME != #searchCondition2#) THEN 'Y' ELSE 'N' END AS PAY_YN
+			, CASE DELAY_YN
+				WHEN 'Y' THEN CASE WHEN CONCAT(DELAY_ENTR_YEAR, DELAY_ENTR_SEME) = CONCAT(#searchCondition1#, #searchCondition2#) THEN '연기후입학' ELSE '입학연기' END
+			END AS DELAY_STATUS
+			, ADD_YN
+	]]>
+	<include refid="adm_tui_list"/>
+	<![CDATA[
+		ORDER BY
+			TLRF.ENTER_NUM DESC, TLRF.ADD_YN ASC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<select id="AdmRegistDAO.selectAdmTuinotiModify" parameterClass="string" resultClass="regFeeVO">
+	/* AdmRegistDAO.selectAdmTuinotiModify */
+	<![CDATA[
+		SELECT
+			REG_SEQ					AS regSeq
+			, ENTER_NAME			AS enterName
+			, TLE.ENTER_CODE		AS memberCode
+			, TLE.ENTER_CODE		AS enterCode
+			, TLE.ENTER_NUM			AS enterNum
+			, ENTER_YEAR			AS enterYear
+			, CASE ENTER_SEME WHEN '1' THEN '봄학기'
+							  WHEN '2' THEN '여름학기'
+							  WHEN '3' THEN '가을학기'
+							  WHEN '4' THEN '겨울학기' END AS enterSeme
+			, ENTER_NATION			AS enterNation
+			, ENTER_BIRTH			AS enterBirth
+			, TLRF.REG_DATE			AS regDate
+			, REG_ST_YEAR			AS regStYear
+			, REG_ST_SEME			AS regStSeme
+			, REG_RG_SEME			AS regRgSeme
+			, FORMAT(REG_FEE, 0)	AS regFee
+			, FORMAT(ENTER_FEE, 0)	AS enterFee
+			, REG_SE_DATE			AS regSeDate
+			, FORMAT(INSU_FEE, 0)	AS insuFee
+			, REG_ST_DATE			AS regStDate
+			, REG_ED_DATE			AS regEdDate
+			, ADD_YN				AS addYn
+		FROM
+			TB_LCMS_REG_FEE TLRF
+		LEFT JOIN
+			TB_LCMS_ENTER TLE ON TLRF.ENTER_NUM = TLE.ENTER_NUM
+			AND CASE
+					WHEN TLE.ENTER_CODE != '' OR TLE.ENTER_CODE IS NOT NULL THEN TLRF.MEMBER_CODE = TLE.ENTER_CODE
+					ELSE 1=1
+				END
+		WHERE
+			REG_SEQ = #regSeq#
+	]]>
+	</select>
+	
+	<select id="AdmRegistDAO.selectAdmTuinotiEnter" parameterClass="string" resultClass="regFeeVO">
+	/* AdmRegistDAO.selectAdmTuinotiEnter */
+	<![CDATA[
+		SELECT
+			ENTER_NAME			AS enterName
+			, ENTER_CODE		AS memberCode
+			, ENTER_CODE		AS enterCode
+			, ENTER_NUM			AS enterNum
+			, ENTER_YEAR		AS enterYear
+			, CASE ENTER_SEME WHEN '1' THEN '봄학기'
+							  WHEN '2' THEN '여름학기'
+							  WHEN '3' THEN '가을학기'
+							  WHEN '4' THEN '겨울학기' END AS enterSeme
+			, ENTER_NATION			AS enterNation
+			, ENTER_BIRTH			AS enterBirth
+		FROM
+			TB_LCMS_ENTER
+		WHERE
+			ENTER_NUM = #enterNum#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 등록금 고지서 인쇄 -->
+	<select id="AdmRegistDAO.selectTuinotiPopList" parameterClass="egovMap" resultClass="egovMap">
+	/* AdmRegistDAO.selectTuinotiPopList */
+	<![CDATA[
+		SELECT
+			ENTER_NAME
+			, ENTER_FEE
+			, REG_FEE
+			, REG_RG_SEME
+			, IFNULL(CONCAT(SUBSTR(AC.BANK_ACCOUNT,1,3),'-',SUBSTR(AC.BANK_ACCOUNT,4,6),'-',SUBSTR(AC.BANK_ACCOUNT,10,2),'-',SUBSTR(AC.BANK_ACCOUNT,12)), '미부여') AS BANK_ACCOUNT
+			, DATE_FORMAT(REGIST_S, '%Y년 %m월 %d일') AS REGIST_S
+			, DATE_FORMAT(REGIST_E, '%Y년 %m월 %d일') AS REGIST_E
+			, INSU_FEE
+			, REG_ST_DATE
+			, REG_ED_DATE
+			, DATE_FORMAT(ENTER_REGI_S, '%Y.%m.%d') AS ENTER_REGI_S
+			, DATE_FORMAT(ENTER_REGI_E, '%Y.%m.%d') AS ENTER_REGI_E
+		FROM
+			TB_LCMS_REG_FEE TLRF LEFT JOIN TB_LCMS_ENTER TLE
+			ON TLRF.ENTER_NUM = TLE.ENTER_NUM
+			LEFT JOIN TB_LCMS_SEME TLS
+			ON TLRF.REG_ST_YEAR = TLS.SEM_YEAR AND TLRF.REG_ST_SEME = TLS.SEMESTER
+			LEFT JOIN ACCOUNT_CODE AC
+			ON TLE.ENTER_NUM = AC.STUDENT_CODE OR TLE.ENTER_CODE = AC.STUDENT_CODE
+		WHERE
+			REG_SEQ
+	]]>
+		<iterate prepend="IN" open="(" close=")" conjunction="," property="regSeqList">
+			#regSeqList[]#
+		</iterate>
+	</select>
+	
+	<!-- 업무담당자 등록금고지 엑셀다운로드 -->
+	<select id="AdmRegistDAO.selectAdmTuinotiExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmTuinotiExcel */
+	<![CDATA[
+		SELECT
+			REG_SEQ
+			, TLE.ENTER_NUM
+			, TLE.ENTER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, REG_FEE
+			, ENTER_FEE
+			, REG_RG_SEME
+			, CASE WHEN REG_RG_SEME+REG_ST_SEME-1 > 4 THEN CONCAT(REG_ST_YEAR+1,'년 ',(
+																						CASE REG_RG_SEME+REG_ST_SEME-5 WHEN 1 THEN '봄학기'
+																													   WHEN 2 THEN '여름학기'
+																													   WHEN 3 THEN '가을학기'
+																													   WHEN 4 THEN '겨울학기' END 
+																					),'까지',' (',REG_RG_SEME,')')
+													  ELSE CONCAT(REG_ST_YEAR,'년 ',(
+																						CASE REG_RG_SEME+REG_ST_SEME-1 WHEN 1 THEN '봄학기'
+																													   WHEN 2 THEN '여름학기'
+																													   WHEN 3 THEN '가을학기'
+																													   WHEN 4 THEN '겨울학기' END 
+																					),'까지',' (',REG_RG_SEME,')') END AS REG_RG_YEAR
+			, IFNULL(CONCAT(SUBSTR(AC.BANK_ACCOUNT,1,3),'-',SUBSTR(AC.BANK_ACCOUNT,4,6),'-',SUBSTR(AC.BANK_ACCOUNT,10,2),'-',SUBSTR(AC.BANK_ACCOUNT,12)), '미부여') AS BANK_ACCOUNT
+			, INSU_FEE
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE_NM
+			, ENTER_STD_TYPE
+			, CASE WHEN REG_SEQ IS NOT NULL AND (REG_ST_YEAR != #searchCondition1# OR REG_ST_SEME != #searchCondition2#) THEN 'Y' ELSE 'N' END AS PAY_YN
+			, CASE DELAY_YN
+				WHEN 'Y' THEN CASE WHEN CONCAT(DELAY_ENTR_YEAR, DELAY_ENTR_SEME) = CONCAT(#searchCondition1#, #searchCondition2#) THEN '연기후입학' ELSE '입학연기' END
+			END AS DELAY_STATUS
+			, ADD_YN
+	]]>
+	<include refid="adm_tui_list"/>
+	<![CDATA[
+		ORDER BY
+			TLRF.ENTER_NUM DESC, TLRF.ADD_YN ASC
+	]]>
+	</select>
+	
+	<!-- 업무담당자 등록금고지 신청자 조회 -->
+	<select id="AdmRegistDAO.selectAdmAjaxEnterList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmAjaxEnterList */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, ENTER_YEAR
+			, CASE ENTER_SEME WHEN '1' THEN '봄학기'
+							  WHEN '2' THEN '여름학기'
+							  WHEN '3' THEN '가을학기'
+							  WHEN '4' THEN '겨울학기' END AS ENTER_SEME_NM
+			, ENTER_SEME
+			, TLE.ENTER_NUM
+			, ENTER_CODE AS MEMBER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, ENTER_STD_TYPE
+			, ENTER_TEL
+			, ENTER_EMAIL
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, AC.BANK_ACCOUNT
+		FROM
+			TB_LCMS_ENTER TLE LEFT JOIN ACCOUNT_CODE AC
+			ON TLE.ENTER_NUM = AC.STUDENT_CODE OR TLE.ENTER_CODE = AC.STUDENT_CODE
+		WHERE
+			ENTER_TYPE = '1'
+	]]>
+	<isNotEmpty prepend="AND" property="searchWord">
+		CONCAT(ENTER_CODE, ENTER_NAME) LIKE CONCAT('%', #searchWord#, '%')
+	</isNotEmpty>
+	</select>
+
+	<!-- 업무담당자 등록금고지 신청자 조회 -->
+	<select id="AdmRegistDAO.selectAdmAjaxStdList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmAjaxStdList */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, ENTER_YEAR
+			, CASE ENTER_SEME WHEN '1' THEN '봄학기'
+							  WHEN '2' THEN '여름학기'
+							  WHEN '3' THEN '가을학기'
+							  WHEN '4' THEN '겨울학기' END AS ENTER_SEME_NM
+			, ENTER_SEME
+			, TLE.ENTER_NUM
+			, ENTER_CODE AS MEMBER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, AC.BANK_ACCOUNT
+			, ENTER_E_NAME
+			, ENTER_GENDER
+		FROM
+			TB_LCMS_ENTER TLE LEFT JOIN ACCOUNT_CODE AC
+			ON TLE.ENTER_NUM = AC.STUDENT_CODE OR TLE.ENTER_CODE = AC.STUDENT_CODE
+		WHERE
+			ENTER_STATUS = '2'
+	]]>
+	<isNotEmpty prepend="AND" property="searchWord">
+		CONCAT(ENTER_CODE, ENTER_NAME) LIKE CONCAT('%', #searchWord#, '%')
+	</isNotEmpty>
+	</select>
+	
+	<!-- 업무담당자 등록금고지 등록 -->
+	<insert id="AdmRegistDAO.insertAdmTuinoti" parameterClass="regFeeVO">
+	/* AdmRegistDAO.insertAdmTuinoti */
+		INSERT INTO TB_LCMS_REG_FEE(
+			MEMBER_CODE
+			, REG_FEE
+			<isNotEmpty property="enterFee">
+			, ENTER_FEE
+			</isNotEmpty>
+			, REG_DATE
+			<isNotEmpty property="regSeDate">
+			, REG_SE_DATE
+			</isNotEmpty>
+			, REG_ST_YEAR
+			, REG_ST_SEME
+			, REG_RG_SEME
+			<isNotEmpty property="insuFee">
+			, INSU_FEE
+			</isNotEmpty>
+			, REG_ST_DATE
+			, REG_ED_DATE
+			, ENTER_NUM
+			<isNotEmpty property="addYn">
+			, ADD_YN
+			</isNotEmpty>
+		)VALUES(
+			#enterCode#
+			, #regFee#
+			<isNotEmpty property="enterFee">
+			, #enterFee#
+			</isNotEmpty>
+			, #regDate#
+			<isNotEmpty property="regSeDate">
+			, #regSeDate#
+			</isNotEmpty>
+			, #regStYear#
+			, #regStSeme#
+			, #regRgSeme#
+			<isNotEmpty property="insuFee">
+			, #insuFee#
+			</isNotEmpty>
+			, #regStDate#
+			, #regEdDate#
+			, #enterNum#
+			<isNotEmpty property="addYn">
+			, #addYn#
+			</isNotEmpty>
+		)
+	</insert>
+	
+	<update id="AdmRegistDAO.updateAdmTuinoti" parameterClass="regFeeVO">
+	/* AdmRegistDAO.updateAdmTuinoti */
+		UPDATE
+			TB_LCMS_REG_FEE
+		SET
+			REG_DATE		= #regDate#
+			, REG_FEE		= #regFee#
+			, REG_ST_YEAR	= #regStYear#
+			, REG_ST_SEME	= #regStSeme#
+			, REG_RG_SEME	= #regRgSeme#
+		<isNotEmpty property="enterFee">
+			, ENTER_FEE		= #enterFee#
+		</isNotEmpty>
+		<isNotEmpty property="regSeDate">
+			, REG_SE_DATE	= #regSeDate#
+		</isNotEmpty>
+		<isNotEmpty property="insuFee">
+			, INSU_FEE		= #insuFee#
+		</isNotEmpty>
+			, REG_ST_DATE	= #regStDate#
+			, REG_ED_DATE	= #regEdDate#
+			, ENTER_NUM		= #enterNum#
+		WHERE
+			REG_SEQ = #regSeq#
+	</update>
+	
+	<sql id="adm_pay_list">
+		FROM
+			TB_LCMS_REG_FEE TLRF 
+		LEFT JOIN
+			TB_LCMS_ENTER TLE ON TLRF.ENTER_NUM = TLE.ENTER_NUM
+		LEFT JOIN
+			ACCOUNT_CODE AC ON TLE.ENTER_NUM = AC.STUDENT_CODE OR TLE.ENTER_CODE = AC.STUDENT_CODE
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLRF.REG_ST_YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			TLRF.REG_ST_SEME = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="startDate">
+			PAY_DATE >= #startDate#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			PAY_DATE <![CDATA[<=]]> #endDate#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition3">
+			ENTER_TYPE = #searchCondition3#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition4">
+			<isEqual property="searchCondition4" compareValue="1">
+				((REG_FEE+ENTER_FEE+INSU_FEE)-PAY_FEE) <![CDATA[<=]]> 0
+			</isEqual>
+			<isEqual property="searchCondition4" compareValue="2">
+				((REG_FEE+ENTER_FEE+INSU_FEE)-PAY_FEE) > 0
+			</isEqual>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchWord">
+			CONCAT(TLE.ENTER_CODE, TLE.ENTER_NAME, TLE.ENTER_NATION) LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 업무담당자 등록금납부 목록Cnt -->
+	<select id="AdmRegistDAO.selectAdmTuipayListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmRegistDAO.selectAdmTuipayList */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_pay_list"/>
+	</select>
+	
+	<!-- 업무담당자 등록금납부 목록 -->
+	<select id="AdmRegistDAO.selectAdmTuipayList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmTuipayList */
+	<![CDATA[
+		SELECT
+			REG_SEQ
+			, TLE.ENTER_NUM
+			, TLE.ENTER_CODE AS MEMBER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, REG_FEE
+			, ENTER_FEE
+			, REG_RG_SEME
+			, IFNULL(CONCAT(SUBSTR(AC.BANK_ACCOUNT,1,3),'-',SUBSTR(AC.BANK_ACCOUNT,4,6),'-',SUBSTR(AC.BANK_ACCOUNT,10,2),'-',SUBSTR(AC.BANK_ACCOUNT,12)), '미부여') AS BANK_ACCOUNT
+			, PAY_FEE
+			, CASE WHEN ((REG_FEE+ENTER_FEE+INSU_FEE)-PAY_FEE)>0 THEN '미납' ELSE '완료' END AS PAY
+			, INSU_FEE
+			, CASE WHEN REG_RG_SEME+REG_ST_SEME-1 > 4 THEN CONCAT(REG_ST_YEAR+1,'년 ',(
+																						CASE REG_RG_SEME+REG_ST_SEME-5 WHEN 1 THEN '봄학기'
+																													   WHEN 2 THEN '여름학기'
+																													   WHEN 3 THEN '가을학기'
+																													   WHEN 4 THEN '겨울학기' END 
+																					),'까지')
+													  ELSE CONCAT(REG_ST_YEAR,'년 ',(
+																						CASE REG_RG_SEME+REG_ST_SEME-1 WHEN 1 THEN '봄학기'
+																													   WHEN 2 THEN '여름학기'
+																													   WHEN 3 THEN '가을학기'
+																													   WHEN 4 THEN '겨울학기' END 
+																					),'까지') END AS REG_RG_YEAR
+	]]>
+	<include refid="adm_pay_list"/>
+	<![CDATA[
+		ORDER BY
+			REG_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+
+	<!-- 업무담당자 등록금납부 목록 -->
+	<select id="AdmRegistDAO.selectAdmTuipayExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmTuipayExcel */
+	<![CDATA[
+		SELECT
+			REG_SEQ
+			, TLE.ENTER_NUM
+			, TLE.ENTER_CODE AS MEMBER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, REG_FEE
+			, ENTER_FEE
+			, REG_RG_SEME
+			, IFNULL(AC.BANK_ACCOUNT, '미부여') AS BANK_ACCOUNT
+			, PAY_FEE
+			, CASE WHEN ((REG_FEE+ENTER_FEE+INSU_FEE)-PAY_FEE)>0 THEN '미납' ELSE '완료' END AS PAY
+			, INSU_FEE
+	]]>
+	<include refid="adm_pay_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_NUM DESC
+	]]>
+	</select>
+	
+	<!-- 업무담당자 등록금납부 조회 -->
+	<select id="AdmRegistDAO.selectAdmTuipayModify" parameterClass="string" resultClass="regFeeVO">
+	/* AdmRegistDAO.selectAdmTuipayModify */
+	<![CDATA[
+		SELECT
+			REG_SEQ				AS regSeq
+			, ENTER_NAME		AS enterName
+			, TLE.ENTER_NUM			AS enterNum
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS enterType
+			, TLE.ENTER_CODE	AS memberCode
+			, ENTER_NATION		AS enterNation
+			, ENTER_BIRTH		AS enterBirth
+			, AC.BANK_ACCOUNT	AS bankAccount
+			, REG_ST_YEAR		AS regStYear
+			, CASE REG_ST_SEME WHEN '1' THEN '봄학기'
+							   WHEN '2' THEN '여름학기'
+							   WHEN '3' THEN '가을학기'
+							   WHEN '4' THEN '겨울학기' END AS regStSeme
+			, REG_RG_SEME		AS regRgSeme
+			, REG_FEE			AS regFee
+			, ENTER_FEE			AS enterFee
+			, REG_DATE			AS regDate
+			, REG_SE_DATE		AS regSeDate
+			, PAY_DATE			AS payDate
+			, PAY_FEE			AS payFee
+			, INSU_FEE			AS insuFee
+		FROM
+			TB_LCMS_REG_FEE TLRF LEFT JOIN TB_LCMS_ENTER TLE
+			ON TLRF.ENTER_NUM = TLE.ENTER_NUM
+			LEFT JOIN ACCOUNT_CODE AC
+			ON TLE.ENTER_NUM = AC.STUDENT_CODE OR TLE.ENTER_CODE = AC.STUDENT_CODE
+		WHERE
+			REG_SEQ = #regSeq#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 등록금납부 수정 -->
+	<update id="AdmRegistDAO.updateAdmTuipayUpdate" parameterClass="regFeeVO">
+	/* AdmRegistDAO.updateAdmTuipayUpdate */
+		UPDATE
+			TB_LCMS_REG_FEE
+		SET
+			PAY_DATE = #payDate#
+			, PAY_FEE = #payFee#
+		WHERE
+			REG_SEQ = #regSeq#
+	</update>
+	
+	<sql id="adm_ref_list">
+		FROM
+			TB_LCMS_REF_FEE TLRF
+			LEFT JOIN TB_LCMS_ENTER	TLE
+			ON TLRF.ENTER_NUM = TLE.ENTER_NUM
+	</sql>
+	
+	<!-- 업무담당자 환불 목록Cnt -->
+	<select id="AdmRegistDAO.selectAdmRefListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmRegistDAO.selectAdmRefListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_ref_list"/>
+	</select>
+
+	<!-- 업무담당자 환불 목록 -->
+	<select id="AdmRegistDAO.selectAdmRefList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmRefList */
+	<![CDATA[
+		SELECT
+			REF_SEQ
+			, REF_DATE
+			, TLE.ENTER_CODE AS MEMBER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, REF_FEE
+			, CASE REF_TYPE WHEN '1' THEN '자퇴'
+							WHEN '2' THEN '장학'
+							WHEN '3' THEN '미등록' END AS REF_TYPE
+			, REF_ACCOUNT
+	]]>
+	<include refid="adm_ref_list"/>
+	<![CDATA[
+		ORDER BY
+			REF_SEQ DESC
+		LIMIT
+			#firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 환불 등록 -->
+	<insert id="AdmRegistDAO.insertAdmRefUpdate" parameterClass="refFeeVO">
+	/* AdmRegistDAO.insertAdmRefUpdate */
+		INSERT INTO TB_LCMS_REF_FEE(
+			MEMBER_CODE
+			, REF_DATE
+			, REF_ACCOUNT
+			, REF_TYPE
+			, REF_FEE
+			, REF_ETC
+			, ENTER_NUM
+		)VALUES(
+			#enterCode#
+			, #refDate#
+			, #refAccount#
+			, #refType#
+			, #refFee#
+			, #refEtc#
+			, #enterNum#
+		)
+	</insert>
+	
+	<update id="AdmRegistDAO.updateAdmRefUpdate" parameterClass="refFeeVO">
+	/* AdmRegistDAO.updateAdmRefUpdate */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_REF_FEE
+		SET
+			REF_DATE		= #refDate#
+			, REF_ACCOUNT	= #refAccount#
+			, REF_TYPE		= #refType#
+			, REF_FEE		= #refFee#
+			, REF_ETC		= #refEtc#
+		WHERE
+			REF_SEQ = #refSeq#
+	]]>
+	</update>
+	
+	<select id="AdmRegistDAO.selectAdmRefModify" parameterClass="string" resultClass="refFeeVO">
+	/* AdmRegistDAO.selectAdmRefModify */
+	<![CDATA[
+		SELECT
+			REF_SEQ				AS refSeq
+			, TLE.ENTER_CODE	AS enterCode
+			, REF_DATE			AS refDate
+			, REF_ACCOUNT		AS refAccount
+			, REF_TYPE			AS refType
+			, REF_FEE			AS refFee
+			, REF_ETC			AS refEtc
+			, ENTER_NAME		AS enterName
+			, ENTER_NATION		AS enterNation
+			, ENTER_BIRTH		AS enterBirth
+			, TLE.ENTER_NUM		AS enterNum
+			, ENTER_YEAR		AS enterYear
+			, CASE ENTER_SEME WHEN '1' THEN '봄학기'
+							  WHEN '2' THEN '여름학기'
+							  WHEN '3' THEN '가을학기'
+							  WHEN '4' THEN '겨울학기' END  AS enterSeme
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS enterType
+		FROM
+			TB_LCMS_REF_FEE TLRF
+		LEFT JOIN
+			TB_LCMS_ENTER TLE ON TLRF.ENTER_NUM = TLE.ENTER_NUM
+		WHERE
+			REF_SEQ = #refSeq#
+	]]>
+	</select>
+	
+	<select id="AdmRegistDAO.selectAdmAccoExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmAccoExcel */
+	<![CDATA[
+		SELECT
+			ENTER_SEQ
+			, TLE.ENTER_NUM
+			, ENTER_NAME
+			, ENTER_NATION
+			, ENTER_BIRTH
+			, CASE ENTER_STD_TYPE WHEN '1' THEN '교환학생'
+								  WHEN '2' THEN '어학연수생'
+								  WHEN '3' THEN '학부(유학생)'
+								  WHEN '4' THEN '대학원(유학생)' END AS ENTER_STD_TYPE
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, ENTER_DATE
+			, IFNULL(AC.BANK_ACCOUNT, '미부여') AS BANK_ACCOUNT
+			, DATE_FORMAT(AC.START_DATE, '%Y-%m-%d %H:%i') AS START_DATE
+	]]>
+	<include refid="adm_acco_list"/>
+	<![CDATA[
+		ORDER BY
+			ENTER_SEQ DESC
+	]]>
+	</select>
+	
+	<select id="AdmRegistDAO.selectAdmRefExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmRegistDAO.selectAdmRefExcel */
+	<![CDATA[
+		SELECT
+			REF_SEQ
+			, REF_DATE
+			, TLE.ENTER_CODE AS MEMBER_CODE
+			, ENTER_NAME
+			, ENTER_NATION
+			, CASE ENTER_TYPE WHEN '1' THEN '신규'
+							  WHEN '2' THEN '재등록' END AS ENTER_TYPE
+			, REF_FEE
+			, CASE REF_TYPE WHEN '1' THEN '자퇴'
+							WHEN '2' THEN '장학'
+							WHEN '3' THEN '미등록' END AS REF_TYPE
+			, REF_ACCOUNT
+	]]>
+	<include refid="adm_ref_list"/>
+	<![CDATA[
+		ORDER BY
+			REF_SEQ DESC
+	]]>
+	</select>
+	
+	<insert id="AdmRegistDAO.insertAdmAccoEmr" parameterClass="string">
+	/* AdmRegistDAO.insertAdmAccoEmr */
+	<![CDATA[
+		INSERT INTO TBL_EMR_CUSTOMER(
+			ID1
+			, ID2
+			, BANK_CD
+			, CORP_SEQ
+			, CORP_SAUPNO
+			, VACCT_NO
+			, CUSTOMER_NM
+			, CUSTOMER_GB
+			, MOBILE_NO
+			, EBS_SEND_GB
+		)
+		SELECT
+			CASE
+				WHEN ENTER_CODE IS NULL OR ENTER_CODE = '' THEN ENTER_NUM
+				ELSE ENTER_CODE
+			END AS ID1
+			, CASE
+				WHEN ENTER_CODE IS NULL OR ENTER_CODE = '' THEN ENTER_NUM
+				ELSE ENTER_CODE
+			END AS ID2
+			, '003' AS BANK_CD
+			, '02085' AS CORP_SEQ
+			, '2148635103' AS CORP_SAUPNO
+			, (
+				SELECT
+					BANK_ACCOUNT
+				FROM
+					ACCOUNT_CODE AC
+				WHERE
+					AC.STUDENT_CODE = CASE
+										  WHEN TLE.ENTER_CODE IS NULL OR TLE.ENTER_CODE = '' THEN TLE.ENTER_NUM
+										  ELSE TLE.ENTER_CODE
+									  END
+			) AS VACCT_NO
+			, TLE.ENTER_NAME AS CUSTOMER_NM
+			, CASE
+				WHEN ENTER_CODE IS NULL OR ENTER_CODE = '' THEN ENTER_NUM
+				ELSE ENTER_CODE
+			END AS CUSTOMER_GB
+			, TLE.ENTER_TEL AS MOBILE_NO
+			, 'N' AS EBS_SEND_GB
+		FROM
+			TB_LCMS_ENTER TLE
+		WHERE
+			ENTER_SEQ = #seq#
+	]]>
+	</insert>
+	
+	<update id="AdmRegistDAO.updateAdmTuipayBat" parameterClass="egovMap">
+	<![CDATA[
+		UPDATE
+			TB_LCMS_REG_FEE
+		SET
+			PAY_DATE = #payDate#
+			, PAY_FEE = (REG_FEE + ENTER_FEE + INSU_FEE)
+		WHERE
+			REG_SEQ = #regSeq#
+	]]>
+	</update>
+	
+</sqlMap>

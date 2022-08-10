@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_tr_table">
+		FROM
+			TB_HDA_TRANSFER_REVIEW
+		WHERE
+			1=1
+		<isNotEmpty property="menuType" prepend="AND">
+			TR_MAJOR = #menuType#		
+		</isNotEmpty>	
+		<isEmpty property="menuType" prepend="AND">
+			TR_MAJOR = '01'
+		</isEmpty>
+	</sql>
+	
+	
+	<!-- 목록 -->
+	<select id="AdmTransferReviewDAO.selectTransferReviewList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmTransferReviewDAO.selectTransferReviewList */
+	<![CDATA[
+		SELECT
+			TR_SEQ
+			, TR_NAME
+			, TR_PRE_SCHOOL
+			, TR_REG_SEMESTER_BEGIN
+			, TR_REG_SEMESTER_END
+			, TR_ACTIVITY
+			, TR_RESULT
+			, TR_URL
+			, TR_REG_DATE
+	]]>	
+	<include refid="adm_tr_table"/>
+	<![CDATA[
+	ORDER BY TR_REG_DATE DESC
+	LIMIT #firstIndex#, #recordCountPerPage#
+	
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmTransferReviewDAO.selectTransferReviewListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmTransferReviewDAO.selectTransferReviewListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>	
+	<include refid="adm_tr_table"/>
+	</select>
+
+	<!-- 등록 -->
+	<insert id="AdmTransferReviewDAO.insertTransferReviewOne" parameterClass="TransferReviewVO" >
+/* AdmTransferReviewDAO.insertTransferReviewOne */
+	<![CDATA[
+		INSERT INTO TB_HDA_TRANSFER_REVIEW(
+			TR_MAJOR
+			, TR_NAME
+			, TR_PRE_SCHOOL
+			, TR_REG_SEMESTER_BEGIN
+			, TR_REG_SEMESTER_END
+			, TR_ACTIVITY
+			, TR_RESULT
+			, TR_URL
+		)VALUES(
+			#trMajor#
+			, #trName#
+			, #trPreSchool#
+			, #trRegSemesterBegin#
+			, #trRegSemesterEnd#
+			, #trActivity#
+			, #trResult#
+			, #trUrl#
+		)
+		
+	]]>	
+	</insert>
+	
+	<!-- 조회 -->
+	<select id="AdmTransferReviewDAO.selectTransferReviewOne" parameterClass="String" resultClass="transferReviewVO">
+/* AdmTransferReviewDAO.selectTransferReviewOne */
+	<![CDATA[
+		SELECT
+			TR_SEQ															as trSeq
+			, TR_NAME														as trName
+			, TR_PRE_SCHOOL													as trPreSchool
+			, TR_REG_SEMESTER_BEGIN											as trRegSemesterBegin
+			, TR_REG_SEMESTER_END			 								as trRegSemesterEnd
+			, TR_ACTIVITY													as trActivity
+			, TR_RESULT														as trResult
+			, TR_URL														as trUrl
+			, TR_REG_DATE													as trRegDate
+		FROM 
+			TB_HDA_TRANSFER_REVIEW
+		WHERE
+			TR_SEQ = #trSeq#
+	]]>	
+	</select>
+	
+	<!-- 수정 -->
+	<update id="AdmTransferReviewDAO.updateTransferReviewOne" parameterClass="TransferReviewVO" >
+/* AdmTransferReviewDAO.updateTransferReviewOne */
+	<![CDATA[
+		UPDATE TB_HDA_TRANSFER_REVIEW
+		SET
+			TR_MAJOR = #trMajor#
+			, TR_NAME = #trName# 
+			, TR_PRE_SCHOOL = #trPreSchool#
+			, TR_REG_SEMESTER_BEGIN = #trRegSemesterBegin#
+			, TR_REG_SEMESTER_END = #trRegSemesterEnd#
+			, TR_ACTIVITY = #trActivity#
+			, TR_RESULT = #trResult#
+			, TR_URL = #trUrl#
+		WHERE
+			TR_SEQ = #trSeq#
+	]]>	
+	</update>
+	
+	<!-- 글 삭제 -->
+	<delete id="AdmTransferReviewDAO.deleteTransferReviewOne" parameterClass="String">
+/* AdmTransferReviewDAO.deleteTransferReviewOne */	
+	<![CDATA[
+		DELETE FROM TB_HDA_TRANSFER_REVIEW
+		WHERE TR_SEQ = #trSeq#
+	]]>
+	</delete>
+
+</sqlMap>

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="adm_tc_table">
+		FROM
+			TB_HDA_TEACHER t1
+		WHERE 1=1
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			TC_M_CODE = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition2" prepend="AND">
+			TC_SUBJECT like concat('%', #searchCondition2#, '%')
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			TC_NAME like concat('%', #searchWord#, '%')
+		</isNotEmpty>
+	</sql>
+
+	<!-- 교강사 목록 -->
+	<select id="AdmMajorBoardTeacherDAO.selectAdmTeacherList" resultClass="egovMap">
+/* AdmMajorBoardTeacherDAO.selectAdmTeacherList */
+	<![CDATA[
+		SELECT
+			TC_SEQ
+			, TC_CONTENT
+			, DATE_FORMAT(t1.TC_REG_DATE, '%Y-%m-%d') as TC_REG_DATE
+			, TURN
+			, TC_M_CODE
+			, TC_SUBJECT
+			, TC_NAME
+		
+	]]>	
+	<include refid="adm_tc_table"/>
+	<![CDATA[
+		ORDER BY TURN = '' ASC ,convert(TURN,UNSIGNED) ASC, t1.TC_REG_DATE DESC 
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 교강사 목록 cnt -->
+	<select id="AdmMajorBoardTeacherDAO.selectAdmTeacherListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmMajorBoardTeacherDAO.selectAdmTeacherListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		
+	]]>	
+	<include refid="adm_tc_table"/>
+	</select>
+	
+	<!-- 교강사 조회 -->
+	<select id="AdmMajorBoardTeacherDAO.selectAdmTeacherOne" parameterClass="String" resultClass="teacherVO">
+/* AdmMajorBoardTeacherDAO.selectAdmTeacherOne */
+	<![CDATA[
+		SELECT
+			TC_SEQ as tcSeq
+			, TC_CONTENT as tcContent
+			, DATE_FORMAT(TC_REG_DATE, '%Y-%m-%d') as tcRegDate
+			, TURN as turn
+			, TC_M_CODE as tcMCode
+			, TC_SUBJECT as tcSubject
+			, TC_NAME as tcName
+		FROM
+			TB_HDA_TEACHER
+		WHERE
+			TC_SEQ = #tcSeq#		
+	]]>	
+	</select>
+
+	<!-- 교강사 등록 -->
+	<insert id="AdmMajorBoardTeacherDAO.insertTeacherOne" parameterClass="teacherVO" >
+/* AdmMajorBoardTeacherDAO.insertTeacherOne */
+	<selectKey keyProperty="tcSeq" resultClass="String">
+        SELECT LAST_INSERT_ID()
+    </selectKey>
+	<![CDATA[
+		INSERT INTO TB_HDA_TEACHER(
+			TC_CONTENT
+			, TURN
+			, TC_M_CODE
+			, TC_SUBJECT
+			, TC_NAME
+		)VALUES(
+			#tcContent#
+			, #turn#
+			, #tcMCode#
+			, #tcSubject#
+			, #tcName#
+		)
+	]]>
+	</insert>
+	
+	<!-- 교강사 수정 -->
+	<update id="AdmMajorBoardTeacherDAO.updateTeacherOne" parameterClass="teacherVO">
+/* AdmMajorBoardTeacherDAO.updateTeacherOne */
+	<![CDATA[
+		UPDATE
+			TB_HDA_TEACHER
+		SET
+			TC_CONTENT = #tcContent#
+			, TC_NAME = #tcName#
+			, TURN = #turn#
+			, TC_M_CODE = #tcMCode#
+			, TC_SUBJECT = #tcSubject#
+			
+		WHERE
+			TC_SEQ = #tcSeq#
+	]]>	
+	</update>
+	
+	<!-- 첨부파일 조회_(tcSeq) -->
+	<select id="AdmMajorBoardTeacherDAO.selectTeacherUpfileList" parameterClass="String" resultClass="egovMap">
+/* AdmMajorBoardTeacherDAO.selectTeacherUpfileList */
+	<![CDATA[
+		SELECT
+			TCUP_SEQ
+			, TCUP_ORIGIN_FILENAME
+			, TCUP_SAVE_FILEPATH 
+			, TC_SEQ 
+		FROM
+			TB_HDA_TC_UPFILE
+		WHERE
+			TC_SEQ = #tcSeq#
+	]]>	
+	</select>
+	<!--  교강사 첨부파일 등록 -->
+	<insert id="AdmMajorBoardTeacherDAO.insertTeacherUpfileOne" parameterClass="map">
+/* AdmMajorBoardTeacherDAO.insertTeacherUpfileOne */
+	<![CDATA[
+		INSERT INTO TB_HDA_TC_UPFILE (
+			TCUP_ORIGIN_FILENAME
+			, TCUP_SAVE_FILEPATH
+			, TC_SEQ
+		) VALUES (
+			#fileInfoVO.fileName#
+			, #fileInfoVO.filePath#
+			, #tcSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 교강사 첨부파일 삭제 -->
+	<delete id="AdmMajorBoardTeacherDAO.deleteTeacherUpfileList" parameterClass="list">
+/* AdmMajorBoardTeacherDAO.deleteTeacherUpfileOne */
+	<![CDATA[
+		DELETE FROM TB_HDA_TC_UPFILE
+		WHERE TCUP_SEQ IN (
+	]]>
+		<iterate conjunction=",">
+			#[]#
+		</iterate>
+	<![CDATA[
+		)
+	]]>
+	</delete>
+	
+	<!--  첨부파일 조회_(tcupSeq) -->
+	<select id="AdmMajorBoardTeacherDAO.selectTeacherUpfileOne" parameterClass="string" resultClass="egovMap">
+/* AdmMajorBoardTeacherDAO.selectTeacherUpfileOne */
+	<![CDATA[
+		SELECT 
+			TCUP_SEQ
+			, TCUP_ORIGIN_FILENAME
+			, TCUP_SAVE_FILEPATH 
+			, TCUP_SAVE_FILENAME 
+			, TC_SEQ 
+		FROM 
+			TB_HDA_TC_UPFILE
+		WHERE
+			TCUP_SEQ = #tcupSeq#
+	]]>
+	</select>
+	
+	<!-- 교강사 삭제 -->
+	<delete id="AdmMajorBoardTeacherDAO.deleteAdmTeacherOne" parameterClass="String">
+/* AdmMajorBoardTeacherDAO.deleteAdmTeacherOne */
+	<![CDATA[
+		DELETE FROM TB_HDA_TEACHER
+		WHERE TC_SEQ = #tcSeq#
+	]]>	
+	</delete>
+</sqlMap>

@@ -1,0 +1,244 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c"      uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="form"   uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="ui"     uri="http://egovframework.gov/ctl/ui"%>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<%@ taglib prefix="common" 	uri="/WEB-INF/tld/common.tld"%>
+<!DOCTYPE html>
+<html lang="ko">
+<c:import url="/EgovPageLink.do?link=adm/inc/incHead"/>
+<body>
+    <c:import url="/EgovPageLink.do?link=adm/inc/incTopnav"/>
+	<!-- contents -->
+	<div class="content-box">
+		<div class="contents">
+			<c:import url="/EgovPageLink.do?link=adm/inc/incLeftmenu"/>
+			<div class="main-content">
+				<jsp:include page="/WEB-INF/jsp/lcms/adm/inc/incPageTitle.jsp">
+					<jsp:param name="dept1" value="교육과정"/>
+		            <jsp:param name="dept2" value="강의개설"/>
+	           	</jsp:include>
+				<p class="sub-title">기본 정보</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+							<col style="width:10%;" />
+							<col style="width:40%;" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th><sup>*</sup>학기</th>
+								<td colspan="3">
+									<select>
+										<option>2019</option>
+									</select>
+									<select>
+										<option>가을학기</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th><sup>*</sup>교육과정</th>
+								<td>
+									<select>
+										<option>한국어교육과정</option>
+									</select>
+								</td>
+								<th><sup>*</sup>프로그램</th>
+								<td>
+									<select>
+										<option>정규과정</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th><sup>*</sup>교과목</th>
+								<td>
+									<select>
+										<option>한국어1</option>
+									</select>
+								</td>
+								<th><sup>*</sup>분반</th>
+								<td>
+									<select>
+										<option>A반</option>
+									</select>
+									<button type="button" class="normal-btn">중복확인</button>
+								</td>
+							</tr>
+							<tr>
+								<th>정원</th>
+								<td colspan="3">
+									<input type="text" class="input-data w50px" /> 명
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<p class="sub-title">강의정보</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th><sup>*</sup>강의실</th>
+								<td>
+									<select>
+										<option>상상관1113호</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th><sup>*</sup>담임교사</th>
+								<td>
+									<select>
+										<option>홍길동</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th><sup>*</sup>프로그램</th>
+								<td>
+									<select>
+										<option>정규과정</option>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th><sup>*</sup>개설여부</th>
+								<td>
+									<input type="radio" id="rad01" name="rd01" /> <label for="rad01">개강</label> &nbsp;&nbsp;&nbsp;&nbsp;
+									<input type="radio" id="rad02" name="rd01" /> <label for="rad02">폐강</label>
+								</td>
+							</tr>
+							<tr>
+								<th>개설기간</th>
+								<td>
+									<input type="text" id="datepicker01" placeholder="0000-00-00"> -
+									<input type="text" id="datepicker02" placeholder="0000-00-00">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<p class="sub-title">수업시간</p>
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th><button type="button" class="normal-btn">시간추가+</button></th>
+								<td>
+									<p class="file-upload">
+										<select>
+											<option>월요일</option>
+										</select>
+										<select>
+											<option>1교시</option>
+										</select>
+										-
+										<select>
+											<option>1교시</option>
+										</select>
+										<select>
+											<option>어휘문법</option>
+										</select>
+										<select>
+											<option>이교사</option>
+										</select>
+										<button type="button">x</button>
+									</p>
+									<p class="file-upload">
+										<select>
+											<option>월요일</option>
+										</select>
+										<select>
+											<option>1교시</option>
+										</select>
+										-
+										<select>
+											<option>1교시</option>
+										</select>
+										<select>
+											<option>어휘문법</option>
+										</select>
+										<select>
+											<option>이교사</option>
+										</select>
+										<button type="button">x</button>
+									</p>
+									<p class="file-upload">
+										<select>
+											<option>월요일</option>
+										</select>
+										<select>
+											<option>1교시</option>
+										</select>
+										-
+										<select>
+											<option>1교시</option>
+										</select>
+										<select>
+											<option>어휘문법</option>
+										</select>
+										<select>
+											<option>이교사</option>
+										</select>
+										<button type="button">x</button>
+									</p>
+									<p class="file-upload">
+										<select>
+											<option>월요일</option>
+										</select>
+										<select>
+											<option>1교시</option>
+										</select>
+										-
+										<select>
+											<option>1교시</option>
+										</select>
+										<select>
+											<option>어휘문법</option>
+										</select>
+										<select>
+											<option>이교사</option>
+										</select>
+										<button type="button">x</button>
+									</p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<div class="table-button">
+					<div class="btn-box">
+						<a href="<c:out value='${pageContext.request.contextPath }/qxsepmny/curr/admLectList.do'/>" class="white btn-list">목록</a>
+						<button type="button" class="white btn-save">저장</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--// contents -->
+	<!-- footer -->
+    <c:import url="/EgovPageLink.do?link=adm/inc/incFooter"/>
+	<!--// footer -->
+</body>
+</html>

@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="adm_admin_list">
+		 FROM
+		 	TB_LCMS_ADMIN
+		 WHERE
+		 	1=1
+		 <isNotEmpty prepend="AND" property="searchWord">
+		 	NAME LIKE '%'||#searchWord#||'%'
+		 </isNotEmpty>
+	</sql>
+	
+	<!-- 업무담당자 사용자 리스트Cnt -->
+	<select id="AdmOperDAO.selectAdmAdminListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmOperDAO.selectAdmAdminListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+		<include refid="adm_admin_list"/>
+	</select>
+	
+	<!-- 업무담당자 사용자 리스트 -->
+	<select id="AdmOperDAO.selectAdmAdminList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmOperDAO.selectAdmAdminList */
+	<![CDATA[
+		SELECT
+			ADMIN_ID
+			, NAME
+			, DEPART
+			, ACCE_IP
+			, DATE_FORMAT(LOGIN_DATE_TIME, '%Y.%m.%d %H:%i:%s') AS LOGIN_DATE_TIME
+			, USE_YN
+			, REG_DATE
+	]]>
+		<include refid="adm_admin_list"/>
+	<![CDATA[
+		ORDER BY
+			REG_DATE DESC
+		LIMIT
+			  #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 사용자 조회 -->
+	<select id="AdmOperDAO.selectAdmAdminView" parameterClass="string" resultClass="adminVO">
+	/* AdmOperDAO.selectAdmAdminView */
+	<![CDATA[
+		SELECT
+			ADMIN_ID			AS adminId
+			, NAME				AS name
+			, DEPART			AS depart
+			, ACCE_IP			AS acceIp
+			, IP_ALL_YN			AS ipAllYn
+			, USE_YN			AS useYn
+			, ADMIN_TYPE		AS adminType
+			, DTL_YN			AS dtlYn
+			, ENTRAN			AS entran
+			, REGIST			AS regist
+			, STUDENT			AS student
+			, CLSS				AS clss
+			, ADMSTR			AS admstr
+			, STAT				AS stat
+			, OPER				AS oper
+			, CURR				AS curr
+			, DATE_FORMAT(LOGIN_DATE_TIME, '%Y.%m.%d %H:%i:%s')	AS loginDateTime
+		FROM
+			TB_LCMS_ADMIN
+		WHERE
+			ADMIN_ID = #adminId#
+	]]>
+	</select>
+	
+	<!-- 업무담당자 사용자 수정 -->
+	<update id="AdmOperDAO.updateAdmin" parameterClass="adminVO">
+	/* AdmOperDAO.updateAdmin */
+		UPDATE
+			TB_LCMS_ADMIN
+		SET
+			NAME = #name#
+			, DEPART = #depart#
+			, ACCE_IP = #acceIp#
+			, IP_ALL_YN = #ipAllYn#
+			, USE_YN = #useYn#
+			, ADMIN_TYPE = #adminType#
+			, DTL_YN = #dtlYn#
+			, ENTRAN = #entran#
+			, REGIST = #regist#
+			, STUDENT = #student#
+			, CLSS = #clss#
+			, ADMSTR = #admstr#
+			, STAT = #stat#
+			, OPER = #oper#
+			, CURR = #curr#
+		WHERE
+			ADMIN_ID = #adminId#
+	</update>
+	
+	<!-- 업무담당자 사용자 등록 -->
+	<insert id="AdmOperDAO.insertAdmin" parameterClass="adminVO">
+	/* AdmOperDAO.insertAdmin */
+		INSERT INTO TB_LCMS_ADMIN(
+			ADMIN_ID
+			, ADMIN_PW
+			, NAME
+			, DEPART
+			, ACCE_IP
+			, IP_ALL_YN
+			, USE_YN
+			, ADMIN_TYPE
+			, DTL_YN
+			, ENTRAN
+			, REGIST
+			, STUDENT
+			, CLSS
+			, ADMSTR
+			, STAT
+			, OPER
+			, CURR
+			, REG_ID
+			, REG_DATE
+		)VALUES(
+			#adminId#
+			, #adminPw#
+			, #name#
+			, #depart#
+			, #acceIp#
+			, #ipAllYn#
+			, #useYn#
+			, #adminType#
+			, #dtlYn#
+			, #entran#
+			, #regist#
+			, #student#
+			, #clss#
+			, #admstr#
+			, #stat#
+			, #oper#
+			, #curr#
+			, #regId#
+			, SYSDATE()
+		)
+	</insert>
+	
+	<!-- 업무담당자 사용자 아이디 중복체크 -->
+	<select id="AdmOperDAO.selectAdmAdminIdChk" parameterClass="string" resultClass="int">
+	/* AdmOperDAO.selectAdmAdminIdChk */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_LCMS_ADMIN
+		WHERE
+			ADMIN_ID = #adminId#
+	]]>
+	</select>
+	
+	<!-- 개인정보처리(로그) 리스트  조건 20200310-->
+    <sql id="adm_log_list">
+		 FROM
+		 	TB_LCMS_LOG a
+		 WHERE
+		 	1=1
+		 <isNotEmpty prepend="AND" property="searchWord">
+		 	NAME LIKE CONCAT ('%',#searchWord#,'%')
+		 </isNotEmpty>
+	</sql>
+	
+	<!-- 개인정보처리(로그) 리스트 20200310 -->
+	<select id="AdmOperDAO.selectAdmLogList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmOperDAO.selectAdmLogList */
+	<![CDATA[
+	SELECT K.*,SUBSTRING_INDEX(ROWNUM,'.',1) ROWINDEX FROM
+		(
+	SELECT A.*,@rownum := @rownum+1 AS ROWNUM FROM
+		(SELECT
+			LOG_SEQ
+			, REG_ID
+			, (SELECT NAME FROM TB_LCMS_ADMIN WHERE ADMIN_ID = a.REG_ID) REG_NAME
+			, MEMBER_CODE
+			, NAME
+			, E_NAME
+			, LOG_CONT
+			, ACCE_IP
+			, DATE_FORMAT(REG_DATE,'%Y.%m.%d %H:%i:%s') AS REG_DATE
+		]]>	
+		<include refid="adm_log_list"/>
+		<![CDATA[)A 
+			,(SELECT @ROWNUM:=0) R 
+			ORDER BY REG_DATE DESC, ROWNUM DESC)K
+		LIMIT  #firstIndex#, #recordCountPerPage#
+	]]>	
+	</select>
+	
+	<!-- 개인정보처리(로그) 리스트 Cnt 20200310-->
+	<select id="AdmOperDAO.selectAdmLogListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmOperDAO.selectAdmLogListCnt */
+	<![CDATA[
+		SELECT	COUNT(*)]]>	
+	<include refid="adm_log_list"/>
+	</select>
+	
+	
+	<!-- 관리자 프로필 조회 -->
+	<select id="AdmOperDAO.selectAdmProfile" parameterClass="adminVO" resultClass="adminVO">
+	/* AdmOperDAO.selectAdmProfile */
+	<![CDATA[
+		SELECT
+			ADMIN_ID			AS adminId
+			, ADMIN_PW			AS adminPw
+			, NAME				AS name
+			, DEPART			AS depart
+			, ACCE_IP			AS acceIp
+			, IP_ALL_YN			AS ipAllYn
+			, USE_YN			AS useYn
+			, ADMIN_TYPE		AS adminType
+			, DTL_YN			AS dtlYn
+			, ENTRAN			AS entran
+			, REGIST			AS regist
+			, STUDENT			AS student
+			, CLSS				AS clss
+			, ADMSTR			AS admstr
+			, STAT				AS stat
+			, OPER				AS oper
+			, CURR				AS curr
+			, DATE_FORMAT(LOGIN_DATE_TIME, '%Y.%m.%d %H:%i:%s')	AS loginDateTime
+			, UPD_DATE			AS updDate
+		FROM
+			TB_LCMS_ADMIN
+		WHERE
+			ADMIN_ID = #adminId#
+		
+	]]>	
+	</select>	
+	
+	
+	<!-- 관리자 비밀번호 체크 -->
+	<select id="AdmOperDAO.selectadmAjaxAdminPwChk" parameterClass="adminVO" resultClass="int">
+	/* AdmOperDAO.selectadmAjaxAdminPwChk */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_LCMS_ADMIN
+		WHERE
+			ADMIN_PW = #adminPw# 
+			AND 
+			ADMIN_ID = #adminId#
+	]]>
+	</select>
+	
+	
+	<!-- 관리자 비밀번호 수정 -->
+	<update id="AdmOperDAO.admAjaxPasswordUpdate" parameterClass="adminVO">
+	/* AdmOperDAO.admAjaxPasswordUpdate.do */
+		UPDATE
+			TB_LCMS_ADMIN
+		SET
+			ADMIN_PW = #adminPw#
+			, UPD_DATE = SYSDATE() 
+		WHERE
+			ADMIN_ID = #adminId#
+	</update>
+
+	<!-- 관리자 비밀번호 재설정 -->
+	<update id="AdmOperDAO.updateAdmAjaxProfClearPw" parameterClass="adminVO">
+		/* AdmOperDAO.updateAdmAjaxProfClearPw */
+		UPDATE
+		TB_LCMS_ADMIN
+		SET
+		ADMIN_PW = #adminPw#
+		WHERE
+		ADMIN_ID = #adminId#
+	</update>
+	
+	<!-- 개인정보처리(로그) 엑셀다운로드 -->
+	<select id="AdmOperDAO.selectAdmLogExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmOperDAO.selectAdmLogExcel */
+	<![CDATA[
+	SELECT K.*,SUBSTRING_INDEX(ROWNUM,'.',1) ROWINDEX FROM
+		(
+	SELECT A.*,@rownum := @rownum+1 AS ROWNUM FROM
+		(SELECT
+			LOG_SEQ
+			, REG_ID
+			, (SELECT NAME FROM TB_LCMS_ADMIN WHERE ADMIN_ID = a.REG_ID) REG_NAME
+			, MEMBER_CODE
+			, NAME
+			, E_NAME
+			, LOG_CONT
+			, ACCE_IP
+			, DATE_FORMAT(REG_DATE,'%Y.%m.%d %H:%i:%s') AS REG_DATE
+		FROM
+		 	TB_LCMS_LOG a
+		 ]]>	
+		 <isNotEmpty property="searchWord">
+		 	WHERE NAME LIKE CONCAT ('%',#searchWord#,'%')
+		 </isNotEmpty>
+		 <![CDATA[)A 
+			,(SELECT @ROWNUM:=0) R 
+			ORDER BY REG_DATE DESC, ROWNUM DESC)K
+	]]>	
+	</select>
+	
+	<update id="AdmOperDAO.updateAdmAjaxClearLgnFail" parameterClass="string">
+	/* AdmOperDAO.updateAdmAjaxClearLgnFail */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_ADMIN
+		SET
+			LOGIN_FAIL = '0'
+		WHERE
+			ADMIN_ID = #adminId#
+	]]>
+	</update>
+	
+	<sql id="adm_login_log_list">
+	<![CDATA[
+		FROM
+			TB_LCMS_LOGIN_LOG
+		WHERE
+			1=1
+	]]>
+		<isNotEmpty prepend="AND" property="searchWord">
+			NAME LIKE CONCAT('%', #searchWord#, '%')
+		</isNotEmpty>
+	</sql>
+	
+	<select id="AdmOperDAO.selectAdmLoginLogListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmOperDAO.selectAdmLoginLogListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="adm_login_log_list"/>
+	</select>
+	
+	<select id="AdmOperDAO.selectAdmLoginLogList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmOperDAO.selectAdmLoginLogList */
+	<![CDATA[
+		SELECT
+			LOGIN_SEQ
+			, LOGIN_ID
+			, NAME
+			, CASE LOGIN_TYPE
+				WHEN '1' THEN '업무담당자'
+				WHEN '2' THEN '교사'
+				WHEN '3' THEN '학생'
+			END AS LOGIN_TYPE
+			, ACCE_IP
+			, DATE_FORMAT(ACCE_DATE, '%Y-%m-%d %H:%i:%s') AS ACCE_DATE
+	]]>
+	<include refid="adm_login_log_list"/>
+	<![CDATA[
+		ORDER BY
+			ACCE_DATE DESC
+		LIMIT
+			  #firstIndex#, #recordCountPerPage#
+		
+	]]>
+	</select>
+
+	<select id="AdmOperDAO.selectAdmLoginLogExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmOperDAO.selectAdmLoginLogExcel */
+	<![CDATA[
+		SELECT
+			LOGIN_SEQ
+			, LOGIN_ID
+			, NAME
+			, CASE LOGIN_TYPE
+				WHEN '1' THEN '업무담당자'
+				WHEN '2' THEN '교사'
+				WHEN '3' THEN '학생'
+			END AS LOGIN_TYPE
+			, ACCE_IP
+			, ACCE_DATE
+	]]>
+	<include refid="adm_login_log_list"/>
+	<![CDATA[
+		ORDER BY
+			ACCE_DATE DESC
+		
+	]]>
+	</select>
+</sqlMap>

@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 교사 수업만족도 조회 -->
+	<select id="LecClssSatisfactionDAO.selectLecClssSatisfaction" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssSatisfactionDAO.selectLecClssSatisfaction */
+	<![CDATA[
+		SELECT
+			QUESTION
+			, (
+				SELECT
+					IFNULL(ROUND(AVG(ANSWER), 1), 0)
+				FROM
+					TB_LCMS_SURVEY_ANSW	TLSA
+				WHERE
+					TLSA.QUES_SEQ = TLSQ.QUES_SEQ
+				AND
+					LECT_SEQ = #searchLecture#
+				AND
+					PROF_CODE = #searchMemberCode#
+			) AS AVG_NUM
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_SURVEY TLS ON TLSQ.SURVEY_SEQ = TLS.SURVEY_SEQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		WHERE
+			YEAR = #searchCondition1#
+		AND
+			SEME = #searchCondition2#
+		AND
+			SURVEY_TYPE = '1'
+		AND
+			LANG = 'Korean'
+		AND
+			QUES_TYPE = 'PRF'
+	]]>
+	</select>
+	
+	<select id="LecClssSatisfactionDAO.selectLecClssStatis" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssSatisfactionDAO.selectLecClssStatis */
+	<![CDATA[
+		SELECT
+			COUNT(MAP_SEQ) AS TOT_CNT
+			, COUNT(CASE WHEN TLSA.LECT_SEQ IS NOT NULL THEN 1 END) AS SUB_CNT
+			, COUNT(CASE WHEN TLSA.LECT_SEQ IS NULL THEN 1 END) AS NSUB_CNT
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			(
+				SELECT
+					LECT_SEQ
+					, MEMBER_CODE
+				FROM
+					TB_LCMS_SURVEY_ANSW
+				GROUP BY
+					MEMBER_CODE, LECT_SEQ
+			) TLSA ON TLLM.LECT_SEQ = TLSA.LECT_SEQ
+			AND TLLM.MEMBER_CODE = TLSA.MEMBER_CODE
+		WHERE
+			TLLM.LECT_SEQ = #searchLecture#
+	]]>
+	</select>
+	
+	<select id="LecClssSatisfactionDAO.selectLecClssSatisfactionView" parameterClass="egovMap" resultClass="egovMap">
+	/* LecClssSatisfactionDAO.selectLecClssSatisfactionView */
+	<![CDATA[
+		SELECT
+			PHR_TITLE
+			, QUESTION
+			, AVG_ANSW
+			, TOT_ANSW
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_SURVEY TLS ON TLSQ.SURVEY_SEQ = TLS.SURVEY_SEQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		LEFT JOIN
+			(
+				SELECT
+					QUES_SEQ
+					, ROUND(AVG(ANSWER), 1) AS AVG_ANSW
+				FROM
+					TB_LCMS_SURVEY_ANSW
+				WHERE
+					SURVEY_TYPE = '1'
+				AND
+					PROF_CODE = #profCode#
+				AND
+					LECT_SEQ = #lectSeq#
+				GROUP BY
+					QUES_SEQ
+			) TLSA ON TLSQ.QUES_SEQ = TLSA.QUES_SEQ
+			,(
+				SELECT
+					ROUND(SUM(AVG_ANSW), 1) AS TOT_ANSW
+				FROM
+					(
+						SELECT
+							QUES_SEQ
+							, AVG(ANSWER) AS AVG_ANSW
+						FROM
+							TB_LCMS_SURVEY_ANSW
+						WHERE
+							SURVEY_TYPE = '1'
+						AND
+							PROF_CODE = #profCode#
+						AND
+							LECT_SEQ = #lectSeq#
+						GROUP BY
+							QUES_SEQ
+					) T
+			) T1
+		WHERE
+			YEAR = #semYear#
+		AND
+			SEME = #semester#
+		AND
+			LANG = 'Korean'
+		AND
+			QUES_TYPE = 'PRF'
+		AND
+			SURVEY_TYPE = '1'
+	]]>
+	</select>
+	
+	<select id="LecClssSatisfactionDAO.selectSatisView" parameterClass="searchVO" resultClass="egovMap" remapResults="true">
+	/* LecClssSatisfactionDAO.selectSatisView */
+	<![CDATA[
+		SELECT
+			TLS.SURVEY_SEQ
+			, TLS.YEAR
+			, TLS.SEME
+			, CASE TLS.SEME WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS SEME_NM
+			, TLS.LANG
+			, TLS.TITLE
+			, TLS.USE_YN
+			, TLS.CONTENT
+	]]>
+		<isNotEmpty property="searchLecture">
+			, TLL.LECT_NAME
+			, TLL.LECT_DIVI
+		</isNotEmpty>
+		<isNotEmpty property="searchMemberCode">
+			, (
+				SELECT
+					NAME
+				FROM
+					TB_LCMS_MEMBER
+				WHERE
+					MEMBER_CODE = #searchMemberCode#
+			) AS PROF_NAME
+		</isNotEmpty>
+	<![CDATA[
+		FROM
+			TB_LCMS_SURVEY TLS
+	]]>
+		<isNotEmpty property="searchLecture">
+		LEFT JOIN
+			TB_LCMS_LECT TLL ON TLL.LECT_YEAR = TLS.YEAR AND TLL.LECT_SEM = TLS.SEME
+		</isNotEmpty>
+		WHERE
+			TLS.LANG = 'Korean'
+		<isNotEmpty prepend="AND" property="searchCondition1">
+			TLS.YEAR = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchCondition2">
+			TLS.SEME = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchLecture">
+			TLL.LECT_SEQ = #searchLecture#
+		</isNotEmpty>
+	</select>
+	
+	<select id="LecClssSatisfactionDAO.selectSatisScoreList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssSatisfactionDAO.selectSatisScoreList */
+	<![CDATA[
+		SELECT
+			QUESTION
+			, (
+				SELECT
+					ROUND(IFNULL(AVG(ANSWER), 0), 2)
+				FROM
+					TB_LCMS_SURVEY_ANSW	TLSA
+				WHERE
+					TLSA.QUES_NUM = TLSQ.QUES_NUM
+	]]>
+				<isNotEmpty prepend="AND" property="searchLecture">
+					LECT_SEQ = #searchLecture#
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="searchMemberCode">
+					PROF_CODE = #searchMemberCode#
+				</isNotEmpty>
+	<![CDATA[
+			) AS AVG_NUM
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_SURVEY TLS ON TLSQ.SURVEY_SEQ = TLS.SURVEY_SEQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		WHERE
+			YEAR = #searchCondition1#
+		AND
+			SEME = #searchCondition2#
+		AND
+			SURVEY_TYPE = '1'
+		AND
+			LANG = 'Korean'
+		AND
+			QUES_TYPE = #searchType#
+	]]>
+	</select>
+	
+	<select id="LecClssSatisfactionDAO.selectSatisQuesList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssSatisfactionDAO.selectSatisQuesList */
+	<![CDATA[
+		SELECT
+			TLSQ.QUES_SEQ
+			, TLQP.PHR_TITLE
+			, TLSQ.QUESTION
+			, TLSQ.ANSWER1
+			, TLSQ.ANSWER2
+			, TLSQ.ANSWER3
+			, TLSQ.ANSWER4
+			, TLSQ.ANSWER5
+			, IFNULL(TLSA.TOT_CNT, 0) AS TOT_CNT
+			, IFNULL(TLSA.CNT1, 0) AS CNT1
+			, IFNULL(TLSA.CNT2, 0) AS CNT2
+			, IFNULL(TLSA.CNT3, 0) AS CNT3
+			, IFNULL(TLSA.CNT4, 0) AS CNT4
+			, IFNULL(TLSA.CNT5, 0) AS CNT5
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		LEFT JOIN
+			(
+				SELECT
+					QUES_NUM
+					, COUNT(*) AS TOT_CNT
+					, COUNT(CASE ANSWER WHEN '1' THEN 1 END) AS CNT1
+					, COUNT(CASE ANSWER WHEN '2' THEN 1 END) AS CNT2
+					, COUNT(CASE ANSWER WHEN '3' THEN 1 END) AS CNT3
+					, COUNT(CASE ANSWER WHEN '4' THEN 1 END) AS CNT4
+					, COUNT(CASE ANSWER WHEN '5' THEN 1 END) AS CNT5
+				FROM
+					TB_LCMS_SURVEY_ANSW
+				WHERE
+					1=1
+	]]>
+				<isNotEmpty prepend="AND" property="searchLecture">
+					LECT_SEQ = #searchLecture#
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="searchMemberCode">
+					PROF_CODE = #searchMemberCode#
+				</isNotEmpty>
+	<![CDATA[
+				GROUP BY
+					QUES_NUM
+			) TLSA ON TLSQ.QUES_NUM = TLSA.QUES_NUM
+		WHERE
+			TLSQ.SURVEY_TYPE = #searchCondition7#
+		AND
+			TLQP.QUES_TYPE = #searchType#
+		AND
+			TLSQ.SURVEY_SEQ = #searchCondition8#
+	]]>
+	</select>
+	
+	<select id="LecClssSatisfactionDAO.selectStatisTxtList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssSatisfactionDAO.selectStatisTxtList */
+	<![CDATA[
+		SELECT
+			TLSQ.QUES_SEQ
+			, TLQP.PHR_TITLE
+			, TLSQ.QUESTION
+			, TLSA.ANSWER_TXT
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		LEFT JOIN
+			TB_LCMS_QUES_PHR TLQP ON TLSQ.PHR_SEQ = TLQP.PHR_SEQ
+		LEFT JOIN
+			TB_LCMS_SURVEY_ANSW TLSA ON TLSQ.QUES_NUM = TLSA.QUES_NUM
+		WHERE
+			TLSQ.SURVEY_TYPE = '3'
+		AND
+			TLQP.QUES_TYPE = #searchType#
+		AND
+			TLSQ.SURVEY_SEQ = #searchCondition8#
+	]]>
+		<isNotEmpty prepend="AND" property="searchLecture">
+			TLSA.LECT_SEQ = #searchLecture#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="searchMemberCode">
+			TLSA.PROF_CODE = #searchMemberCode#
+		</isNotEmpty>
+	<![CDATA[
+		ORDER BY
+			TLQP.PHR_TITLE ASC
+			, TLSQ.QUESTION ASC
+	]]>
+	</select>
+	
+</sqlMap>

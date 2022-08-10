@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="usr_transfer_table">
+		FROM
+			TB_HDA_TRANSFER_REVIEW
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="menuType" prepend="AND">
+				TR_MAJOR = #menuType#
+			</isNotEmpty>
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="preschool">
+					TR_PRE_SCHOOL like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="activity">
+					TR_ACTIVITY like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="result">
+					TR_RESULT like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<sql id="usr_graduate_table">
+		FROM
+			TB_HDA_GRADUATE_REVIEW
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="menuType" prepend="AND">
+				GR_MAJOR = #menuType#
+			</isNotEmpty>
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="aftschool">
+					GR_AFT_SCHOOL like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="activity">
+					GR_ACTIVITY like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="result">
+					GR_RESULT like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="TransferReviewDAO.selectTransferReviewList" parameterClass="searchVO" resultClass="egovMap">
+/* TransferReviewDAO.selectTransferReviewList */
+	<![CDATA[
+		SELECT
+			TR_SEQ
+			, TR_NAME
+			, TR_PRE_SCHOOL
+			, TR_REG_SEMESTER_BEGIN
+			, TR_REG_SEMESTER_END
+			, TR_ACTIVITY
+			, TR_RESULT
+			, TR_URL
+			, TR_REG_DATE
+			, TR_MAJOR
+	]]>
+		<include refid="usr_transfer_table"/>
+	<![CDATA[
+		ORDER BY
+			TR_REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록 -->
+	<select id="TransferReviewDAO.selectTransferReviewListCnt" parameterClass="searchVO" resultClass="int">
+/* TransferReviewDAO.selectTransferReviewListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="usr_transfer_table"/>
+	</select>
+	
+	<!-- 목록 -->
+	<select id="TransferReviewDAO.selectGraduateReviewList" parameterClass="searchVO" resultClass="egovMap">
+/* TransferReviewDAO.selectGraduateReviewList */
+	<![CDATA[
+		SELECT
+			GR_SEQ
+			, GR_NAME
+			, GR_AFT_SCHOOL
+			, GR_REG_SEMESTER_BEGIN
+			, GR_REG_SEMESTER_END
+			, GR_ACTIVITY
+			, GR_RESULT
+			, GR_URL
+			, GR_REG_DATE
+			, GR_MAJOR
+	]]>
+		<include refid="usr_graduate_table"/>
+	<![CDATA[
+		ORDER BY
+			GR_REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록 -->
+	<select id="TransferReviewDAO.selectGraduateReviewListCnt" parameterClass="searchVO" resultClass="int">
+/* TransferReviewDAO.selectGraduateReviewListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="usr_graduate_table"/>
+	</select>
+
+</sqlMap>

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="lec_result_list">
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+			LEFT JOIN TB_LCMS_MEMBER TLM
+			ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+		WHERE
+			1=1
+		<isNotEmpty prepend="AND" property="menuType">
+			TLLM.LECT_SEQ = #menuType#
+		</isNotEmpty>
+	</sql>
+
+	<!-- 성적 리스트 -->
+	<select id="LecResultDAO.LecResultList" parameterClass="searchVO" resultClass="egovMap">
+	<![CDATA[
+	/*
+		영문명(E_NAME), 국적(FE_COUNTRY), 연락처(TEL)  member table에서 가져와야함
+		출석 출석테이블에서 가져와야함 출석 점수 내는 로직 확인 필요함(GRADE_ATTND : 가칭)
+		평균성적 가저오는 부분 확인 해야함
+	*/
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT 
+					LECT_SEQ
+					, TLLM.MEMBER_CODE
+					, NAME
+					, E_NAME
+					, NATION AS FE_COUNTRY
+					, TEL
+					, (
+						SELECT 
+							ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4,0)
+						FROM
+							TB_LCMS_GRADE TLG
+						WHERE
+							TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+						AND
+							TLG.LECT_CODE = TLLM.LECT_SEQ
+						AND
+							GRADE_GUBUN = 1
+					) AS MIDTERM
+					, (
+						SELECT 
+							ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4,0)
+						FROM
+							TB_LCMS_GRADE TLG
+						WHERE
+							TLG.MEMBER_CODE = TLLM.MEMBER_CODE
+						AND
+							TLG.LECT_CODE = TLLM.LECT_SEQ
+						AND
+							GRADE_GUBUN = 2
+					) AS FINALS
+					, (
+						SELECT
+							ROUND(
+									(
+										(
+											COUNT(CASE WHEN ATTEND = '1' THEN 1 WHEN ATTEND = '3' THEN 1 END)-TRUNCATE(COUNT(CASE WHEN ATTEND = '3' THEN 1 END)/2,0)
+										)/COUNT(*)
+									)*100, 2
+								)
+						FROM
+							TB_LCMS_ATTEND TLA
+						WHERE
+							TLA.LECT_SEQ = TLLM.LECT_SEQ
+						AND
+							TLA.MEMBER_CODE = TLLM.MEMBER_CODE
+					) AS GRADE_ATTND
+	]]>
+	<include refid="lec_result_list"/>
+	<![CDATA[
+				ORDER BY
+					NAME ASC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 성적 cnt -->
+	<select id="LecResultDAO.LecResultListCnt" parameterClass="searchVO" resultClass="int">
+	<![CDATA[
+		SELECT
+			COUNT(*) AS TOTALCNT
+	]]>
+	<include refid="lec_result_list"/>
+	</select>
+	
+	<!-- 강사 성적 조회 -->
+	<select id="LecResultDAO.selectLecResultView" parameterClass="gradeVO" resultClass="gradeVO">
+	/* LecResultDAO.selectLecResultView */
+	<![CDATA[
+		SELECT
+			GRADE_SEQ			AS gradeSeq
+			, GRADE_DATE		AS gradeDate
+			, GRADE_LEC			AS gradeLec
+			, TLG.MEMBER_CODE	AS memberCode
+			, NAME				AS name
+			, E_NAME			AS eName
+			, STATUS			AS status
+			, STEP				AS step
+			, NATION			AS nation
+			, SEM_YEAR			AS semYear
+			, SEM_ESTER			AS semEster
+			, GRADE_GUBUN		AS gradeGubun
+			, GRADE_EXPR_SPEAK	AS gradeExprSpeak
+			, GRADE_EXPR_WRITE	AS gradeExprWrite
+			, GRADE_COMP_LISTEN	AS gradeCompListen
+			, GRADE_COMP_READ	AS gradeCompRead
+		FROM
+			TB_LCMS_MEMBER TLM
+		  	LEFT JOIN (
+			  				SELECT
+			  					*
+			  				FROM
+				  				TB_LCMS_GRADE
+				  			WHERE
+								LECT_CODE = #lectCode#
+	]]>
+							<isEmpty prepend="AND" property="gradeGubun">
+								GRADE_GUBUN = 1
+							</isEmpty>
+							<isNotEmpty prepend="AND" property="gradeGubun">
+								GRADE_GUBUN = #gradeGubun#
+							</isNotEmpty>
+	<![CDATA[
+			  			) TLG
+		  	ON TLM.MEMBER_CODE = TLG.MEMBER_CODE
+		WHERE
+			TLG.MEMBER_CODE = #memberCode#
+	]]>
+	</select>
+	
+	<!-- 강사 성적 등록 -->
+	<insert id="LecResultDAO.insertLecResult" parameterClass="gradeVO">
+	/* LecResultDAO.insertLecResult */
+		INSERT INTO TB_LCMS_GRADE(
+			LECT_CODE
+			, MEMBER_CODE
+			, SEM_YEAR
+			, SEM_ESTER
+			, GRADE_LEC
+			, GRADE_DATE
+			, GRADE_GUBUN
+		<isNotEmpty property="gradeExprSpeak">
+			, GRADE_EXPR_SPEAK
+		</isNotEmpty>
+		<isNotEmpty property="gradeExprWrite">
+			, GRADE_EXPR_WRITE
+		</isNotEmpty>
+		<isNotEmpty property="gradeCompListen">
+			, GRADE_COMP_LISTEN
+		</isNotEmpty>
+		<isNotEmpty property="gradeCompRead">
+			, GRADE_COMP_READ
+		</isNotEmpty>
+		)VALUES(
+			#lectCode#
+			, #memberCode#
+			, #semYear#
+			, #semEster#
+			, #gradeLec#
+			, SYSDATE()
+			, #gradeGubun#
+		<isNotEmpty property="gradeExprSpeak">
+			, #gradeExprSpeak#
+		</isNotEmpty>
+		<isNotEmpty property="gradeExprWrite">
+			, #gradeExprWrite#
+		</isNotEmpty>
+		<isNotEmpty property="gradeCompListen">
+			, #gradeCompListen#
+		</isNotEmpty>
+		<isNotEmpty property="gradeCompRead">
+			, #gradeCompRead#
+		</isNotEmpty>
+		)
+	</insert>
+	
+	<!-- 강사 성적 수정 -->
+	<update id="LecResultDAO.updateLecResult" parameterClass="gradeVO">
+	/* LecResultDAO.updateLecResult */
+		UPDATE
+			TB_LCMS_GRADE
+		SET
+			SEM_YEAR			= #semYear#
+			, SEM_ESTER			= #semEster#
+			, GRADE_LEC			= #gradeLec#
+			, GRADE_DATE		= SYSDATE()
+			, GRADE_GUBUN		= #gradeGubun#
+		<isNotEmpty property="gradeExprSpeak">
+			, GRADE_EXPR_SPEAK	= #gradeExprSpeak#
+		</isNotEmpty>
+		<isNotEmpty property="gradeExprWrite">
+			, GRADE_EXPR_WRITE	= #gradeExprWrite#
+		</isNotEmpty>
+		<isNotEmpty property="gradeCompListen">
+			, GRADE_COMP_LISTEN	= #gradeCompListen#
+		</isNotEmpty>
+		<isNotEmpty property="gradeCompRead">
+			, GRADE_COMP_READ	= #gradeCompRead#
+		</isNotEmpty>
+		WHERE
+			GRADE_SEQ = #gradeSeq#
+	</update>
+	
+	<!-- 강사 성적 조회 목록 -->
+	<select id="LecResultDAO.selectLecResultViewList" parameterClass="gradeVO" resultClass="egovMap">
+	/* LecResultDAO.selectLecResultViewList */
+	<![CDATA[
+		SELECT
+			GRADE_SEQ
+			, TLLM.MEMBER_CODE
+			, NAME
+			, GRADE_EXPR_SPEAK
+			, GRADE_EXPR_WRITE
+			, GRADE_COMP_LISTEN
+			, GRADE_COMP_READ
+			, ROUND((GRADE_EXPR_SPEAK+GRADE_EXPR_WRITE+GRADE_COMP_LISTEN+GRADE_COMP_READ)/4) AS GRADE_AVG
+		FROM
+			TB_LCMS_LECT_MAP TLLM
+		LEFT JOIN
+			TB_LCMS_MEMBER TLM ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+		LEFT JOIN
+			(
+				SELECT
+					*
+				FROM
+					TB_LCMS_GRADE
+				WHERE
+					LECT_CODE = #lectCode#
+				AND
+					GRADE_GUBUN = #gradeGubun#
+			) TLG ON TLLM.MEMBER_CODE = TLG.MEMBER_CODE
+		WHERE
+			TLLM.LECT_SEQ = #lectCode#
+		ORDER BY
+			NAME ASC
+	]]>
+	</select>
+	
+	<select id="LecResultDAO.selectLecGradeYn" parameterClass="string" resultClass="string">
+	/* LecResultDAO.selectLecGradeYn */
+	<![CDATA[
+		SELECT
+			CASE WHEN COUNT(GRADE) = SUM(GRADE) THEN 'Y' ELSE 'N' END GRADE_YN
+		FROM
+			(
+				SELECT
+					CASE WHEN COUNT(TLLM.MEMBER_CODE) < 2 THEN 0 ELSE 1 END AS GRADE
+				FROM
+					TB_LCMS_LECT_MAP TLLM
+				LEFT JOIN
+					TB_LCMS_GRADE TLG ON TLLM.LECT_SEQ = TLG.LECT_CODE AND TLLM.MEMBER_CODE = TLG.MEMBER_CODE
+				WHERE
+					TLLM.LECT_SEQ = #selLectCode#
+				GROUP BY
+					TLLM.MEMBER_CODE
+			) T
+	]]>
+	</select>
+	
+	<update id="LecResultDAO.updateLecGradeYn" parameterClass="egovMap">
+	/* LecResultDAO.updateLecGradeYn */
+		UPDATE
+			TB_LCMS_LECT
+		SET
+			GRADE_YN = 'Y'
+			, GRADE_ID = #memberCode#
+		WHERE
+			LECT_SEQ = #selLectCode#
+	</update>
+</sqlMap>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 목록 -->
+	<select id="AdmCnsltSchdulDAO.selectCnsltScheduleList" parameterClass="searchVO" resultClass="cnsltScheduleVO">
+/* AdmCnsltSchdulDAO.selectCnsltScheduleList */
+	<![CDATA[
+		SELECT 
+			SCH_SEQ as schSeq
+			, SCH_YMD as schYmd
+			, SCH_HM as schHm
+			, SCH_DY as schDy
+			, REG_ID as regId
+			, REG_NAME as regName
+			, REG_DATE as regDate
+		FROM
+			TB_HSWC_CNSLT_SCHDUL
+		WHERE 1=1
+	]]>
+	<dynamic>
+		<isNotEmpty property="startDate" prepend="AND">
+		<![CDATA[
+			SCH_YMD >= #startDate#
+		]]>
+		</isNotEmpty>
+		<isNotEmpty property="endDate" prepend="AND">
+		<![CDATA[
+			SCH_YMD <= #endDate#
+		]]>
+		</isNotEmpty>
+	</dynamic>
+	</select>
+
+	<!-- 조회 -->
+	<select id="AdmCnsltSchdulDAO.selectCnsltScheduleOne" parameterClass="map" resultClass="cnsltScheduleVO">
+/* AdmCnsltSchdulDAO.selectCnsltScheduleOne */
+	<![CDATA[
+		SELECT 
+			SCH_SEQ as schSeq
+			, SCH_YMD as schYmd
+			, SCH_HM as schHm
+			, SCH_DY as schDy
+			, REG_ID as regId
+			, REG_NAME as regName
+			, REG_DATE as regDate
+			, CASE 
+				WHEN (SELECT count(*) FROM TB_HSWC_CNSLT_APLY WHERE SCH_SEQ = t1.SCH_SEQ) > 0 THEN 'Y' 
+				ELSE 'N'
+				END as aplyYn
+		FROM
+			TB_HSWC_CNSLT_SCHDUL t1
+		WHERE
+	]]>
+		<dynamic>
+			<isNotEmpty property="schSeq">
+				SCH_SEQ = #schSeq#
+			</isNotEmpty>
+			<isNotEmpty property="cnsltScheduleVO">
+				REG_ID = #adminVO.memCode#
+				AND SCH_YMD = #cnsltScheduleVO.schYmd#
+				AND SCH_HM = (#cnsltScheduleVO.schHh# || ':' || #cnsltScheduleVO.schMi# || ':00')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<!-- 등록 -->
+	<insert id="AdmCnsltSchdulDAO.cnsltScheduleInsert" parameterClass="map">
+/* AdmCnsltSchdulDAO.cnsltScheduleInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CNSLT_SCHDUL (
+			SCH_SEQ
+			, SCH_YMD
+			, SCH_HM
+			, REG_ID
+			, REG_NAME
+		) VALUES (
+			SEQ_HSWC_CNSLT_SCHDUL.nextval
+			, #cnsltScheduleVO.schYmd#
+			, (#cnsltScheduleVO.schHh# || ':' || #cnsltScheduleVO.schMi# || ':00')
+	]]>
+		<isNotEmpty property="cnsltScheduleVO.regId">
+			, #cnsltScheduleVO.regId#
+			, #cnsltScheduleVO.regName#
+		</isNotEmpty>
+		<isEmpty property="cnsltScheduleVO.regId">
+			, #adminVO.memCode#
+			, #adminVO.memName#
+		</isEmpty>
+	<![CDATA[
+		)
+	]]>
+	</insert>
+
+	<!-- 수정 -->
+	<insert id="AdmCnsltSchdulDAO.cnsltScheduleUpdate" parameterClass="cnsltScheduleVO">
+/* AdmCnsltSchdulDAO.cnsltScheduleUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_CNSLT_SCHDUL
+		SET
+			sch_ymd = #schYmd#
+			, sch_hm = (#schHh# || ':' || #schMi# || ':00')
+	]]>
+		<isNotEmpty property="regId">
+			, REG_ID = #regId#
+			, REG_NAME = #regName#
+		</isNotEmpty>
+	<![CDATA[
+		WHERE
+			SCH_SEQ = #schSeq#
+	]]>
+	</insert>
+	
+	<!-- 삭제 -->
+	<delete id="AdmCnsltSchdulDAO.cnsltScheduleDelete" parameterClass="string">
+/* AdmCnsltSchdulDAO.cnsltScheduleDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_CNSLT_SCHDUL
+		WHERE SCH_SEQ = #schSeq#
+	]]>
+	</delete>
+
+</sqlMap>

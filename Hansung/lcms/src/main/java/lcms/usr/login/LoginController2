@@ -1,0 +1,222 @@
+import component.util.ComStringUtil;
+import egovframework.com.utl.sim.service.EgovFileScrty;
+import egovframework.let.utl.fcc.service.EgovStringUtil;
+import egovframework.rte.psl.dataaccess.util.EgovMap;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import lcms.adm.cmm.AdmCmmController;
+import lcms.usr.lec.com.LecComDAO;
+import lcms.usr.login.LoginController;
+import lcms.usr.login.LoginDAO;
+import lcms.valueObject.UsrVO;
+import lcms.valueObject.cmm.CmmnSearchVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+public class LoginController2 extends AdmCmmController {
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoginController.class);
+  
+  @Autowired
+  private LoginDAO loginDAO;
+  
+  @Autowired
+  private LecComDAO lecComDAO;
+  
+  @Resource
+  View jsonView;
+  
+  private String redirectLoginView(RedirectAttributes reda, String message) {
+    reda.addFlashAttribute("message", message);
+    return "redirect:/usr/login/loginView.do";
+  }
+  
+  private String redirectIndex(String returnUrl) {
+    return returnUrl;
+  }
+  
+  @RequestMapping({"/usr/login/loginView.do"})
+  public String loginView(@ModelAttribute("searchVO") CmmnSearchVO searchVO, HttpSession session, HttpServletRequest request, ModelMap model) throws Exception {
+    LOGGER.debug("/usr/login/loginView.do - 학생&강사 로그인화면");
+    return "/usr/login/loginView";
+  }
+  
+  @RequestMapping({"/usr/login/loginProc.do"})
+  public String loginProc(@ModelAttribute("searchVO") CmmnSearchVO searchVO, UsrVO usrVO, HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+    LOGGER.debug("/usr/login/loginProc.do - 학생&강사 로그인 프로세스");
+    LOGGER.debug("usrVO = " + usrVO.toString());
+    String message = "";
+    String returnUrl = "";
+    List<EgovMap> lectList = new ArrayList<>();
+    EgovMap lectMap = new EgovMap();
+    EgovMap semeMap = this.cmmDAO.selectOpenSeme();
+    if (usrVO != null) {
+      usrVO.setMemberPw(EgovFileScrty.encryptPassword(usrVO.getMemberPw(), usrVO.getMemberCode()));
+      this.loginDAO.updateLoginDateTime(usrVO);
+      UsrVO resultVO = this.loginDAO.selectUsrLoginProc(usrVO);
+      if (resultVO == null) {
+        message = "로그인 정보가 올바르지 않습니다.";
+        return redirectLoginView(reda, message);
+      } 
+      String memberType = resultVO.getMemberType();
+      lectList = this.lecComDAO.LectList(resultVO);
+      String memberAbs = "";
+      String lapse = "";
+      if (memberType.equals("PRF")) {
+        if ("퇴사".equals(resultVO.getStatus())) {
+          message = "유효하지 않은 아이디입니다.";
+          return redirectLoginView(reda, message);
+        } 
+        if ("5".equals(resultVO.getLoginFail())) {
+          message = "사용이 중지된 계정입니다.\r\n관리자에게 문의하세요.";
+          return redirectLoginView(reda, message);
+        } 
+        if (!usrVO.getMemberPw().equals(resultVO.getMemberPw())) {
+          resultVO.setLoginFail(String.valueOf(Integer.parseInt(resultVO.getLoginFail()) + 1));
+          this.loginDAO.updateLoginFail(resultVO);
+          message = "로그인 정보가 올바르지 않습니다.\r\n5회 이상 실패시 로그인하실 수 없습니다.\r\n" + resultVO.getLoginFail() + "회 실패하였습니다.";
+          return redirectLoginView(reda, message);
+        } 
+        EgovMap map = new EgovMap();
+        map.put("memberCode", resultVO.getMemberCode());
+        map.put("lectYear", semeMap.get("semYear"));
+        map.put("lectSem", semeMap.get("semester"));
+        String chkLec = this.loginDAO.selectchkLec(map);
+        request.getSession().setAttribute("chkLec", chkLec);
+        List<EgovMap> lapList = this.loginDAO.selectLapList(searchVO);
+        for (int i = 0; i < lapList.size(); i++) {
+          if (((EgovMap)lapList.get(i)).get("memberCode").equals(resultVO.getMemberCode())) {
+            lapse = "Y";
+            request.getSession().setAttribute("lapse", lapse);
+          } 
+        } 
+        returnUrl = "redirect:/usr/lec/myPage/lecNoticeList.do";
+      } else if (memberType.equals("STD")) {
+        EgovMap map = new EgovMap();
+        map.put("memberCode", resultVO.getMemberCode());
+        map.put("lectYear", semeMap.get("semYear"));
+        map.put("lectSem", semeMap.get("semester"));
+        String cnt = this.loginDAO.selectStudLectMapCheck(map);
+        request.getSession().setAttribute("chkStd", cnt);
+        if (cnt.equals("0")) {
+          message = "유효하지 않은 아이디입니다.";
+          return redirectLoginView(reda, message);
+        } 
+        if ("5".equals(resultVO.getLoginFail())) {
+          message = "사용이 중지된 계정입니다.\r\n관리자에게 문의하세요.";
+          return redirectLoginView(reda, message);
+        } 
+        if (!usrVO.getMemberPw().equals(resultVO.getMemberPw())) {
+          resultVO.setLoginFail(String.valueOf(Integer.parseInt(resultVO.getLoginFail()) + 1));
+          this.loginDAO.updateLoginFail(resultVO);
+          message = "로그인 정보가 올바르지 않습니다.\r\n5회 이상 실패시 로그인하실 수 없습니다.\r\n" + resultVO.getLoginFail() + "회 실패하였습니다.";
+          return redirectLoginView(reda, message);
+        } 
+        List<EgovMap> lapList = this.loginDAO.selectLapList(searchVO);
+        for (int i = 0; i < lapList.size(); i++) {
+          if (((EgovMap)lapList.get(i)).get("memberCode").equals(resultVO.getMemberCode())) {
+            lapse = "Y";
+            request.getSession().setAttribute("lapse", lapse);
+          } 
+        } 
+        if (EgovStringUtil.isEmpty(searchVO.getSearchCondition1())) {
+          searchVO.setSearchCondition1((String)semeMap.get("semYear"));
+          searchVO.setSearchCondition2((String)semeMap.get("semester"));
+        } 
+        List<EgovMap> hstrList = this.loginDAO.selectAbsWrnHstrList(searchVO);
+        for (int j = 0; j < hstrList.size(); j++) {
+          if (((EgovMap)hstrList.get(j)).get("memberCode").equals(resultVO.getMemberCode())) {
+            memberAbs = "Y";
+            request.getSession().setAttribute("memberAbs", memberAbs);
+          } 
+        } 
+        returnUrl = "redirect:/usr/std/lecRoom/stdLecEvalList.do";
+      } else {
+        returnUrl = "redirect:/usr/lec/myPage/lecNoticeList.do";
+      } 
+      String selLectCode = "";
+      String selLectName = "";
+      if (lectList.size() != 0) {
+        lectMap = lectList.get(0);
+        selLectCode = Integer.toString(((Integer)((EgovMap)lectList.get(0)).get("lectSeq")).intValue());
+        selLectName = (String)((EgovMap)lectList.get(0)).get("lectName");
+      } 
+      EgovMap semester = this.lecComDAO.selectSemeter();
+      request.getSession().setAttribute("selLectCode", selLectCode);
+      request.getSession().setAttribute("selLectName", selLectName);
+      request.getSession().setAttribute("usrSession", resultVO);
+      request.getSession().setAttribute("lecSession", lectMap);
+      request.getSession().setAttribute("lectList", lectList);
+      request.getSession().setAttribute("semester", semester);
+      request.getSession().setAttribute("openSem", semester);
+      if (resultVO != null) {
+        resultVO.setLoginFail("0");
+        this.loginDAO.updateLoginFail(resultVO);
+        EgovMap map = new EgovMap();
+        String clientIp = ComStringUtil.getClientIP(request);
+        String loginType = "";
+        if ("PRF".equals(resultVO.getMemberType())) {
+          loginType = "2";
+        } else {
+          loginType = "3";
+        } 
+        map.put("loginId", resultVO.getMemberCode());
+        map.put("name", resultVO.getName());
+        map.put("loginType", loginType);
+        map.put("acceIp", clientIp);
+        this.cmmDAO.insertLoginLog(map);
+      } 
+      return redirectIndex(returnUrl);
+    } 
+    message = "로그인 정보가 올바르지 않습니다.";
+    return redirectLoginView(reda, message);
+  }
+  
+  @RequestMapping({"/usr/login/admLogout.do"})
+  public String admLogout(HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+    LOGGER.debug("/usr/login/admLogout.do - 사용자 로그아웃");
+    String message = "로그아웃 되었습니다.";
+    request.getSession().removeAttribute("usrSession");
+    return redirectLoginView(reda, message);
+  }
+  
+  @RequestMapping({"/usr/login/changeLect.do"})
+  public String changeLect(HttpServletRequest request, ModelMap model, RedirectAttributes reda) throws Exception {
+    LOGGER.debug("/usr/login/changeLect.do - 사용자 강의실 변경");
+    UsrVO resultVO = (UsrVO)request.getSession().getAttribute("usrSession");
+    String message = "";
+    String returnUrl = "";
+    if (resultVO != null) {
+      String memberType = resultVO.getMemberType();
+      if (memberType.equals("PRF")) {
+        returnUrl = "redirect:/usr/lec/myPage/lecNoticeList.do";
+      } else if (memberType.equals("STD")) {
+        returnUrl = "redirect:/usr/std/myPage/stdNoticeList.do";
+      } else {
+        returnUrl = "redirect:/usr/lec/myPage/lecNoticeList.do";
+      } 
+      String selLectCode = request.getParameter("selLectCode");
+      String selLectName = request.getParameter("selLectName");
+      EgovMap lectMap = this.lecComDAO.SelectLectMap(selLectCode);
+      EgovMap semester = this.lecComDAO.selectLecSemeter(lectMap);
+      request.getSession().setAttribute("selLectCode", selLectCode);
+      request.getSession().setAttribute("selLectName", selLectName);
+      request.getSession().setAttribute("lecSession", lectMap);
+      request.getSession().setAttribute("semester", semester);
+      return redirectIndex(returnUrl);
+    } 
+    message = "세션이 종료되었습니다.";
+    return redirectLoginView(reda, message);
+  }
+}
+

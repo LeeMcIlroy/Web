@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="adm_qna_table">
+		FROM
+			TB_HSWC_QNA
+		WHERE 1=1
+		<isNotEmpty property="searchWord">
+			<isEqual property="searchCondition" compareValue="title" prepend="AND">
+				QST_TITLE LIKE '%' || #searchWord# || '%'
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="content" prepend="AND">
+				QST_CONTENT LIKE '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+		
+	</sql>
+	<!-- 질의응답 목록 -->
+	<select id="AdmBoardMngQnaDAO.selectBoardMngQnaList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmBoardMngQnaDAO.selectBoardMngQnaList */
+	<![CDATA[
+		SELECT
+			*
+		FROM		
+			(SELECT
+				ROWNUM AS rn
+				, QNA_SEQ
+				, QST_TITLE
+				, QST_CONTENT
+				, QST_REG_ID
+				, QST_REG_DATE
+				, QNA_HITCOUNT
+				, ANS_TITLE
+				, ANS_CONTENT
+				, ANS_REG_ID
+				, ANS_REG_DATE
+				, QST_REG_NAME
+				, ANS_REG_NAME
+			FROM	
+				(SELECT
+					QNA_SEQ
+					, QST_TITLE
+					, QST_CONTENT
+					, QST_REG_ID
+					, QST_REG_DATE
+					, QNA_HITCOUNT
+					, ANS_TITLE
+					, ANS_CONTENT
+					, ANS_REG_ID
+					, ANS_REG_DATE
+					, QST_REG_NAME
+					, ANS_REG_NAME
+				]]>
+				<include refid="adm_qna_table"/>
+				<![CDATA[
+				ORDER BY
+					QNA_SEQ DESC
+				)
+			)t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#	
+	]]>
+	</select>
+	
+	<!-- 질의응답 cnt -->
+	<select id="AdmBoardMngQnaDAO.selectBoardMngQnaListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmBoardMngQnaDAO.selectBoardMngQnaListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)	
+	]]>	
+		<include refid="adm_qna_table"/>
+	
+	</select>
+	
+	
+	<!-- 질의응답 보기 -->
+	<select id="AdmBoardMngQnaDAO.selectBoardMngQnaOne" parameterClass="String" resultClass="qnaVO">
+/* AdmBoardMngQnaDAO.selectBoardMngQnaOne */
+	<![CDATA[
+		SELECT
+			QNA_SEQ AS qnaSeq
+			, QST_TITLE AS qstTitle
+			, QST_CONTENT AS qstContent
+			, QST_REG_ID AS qstRegId
+			, to_char(QST_REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS qstRegDate
+			, QNA_HITCOUNT AS qnaHitcount
+			, ANS_TITLE AS ansTitle
+			, ANS_CONTENT AS ansContent
+			, ANS_REG_ID AS ansRegId
+			, to_char(ANS_REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS ansRegDate
+			, QST_REG_NAME AS qstRegName
+			, ANS_REG_NAME AS ansRegName
+		FROM
+			TB_HSWC_QNA
+		WHERE
+			QNA_SEQ=#qnaSeq#
+	]]>
+	
+	</select>
+	
+		
+	<!-- 답변 등록  -->
+	<update id="AdmBoardMngQnaDAO.updateBoardMngQnaOne" parameterClass="qnaVO">
+/* AdmBoardMngQnaDAO.updateBoardMngQnaOne */
+	<![CDATA[
+		UPDATE
+			TB_HSWC_QNA
+		SET
+			ANS_TITLE = #ansTitle#
+			, ANS_CONTENT = #ansContent#
+			, ANS_REG_ID = #ansRegId#
+			, ANS_REG_NAME = #ansRegName#
+			, ANS_REG_DATE = sysdate
+		WHERE
+			QNA_SEQ = #qnaSeq#
+	]]>	
+	</update>
+	
+	<!-- 글 삭제 -->
+	<delete id="AdmBoardMngQnaDAO.deleteBoardMngQnaOne" parameterClass="String">
+/* AdmBoardMngQnaDAO.deleteBoardMngQnaOne */
+	<![CDATA[
+		DELETE FROM TB_HSWC_QNA
+		WHERE QNA_SEQ = #qnaSeq#
+	]]>
+	</delete>
+	
+</sqlMap>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_brc_table">
+		FROM
+			TB_HDA_BROCHURE t1
+		WHERE
+			1=1	
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition1" compareValue="name">
+				BRC_NAME like concat('%', #searchWord#, '%')
+			</isEqual>
+			<isEqual property="searchCondition1" compareValue="major">
+				BRC_MAJOR like concat('%', #searchWord#, '%')
+			</isEqual>			
+		</isNotEmpty>		
+	</sql>
+
+	<!--  목록 -->
+	<select id="AdmBrochureDAO.selectBrochureList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmBrochureDAO.selectBrochureList */	
+	<![CDATA[
+		SELECT
+			BRC_SEQ
+			, BRC_NAME
+			, BRC_SCHOOL
+			, BRC_TEL
+			, BRC_MAJOR
+			, BRC_ZIPCODE
+			, BRC_ADDR1
+			, BRC_ADDR2
+			, DATE_FORMAT(BRC_REG_DATE, '%Y-%m-%d') as BRC_REG_DATE
+	]]>
+	<include refid="adm_brc_table"/>
+	<![CDATA[
+		ORDER BY t1.BRC_REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+
+	<!--  목록Cnt -->
+	<select id="AdmBrochureDAO.selectBrochureListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmBrochureDAO.selectBrochureListCnt */	
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+	<include refid="adm_brc_table"/>
+	</select>
+	
+	<!--  삭제 -->
+	<delete id="AdmBrochureDAO.deleteBrochureOne" parameterClass="String">
+/* AdmBrochureDAO.deleteBrochureOne */
+	<![CDATA[
+		DELETE FROM TB_HDA_BROCHURE
+		WHERE BRC_SEQ = #brcSeq#
+	]]>
+		
+	</delete>
+
+</sqlMap>

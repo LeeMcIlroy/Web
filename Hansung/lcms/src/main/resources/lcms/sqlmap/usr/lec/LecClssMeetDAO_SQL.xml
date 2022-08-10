@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<select id="LecClssMeetDAO.selectLecClssMeetList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecClssMeetDAO.selectLecClssMeetList */
+	<![CDATA[
+		SELECT
+			TLW.WEEK
+			, TLL.LECT_GRADE
+			, TLL.PROF_NAME
+			, TLL.LECT_DIVI
+			, CASE TLML.SUBMIS_YN
+				WHEN 'Y' THEN '제출'
+				WHEN 'N' THEN '미제출'
+			END AS SUBMIS_YN
+			, TLML.MEET_SEQ
+			, TLML.PART_PROF
+		FROM
+			TB_LCMS_WEEK TLW
+			LEFT JOIN (
+				SELECT
+					MEET_SEQ
+					, YEAR
+					, SEMESTER
+					, WEEK
+					, GRADE
+					, SUBMIS_YN
+					, PART_PROF
+					, PROG
+				FROM
+					TB_LCMS_MEET_LOG
+				WHERE
+					GRADE = #searchCondition3#
+			) TLML ON TLW.YEAR = TLML.YEAR AND TLW.SEMESTER = TLML.SEMESTER AND TLW.WEEK = TLML.WEEK AND TLW.PROG = TLML.PROG
+			, (
+				SELECT
+					GROUP_CONCAT(DISTINCT T3.NAME) AS PROF_NAME
+					, GROUP_CONCAT(DISTINCT T2.LECT_DIVI) AS LECT_DIVI
+					, T2.LECT_GRADE
+				FROM
+					TB_LCMS_LECTTIMETABLE T1
+					LEFT JOIN TB_LCMS_LECT T2 ON T1.LECT_CODE = T2.LECT_SEQ
+					LEFT JOIN TB_LCMS_MEMBER T3 ON T1.LECT_TEA = T3.MEMBER_CODE
+				WHERE
+					T2.LECT_STATE = 'Y'
+				AND
+					T2.LECT_YEAR = #searchCondition1#
+				AND
+					T2.LECT_SEM = #searchCondition2#
+				AND
+					T2.LECT_GRADE = #searchCondition3#
+				GROUP BY
+					T2.LECT_YEAR, T2.LECT_SEM, T2.LECT_GRADE
+			) TLL
+		WHERE
+			TLW.YEAR = #searchCondition1#
+		AND
+			TLW.SEMESTER = #searchCondition2#
+		AND
+			TLW.PROG = #searchCondition4#
+		ORDER BY
+			CAST(TLW.WEEK AS UNSIGNED) ASC
+	]]>
+	</select>
+	
+	<select id="LecClssMeetDAO.selectLecClssMeetModify" parameterClass="egovMap" resultClass="meetLogVO">
+	/* LecClssMeetDAO.selectLecClssMeetModify */
+	<![CDATA[
+		SELECT
+			MEET_SEQ		AS meetSeq
+			, YEAR			AS year
+			, SEMESTER		AS semester
+			, WEEK			AS week
+			, GRADE			AS grade
+			, THIS_SUBJECT	AS thisSubject
+			, THIS_STD_MNG	AS thisStdMng
+			, THIS_ETC		AS thisEtc
+			, NEXT_SUBJECT	AS nextSubject
+			, NEXT_STD_MNG	AS nextStdMng
+			, NEXT_ETC		AS nextEtc
+			, NOTICE		AS notice
+			, SUBMIS_YN		AS submisYn
+			, REG_DATE		AS regDate
+			, REG_NAME		AS regName
+			, PART_PROF		AS partProf
+			, PROG			AS prog
+		FROM
+			TB_LCMS_MEET_LOG
+		WHERE
+			MEET_SEQ = #meetSeq#
+	]]>
+	</select>
+	
+	<select id="LecClssMeetDAO.selectLecMeetProfList" parameterClass="egovMap" resultClass="meetProfVO">
+	/* LecClssMeetDAO.selectLecMeetProfList */
+	<![CDATA[
+		SELECT
+			MPROF_SEQ		AS mprofSeq
+			, MEET_SEQ		AS meetSeq
+			, LECT_SEQ		AS lectSeq
+			, CLASS_NUM		AS classNum
+			, MON_PROF_CODE	AS monProfCode
+			, TUE_PROF_CODE	AS tueProfCode
+			, WED_PROF_CODE	AS wedProfCode
+			, THU_PROF_CODE	AS thuProfCode
+			, FRI_PROF_CODE	AS friProfCode
+		FROM
+			TB_LCMS_MEET_PROF
+		WHERE
+			MEET_SEQ = #meetSeq#
+	]]>
+	</select>
+	
+	<select id="LecClssMeetDAO.selectLecMeetWeek" parameterClass="egovMap" resultClass="egovMap">
+	<![CDATA[
+		SELECT
+			DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)
+			), '%m/%d') AS MONDAY
+			, DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)+1
+			), '%m/%d') AS TUESDAY
+			, DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)+2
+			), '%m/%d') AS WEDNESDAY
+			, DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)+3
+			), '%m/%d') AS THURSDAY
+			, DATE_FORMAT(ADDDATE(
+				DATE_ADD(
+					ENTER_REGI_S
+					, INTERVAL ((#week#-1)*7) DAY
+				)
+				, - WEEKDAY(
+					DATE_ADD(
+						ENTER_REGI_S
+						, INTERVAL ((#week#-1)*7) DAY
+					)
+				)+4
+			), '%m/%d') AS FRIDAY
+			, TLLT.LECT_GRADE
+			, TLLT.WEEK
+			, TLLT.PROF_NAME
+		FROM
+			TB_LCMS_SEME TLS
+			, (
+				SELECT
+					TLL.LECT_GRADE
+					, #week# AS WEEK
+					, GROUP_CONCAT(DISTINCT TLM.NAME) AS PROF_NAME
+				FROM
+					TB_LCMS_LECTTIMETABLE TLLT
+					LEFT JOIN TB_LCMS_LECT TLL ON TLLT.LECT_CODE = TLL.LECT_SEQ
+					LEFT JOIN TB_LCMS_MEMBER TLM ON TLLT.LECT_TEA = TLM.MEMBER_CODE
+				WHERE
+					TLL.LECT_STATE = 'Y'
+				AND
+					TLL.LECT_GRADE = #grade#
+				AND
+					TLL.LECT_YEAR = #semYear#
+				AND
+					TLL.LECT_SEM = #semester#
+				GROUP BY
+					TLL.LECT_GRADE
+			) TLLT
+		WHERE
+			SEM_YEAR = #semYear#
+		AND
+			SEMESTER = #semester#
+	]]>
+	</select>
+	
+	<select id="LecClssMeetDAO.selectLecLectGradeList" parameterClass="egovMap" resultClass="egovMap">
+	/* LecClssMeetDAO.selectLecLectGradeList */
+	<![CDATA[
+		SELECT
+			LECT_SEQ
+			, LECT_NAME
+			, LECT_DIVI
+			, LECT_GRADE
+		FROM
+			TB_LCMS_LECT
+		WHERE
+			LECT_STATE = 'Y'
+		AND
+			LECT_GRADE = #grade#
+		AND
+			LECT_YEAR = #semYear#
+		AND
+			LECT_SEM = #semester#
+		AND
+			LECT_PROG = #prog#
+	]]>
+	</select>
+	
+	<select id="LecClssMeetDAO.selectLecProfList" parameterClass="egovMap" resultClass="egovMap">
+	/* LecClssMeetDAO.selectLecProfList */
+	<![CDATA[
+		SELECT DISTINCT
+			TLL.LECT_SEQ
+			, TLLT.LECT_TEA
+			, TLM.NAME
+		FROM
+			TB_LCMS_LECTTIMETABLE TLLT
+			LEFT JOIN TB_LCMS_LECT TLL ON TLLT.LECT_CODE = TLL.LECT_SEQ
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLLT.LECT_TEA = TLM.MEMBER_CODE
+		WHERE
+			TLL.LECT_STATE = 'Y'
+		AND
+			TLL.LECT_YEAR = #semYear#
+		AND
+			TLL.LECT_SEM = #semester#
+	]]>
+	</select>
+	
+	<insert id="LecClssMeetDAO.insertLecClssMeetLog" parameterClass="meetLogVO">
+	/* LecClssMeetDAO.insertLecClssMeetLog */
+	<selectKey keyProperty="meetSeq" resultClass="string" type="post">
+		SELECT MAX(MEET_SEQ) FROM TB_LCMS_MEET_LOG
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_LCMS_MEET_LOG(
+			YEAR
+			, SEMESTER
+			, WEEK
+			, GRADE
+			, THIS_SUBJECT
+			, THIS_STD_MNG
+			, THIS_ETC
+			, NEXT_SUBJECT
+			, NEXT_STD_MNG
+			, NEXT_ETC
+			, NOTICE
+			, REG_DATE
+			, REG_NAME
+			, PART_PROF
+			, PROG
+		)VALUES(
+			#year#
+			, #semester#
+			, #week#
+			, #grade#
+			, #thisSubject#
+			, #thisStdMng#
+			, #thisEtc#
+			, #nextSubject#
+			, #nextStdMng#
+			, #nextEtc#
+			, #notice#
+			, SYSDATE()
+			, #regName#
+			, #partProf#
+			, #prog#
+		)
+	]]>
+	</insert>
+	
+	<insert id="LecClssMeetDAO.insertLecClssMeetProf" parameterClass="meetProfVO">
+	/* LecClssMeetDAO.insertLecClssMeetProf */
+	<![CDATA[
+		INSERT INTO TB_LCMS_MEET_PROF(
+			MEET_SEQ
+			, LECT_SEQ
+			, CLASS_NUM
+			, MON_PROF_CODE
+			, TUE_PROF_CODE
+			, WED_PROF_CODE
+			, THU_PROF_CODE
+			, FRI_PROF_CODE
+		)VALUES(
+			#meetSeq#
+			, #lectSeq#
+			, #classNum#
+			, #monProfCode#
+			, #tueProfCode#
+			, #wedProfCode#
+			, #thuProfCode#
+			, #friProfCode#
+		)
+	]]>
+	</insert>
+	
+	<update id="LecClssMeetDAO.updateLecClssMeetLog" parameterClass="meetLogVO">
+	/* LecClssMeetDAO.updateLecClssMeetLog */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_MEET_LOG
+		SET
+			THIS_SUBJECT	= #thisSubject#
+			, THIS_STD_MNG	= #thisStdMng#
+			, THIS_ETC		= #thisEtc#
+			, NEXT_SUBJECT	= #nextSubject#
+			, NEXT_STD_MNG	= #nextStdMng#
+			, NEXT_ETC		= #nextEtc#
+			, NOTICE		= #notice#
+			, PART_PROF		= #partProf#
+		WHERE
+			MEET_SEQ = #meetSeq#
+	]]>
+	</update>
+	
+	<update id="LecClssMeetDAO.updateLecClssMeetProf" parameterClass="meetProfVO">
+	/* LecClssMeetDAO.updateLecClssMeetProf */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_MEET_PROF
+		SET
+			MON_PROF_CODE	= #monProfCode#
+			, TUE_PROF_CODE	= #tueProfCode#
+			, WED_PROF_CODE	= #wedProfCode#
+			, THU_PROF_CODE	= #thuProfCode#
+			, FRI_PROF_CODE	= #friProfCode#
+		WHERE
+			MPROF_SEQ = #mprofSeq#
+	]]>
+	</update>
+	
+	<update id="LecClssMeetDAO.updateLecClssMeetLogSubmis" parameterClass="string">
+	/* LecClssMeetDAO.updateLecClssMeetLogSubmis */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_MEET_LOG
+		SET
+			SUBMIS_YN = 'Y'
+		WHERE
+			MEET_SEQ = #meetSeq#
+	]]>
+	</update>
+	
+	<select id="LecClssMeetDAO.selectLecClssMeetProfCopy" parameterClass="egovMap" resultClass="egovMap">
+	/* LecClssMeetDAO.selectLecClssMeetProfCopy */
+	<![CDATA[
+		SELECT
+			MPROF_SEQ
+			, TLMP.MEET_SEQ
+			, LECT_SEQ
+			, CLASS_NUM
+			, MON_PROF_CODE
+			, TUE_PROF_CODE
+			, WED_PROF_CODE
+			, THU_PROF_CODE
+			, FRI_PROF_CODE
+		FROM
+			TB_LCMS_MEET_PROF TLMP
+			LEFT JOIN TB_LCMS_MEET_LOG TLML ON TLMP.MEET_SEQ = TLML.MEET_SEQ
+		WHERE
+			TLMP.LECT_SEQ = #lectSeq#
+		AND
+			TLML.WEEK = (#week#-1)
+		AND
+			TLML.GRADE = #grade#
+	]]>
+	</select>
+
+</sqlMap>

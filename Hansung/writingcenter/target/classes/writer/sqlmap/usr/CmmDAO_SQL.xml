@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 학기강의실 목록 -->
+	<select id="CmmDAO.selectSmtrList" parameterClass="searchVO" resultClass="semesterVO" remapResults="true">
+/* CmmDAO.selectSmtrList */
+	<![CDATA[
+	SELECT 
+		SMTR_SEQ as smtrSeq
+		, SMTR_TITLE as smtrTitle
+		, SMTR_CONTENT as smtrContent
+	]]>
+	<dynamic>
+		<isParameterPresent>
+			<isEmpty property="searchSemester">
+				, CASE 
+					WHEN rownum = 1 THEN
+						'Y'
+					ELSE
+						'N'
+				END AS choiceYn
+			</isEmpty>
+			<isNotEmpty property="searchSemester">
+				, CASE 
+					WHEN SMTR_SEQ = #searchSemester# THEN
+						'Y'
+					ELSE
+						'N'
+				END AS choiceYn
+			</isNotEmpty>
+		</isParameterPresent>
+	</dynamic>
+	<![CDATA[
+		FROM (
+			SELECT
+				rownum AS rn
+				, SMTR_SEQ
+				, SMTR_TITLE
+				, SMTR_CONTENT
+			FROM (
+				SELECT
+					SMTR_SEQ
+					, SMTR_TITLE
+					, SMTR_CONTENT
+				FROM
+					TB_HSWC_SMTR
+				WHERE
+					SMTR_VIEW_YN = 'Y'
+				ORDER BY
+					SMTR_SORT asc, SMTR_SEQ desc
+			)
+		)
+	
+	]]>
+	</select>
+	
+	<!-- 계열 목록 -->
+	<select id="CmmDAO.selectDeptList" parameterClass="searchVO" resultClass="departmentVO" remapResults="true">
+/* CmmDAO.selectDeptList */
+	<![CDATA[
+		SELECT 
+			DEPT_SEQ		as deptSeq
+			, DEPT_TITLE	as deptTitle
+			, DEPT_SORT		as deptSort
+	]]>
+		<isNotEmpty property="searchSemester">
+			, (
+				SELECT count(*) 
+				FROM TB_HSWC_CLS 
+				WHERE CLS_VIEW_YN = 'Y'
+					AND SMTR_SEQ = #searchSemester#
+					AND DEPT_SEQ = t1.DEPT_SEQ
+				) AS clsCnt
+		</isNotEmpty>
+	<![CDATA[
+		FROM 
+			TB_HSWC_DEPT t1
+		WHERE
+			DEPT_VIEW_YN = 'Y'
+		ORDER BY
+			DEPT_SORT asc
+	]]>
+	</select>
+	
+	<!-- 반_교수 목록 -->
+	<select id="CmmDAO.selectClsList" parameterClass="searchVO" resultClass="classVO">
+/* CmmDAO.selectClsList */
+	<![CDATA[
+		SELECT 
+			CLS_SEQ			as clsSeq
+			, CLS_TITLE		as clsTitle
+			, CLS_SORT		as clsSort
+			, DEPT_SEQ		as deptSeq
+			, SMTR_SEQ 		as smtrSeq
+		FROM 
+			TB_HSWC_CLS
+		WHERE
+			CLS_VIEW_YN = 'Y'
+			AND SMTR_SEQ = #searchSemester#
+		ORDER BY
+			CLS_SORT asc
+	]]>
+	</select>
+	
+	<!-- 반_교수 목록(나의강의실) -->
+	<select id="CmmDAO.selectMyClsList" parameterClass="map" resultClass="classVO">
+/* CmmDAO.selectMyClsList */
+	<![CDATA[
+	]]>
+	</select>
+	
+	<!-- 반_교수 조회 -->
+	<select id="CmmDAO.selectClsOne" parameterClass="map" resultClass="egovMap">
+/* CmmDAO.selectClsOne */
+	<![CDATA[
+		SELECT
+			CLS_TITLE
+			, CLS_LINK
+			, SMTR_SEQ
+			, (SELECT SMTR_TITLE FROM TB_HSWC_SMTR WHERE SMTR_SEQ = t1.SMTR_SEQ) AS SMTR_TITLE
+			, DEPT_SEQ
+			, (SELECT DEPT_TITLE FROM TB_HSWC_DEPT WHERE DEPT_SEQ = T1.DEPT_SEQ) AS DEPT_TITLE
+			, CASE 
+				WHEN (SELECT count(*) FROM TB_HSWC_MYCLASS WHERE MY_HAKBUN = #userVO.memCode# AND CLS_SEQ = t1.CLS_SEQ) > 0 THEN 'Y'
+				ELSE 'N'
+			END as MY_CLS_YN
+		FROM
+			TB_HSWC_CLS t1
+		WHERE
+			CLS_SEQ = #clsSeq#
+	]]>
+	</select>
+
+
+	<!--******************************************* 임시 *******************************************-->
+	<!-- 기존테이블 검색 -->
+	<select id="CmmDAO.tempSelectList" resultClass="egovMap">
+/* CmmDAO.tempSelectList */
+	<![CDATA[
+		select 
+			bf_won_name
+			, ('/old/upfile/lecture/' || bf_save_name) as bf_save_name
+			, bf_datetime
+			, bo_idx
+		from
+			TBL_LECTURE_BOARD_UPFILE
+	]]>
+	</select>
+	
+	<!-- insert -->
+	<insert id="CmmDAO.tempInsert" parameterClass="egovMap">
+/* CmmDAO.tempInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_CLS_NOTI_UPFILE (UP_SEQ, UP_ORIGIN_FILE_NAME, UP_SAVE_FILE_PATH, REG_DATE, NT_SEQ)
+		values(
+			seq_hswc_cls_noti_upfile.nextval
+			, #bfWonName#
+			, #bfSaveName#
+			, #bfDatetime#
+			, #boIdx#
+		)		
+	]]>
+	</insert>
+	
+</sqlMap>

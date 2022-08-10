@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 등록 -->
+	<insert id="BrochureDAO.brochureInsert" parameterClass="brochureVO">
+/* BrochureDAO.brochureInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_BROCHURE (
+			BRC_NAME
+			, BRC_SCHOOL
+			, BRC_TEL
+			, BRC_MAJOR
+			, BRC_ZIPCODE
+			, BRC_ADDR1
+			, BRC_ADDR2
+			, BRC_REG_DATE
+		) VALUES (
+			#brcName#
+			, #brcSchool#
+			, #brcTel#
+			, #brcMajor#
+			, #brcZipcode#
+			, #brcAddr1#
+			, #brcAddr2#
+			, CURRENT_TIMESTAMP
+		)
+	]]>
+	</insert>
+</sqlMap>

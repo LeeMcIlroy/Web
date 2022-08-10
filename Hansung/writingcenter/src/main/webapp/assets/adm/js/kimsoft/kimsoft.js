@@ -1,0 +1,2 @@
+var kimsoft = {};
+kimsoft.util = {};

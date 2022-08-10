@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<!-- 국적별 수강인원 -->
+	<select id="AdmStatDAO.selectAdmNatiStatList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStatDAO.selectAdmNatiStatList */
+	<![CDATA[
+		SELECT
+			NATION
+			, COUNT(CASE WHEN GENDER = '남' THEN 1 END) AS MAN_CNT
+			, COUNT(CASE WHEN GENDER = '여' THEN 1 END) AS WOM_CNT
+			, COUNT(NATION) AS NATI_CNT
+		FROM
+		(
+			SELECT DISTINCT
+				TLM.MEMBER_CODE
+				, TLM.GENDER
+				, TLM.NATION
+			FROM
+				TB_LCMS_LECT_MAP TLLM
+				LEFT JOIN TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+				LEFT JOIN TB_LCMS_MEMBER TLM ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+			WHERE
+				TLL.LECT_YEAR = #searchCondition1#
+			AND
+				TLL.LECT_SEM = #searchCondition2#
+			AND
+				TLL.LECT_PROG = #searchCondition3#
+			AND 
+				LECT_STATE = 'Y'
+			AND
+				STATUS NOT IN ('자퇴','행방불명','퇴학')
+		) T
+		GROUP BY
+			T.NATION
+		ORDER BY
+			T.NATION ASC
+	]]>
+	</select>
+	
+	<!-- 성별별 수강인원 -->
+	<select id="AdmStatDAO.selectAdmNatiStatTot" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStatDAO.selectAdmNatiStatTot */
+	<![CDATA[
+		SELECT
+			COUNT(CASE WHEN GENDER = '남' THEN 1 END) AS MAN_TCNT
+			, COUNT(CASE WHEN GENDER = '여' THEN 1 END) AS WOM_TCNT
+			, COUNT(*) AS TOT_CNT
+		FROM
+		(
+			SELECT DISTINCT
+				TLM.MEMBER_CODE
+				, TLM.GENDER
+			FROM
+				TB_LCMS_LECT_MAP TLLM
+				LEFT JOIN TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+				LEFT JOIN TB_LCMS_MEMBER TLM ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+			WHERE
+				TLL.LECT_YEAR = #searchCondition1#
+			AND
+				TLL.LECT_SEM = #searchCondition2#
+			AND
+				TLL.LECT_PROG = #searchCondition3#
+			AND 
+				LECT_STATE = 'Y'
+			AND
+				STATUS NOT IN ('자퇴','행방불명','퇴학')
+		) T
+	]]>
+	</select>
+
+	<!-- 학생구분별 수강인원 -->
+	<select id="AdmStatDAO.selectAdmStdStatList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStatDAO.selectAdmStdStatList */
+	<![CDATA[
+		SELECT
+			CONCAT(T.LECT_YEAR, '년 ', T.SEME_NM) AS SEMESTER
+			, COUNT(*) AS TOT_CNT
+			, COUNT(CASE STD_TYPE WHEN '1' THEN 1 END) AS CHAN_CNT
+			, COUNT(CASE STD_TYPE WHEN '2' THEN 1 END) AS LANG_CNT
+			, COUNT(CASE STD_TYPE WHEN '3' THEN 1 END) AS UNDE_CNT
+			, COUNT(CASE STD_TYPE WHEN '4' THEN 1 END) AS GRAD_CNT
+		FROM
+		(
+			SELECT DISTINCT
+				TLM.MEMBER_CODE
+				, TLM.STD_TYPE
+				, TLL.LECT_YEAR
+				, TLL.LECT_SEM
+				, CASE TLL.LECT_SEM WHEN '1' THEN '봄학기'
+									WHEN '2' THEN '여름학기'
+									WHEN '3' THEN '가을학기'
+									WHEN '4' THEN '겨울학기' END AS SEME_NM
+			FROM
+				TB_LCMS_LECT_MAP TLLM
+				LEFT JOIN TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+				LEFT JOIN TB_LCMS_MEMBER TLM ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+			WHERE
+				TLL.LECT_YEAR BETWEEN (#searchCondition1#-#searchCondition2#+1) AND #searchCondition1#
+			AND
+				TLL.LECT_PROG = #searchCondition3#
+			AND 
+				LECT_STATE = 'Y'
+			AND
+				STATUS NOT IN ('자퇴','행방불명','퇴학')
+		) T
+		GROUP BY
+			T.LECT_YEAR, T.LECT_SEM
+		ORDER BY
+			T.LECT_YEAR DESC, T.LECT_SEM DESC
+	]]>
+	</select>
+
+	<!-- 학생구분별 수강인원 -->
+	<select id="AdmStatDAO.selectAdmComplStatList" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmStatDAO.selectAdmComplStatList */
+	<![CDATA[
+		SELECT
+			CONCAT(T.LECT_YEAR, '년 ', T.SEME_NM) AS SEMESTER
+			, COUNT(*) AS TOT_CNT
+			, COUNT(CASE COMPLE_STA WHEN '1' THEN 1 END) AS COMPLE_CNT
+			, COUNT(CASE COMPLE_STA WHEN '2' THEN 1 END) AS NON_COMPLE_CNT
+			, COUNT(CASE WHEN STATUS = '자퇴' AND COMPLE_STA != '1' AND COMPLE_STA != '2' THEN 1 END) AS DROP_CNT
+			, COUNT(CASE WHEN STATUS = '퇴학' AND COMPLE_STA != '1' AND COMPLE_STA != '2' THEN 1 END) AS OUT_CNT
+			, COUNT(CASE WHEN STATUS = '행방불명' AND COMPLE_STA != '1' AND COMPLE_STA != '2' THEN 1 END) AS MISSING_CNT
+		FROM
+		(
+			SELECT DISTINCT
+				TLM.MEMBER_CODE
+				, TLM.STATUS
+				, TLL.LECT_YEAR
+				, TLL.LECT_SEM
+				, TLLM.COMPLE_STA
+				, CASE TLL.LECT_SEM WHEN '1' THEN '봄학기'
+									WHEN '2' THEN '여름학기'
+									WHEN '3' THEN '가을학기'
+									WHEN '4' THEN '겨울학기' END AS SEME_NM
+			FROM
+				TB_LCMS_LECT_MAP TLLM
+				LEFT JOIN TB_LCMS_LECT TLL ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+				LEFT JOIN TB_LCMS_MEMBER TLM ON TLLM.MEMBER_CODE = TLM.MEMBER_CODE
+			WHERE
+				TLL.LECT_YEAR BETWEEN (#searchCondition1#-#searchCondition2#+1) AND #searchCondition1#
+			AND
+				TLL.LECT_PROG = #searchCondition3#
+			AND 
+				LECT_STATE = 'Y'
+		) T
+		GROUP BY
+			T.LECT_YEAR, T.LECT_SEM
+		ORDER BY
+			T.LECT_YEAR DESC, T.LECT_SEM DESC
+	]]>
+	</select>
+</sqlMap>

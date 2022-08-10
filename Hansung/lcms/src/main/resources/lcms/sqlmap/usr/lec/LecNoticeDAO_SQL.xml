@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<sql id="where_usr_lecnoti">
+		FROM TB_LCMS_NOTICE
+		WHERE 1=1
+		<isNotEmpty property="searchWord" prepend="AND">
+			(NOTI_TITLE LIKE CONCAT ('%',#searchWord#,'%') OR
+			NOTI_CONTENT LIKE CONCAT ('%',#searchWord#,'%'))
+		</isNotEmpty>
+		AND NOTI_GUBUN IN ('전체','교사')
+		AND NOTI_TOP = ''
+	</sql>
+
+	<!--교사 공지 리스트 -->
+	<select id="LecNoticeDAO.selectLecNoticeList" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* LecNoticeDAO.selectLecNoticeList */
+	<![CDATA[
+	SELECT K.*,SUBSTRING_INDEX(ROWNUM,'.',1) ROWINDEX FROM
+		(
+		SELECT B.*,@rownum := @rownum+1 AS ROWNUM FROM(SELECT A.* FROM
+       (
+		 SELECT NOTI_SEQ ,
+		NOTI_GUBUN ,
+		NOTI_WRITER ,
+		DATE_FORMAT(NOTI_DATE,'%Y.%m.%d')NOTI_DATE ,
+		NOTI_TITLE,
+		NOTI_TOP,
+		(SELECT COUNT(*) FROM TB_LCMS_ATTACH WHERE BOARD_SEQ = NOTI_SEQ) FILECOUNT,
+		IFNULL(NOTI_LECHIT,'0') NOTI_LECHIT 
+		]]>
+		<include refid="where_usr_lecnoti" />
+		 <![CDATA[ 
+		 )A 	,(SELECT @ROWNUM:=0) R 
+		 ORDER BY   A.NOTI_DATE ASC)B  ORDER BY ROWNUM DESC )K
+                  LIMIT  #firstIndex#, #recordCountPerPage# 
+	]]>
+	</select>
+
+	<!-- 교사 공지사항 cnt -->
+	<select id="LecNoticeDAO.selectLecNoticeListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*LecNoticeDAO.selectLecNoticeListCnt */
+	<![CDATA[
+		SELECT COUNT(*) AS TOTALCNT
+		]]>
+		<include refid="where_usr_lecnoti" />
+	</select>
+	<!-- ***************************************************** -->
+	<!--교사 공지 **상단** 리스트 -->
+	<select id="LecNoticeDAO.selectTopNotiList" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* LecNoticeDAO.selectTopNotiList */
+	<![CDATA[
+		 SELECT NOTI_SEQ ,
+		NOTI_GUBUN ,
+		NOTI_WRITER ,
+		DATE_FORMAT(NOTI_DATE,'%Y.%m.%d')NOTI_DATE ,
+		NOTI_TITLE,
+		NOTI_TOP,
+		IFNULL(NOTI_LECHIT,'0') NOTI_LECHIT,
+		(SELECT COUNT(*) FROM TB_LCMS_ATTACH WHERE BOARD_SEQ = NOTI_SEQ) FILECOUNT
+		  FROM TB_LCMS_NOTICE
+		WHERE NOTI_TOP = 'Y' AND NOTI_GUBUN IN ('전체','교사')
+		 ORDER BY  NOTI_DATE DESC
+	]]>
+	</select>
+	
+		<!-- 교사  **상단** 공지사항 cnt -->
+	<select id="LecNoticeDAO.selectTopNotiListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*LecNoticeDAO.selectTopNotiListCnt */
+	<![CDATA[
+		SELECT COUNT(*) AS TOPNOTICNT
+	 FROM TB_LCMS_NOTICE
+		WHERE NOTI_TOP = 'Y' AND NOTI_GUBUN IN ('전체','교사')
+	]]>
+	</select>
+	
+	<select id="LecNoticeDAO.selectLecNoticeOne" parameterClass="String"
+		resultClass="noticeVO">
+		/* LecNoticeDAO.selectLecNoticeOne */
+	<![CDATA[
+     SELECT  
+     NOTI_SEQ AS noti_seq
+		,NOTI_GUBUN AS noti_gubun
+		,NOTI_TITLE AS noti_title
+		,NOTI_WRITER AS noti_writer
+		,DATE_FORMAT(NOTI_DATE,'%Y.%m.%d') AS noti_date 
+		,NOTI_CONTENT AS noti_content
+		,NOTI_TOP AS noti_top
+		,IFNULL(NOTI_LECHIT,'0')  AS noti_lechit
+		FROM TB_LCMS_NOTICE WHERE NOTI_SEQ = #noti_seq#
+	]]>
+	</select>
+	
+<!-- 조회수 증가 -->
+	<update id="LecNoticeDAO.updateLecNoticeHits" parameterClass="string">
+		/* LecNoticeDAO.updateLecNoticeHits */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_NOTICE
+		SET
+			NOTI_LECHIT = COALESCE(NOTI_LECHIT+1,'1')
+		WHERE
+			NOTI_SEQ = #noti_seq# 
+	]]>
+	</update>
+
+</sqlMap>

@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- sso 로그인(학생) -->
+	<select id="MainDAO.actionSsoLogin" parameterClass="string" resultClass="egovMap">
+/* MainDAO.actionSsoLogin */
+	<![CDATA[
+		SELECT
+			PROF_CODE
+			, PROF_NAME
+			, PROF_SOSOK
+			, PROF_STATUS
+			, 'PROF' as MEM_TYPE
+		FROM
+			WRITER_USER1
+		WHERE
+			PROF_CODE = #profCode#
+	]]>
+	</select>
+	
+	<!-- sso 로그인(학생) -->
+	<select id="MainDAO.actionSsoLoginStudent" parameterClass="string" resultClass="egovMap">
+/* MainDAO.actionSsoLoginStudent */
+	<![CDATA[
+		SELECT
+			STUD_CODE
+			, STUD_NAME
+			, STUD_SOSOK
+			, STUD_STATUS
+			, 'STUD' as MEM_TYPE
+		FROM
+			WRITER_USER2
+		WHERE
+			STUD_CODE = #studCode#
+	]]>
+	</select>
+
+	<!-- 팝업 목록 -->
+	<select id="MainDAO.selectPopupList" resultClass="popupVO">
+/* MainDAO.selectPopupList */
+	<![CDATA[
+		SELECT 
+			POP_SEQ				as popSeq
+			, POP_TITLE			as popTitle
+			, POP_WIDTH			as popWidth
+			, POP_HEIGHT		as popHeight
+			, POP_TOP			as popTop
+			, POP_LEFT			as popLeft
+			, POP_SCROLL_YN		as popScrollYn
+			, POP_RESIZE_YN		as popResizeYn
+			, POP_CONTENT		as popContent
+			, POP_VIEW_YN		as popViewYn
+			, REG_ID			as regId
+			, REG_DATE			as regDate
+		FROM 
+			TB_HSWC_MNG_POPUP
+		WHERE
+			POP_VIEW_YN = 'Y'
+	]]>
+	</select>
+
+	<!-- 팝업 조회 -->
+	<select id="MainDAO.selectPopupOne" parameterClass="string" resultClass="popupVO">
+/* MainDAO.selectPopupOne */
+	<![CDATA[
+		SELECT 
+			POP_SEQ				as popSeq
+			, POP_TITLE			as popTitle
+			, POP_WIDTH			as popWidth
+			, POP_HEIGHT		as popHeight
+			, POP_TOP			as popTop
+			, POP_LEFT			as popLeft
+			, POP_SCROLL_YN		as popScrollYn
+			, POP_RESIZE_YN		as popResizeYn
+			, POP_CONTENT		as popContent
+			, POP_VIEW_YN		as popViewYn
+			, REG_ID			as regId
+			, REG_DATE			as regDate
+		FROM 
+			TB_HSWC_MNG_POPUP
+		WHERE
+			POP_SEQ = #popSeq#
+	]]>
+	</select>
+	
+	<!-- 공지사항 조회 -->
+	<select id="MainDAO.selectNoticeList" parameterClass="searchVO" resultClass="egovMap">
+/* MainDAO.selectNoticeList */
+	<![CDATA[
+		SELECT
+			*
+		FROM	
+			(SELECT
+				ROWNUM AS rn
+				, BRD_SEQ
+				, BRD_TYPE
+				, BRD_TITLE 
+				, BRD_CONTENT 
+				, BRD_NOTICE_YN 
+				, REG_ID 
+				, REG_NAME 
+				, REG_DATE
+				, BRD_HITCOUNT 
+				, TOPIC_YN
+			FROM
+				(SELECT
+					BRD_SEQ
+					, BRD_TYPE
+					, BRD_TITLE 
+					, BRD_CONTENT 
+					, BRD_NOTICE_YN 
+					, REG_ID 
+					, REG_NAME 
+					, REG_DATE
+					, BRD_HITCOUNT 
+					, TOPIC_YN
+				FROM
+					TB_HSWC_BOARD
+				WHERE
+					USE_YN = 'Y'
+				AND
+					(BRD_TYPE = #searchType#
+				OR
+					BRD_TYPE = 'WRITE')
+				ORDER BY
+					 REG_DATE desc
+				)
+			) t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	
+	</select>
+
+	
+	<!-- 설문조사 기간 조회 -->
+	<select id="MainDAO.selectQestnarInfoDateOne" parameterClass="String" resultClass="String">
+/* MainDAO.selectQestnarInfoDateOne */
+	SELECT
+		QSTNR_SEQ as qstnrSeq
+	FROM
+		TB_HSWC_QSTNR_INFO
+	WHERE
+		#today# BETWEEN QSTNR_START_DATE AND QSTNR_END_DATE 
+	</select>
+	
+	<!-- 설문조사 조회 -->
+	<select id="MainDAO.selectQestnarInfoOne" resultClass="qestnarVO">
+/* MainDAO.selectQestnarInfoOne */
+	SELECT
+		QSTNR_SEQ 			as qstnrSeq
+		, QSTNR_TITLE 		as qstnrTitle
+		, QSTNR_SUB_TITLE 	as qstnrSubTitle
+		, QSTNR_CONTENT 	as qstnrContent
+		, QSTNR_START_DATE	as qstnrStartDate
+		, QSTNR_END_DATE	as qstnrEndDate
+		, QSTNR_RESP_COUNT	as qstnrRespCount
+		, REG_ID			as regId
+		, REG_DATE			as regDate
+		, SMTR_SEQ			as smtrSeq
+	FROM
+		TB_HSWC_QSTNR_INFO
+	WHERE	
+		QSTNR_SEQ = #qstnrSeq#
+	</select>
+	
+	<!-- 설문조사 질문지 조회 -->
+	<select id="MainDAO.selectQestnarAskOne" parameterClass="String" resultClass="qestnarAskVO">
+/* MainDAO.selectQestnarAskOne */
+	<![CDATA[
+		SELECT
+			ASK_SEQ as askSeq
+			, ASK_NO as askNo
+			, ASK_CONTENT as askContent
+			, ASK_TYPE as askType
+			, QSTNR_SEQ as qstnrSeq
+			, (SELECT count(*) FROM TB_HSWC_QSTNR_REPLY WHERE QSTNR_SEQ = ask.QSTNR_SEQ AND ASK_NO = ask.ASK_NO) as repCnt
+		FROM
+			TB_HSWC_QSTNR_ASK ask
+		WHERE
+			QSTNR_SEQ = #qstnrSeq#
+		ORDER BY ASK_NO asc
+		
+	]]>	
+	</select>
+	
+	<!-- 설문조사 답변지 조회 -->
+	<select id="MainDAO.selectQestnarReplyOne" parameterClass="String" resultClass="qestnarReplyVO">
+/* MainDAO.selectQestnarReplyOne */
+	<![CDATA[
+		SELECT
+			REP_SEQ as repSeq
+			, ASK_NO as askNo
+			, REP_NO as repNo
+			, REP_CONTENT as repContent
+			, REP_CHOICE_COUNT as repChoiceCount
+			, QSTNR_SEQ as qstnrSeq
+		FROM
+			TB_HSWC_QSTNR_REPLY
+		WHERE
+			QSTNR_SEQ = #qstnrSeq#
+		ORDER BY REP_SEQ asc, REP_NO asc
+		
+	]]>
+	
+	</select>
+	
+	<!-- 설문조사 답변자 조회-->
+	<select id="MainDAO.selectQestnarPsnOne" parameterClass="map" resultClass="String">
+/* MainDAO.selectQestnarPsnOne */
+	<![CDATA[
+		SELECT
+			PSN_SEQ
+		FROM
+			TB_HSWC_QSTNR_PSN
+		WHERE
+			QSTNR_SEQ = #qstnrSeq#
+			AND PSN_HAKBUN = #psnHakbun#
+	
+	]]>	
+	</select>
+	
+	<!-- 설문조사 답변 등록 -->
+	<insert id="MainDAO.insertQestnarPsnOne" parameterClass="qestnarPsnVO">
+/* MainDAO.insertQestnarPsnOne */
+	<selectKey type="pre" resultClass="String" keyProperty="psnSeq">
+		SELECT SEQ_HSWC_QSTNR_PSN.nextval FROM dual 
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_HSWC_QSTNR_PSN(
+			PSN_SEQ
+			, DEPT_SEQ
+			, CLS_SEQ
+			, PSN_HAKBUN
+			, PSN_NAME
+			, QSTNR_SEQ
+		)VALUES(
+			#psnSeq#
+			, #deptSeq#
+			, #clsSeq#
+			, #psnHakbun#
+			, #psnName#
+			, #qstnrSeq#
+		)
+		
+	]]>
+	
+	</insert>
+	
+	<!-- 설문조사 답변내용 등록 -->
+	<insert id="MainDAO.insertQestnarPsnAnsOne" parameterClass="qestnarPsnAnsVO">
+/* MainDAO.insertQestnarPsnAnsOne */	
+	<![CDATA[
+		INSERT INTO TB_HSWC_QSTNR_PSN_ANS(
+			PANS_SEQ
+			, ASK_NO
+			, PRE_NO
+			, PSN_SEQ
+		)VALUES(
+			SEQ_HSWC_QSTNR_PSN_ANS.nextval
+			, #askNo#
+			, #preNo#
+			, #psnSeq#
+		)
+	]]>
+	
+	</insert>
+	
+	<!-- 설문조사 답변선택횟수 증가 -->
+	<update id="MainDAO.updateQestnarRepChoiceCount" parameterClass="map">
+/* MainDAO.updateQestnarRepChoiceCount */
+	<![CDATA[
+		UPDATE
+			TB_HSWC_QSTNR_REPLY
+		SET
+			REP_CHOICE_COUNT = REP_CHOICE_COUNT + 1 
+		WHERE
+			QSTNR_SEQ = #qstnrSeq#
+			AND ASK_NO = #askNo#
+			AND REP_NO = #repNo#
+	]]>
+	</update>
+	
+	<!-- 설문조사 응답자수 증가 -->
+	<update id="MainDAO.updateQestnarRespCount" parameterClass="String">
+/* MainDAO.updateQestnarRespCount */
+	<![CDATA[
+		UPDATE
+			TB_HSWC_QSTNR_INFO
+		SET
+			QSTNR_RESP_COUNT = QSTNR_RESP_COUNT + 1
+		WHERE
+			QSTNR_SEQ = #qstnrSeq#
+	]]>
+	
+	</update>
+	
+	<!-- ******************************************** 2017-07-25 추가 ******************************************** -->
+	<!-- 설문조사 답변 (주관식) -->
+	<insert id="MainDAO.insertQestnarAns" parameterClass="map">
+/* MainDAO.insertQestnarAns */
+	<![CDATA[
+		INSERT INTO TB_HSWC_QSTNR_PSN_ANS(
+			PANS_SEQ
+			, ASK_NO
+			, PANS_TXT
+			, PSN_SEQ
+		)VALUES(
+			SEQ_HSWC_QSTNR_PSN_ANS.nextval
+			, #askNo#
+			, #pansTxt#
+			, #psnSeq#
+		)
+	]]>
+	</insert>
+	
+</sqlMap>

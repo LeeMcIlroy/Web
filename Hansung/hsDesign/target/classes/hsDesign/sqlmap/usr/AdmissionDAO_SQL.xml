@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 등록 -->
+	<insert id="AdmissionDAO.admissionInsert" parameterClass="admissionVO">
+/* AdmissionDAO.admissionInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_ADMISSION (
+			AD_NAME
+			, AD_SCHOOL
+			, AD_TEL
+			, AD_MAJOR
+			, AD_ZIPCODE
+			, AD_ADDR1
+			, AD_ADDR2
+			, AD_REG_DATE
+		) VALUES (
+			#adName#
+			, #adSchool#
+			, #adTel#
+			, #adMajor#
+			, #adZipcode#
+			, #adAddr1#
+			, #adAddr2#
+			, CURRENT_TIMESTAMP
+		)
+	]]>
+	</insert>
+</sqlMap>

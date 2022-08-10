@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 강의계획서 -->
+	<select id="StdSyllabusDAO.stdSelectLecSyll" parameterClass="string" resultClass="syllabusVO">
+	/*stdSyllabusDAO.stdSelectLecSyll*/
+	<![CDATA[
+		SELECT 
+	    	CLSS_SEQ		AS clssSeq
+	        , SYLLA_SEQ		AS syllaSeq
+	        , CASE SYLLA_YN WHEN 'Y' THEN '게시'
+	        				WHEN 'N' THEN'게시안함' END AS syllaYn
+	        , SYLLA_STND	AS syllaStnd
+	        , REG_DATE		AS regDate
+	        , REG_ID		AS regId
+	        , UPD_DATE		AS updDate
+	        , UPD_ID		AS updId
+	      FROM 
+	      	TB_LCMS_CLSS_SYLLA
+	     WHERE 
+	     	CLSS_SEQ = #clssSeq#
+	]]>
+	</select>
+	
+	<!-- 강의계획서 파일 -->
+	<select id="StdSyllabusDAO.stdSelectSyllaFiles" parameterClass="string" resultClass="egovMap">
+	/* stdSyllabusDAO.stdSelectSyllaFiles */
+	<![CDATA[
+		SELECT BRD_SEQ
+		     , UP_SEQ
+		     , UP_ORIGIN_FILE_NAME
+		     , UP_SAVE_FILE_NAME
+		     , UP_SAVE_FILE_PATH
+		     , REG_DATE
+		     , REG_ID
+		     , UPD_DATE
+		     , UPD_ID
+		  FROM TB_LCMS_CLSS_SYLLAATTACHFILE
+		 WHERE BRD_SEQ = #clssSeq#
+	]]>	
+	</select>	
+	
+	 <!-- 강의계획서 주차정보 -->
+	<!-- <select id="StdSyllabusDAO.stdSelectSyllaWeek" parameterClass="string" resultClass="syllabusVO">
+	/* stdSyllabusDAO.stdSelectSyllaWeek */
+	<![CDATA[
+		SELECT SYLLA_SEQ			AS syllaSeq
+			 , SYLLAWEEK_SEQ		AS syllaweekSeq 
+		     , SYLLAWEEK_NM			AS syllaweekNm
+		     , SYLLAWEEK_MON_1		AS syllaweekMon1
+		     , SYLLAWEEK_MON_2		AS syllaweekMon2
+		     , SYLLAWEEK_MON_RMK	AS syllaweekMonRmk
+		     , SYLLAWEEK_TUE_1		AS syllaweekTue1
+		     , SYLLAWEEK_TUE_2		AS syllaweekTue2
+		     , SYLLAWEEK_TUE_RMK	AS syllaweekTueRmk
+		     , SYLLAWEEK_WED_1		AS syllaweekWed1
+		     , SYLLAWEEK_WED_2		AS syllaweekWed2
+		     , SYLLAWEEK_WED_RMK	AS syllaweekWedRmk
+		     , SYLLAWEEK_THU_1		AS syllaweekThu1
+		     , SYLLAWEEK_THU_2		AS syllaweekThu2
+		     , SYLLAWEEK_THU_RMK	AS syllaweekThuRmk
+		     , SYLLAWEEK_FRI_1		AS syllaweekFri1
+		     , SYLLAWEEK_FRI_2		AS syllaweekFri2
+		     , SYLLAWEEK_FRI_RMK	AS syllaweekFriRmk
+		     , REG_DATE				AS regDate
+		     , REG_ID				AS regId
+		     , UPD_DATE				AS updDate
+		     , UPD_ID				AS updId
+		  FROM TB_LCMS_CLSS_SYLLAWEEK
+		 WHERE SYLLA_SEQ = #syllaSeq#
+	]]>	
+	</select>-->
+	
+	<!-- 학생 시간표 조회 -->
+	<select id="StdSyllabusDAO.selectLectTimetables" parameterClass="String" resultClass="lectureTimeTableVO">
+	/* stdSyllabusDAO.selectLectTimetables */
+	<![CDATA[
+		SELECT 
+    		LECT_CODE		AS lectCode
+			,LECT_TBSEQ		AS lectTbseq
+			,LECT_TEA		AS lectTea
+			,CASE WHEN LECT_WEEK = '월요일' THEN 'mon'
+				  WHEN LECT_WEEK = '화요일' THEN 'tue'
+				  WHEN LECT_WEEK = '수요일' THEN 'wed'
+				  WHEN LECT_WEEK = '목요일' THEN 'thu'
+				  WHEN LECT_WEEK = '금요일' THEN 'fri' END AS lectWeek
+			,LECT_SCLASS AS lectSclass
+		    ,LECT_ECLASS AS lectEclass
+			,LECT_GRAMMAR	AS lectGrammar
+    	FROM 
+    		TB_LCMS_LECTTIMETABLE 
+    	WHERE 
+    		LECT_CODE = #lectSeq#
+
+	]]>	
+	</select>
+
+	<select id="StdSyllabusDAO.selectProf" parameterClass="String" resultClass="memberVO">
+		/* StdSyllabusDAO.selectProf */
+	<![CDATA[
+		SELECT
+			MEMBER_SEQ			AS memberSeq
+			, MEMBER_CODE		AS memberCode
+			, NAME				AS name
+			, H_NAME			AS hName
+			, E_NAME			AS eName
+			, BIRTH				AS birth
+			, POST				AS post
+			, ADDR1				AS addr1
+			, ADDR2				AS addr2
+			, APP_DATE			AS appDate
+			, RES_DATE			AS resDate
+			, STATUS			AS status
+			, TEL				AS tel
+			, MOBILE			AS mobile
+			, EMAIL				AS email
+			, MEMBER_PW			AS memberPw
+			, LOGIN_DATE_TIME	AS loginDateTime
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_SEQ = #memberSeq#
+	]]>
+	</select>
+	
+	
+</sqlMap>

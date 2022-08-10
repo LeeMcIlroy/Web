@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 과제 리스트(메인) -->
+	<select id="StdTaskDAO.LecTaskList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecTaskDAO.LecTaskList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT TASK_SEQ
+				     , LECT_TBSEQ
+				     , TASK_NM
+				     , TASK_CONTENT
+				     , TASK_SDATE
+				     , TASK_SDATE_T
+				     , TASK_SDATE_M
+				     , TASK_EDATE
+				     , TASK_EDATE_T
+				     , TASK_EDATE_M
+				     , TASK_YN 
+				     , REG_DATE
+				     , REG_ID
+				     , UPD_DATE
+				     , UPD_ID
+				     , TASK_HIT
+				     , (SELECT COUNT(*) FROM TB_LCMS_SEME) AS TOTALCNT
+				     , (CASE
+				        	WHEN 
+				        		DATE_FORMAT(CONCAT(TASK_SDATE,' ', TASK_SDATE_T,':',TASK_SDATE_M,':','00'), '%Y-%m-%d %H:%i:%S') < NOW()
+				        	AND
+				        		 NOW() < DATE_FORMAT(CONCAT(TASK_EDATE,' ', TASK_EDATE_T,':',TASK_EDATE_M,':','00'), '%Y-%m-%d %H:%i:%S')
+				        	THEN
+				            	'진행'
+				        	ELSE '마감'
+				        END) AS TASK_STATUS
+				     , IFNULL((SELECT COUNT(*) FROM TB_LCMS_TASK_SUB TLTS WHERE TLTS.SUB_DATE IS NOT NULL AND TLTS.TASK_SEQ=TLT.TASK_SEQ), 0) AS TASK_RESULT_CNT
+				     , (SELECT DATE_FORMAT(SUB_DATE, '%Y-%m-%d %H:%i:%S') FROM TB_LCMS_TASK_SUB TLTS WHERE TLTS.TASK_SEQ = TLT.TASK_SEQ AND MEMBER_CODE = #searchCondition3#) AS SUB_DATE
+				     , IFNULL((SELECT COUNT(*) FROM TB_LCMS_LECT_MAP TLLM WHERE TLLM.LECT_SEQ=TLT.LECT_TBSEQ), 0) AS TASK_ALL_CNT
+				  FROM TB_LCMS_TASK TLT
+				 WHERE LECT_TBSEQ = #searchCondition4#
+		      ORDER BY REG_DATE DESC, UPD_DATE DESC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 과제 cnt -->
+	<select id="StdTaskDAO.LecTaskListCnt" parameterClass="searchVO" resultClass="int">
+	/*LecTaskDAO.LecTaskListCnt */
+	<![CDATA[
+		SELECT COUNT(*) AS TOTALCNT
+		  FROM TB_LCMS_TASK
+		 WHERE LECT_TBSEQ = #searchCondition4#
+	]]>	
+	</select>
+	
+	<!-- 과제 상세보기 -->
+	<select id="StdTaskDAO.selectStdTaskOne" parameterClass="taskSubVO" resultClass="egovMap">
+	/* StdTaskDAO.selectStdTaskOne */
+	<![CDATA[
+	     SELECT TLT.TASK_SEQ
+			  , LECT_TBSEQ
+			  , TASK_NM
+			  , TASK_CONTENT
+			  , TASK_SDATE
+			  , TASK_SDATE_T
+			  , TASK_SDATE_M
+			  , TASK_EDATE
+			  , TASK_EDATE_T
+			  , TASK_EDATE_M
+			  , TASK_YN
+			  , TLT.REG_DATE
+			  , REG_ID
+			  , UPD_DATE
+			  , UPD_ID
+			  , TASK_HIT
+			  , SUB_SEQ
+			  , MEMBER_CODE
+			  , ATTACH_SEQ
+			  , ORG_FILE_NAME
+			  , REG_FILE_NAME
+			  , SUB_DATE
+			  , LOOK_DATE
+			  , (CASE
+		        	WHEN 
+		        		DATE_FORMAT(CONCAT(TASK_SDATE,' ', TASK_SDATE_T,':',TASK_SDATE_M,':','00'), '%Y-%m-%d %H:%i:%S') < NOW()
+		        	AND
+		        		 NOW() < DATE_FORMAT(CONCAT(TASK_EDATE,' ', TASK_EDATE_T,':',TASK_EDATE_M,':','00'), '%Y-%m-%d %H:%i:%S')
+		        	THEN
+		            	'진행'
+		        	ELSE '마감'
+		        END) AS TASK_STATUS
+		      , IFNULL((SELECT COUNT(*) FROM TB_LCMS_TASK_SUB T WHERE T.SUB_DATE IS NOT NULL AND T.TASK_SEQ=TLT.TASK_SEQ), 0) AS TASK_RESULT_CNT
+		      , IFNULL((SELECT COUNT(*) FROM TB_LCMS_LECT_MAP TLLM WHERE TLLM.LECT_SEQ=TLT.LECT_TBSEQ), 0) AS TASK_ALL_CNT
+	       FROM TB_LCMS_TASK TLT
+			LEFT OUTER JOIN TB_LCMS_TASK_SUB TLTS ON (TLT.TASK_SEQ=TLTS.TASK_SEQ AND TLTS.MEMBER_CODE=#memberCode#)
+			LEFT JOIN TB_LCMS_ATTACH TLA ON TLTS.SUB_SEQ = TLA.BOARD_SEQ AND TLA.BOARD_TYPE = 'TASB'
+	      WHERE TLT.TASK_SEQ = #taskSeq#
+	]]>	
+	</select>
+	
+	<!-- 과제 제출 리스트 -->
+	<select id="StdTaskDAO.LecStdTaskList" parameterClass="searchVO" resultClass="egovMap">
+	/* StdTaskDAO.LecStdTaskList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			( 
+				SELECT TASK_SEQ
+				     , SUB_SEQ
+					 , MEMBER_CODE
+					 , (SELECT NAME FROM TB_LCMS_MEMBER TLM WHERE TLM.MEMBER_CODE=TLTS.MEMBER_CODE) AS MEMBER_NAME
+					 , SUB_DATE
+					 , ATTACH_SEQ
+					 , ORG_FILE_NAME
+					 , REG_FILE_NAME
+				  FROM TB_LCMS_TASK_SUB TLTS
+				  		LEFT JOIN TB_LCMS_ATTACH TLA
+				  		ON TLTS.SUB_SEQ = TLA.BOARD_SEQ
+				  		AND TLA.BOARD_TYPE = 'TASB'
+				 WHERE TASK_SEQ = #searchCondition4#
+		      ORDER BY TASK_SEQ DESC, SUB_SEQ DESC
+			)a
+		LIMIT #firstIndex# ,  #recordCountPerPage#
+	]]>	
+	</select>	
+	
+	<!-- 과제 제출 cnt -->
+	<select id="StdTaskDAO.LecStdTaskListCnt" parameterClass="searchVO" resultClass="int">
+	/*StdTaskDAO.LecStdTaskListCnt */
+	<![CDATA[
+		SELECT COUNT(*) AS TOTALCNT
+		  FROM TB_LCMS_TASK_SUB
+		 WHERE TASK_SEQ = #searchCondition4#
+	]]>	
+	</select>
+	
+    <!-- 조회수 증가 -->
+	
+	<!-- 과제 등록 -->
+	<insert id="StdTaskDAO.insertTaskSub" parameterClass="taskSubVO">
+	<selectKey keyProperty="subSeq" resultClass="string" type="post">
+		SELECT MAX(SUB_SEQ) FROM TB_LCMS_TASK_SUB
+	</selectKey>
+	/* StdTaskDAO.insertTaskSub */
+		INSERT INTO TB_LCMS_TASK_SUB(
+			TASK_SEQ
+			, MEMBER_CODE
+			, SUB_DATE
+		)VALUES(
+			#taskSeq#
+			, #memberCode#
+			, SYSDATE()
+		)
+	</insert>
+
+	<update id="StdTaskDAO.updateStdTaskLookDate" parameterClass="String">
+	/* StdTaskDAO.updateStdTaskLookDate */
+		UPDATE
+			TB_LCMS_TASK_SUB
+		SET
+			LOOK_DATE = SYSDATE()
+		WHERE
+			SUB_SEQ = #subSeq#
+	</update>
+	
+	<insert id="StdTaskDAO.insertStdTaskLookDate" parameterClass="taskSubVO">
+	<selectKey keyProperty="subSeq" resultClass="string" type="post">
+		SELECT MAX(SUB_SEQ) FROM TB_LCMS_TASK_SUB
+	</selectKey>
+	/* StdTaskDAO.insertStdTaskLookDate */
+		INSERT INTO TB_LCMS_TASK_SUB(
+			TASK_SEQ
+			, MEMBER_CODE
+			, LOOK_DATE
+		)VALUES(
+			#taskSeq#
+			, #memberCode#
+			, SYSDATE()
+		)
+	</insert>
+
+	<!-- 과제 수정 -->
+	<update id="StdTaskDAO.updateTaskSub" parameterClass="taskSubVO">
+	/* StdTaskDAO.updateTaskSub */
+		UPDATE
+			TB_LCMS_TASK_SUB
+		SET
+			SUB_DATE = SYSDATE()
+		WHERE
+			SUB_SEQ = #subSeq#
+	</update>
+	
+</sqlMap>

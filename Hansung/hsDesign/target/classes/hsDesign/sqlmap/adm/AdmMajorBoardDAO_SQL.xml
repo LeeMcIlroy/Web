@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_mb_table">
+		FROM
+			TB_HDA_MAJOR_BOARD t1
+		WHERE 1=1
+		AND (SELECT MM_USE_YN FROM TB_HDA_MAJOR_MENU t2 WHERE t1.MB_GUBUN1 = t2.MM_SEQ) = 'Y'
+		<isNotEmpty property="searchCondition1" prepend="AND">
+			M_CODE = #searchCondition1#
+		</isNotEmpty>
+		<isEmpty property="searchCondition1" prepend="AND">
+			M_CODE = '01'
+		</isEmpty>
+		<isNotEmpty property="searchType" prepend="AND">
+			MB_GUBUN1 = #searchType#
+		</isNotEmpty>
+		<isNotEmpty property="menuType" prepend="AND">
+			MB_GUBUN2 = #menuType#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition2" compareValue="title">
+				MB_TITLE like concat('%', #searchWord#, '%')
+			</isEqual>
+			<isEqual property="searchCondition2" compareValue="content">
+				MB_CONTENT like concat('%', #searchWord#, '%')
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="AdmMajorBoardDAO.selectMajorBoardList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmMajorBoardDAO.selectMajorBoardList */
+	<![CDATA[
+		SELECT
+			MB_SEQ
+			, M_CODE
+			, MB_GUBUN1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS MB_GUBUN1_NAME
+			, MB_GUBUN2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = MB_GUBUN2) AS MB_GUBUN2_NAME
+			, MB_TITLE
+			, MB_REG_SEQ
+			, MB_REG_NAME
+			, MB_COUNT
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as MB_REG_DATE
+			, MB_CONTENT
+			, MB_OLD_YN
+			, MB_NOTICE_YN 
+			, MB_NOTICE_DATE 
+	
+	]]>	
+		<include refid="adm_mb_table"/>
+	<![CDATA[
+		ORDER BY
+			MB_NOTICE_YN desc ,MB_NOTICE_DATE desc, t1.MB_REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmMajorBoardDAO.selectMajorBoardListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmMajorBoardDAO.selectMajorBoardListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	
+	]]>	
+		<include refid="adm_mb_table"/>
+	
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmMajorBoardDAO.selectMajorBoardOne" parameterClass="String" resultClass="majorBoardVO">
+/* AdmMajorBoardDAO.selectMajorBoardOne */
+	<![CDATA[
+		SELECT
+			MB_SEQ as mbSeq
+			, M_CODE as mCode
+			, MB_GUBUN1 as mbGubun1
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1, TB_HDA_MAJOR_MENU t2 WHERE t1.BC_SEQ = t2.BC_SEQ AND t2.MM_SEQ = MB_GUBUN1) AS mbGubun1Name
+			, MB_GUBUN2 as mbGubun2
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = t2.MB_GUBUN2) AS mbGubun2Name
+			, MB_TITLE as mbTitle
+			, MB_REG_SEQ as mbRegSeq
+			, MB_REG_NAME as mbRegName
+			, MB_COUNT as mbCount
+			, DATE_FORMAT(MB_REG_DATE, '%Y-%m-%d') as mbRegDate
+			, MB_CONTENT mbContent
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthSeq
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthType
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthImgName
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthImgPath
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='IMAGE') as mbthUrl
+			
+			, (SELECT MBTH_SEQ FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileSeq
+			, (SELECT MBTH_TYPE FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileType
+			, (SELECT MBTH_IMG_NAME FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileName
+			, (SELECT MBTH_IMG_PATH FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFilePath
+			, (SELECT MBTH_URL FROM TB_HDA_MB_THUMBNAIL t1 WHERE t1.MB_SEQ = t2.MB_SEQ AND T1.MBTH_TYPE ='FILE') as mbthFileUrl
+			, MB_OLD_YN as mbOldYn
+			, MB_NOTICE_YN as mbNoticeYn
+			, DATE_FORMAT(MB_NOTICE_DATE, '%Y-%m-%d %H:%m:%s') as mbNoticeDate
+		FROM
+			TB_HDA_MAJOR_BOARD t2
+		WHERE
+			MB_SEQ = #mbSeq#
+	]]>	
+	</select>
+	<!-- 첨부파일조회 -->
+	<select id="AdmMajorBoardDAO.selectMajorBoardFileOne" parameterClass="String" resultClass="majorBoardVO">
+	/* AdmMajorBoardDAO.selectMajorBoardOne */
+	<![CDATA[
+		SELECT
+			  MBTH_SEQ AS mbthFileSeq
+			, MBTH_TYPE AS mbthFileType
+			, MBTH_IMG_NAME AS mbthFileName
+			, MBTH_IMG_PATH AS mbthFilePath
+			, MBTH_URL 
+			, MB_SEQ 
+		FROM
+			TB_HDA_MB_THUMBNAIL 
+		WHERE
+			MBTH_SEQ = #mbthSeq#
+	]]>	
+	</select>
+	<!-- 썸네일 조회(mbSeq) -->
+	<select id="AdmMajorBoardDAO.selectMajorBoardThumbList" parameterClass="String" resultClass="egovMap">
+/* AdmMajorBoardDAO.selectMajorBoardThumbList */
+	<![CDATA[
+		SELECT
+			MBTH_SEQ 
+			, MBTH_TYPE 
+			, MBTH_IMG_NAME 
+			, MBTH_IMG_PATH
+			, MBTH_URL 
+			, MB_SEQ 
+		FROM
+			TB_HDA_MB_THUMBNAIL
+		WHERE
+			MB_SEQ = #mbSeq#
+		AND	
+			MBTH_TYPE ='IMAGE'
+	]]>	
+	</select>
+	<!-- 첨부파일 조회(mbSeq) -->
+	<select id="AdmMajorBoardDAO.selectMajorBoardFileList" parameterClass="String" resultClass="egovMap">
+/* AdmMajorBoardDAO.selectMajorBoardFileList */
+	<![CDATA[
+		SELECT
+			MBTH_SEQ 
+			, MBTH_TYPE 
+			, MBTH_IMG_NAME 
+			, MBTH_IMG_PATH
+			, MBTH_URL 
+			, MB_SEQ 
+		FROM
+			TB_HDA_MB_THUMBNAIL
+		WHERE
+			MB_SEQ = #mbSeq#
+		AND	
+			MBTH_TYPE ='FILE'
+	]]>	
+	</select>
+	<!-- 전공목록 -->
+	<select id="AdmMajorBoardDAO.selectMajorList" resultClass="egovMap">
+/* AdmMajorBoardDAO.selectMajorList */	
+	<![CDATA[
+		SELECT
+			M_SEQ
+			, M_CODE
+			, M_NAME
+			, M_REG_DTTM
+		FROM
+			TB_HDA_MAJOR
+		
+	]]>
+	
+	
+	</select>
+	
+	<!-- 게시판 구분 -->
+	<select id="AdmMajorBoardDAO.selectBoardCodeList" parameterClass="String" resultClass="egovMap">
+/* AdmMajorBoardDAO.selectBoardCodeList */	
+	<![CDATA[
+		SELECT
+			MM_SEQ
+			, BC_SEQ
+			, M_CODE
+			, MM_SORT_NUM
+			, MM_USE_YN
+			, DATE_FORMAT(MM_REG_DTTM, '%Y-%m-%d') as MM_REG_DTTM
+			, DATE_FORMAT(MM_UDP_DTTM, '%Y-%m-%d') as MM_UDP_DTTM
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = t2.BC_SEQ ) as BC_NAME
+		FROM
+			TB_HDA_MAJOR_MENU t2
+		WHERE
+			MM_USE_YN = 'Y'
+	]]>
+	<isNotEmpty prepend="AND">
+		M_CODE = #mCode#
+	</isNotEmpty>
+	<isEmpty prepend="AND">
+		M_CODE = '01'
+	</isEmpty>
+	<![CDATA[
+		ORDER BY MM_SORT_NUM , MM_REG_DTTM DESC 
+	]]>
+
+	</select>
+	
+	<!-- 말머리 목록 -->
+	<select id="AdmMajorBoardDAO.selectMajorHeadList" parameterClass="String" resultClass="egovMap">
+/* AdmMajorBoardDAO.selectMajorHeadList */
+	<![CDATA[
+		SELECT
+			MMH_SEQ
+			, MM_SEQ
+			, BC_SEQ
+			, (SELECT BC_NAME FROM TB_HDA_BOARD_CODE t1 WHERE t1.BC_SEQ = t2.BC_SEQ) AS BC_NAME
+			, MMH_REG_DTTM
+		FROM
+			TB_HDA_MAJOR_MENU_HEAD t2
+		WHERE
+			MM_SEQ = #mmSeq#
+		
+	]]>
+	
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmMajorBoardDAO.insertMajorBoardOne" parameterClass="majorBoardVO" >
+/* AdmMajorBoardDAO.insertMajorBoardOne */
+	<selectKey keyProperty="mbSeq" resultClass="String">
+        SELECT LAST_INSERT_ID()
+    </selectKey>
+	<![CDATA[
+		INSERT INTO TB_HDA_MAJOR_BOARD(
+			M_CODE
+			, MB_TITLE
+			, MB_REG_SEQ
+			, MB_GUBUN1
+			, MB_GUBUN2
+			, MB_REG_NAME
+			, MB_CONTENT
+			, MB_NOTICE_YN
+	]]>
+		<isEqual property="mbNoticeYn" compareValue="Y">
+			, MB_NOTICE_DATE
+		</isEqual>
+		<isEqual property="mbOldYn" compareValue="Y">
+			, MB_OLD_YN
+		</isEqual>	
+	<![CDATA[
+		)VALUES(
+			#mCode#
+			, #mbTitle#
+			, #mbRegSeq#
+			, #mbGubun1#
+			, #mbGubun2#
+			, #mbRegName#
+			, #mbContent#
+			, #mbNoticeYn#
+	]]>
+		<isEqual property="mbNoticeYn" compareValue="Y">
+			, CURRENT_TIMESTAMP
+		</isEqual>
+		<isEqual property="mbOldYn" compareValue="Y">
+			, #mbOldYn#
+		</isEqual>
+		)
+	</insert>
+	
+	<!-- 썸네일등록 -->
+	<insert id="AdmMajorBoardDAO.insertMajorBoardThumbOne" parameterClass="majorBoardVO" >
+/* AdmMajorBoardDAO.insertMajorBoardThumbOne */
+	<![CDATA[
+		INSERT INTO TB_HDA_MB_THUMBNAIL(
+			MBTH_TYPE
+			, MBTH_IMG_NAME
+			, MBTH_IMG_PATH
+			, MBTH_URL
+			, MB_SEQ
+			, MB_OLD_SEQ
+		)VALUES(
+			#mbthType#
+			, #mbthImgName#
+			, #mbthImgPath#
+			, #mbthUrl#
+			, #mbSeq#
+	]]>
+			<isEmpty property="mbOldSeq">
+			, NULL
+			</isEmpty>	
+			<isNotEmpty property="mbOldSeq">
+			, #mbOldSeq#
+			</isNotEmpty>
+		)
+	</insert>
+	
+	<!-- 썸네일 수정 -->
+	<update id="AdmMajorBoardDAO.updateMajorBoardThumbOne" parameterClass="majorBoardVO">
+/* AdmMajorBoardDAO.updateMajorBoardThumbOne */
+	<![CDATA[
+		UPDATE TB_HDA_MB_THUMBNAIL
+		SET
+			MBTH_TYPE = #mbthType#
+			, MBTH_URL = #mbthUrl#
+	]]>
+		<isNotEmpty property="mbthImgName" >
+			, MBTH_IMG_NAME = #mbthImgName#
+		</isNotEmpty>
+		<isNotEmpty property="mbthImgPath" >
+			, MBTH_IMG_PATH = #mbthImgPath#
+		</isNotEmpty>
+	<![CDATA[
+		WHERE
+			MBTH_SEQ = #mbthSeq#
+	]]>	
+	
+	</update>
+	
+	<!-- 썸네일 조회(mbthSeq)-->
+	<select id="AdmMajorBoardDAO.selectMajorBoardThumbOne" parameterClass="String" resultClass="egovMap">
+/* AdmMajorBoardDAO.selectMajorBoardThumbOne */	
+	<![CDATA[
+		SELECT
+			MBTH_SEQ
+			, MBTH_TYPE
+			, MBTH_IMG_NAME
+			, MBTH_IMG_PATH
+			, MBTH_URL
+			, MB_SEQ
+		FROM
+			TB_HDA_MB_THUMBNAIL
+		WHERE
+			MBTH_SEQ = #mbthSeq#
+	]]>
+	</select>
+	
+	<!-- 썸네일 삭제-->
+	<delete id="AdmMajorBoardDAO.deleteMajorBoardThumbOne" parameterClass="String">
+/* AdmMajorBoardDAO.deleteMajorBoardThumbOne */	
+	<![CDATA[
+		DELETE FROM TB_HDA_MB_THUMBNAIL
+		WHERE MBTH_SEQ = #mbthSeq#
+	]]>
+	</delete>
+	<!-- 썸네일 내 첨부파일 삭제 -->
+	<delete id="AdmMajorBoardDAO.deleteMajorBoardFileOne" parameterClass="String">
+/* AdmMajorBoardDAO.deleteMajorBoardFileOne */	
+	<![CDATA[
+		DELETE FROM TB_HDA_MB_THUMBNAIL
+		WHERE MBTH_SEQ = #mbthSeq#
+	]]>
+	</delete>
+	<!-- 글 삭제 -->
+	<delete id="AdmMajorBoardDAO.deleteMajorBoardOne" parameterClass="String">
+/* AdmMajorBoardDAO.deleteMajorBoardOne */	
+	<![CDATA[
+		DELETE FROM TB_HDA_MAJOR_BOARD
+		WHERE MB_SEQ = #mbSeq#
+	]]>
+	</delete>
+	
+	<!-- 수정 -->
+	<update id="AdmMajorBoardDAO.updateMajorBoardOne" parameterClass="majorBoardVO">
+/* AdmMajorBoardDAO.updateMajorBoardOne */
+	<![CDATA[
+		UPDATE TB_HDA_MAJOR_BOARD
+		SET
+			MB_GUBUN1 = #mbGubun1#
+			, MB_GUBUN2 = #mbGubun2#
+			, MB_TITLE = #mbTitle#
+			, MB_CONTENT = #mbContent#
+			, MB_NOTICE_YN = #mbNoticeYn#
+			]]>
+			<isEqual property="mbNoticeYn" compareValue="Y">
+				, MB_NOTICE_DATE = CURRENT_TIMESTAMP
+			</isEqual>
+			<isEqual property="mbNoticeYn" compareValue="N">
+				, MB_NOTICE_DATE = NULL
+			</isEqual>
+			<![CDATA[
+		WHERE
+			MB_SEQ = #mbSeq#
+	]]>	
+	</update>
+	
+	
+	<!-- test -->
+	<select id="AdmMajorBoardDAO.selectTest"  resultClass="egovMap">
+	<![CDATA[
+		select
+			*
+		from(
+			select
+				t1.id
+				, t1.post_title
+				, t1.post_content
+				, t1.post_type
+				, (select group_concat((select term_id from edubank_term_taxonomy_20170714 where term_taxonomy_id = t2.term_taxonomy_id ))) as term_id
+				, (select name from edubank_terms where term_id = ( select parent from edubank_term_taxonomy_20170714 where term_id = (select parent from edubank_term_taxonomy_20170714 where term_taxonomy_id = t2.term_taxonomy_id and parent <> 0 group by parent) ) ) as grand_parent_name
+				, (select name from edubank_terms where term_id = (select parent from edubank_term_taxonomy_20170714 where term_taxonomy_id = t2.term_taxonomy_id and parent <> 0 group by parent)  ) as parent_name
+				, (select group_concat((select name from edubank_terms where term_id = (select term_id from edubank_term_taxonomy_20170714 where term_taxonomy_id = t2.term_taxonomy_id)))) as name
+				, (select group_concat((select taxonomy from edubank_term_taxonomy_20170714 where term_taxonomy_id = t2.term_taxonomy_id))) as taxnonomy
+				, (select display_name from edubank_users_20170714 where id = t1.post_author) as reg_name
+				, (select meta_value from edubank_postmeta_20170714 where post_id = t1.id and meta_key = 'sf_thumbnail_type') as thumb_type
+				, t1.post_date
+			from 
+				edubank_posts_20170714 t1
+				, edubank_term_relationships_20170714 t2
+			where
+				t1.id = t2.object_id
+			and
+				(t1.post_status = 'publish' or t1.post_status = 'inherit')
+			group by t2.object_id
+		) v1 
+		where
+			v1.thumb_type is not null
+		and
+			v1.term_id in (59)
+	]]>
+	</select>
+	
+	<!-- test -->
+	<select id="AdmMajorBoardDAO.selectTest2" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+		select id, guid, post_mime_type from edubank_posts_20170714 where post_type = 'attachment' and post_parent = #id#
+	]]>
+	</select>
+	
+	<select id="AdmMajorBoardDAO.selectTest3" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+		select id, guid from edubank_posts_20170714 where id = (select meta_value from edubank_postmeta_20170714 where post_id = #id# and meta_key = '_thumbnail_id')
+	]]>
+	</select>
+	
+	<select id="AdmMajorBoardDAO.selectTest5" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+		select
+			id
+			, guid
+		from
+			edubank_posts_20170714
+		where
+			id = (select meta_value as guid from edubank_postmeta_20170714 where post_id = #id# and meta_key = 'sf_thumbnail_image')
+	]]>
+	</select>
+	
+	<select id="AdmMajorBoardDAO.selectTest4" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+		select 
+			t1.meta_value as guid
+			, t2.id
+		from 
+			edubank_postmeta_20170714 t1
+			, edubank_posts_20170714 t2
+		where 
+			t1.post_id = t2.id
+		and
+			t2.id = #id#
+		and
+			meta_key = 'sf_thumbnail_video_url'
+	]]>
+	</select>
+	
+	<select id="AdmMajorBoardDAO.selectTest6" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+		select mb_seq, mb_content from tb_hda_major_board where mb_content like '%class="align%'
+	]]>
+	</select>
+	
+	<select id="AdmMajorBoardDAO.selectTest7" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+		select CB_SEQ, cb_content from tb_hda_cmm_board where cb_content like '%class="align%'
+	]]>
+	</select>
+	
+	
+	<!-- test -->
+	<insert id="AdmMajorBoardDAO.insertMajorBoardOne2" parameterClass="majorBoardVO" >
+/* AdmMajorBoardDAO.insertMajorBoardOne */
+	<selectKey keyProperty="mbSeq" resultClass="String">
+        SELECT LAST_INSERT_ID()
+    </selectKey>
+	<![CDATA[
+		INSERT INTO TB_HDA_MAJOR_BOARD(
+			M_CODE
+			, MB_TITLE
+			, MB_REG_SEQ
+			, MB_GUBUN1
+			, MB_GUBUN2
+			, MB_REG_NAME
+			, MB_CONTENT
+			, MB_REG_DATE
+	]]>	
+		<isEqual property="mbOldYn" compareValue="Y">
+			, MB_OLD_YN
+		</isEqual>
+	<![CDATA[
+		)VALUES(
+			#mCode#
+			, #mbTitle#
+			, #mbRegSeq#
+			, #mbGubun1#
+			, #mbGubun2#
+			, #mbRegName#
+			, #mbContent#
+			, #mbRegDate#
+	]]>	
+		<isEqual property="mbOldYn" compareValue="Y">
+			, #mbOldYn#
+		</isEqual>
+		)
+	</insert>
+	
+	<update id="AdmMajorBoardDAO.updateImageSize" parameterClass="majorBoardVO">
+/*AdmMajorBoardDAO.updateImageSize*/
+	<![CDATA[
+		UPDATE TB_HDA_MAJOR_BOARD SET MB_CONTENT = #mbContent# where MB_SEQ = #mbSeq#
+	]]>
+	</update>
+	<update id="AdmMajorBoardDAO.updateImageSize2" parameterClass="cmmBoardVO">
+/*AdmMajorBoardDAO.updateImageSize2*/
+	<![CDATA[
+		UPDATE TB_HDA_CMM_BOARD SET CB_CONTENT = #cbContent# where CB_SEQ = #cbSeq#
+	]]>
+	</update>
+</sqlMap>

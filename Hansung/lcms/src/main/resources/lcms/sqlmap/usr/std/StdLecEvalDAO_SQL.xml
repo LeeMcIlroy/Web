@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="std_eval_list">
+		FROM
+			TB_LCMS_SEME
+		WHERE
+			SEM_YEAR = #searchCondition1#
+		AND
+			SEMESTER = #searchCondition2#
+	</sql>
+	
+	<select id="StdLecEvalDAO.selectStdLecEvalListCnt" parameterClass="searchVO" resultClass="int">
+	/* StdLecEvalDAO.selectStdLecEvalListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="std_eval_list"/>
+	</select>
+	
+	<select id="StdLecEvalDAO.selectStdLecEvalList" parameterClass="searchVO" resultClass="egovMap">
+	/* StdLecEvalDAO.selectStdLecEvalList */
+	<![CDATA[
+		SELECT
+			DATE_FORMAT(VALUATION_S, '%Y-%m-%d %H:%i') AS VALUATION_S
+			, DATE_FORMAT(VALUATION_E, '%Y-%m-%d %H:%i') AS VALUATION_E
+				, DATE_FORMAT(VALUATION_S, '%Y-%m-%d-%H-%i') AS valSub1
+			, DATE_FORMAT(VALUATION_E, '%Y-%m-%d-%H-%i') AS valSub2
+			, (
+				SELECT
+					GROUP_CONCAT(DISTINCT NAME)
+				FROM
+					(
+						SELECT
+							LECT_CODE
+							, NAME
+						FROM
+							TB_LCMS_LECTTIMETABLE TLLT
+						LEFT JOIN
+							TB_LCMS_MEMBER TLM ON TLLT.LECT_TEA = TLM.MEMBER_CODE
+						WHERE
+							LECT_CODE = #searchLecture#
+						UNION
+						SELECT
+							LECT_SEQ AS LECT_CODE
+							, NAME
+						FROM
+							TB_LCMS_LECT TLL
+						LEFT JOIN
+							TB_LCMS_MEMBER TLM ON TLL.LECT_CLA_TEA = TLM.MEMBER_CODE
+						WHERE
+							LECT_SEQ = #searchLecture#
+					) T
+				GROUP BY LECT_CODE
+			) AS PROF_NAME
+			, (
+				SELECT
+					CASE WHEN COUNT(ANSW_SEQ) = 0 THEN 'N' ELSE 'Y' END
+				FROM
+					TB_LCMS_SURVEY_ANSW
+				WHERE
+					LECT_SEQ = #searchLecture#
+				AND
+					MEMBER_CODE = #searchMemberCode#
+			) AS ANSW_YN
+			, (
+				SELECT
+					MAX(REG_DATE)
+				FROM
+					TB_LCMS_SURVEY_ANSW
+				WHERE
+					LECT_SEQ = #searchLecture#
+				AND
+					MEMBER_CODE = #searchMemberCode#
+			) AS REG_DATE
+	]]>
+	<include refid="std_eval_list"/>
+	</select>
+	
+	<!-- 학생 수업만족도 담당교사 목록 -->
+	<select id="StdLecEvalDAO.selectProfList" parameterClass="string" resultClass="egovMap">
+	<![CDATA[
+		SELECT DISTINCT
+			T.*
+		FROM
+			(
+				SELECT
+					LECT_TEA
+					, NAME
+					, IMG_PATH
+					, IMG_NAME
+				FROM
+					TB_LCMS_LECTTIMETABLE TLLT
+				LEFT JOIN
+					TB_LCMS_MEMBER TLM ON TLLT.LECT_TEA = TLM.MEMBER_CODE
+				WHERE
+					LECT_CODE = #lectCode#
+				UNION
+				SELECT
+					LECT_CLA_TEA AS LECT_TEA
+					, NAME
+					, IMG_PATH
+					, IMG_NAME
+				FROM
+					TB_LCMS_LECT TLL
+				LEFT JOIN
+					TB_LCMS_MEMBER TLM ON TLL.LECT_CLA_TEA = TLM.MEMBER_CODE
+				WHERE
+					LECT_SEQ = #lectCode#
+			) T
+	]]>
+	</select>
+	
+	<select id="StdLecEvalDAO.selectLangList" parameterClass="egovMap" resultClass="egovMap">
+	/* StdLecEvalDAO.selectLangList */
+	<![CDATA[
+		SELECT
+			SURVEY_SEQ
+			, LANG
+		FROM
+			TB_LCMS_SURVEY
+		WHERE
+			USE_YN = 'Y'
+		AND
+			YEAR = #semYear#
+		AND
+			SEME = #semester#
+		ORDER BY
+			LANG ASC
+	]]>
+	</select>
+	
+	<select id="StdLecEvalDAO.selectStdLecEvalModify" parameterClass="string" resultClass="egovMap">
+	/* StdLecEvalDAO.selectStdLecEvalModify */
+	<![CDATA[
+		SELECT
+			QUES_SEQ
+			, SURVEY_SEQ
+			, PHR_SEQ
+			, (
+				SELECT
+					PHR_TITLE
+				FROM
+					TB_LCMS_QUES_PHR TLQP
+				WHERE
+					TLQP.PHR_SEQ = TLSQ.PHR_SEQ
+			) AS PHR_TITLE
+			, (
+				SELECT
+					QUES_TYPE
+				FROM
+					TB_LCMS_QUES_PHR TLQP
+				WHERE
+					TLQP.PHR_SEQ = TLSQ.PHR_SEQ
+			) AS QUES_TYPE
+			, SURVEY_TYPE
+			, QUESTION
+			, ANSWER1
+			, ANSWER2
+			, ANSWER3
+			, ANSWER4
+			, ANSWER5
+			, QUES_NUM
+		FROM
+			TB_LCMS_SURVEY_QUES TLSQ
+		WHERE
+			SURVEY_SEQ = #surveySeq#
+		ORDER BY
+			PHR_SEQ ASC, SURVEY_TYPE ASC, QUES_SEQ ASC
+	]]>
+	</select>
+	
+	<insert id="StdLecEvalDAO.insertstdLecEval" parameterClass="surveyAnswVO">
+	/* StdLecEvalDAO.insertstdLecEval */
+	<![CDATA[
+		INSERT INTO TB_LCMS_SURVEY_ANSW(
+			SURVEY_SEQ
+			, QUES_SEQ
+			, MEMBER_CODE
+			, LECT_SEQ
+			, ANSWER_TXT
+			, REG_DATE
+			, SURVEY_TYPE
+			, ANSWER
+			, PROF_CODE
+			, QUES_TYPE
+			, QUES_NUM
+		)VALUES(
+			#surveySeq#
+			, #quesSeq#
+			, #memberCode#
+			, #lectSeq#
+			, #answerTxt#
+			, SYSDATE()
+			, #surveyType#
+			, #answer#
+			, #profCode#
+			, #quesType#
+			, #quesNum#
+		)
+	]]>
+	</insert>
+	
+	<select id="StdLecEvalDAO.selectStdLecEvalView" parameterClass="egovMap" resultClass="egovMap">
+	/* StdLecEvalDAO.selectStdLecEvalView */
+	<![CDATA[
+		SELECT
+			TLSQ.QUES_SEQ
+			, TLSQ.SURVEY_SEQ
+			, PHR_SEQ
+			, (
+				SELECT
+					PHR_TITLE
+				FROM
+					TB_LCMS_QUES_PHR TLQP
+				WHERE
+					TLQP.PHR_SEQ = TLSQ.PHR_SEQ
+			) AS PHR_TITLE
+			, (
+				SELECT
+					QUES_TYPE
+				FROM
+					TB_LCMS_QUES_PHR TLQP
+				WHERE
+					TLQP.PHR_SEQ = TLSQ.PHR_SEQ
+			) AS QUES_TYPE
+			, TLSQ.SURVEY_TYPE
+			, QUESTION
+			, TLSQ.QUES_NUM
+			, CASE TLSQ.SURVEY_TYPE
+				WHEN '1' THEN 
+					CASE ANSWER
+						WHEN '1' THEN ANSWER5
+						WHEN '2' THEN ANSWER4
+						WHEN '3' THEN ANSWER3
+						WHEN '4' THEN ANSWER2
+						WHEN '5' THEN ANSWER1
+					END
+				WHEN '2' THEN 
+					CASE ANSWER
+						WHEN '1' THEN ANSWER1
+						WHEN '2' THEN ANSWER2
+						WHEN '3' THEN ANSWER3
+						WHEN '4' THEN ANSWER4
+						WHEN '5' THEN ANSWER5
+					END
+				ELSE 
+					ANSWER_TXT
+			END AS ANSWER
+			, PROF_CODE
+		FROM
+			TB_LCMS_SURVEY_ANSW TLSA
+			LEFT JOIN TB_LCMS_SURVEY_QUES TLSQ ON TLSA.QUES_SEQ = TLSQ.QUES_SEQ
+		WHERE
+			TLSA.MEMBER_CODE = #memberCode#
+		AND
+			TLSA.LECT_SEQ = #lectSeq#
+		ORDER BY
+			PHR_SEQ ASC, TLSQ.SURVEY_TYPE ASC, TLSQ.QUES_SEQ ASC
+	]]>
+	</select>
+	
+	<select id="StdLecEvalDAO.selectStdLecEvalSurvey" parameterClass="string" resultClass="egovMap">
+	/* StdLecEvalDAO.selectStdLecEvalSurvey */
+	<![CDATA[
+		SELECT
+			SURVEY_SEQ
+			, YEAR
+			, SEME
+			, LANG
+			, TITLE
+			, USE_YN
+			, CONTENT
+		FROM
+			TB_LCMS_SURVEY
+		WHERE
+			SURVEY_SEQ = #surveySeq#
+	]]>
+	</select>
+	
+</sqlMap>

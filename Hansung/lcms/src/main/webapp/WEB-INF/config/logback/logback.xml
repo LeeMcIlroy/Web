@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                ▶ %-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %logger[%method:%line] - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+<!--	개발
+-->
+		<file>D:\WAS\2020\lcms\logs\lcms.log</file> 
+<!-- 	운영
+        <file>C:\WAS\lcms\logs\lcms.log</file>
+-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+<!--		개발     
+-->
+			<fileNamePattern>D:\WAS\2020\lcms\logs\lcms.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+<!--		운영
+            <fileNamePattern>C:\WAS\lcms\logs\lcms.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+-->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+		    	<!-- 
+		    		or whenever the file size reaches 50MB 
+		    	-->
+		    		<maxFileSize>100MB</maxFileSize>
+        	</timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>
+                ▷ %-5level %d{yyyy-MM-dd HH:mm:ss} %logger[%method:%line] - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+        
+    <!-- 이 아래에 있는 애들 다 log로 찍겠다. -->
+    <logger name="src.springtest" level="debug">
+        <appender-ref ref="file"/>
+    </logger>
+    <root level="debug">
+        <appender-ref ref="console" />
+        <appender-ref ref="file" />
+    </root>
+</configuration>

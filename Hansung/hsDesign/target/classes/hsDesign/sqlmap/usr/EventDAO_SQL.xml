@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- ***************************************** 행사참가 신청 ***************************************** -->
+	
+	<!-- 참가 - 신청 - 중복조회 -->
+	<select id="EventDAO.selectEventOne" parameterClass="eventVO" resultClass="Integer">
+/* EventDAO.eventSelectOne */
+	<![CDATA[
+		SELECT
+			COUNT(EVE_SEQ)
+		FROM
+			TB_HDA_EVENT
+		WHERE
+			EVE_NUM = #eveNum#
+			AND EVE_NAME = #eveName#
+			AND EVE_TEL = #eveTel#
+			AND EVE_CANCEL_YN = 'N'
+	]]>
+	</select>
+	
+	<!-- 참가 - 신청 -->
+	<insert id="EventDAO.insertEvent" parameterClass="eventVO">
+/* EventDAO.eventInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_EVENT (
+			EVE_NUM
+			, EVE_EVNAME
+			, EVE_NAME
+			, EVE_TEL
+			, EVE_EMAIL
+			, EVE_QUES1
+			, EVE_QUES2
+			, EVE_QUES3
+			, EVE_QUES4
+			, EVE_QUES5
+			, EVE_DEPO_NAME
+			, EVE_DEPO_DATE
+			, EVE_REFUND_BANK
+			, EVE_REFUND_ACNM
+		) VALUES (
+			#eveNum#
+			, #eveEvname#
+			, #eveName#
+			, #eveTel#
+			, #eveEmail#
+			, #eveQues1#
+			, #eveQues2#
+			, #eveQues3#
+			, #eveQues4#
+			, #eveQues5#
+			, #eveDepoName#
+			, #eveDepoDate#
+			, #eveRefundBank#
+			, #eveRefundAcnm#
+		)
+	]]>
+	</insert>
+	
+	<!-- 행사 - 참가비 조회 -->
+	<select id="EventDAO.selectEventExpoChk" parameterClass="eventVO" resultClass="String">
+/* EventDAO.eventSelectExpoChk */
+	<![CDATA[
+		SELECT
+			EVE_DEPO_YN
+		FROM
+			TB_HDA_EVENT
+		WHERE
+			EVE_NUM = #eveNum#
+			AND EVE_NAME = #eveName#
+			AND EVE_TEL = #eveTel#
+			AND EVE_CANCEL_YN = 'N'
+	]]>
+	</select>
+	
+	<!-- 참가 취소 - 조회 -->
+	<select id="EventDAO.selectEventOneCxlCnt" parameterClass="eventVO" resultClass="Integer">
+/* EventDAO.selectEventOneCxlCnt */
+	<![CDATA[
+		SELECT
+			COUNT(EVE_SEQ)
+		FROM
+			TB_HDA_EVENT
+		WHERE
+			EVE_NUM = #eveNum#
+			AND EVE_NAME = #eveName#
+			AND EVE_TEL = #eveTel#
+			AND EVE_CANCEL_YN = 'Y'
+	]]>
+	</select>
+	
+	<!-- 참가 - 취소 - 조회 -->
+	<select id="EventDAO.selectEventCancelOne" parameterClass="eventVO" resultClass="Integer">
+/* EventDAO.eventSelectOne */
+	<![CDATA[
+		SELECT
+			COUNT(EVE_SEQ)
+		FROM
+			TB_HDA_EVENT
+		WHERE
+			EVE_NUM = #eveNum#
+			AND EVE_NAME = #eveName#
+			AND EVE_TEL = #eveTel#
+			AND EVE_REFUND_BANK = #eveRefundBank#
+			AND EVE_REFUND_ACNM = #eveRefundAcnm#
+			AND EVE_CANCEL_YN = 'N'
+	]]>
+	</select>
+	
+	<!-- 행사 - 참가 취소 -->
+	<update id="EventDAO.updateEventCancel" parameterClass="eventVO">
+/* EventDAO.eventUpdateCancel */
+	<![CDATA[
+		UPDATE
+			TB_HDA_EVENT
+		SET
+			EVE_CANCEL_YN = 'Y'
+			, EVE_CANCEL_DATE = NOW()
+		WHERE
+			EVE_NUM = #eveNum#
+			AND EVE_NAME = #eveName#
+			AND EVE_TEL = #eveTel#
+			AND EVE_REFUND_BANK = #eveRefundBank#
+			AND EVE_REFUND_ACNM = #eveRefundAcnm#
+	]]>
+	</update>
+</sqlMap>

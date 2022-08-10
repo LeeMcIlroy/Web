@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_bkCtlg_table">
+		FROM
+			TB_HSWC_BOOKCATALOG
+		WHERE 1=1
+		<isNotEmpty property="searchType" prepend="AND">
+			CTL_TYPE = #searchType#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition" compareValue="title">
+				CTL_TITLE like '%' || #searchWord# || '%'
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="content">
+				CTL_CONTENT like '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="AdmWcGuideBkCtlgDAO.selectWcGuideBkCtlgList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmWcGuideBkCtlgDAO.selectWcGuideBkCtlgList */
+	<![CDATA[
+		SELECT
+			CTL_SEQ
+			, CTL_TYPE
+			, CTL_BK_TYPE
+			, CTL_TITLE
+			, CTL_WRITER
+			, REG_DATE
+			, CTL_HITCOUNT
+			, CTL_IMG_NAME
+			, CTL_IMG_PATH
+			, CTL_IMG_THUMB_PATH
+		FROM (
+			SELECT
+				rownum as rn
+				, CTL_SEQ
+				, CTL_TYPE
+				, CTL_BK_TYPE
+				, CTL_TITLE
+				, CTL_WRITER
+				, REG_DATE
+				, CTL_HITCOUNT
+				, CTL_IMG_NAME
+				, CTL_IMG_PATH
+				, CTL_IMG_THUMB_PATH
+			FROM (
+				SELECT
+					CTL_SEQ
+					, CTL_TYPE
+					, CTL_BK_TYPE
+					, CTL_TITLE
+					, CTL_WRITER
+					, CTL_CONTENT
+					, REG_DATE
+					, CTL_HITCOUNT
+					, CTL_IMG_NAME
+					, CTL_IMG_PATH
+					, CTL_IMG_THUMB_PATH
+	]]>
+		<include refid="adm_bkCtlg_table"/>
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmWcGuideBkCtlgDAO.selectWcGuideBkCtlgListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmWcGuideBkCtlgDAO.selectWcGuideBkCtlgListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="adm_bkCtlg_table"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmWcGuideBkCtlgDAO.selectWcGuideBkCtlgOne" parameterClass="string" resultClass="bookcatalogVO">
+/* AdmWcGuideBkCtlgDAO.selectWcGuideBkCtlgOne */
+	<![CDATA[
+		SELECT
+			CTL_SEQ					as ctlSeq
+			, CTL_TYPE				as ctlType
+			, CTL_BK_TYPE			as ctlBkType
+			, CTL_TITLE				as ctlTitle
+			, CTL_WRITER			as ctlWriter
+			, CTL_PUBLISHER			as ctlPublisher
+			, CTL_CONTENT			as ctlContent
+			, REG_ID				as regId
+			, REG_NAME				as regName
+			, to_char(REG_DATE,'YYYY-MM-DD HH24:MI:SS')				as regDate
+			, CTL_HITCOUNT			as ctlHitcount
+			, CTL_IMG_NAME			as ctlImgName
+			, CTL_IMG_PATH			as ctlImgPath
+			, CTL_IMG_THUMB_PATH	as ctlImgThumbPath
+		FROM 
+			TB_HSWC_BOOKCATALOG
+		WHERE
+			CTL_SEQ = #ctlSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmWcGuideBkCtlgDAO.wcGuideBkCtlgInsert" parameterClass="bookcatalogVO">
+/* AdmWcGuideBkCtlgDAO.wcGuideBkCtlgInsert */
+	<![CDATA[
+		INSERT INTO TB_HSWC_BOOKCATALOG (
+			CTL_SEQ
+			, CTL_TYPE
+			, CTL_BK_TYPE
+			, CTL_TITLE
+			, CTL_WRITER
+			, CTL_PUBLISHER
+			, CTL_CONTENT
+			, REG_ID
+			, REG_NAME
+			, CTL_IMG_NAME
+			, CTL_IMG_PATH
+			, CTL_IMG_THUMB_PATH
+		) VALUES (
+			SEQ_HSWC_BOOKCATALOG.nextval
+			, #ctlType#
+			, #ctlBkType#
+			, #ctlTitle#
+			, #ctlWriter#
+			, #ctlPublisher#
+			, #ctlContent#
+			, #regId#
+			, #regName#
+			, #ctlImgName#
+			, #ctlImgPath#
+			, #ctlImgThumbPath#
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmWcGuideBkCtlgDAO.wcGuideBkCtlgUpdate" parameterClass="bookcatalogVO">
+/* AdmWcGuideBkCtlgDAO.wcGuideBkCtlgUpdate */
+	<![CDATA[
+		UPDATE TB_HSWC_BOOKCATALOG
+		SET
+			CTL_TYPE 				= #ctlType#
+			, CTL_BK_TYPE 			= #ctlBkType#
+			, CTL_TITLE 			= #ctlTitle#
+			, CTL_WRITER 			= #ctlWriter#
+			, CTL_PUBLISHER 		= #ctlPublisher#
+			, CTL_CONTENT 			= #ctlContent#
+			, CTL_IMG_NAME 			= #ctlImgName#
+			, CTL_IMG_PATH 			= #ctlImgPath#
+			, CTL_IMG_THUMB_PATH	= #ctlImgThumbPath#
+		WHERE
+			CTL_SEQ = #ctlSeq#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmWcGuideBkCtlgDAO.wcGuideBkCtlgDelete" parameterClass="string">
+/* AdmWcGuideBkCtlgDAO.wcGuideBkCtlgDelete */
+	<![CDATA[
+		DELETE FROM TB_HSWC_BOOKCATALOG
+		WHERE CTL_SEQ = #ctlSeq#
+	]]>
+	</delete>
+</sqlMap>

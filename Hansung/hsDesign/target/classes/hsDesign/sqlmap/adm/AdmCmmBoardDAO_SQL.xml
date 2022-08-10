@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_cmm_board">
+		FROM
+			TB_HDA_CMM_BOARD t1
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="menuType" prepend="AND">
+				<isEqual property="menuType" compareValue="01"> (CB_TYPE = '0101' or CB_TYPE = '0102') </isEqual>
+				<isEqual property="menuType" compareValue="0101"> CB_TYPE = '0101' </isEqual>
+				<isEqual property="menuType" compareValue="0102"> CB_TYPE = '0102' </isEqual>
+				<isEqual property="menuType" compareValue="02"> CB_TYPE = '0201'  </isEqual>
+				<isEqual property="menuType" compareValue="0301"> CB_TYPE = '0301' </isEqual>
+				<isEqual property="menuType" compareValue="0401"> CB_TYPE = '0401' </isEqual>
+				<isEqual property="menuType" compareValue="0501"> CB_TYPE = '0501' </isEqual>
+				<isEqual property="menuType" compareValue="0601"> CB_TYPE = '0601' </isEqual>
+				<isEqual property="menuType" compareValue="0602"> CB_TYPE = '0602' </isEqual>
+				<isEqual property="menuType" compareValue="0603"> CB_TYPE = '0603' </isEqual>
+				<isEqual property="menuType" compareValue="0610"> CB_TYPE = '0610' </isEqual>
+				<isEqual property="menuType" compareValue="0611"> CB_TYPE = '0611' </isEqual>
+				<isEqual property="menuType" compareValue="0604"> CB_TYPE = '0604' </isEqual>
+				<isEqual property="menuType" compareValue="0605"> CB_TYPE = '0605' </isEqual>
+				<isEqual property="menuType" compareValue="0701"> CB_TYPE = '0701' </isEqual>
+				<isEqual property="menuType" compareValue="0801"> CB_TYPE = '0801' </isEqual>
+				<isEqual property="menuType" compareValue="0901"> CB_TYPE = '0901' </isEqual>
+				<isEqual property="menuType" compareValue="0902"> CB_TYPE = '0902' </isEqual>
+				<isEqual property="menuType" compareValue="1001"> CB_TYPE = '1001' </isEqual>
+				<isEqual property="menuType" compareValue="1101"> CB_TYPE = '1101' </isEqual>
+				<isEqual property="menuType" compareValue="1201"> CB_TYPE = '1201' </isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="title">
+					CB_TITLE like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="writer">
+					REG_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="searchType" prepend="AND">
+				CB_NOTICE_YN = #searchType#
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 목록 -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardList" parameterClass="searchVO" resultClass="egovMap" remapResults="true">
+/* AdmCmmBoardDAO.selectCmmBoardList */
+	<![CDATA[
+		
+		SELECT
+			CB_SEQ
+			, CB_NAME
+			, REG_SEQ
+			, REG_NAME
+			, CB_TITLE
+			, CB_CONTENT
+			, DATE_FORMAT(CB_REG_DATE, '%Y-%m-%d') as CB_REG_DATE
+			, CB_COUNT
+			, CB_NOTICE_YN
+			, CB_SECRET_YN
+			, CB_PASSWORD
+			, CB_TYPE
+			, CB_TH_TYPE
+			, CB_TH_IMG_NAME
+			, CB_TH_IMG_PATH
+			, CB_TH_URL
+			, CB_CONTENT_REPLY
+			, CB_CONREPLY_NAME
+			, CB_CONREPLY_DATE
+			, CB_GUBUN
+			
+			, (SELECT count(*) FROM TB_HDA_CB_COMMENT WHERE CB_SEQ = tt.CB_SEQ) as CMMT_COUNT
+		from (
+			SELECT
+				CB_SEQ
+				, CB_NAME
+				, REG_SEQ
+				, REG_NAME
+				, CB_TITLE
+				, CB_CONTENT
+				, CB_REG_DATE
+				, CB_COUNT
+				, CB_NOTICE_YN
+				, CB_SECRET_YN
+				, CB_PASSWORD
+				, CB_TYPE
+				, CB_TH_TYPE
+				, CB_TH_IMG_NAME
+				, CB_TH_IMG_PATH
+				, CB_TH_URL
+				, CB_CONTENT_REPLY
+				, CB_CONREPLY_NAME
+				, CB_CONREPLY_DATE
+				, CB_GUBUN
+	]]>
+			<include refid="adm_cmm_board"/>
+	<![CDATA[
+			ORDER BY
+			]]>
+			<isNotEmpty property="menuType">
+				<isEqual property="menuType" compareValue="0601">
+					CB_NOTICE_YN desc, CB_NOTICE_DATE = '' asc, CB_NOTICE_DATE desc,
+				</isEqual>
+				<isEqual property="menuType" compareValue="0701">
+					CB_NOTICE_YN desc, CB_NOTICE_DATE = '' asc, CB_NOTICE_DATE desc,
+				</isEqual>
+				<isEqual property="menuType" compareValue="0801">
+					CB_NOTICE_YN desc, CB_NOTICE_DATE = '' asc, CB_NOTICE_DATE desc,
+				</isEqual>
+			</isNotEmpty>
+			<![CDATA[
+				CB_REG_DATE desc
+			]]>	
+			<isNotEqual property="searchType" compareValue="Y">
+				LIMIT #firstIndex#, #recordCountPerPage#
+			</isNotEqual>
+			<![CDATA[
+		) tt
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmCmmBoardDAO.selectCmmBoardListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="adm_cmm_board"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardOne" parameterClass="string" resultClass="cmmBoardVO">
+/* AdmCmmBoardDAO.selectCmmBoardOne */
+	<![CDATA[
+		SELECT
+			CB_SEQ													as cbSeq
+			, CB_NAME												as cbName
+			, REG_SEQ												as regSeq
+			, REG_NAME												as regName
+			, CB_TITLE												as cbTitle
+			, CB_CONTENT											as cbContent
+			, DATE_FORMAT(CB_REG_DATE, '%Y-%m-%d')					as cbRegDate
+			, CB_COUNT												as cbCount
+			, CB_NOTICE_YN											as cbNoticeYn
+			, CB_SECRET_YN											as cbSecretYn
+			, CB_PASSWORD											as cbPassword
+			, CB_TYPE												as cbType
+			, CB_TH_TYPE											as cbThType
+			, CB_TH_IMG_NAME										as cbThImgName
+			, CB_TH_IMG_PATH										as cbThImgPath
+			, CB_TH_URL												as cbThUrl
+			, CB_CONTENT_REPLY                                      as cbContentReply
+			, CB_CONREPLY_NAME                                      as cbConReplyName
+			, CB_CONREPLY_DATE                                      as cbConReplyDate
+			, DATE_FORMAT(CB_NOTICE_DATE, '%Y-%m-%d %H:%m:%s')		as cbNoticeDate
+			, CB_GUBUN												as cbGubun
+		FROM
+			TB_HDA_CMM_BOARD
+		WHERE
+			CB_SEQ = #cbSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmCmmBoardDAO.cmmBoardInsert" parameterClass="map">
+/* AdmCmmBoardDAO.cmmBoardInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_CMM_BOARD (
+			CB_TYPE
+			, CB_NAME
+			, CB_TITLE
+			, CB_CONTENT
+			, REG_SEQ
+			, REG_NAME
+			, CB_REG_DATE
+			, CB_COUNT
+			, CB_NOTICE_YN
+			]]>
+			<isEqual property="cmmBoardVO.cbNoticeYn" compareValue="Y">
+				, CB_NOTICE_DATE
+			</isEqual>
+			<![CDATA[
+			, CB_TH_TYPE
+			, CB_TH_URL
+			, CB_PASSWORD
+			, CB_GUBUN
+		) VALUES (
+			#cmmBoardVO.cbType#
+			, case 
+				when #cmmBoardVO.cbType# = '0101' then '입학상담-입학' 	when #cmmBoardVO.cbType# = '0102' then '입학상담-편입' 	when #cmmBoardVO.cbType# = '0201' then '학사Q&A'
+				when #cmmBoardVO.cbType# = '0301' then '학사FAQ' 			when #cmmBoardVO.cbType# = '0401' then '양식자료실'			when #cmmBoardVO.cbType# = '0501' then '공지사항' 			
+				when #cmmBoardVO.cbType# = '0601' then '한디원이슈' 			when #cmmBoardVO.cbType# = '0701' then '한디원행사'			when #cmmBoardVO.cbType# = '0801' then '작품동영상&UCC' 
+				when #cmmBoardVO.cbType# = '0901' then '교양수강문의'			when #cmmBoardVO.cbType# = '1001' then '한디원신문고'			when #cmmBoardVO.cbType# = '1101' then '고객센터'
+				when #cmmBoardVO.cbType# = '1201' then '기업연계수업'			when #cmmBoardVO.cbType# = '0902' then '교양개설문의'
+				when #cmmBoardVO.cbType# = '0602' then '작품자료실'			when #cmmBoardVO.cbType# = '0603' then '해외프로그램'			when #cmmBoardVO.cbType# = '0604' then '취업프로그램'	
+				when #cmmBoardVO.cbType# = '0605' then '기업 · 지역연계수업 현황'	
+				when #cmmBoardVO.cbType# = '0610' then '해외연수'			when #cmmBoardVO.cbType# = '0611' then '해외봉사'
+				else ''
+			end
+			, #cmmBoardVO.cbTitle#
+			, #cmmBoardVO.cbContent#
+			, #adminVO.admSeq#
+			, #adminVO.admName#
+			, CURRENT_TIMESTAMP
+			, 0
+			, #cmmBoardVO.cbNoticeYn#
+			]]>
+			<isEqual property="cmmBoardVO.cbNoticeYn" compareValue="Y">
+				, CURRENT_TIMESTAMP
+			</isEqual>
+			<![CDATA[
+			, #cmmBoardVO.cbThType#
+			, #cmmBoardVO.cbThUrl#
+			, #cmmBoardVO.cbPassword#
+			, #cmmBoardVO.cbGubun#
+		)
+	]]>
+	<selectKey keyProperty="cbSeq" resultClass="string" type="post">
+		select LAST_INSERT_ID() as value
+	</selectKey>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmCmmBoardDAO.cmmBoardUpdate" parameterClass="cmmBoardVO">
+/* AdmCmmBoardDAO.cmmBoardUpdate */
+	<![CDATA[
+		UPDATE TB_HDA_CMM_BOARD
+		SET
+			CB_NAME = case 
+							when #cbType# = '0101' then '입학상담-입학' 	when #cbType# = '0102' then '입학상담-편입' 	when #cbType# = '0201' then '학사Q&A'
+					 		when #cbType# = '0301' then '학사FAQ' 		when #cbType# = '0401' then '양식자료실'			when #cbType# = '0501' then '공지사항' 			
+							when #cbType# = '0601' then '자랑스런한디원' 		when #cbType# = '0701' then '한디원행사'
+							when #cbType# = '0801' then '작품동영상&UCC' 	when #cbType# = '0901' then '교양수강문의'		when #cbType# = '1001' then '한디원신문고' 
+							when #cbType# = '1101' then '고객센터'			when #cbType# = '0902' then '교양개설문의' 
+							when #cbType# = '0602' then '작품자료실'			when #cbType# = '0603' then '해외프로그램'		when #cbType# = '0604' then '취업프로그램'
+							when #cbType# = '0605' then '기업 · 지역연계수업 현황'	
+							when #cbType# = '0610' then '해외연수'			when #cbType# = '0611' then '해외봉사'
+							else ''
+						end
+			, CB_TITLE = #cbTitle#
+			, CB_CONTENT = #cbContent#
+			, CB_NOTICE_YN = #cbNoticeYn#
+			, CB_SECRET_YN = #cbSecretYn#
+			, CB_PASSWORD = #cbPassword#
+			, CB_TYPE = #cbType#
+			, CB_TH_TYPE = #cbThType#
+			, CB_TH_URL = #cbThUrl#
+			, CB_GUBUN = #cbGubun#
+			
+			]]>
+			<isEqual property="cbNoticeYn" compareValue="Y">
+				, CB_NOTICE_DATE = CURRENT_TIMESTAMP
+			</isEqual>
+			<isEqual property="cbNoticeYn" compareValue="N">
+				, CB_NOTICE_DATE = NULL
+			</isEqual>
+			<![CDATA[
+		WHERE
+			CB_SEQ = #cbSeq#
+	]]>
+	</update>
+	
+<!-- 	답글 등록 시작 -->
+<update id="AdmCmmBoardDAO.cmmBoardContentReply" parameterClass="map">
+<![CDATA[
+UPDATE TB_HDA_CMM_BOARD SET  
+CB_CONTENT_REPLY = #cmmBoardVO.cbContentReply#, CB_CONREPLY_NAME= #adminVO.admName#, CB_CONREPLY_DATE= NOW()
+WHERE CB_SEQ = #cmmBoardVO.cbSeq#
+]]>
+</update>
+
+<!-- 	답글 등록  끝-->
+
+	<!-- 삭제 -->
+	<delete id="AdmCmmBoardDAO.cmmBoardDelete" parameterClass="string">
+/* AdmCmmBoardDAO.cmmBoardDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_CMM_BOARD
+		WHERE CB_SEQ = #cbSeq#
+	]]>
+	</delete>
+	
+	<!-- 썸네일 관련 update -->
+	<update id="AdmCmmBoardDAO.cmmBoardThumbFileUpdate" parameterClass="map">
+/* AdmCmmBoardDAO.cmmBoardThumbFileUpdate */
+	<![CDATA[
+		UPDATE TB_HDA_CMM_BOARD
+		SET 
+			CB_TH_IMG_NAME = #fileInfoVO.fileName#
+			, CB_TH_IMG_PATH = #fileInfoVO.filePath#
+		WHERE
+			CB_SEQ = #cbSeq#
+	]]>
+	</update>
+	
+	<!-- ***************************************************** 첨부파일 ***************************************************** -->
+	<!-- 목록 -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardUpfileList" parameterClass="string" resultClass="egovMap">
+/* AdmCmmBoardDAO.selectCmmBoardUpfileList */
+	<![CDATA[
+		SELECT
+			CBUP_SEQ
+			, CBUP_ORIGIN_FILENAME
+			, CBUP_SAVE_FILEPATH
+			, CB_SEQ
+		FROM
+			TB_HDA_CB_UPFILE
+		WHERE
+			CB_SEQ = #cbSeq#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardUpfileListCnt" parameterClass="string" resultClass="int">
+/* AdmCmmBoardDAO.selectCmmBoardUpfileListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM
+			TB_HDA_CB_UPFILE
+		WHERE
+			CB_SEQ = #cbSeq#
+	]]>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardUpfileOne" parameterClass="string" resultClass="cbUpfileVO">
+/* AdmCmmBoardDAO.selectCmmBoardUpfileOne */
+	<![CDATA[
+		SELECT
+			CBUP_SEQ					as cbupSeq
+			, CBUP_ORIGIN_FILENAME		as cbupOriginFilename
+			, CBUP_SAVE_FILEPATH		as cbupSaveFilepath
+			, CB_SEQ					as cbSeq
+		FROM
+			TB_HDA_CB_UPFILE
+		WHERE
+			CBUP_SEQ = #cbupSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmCmmBoardDAO.cmmBoardUpfileInsert" parameterClass="map">
+/* AdmCmmBoardDAO.cmmBoardUpfileInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_CB_UPFILE (
+			CBUP_ORIGIN_FILENAME
+			, CBUP_SAVE_FILEPATH
+			, CB_SEQ
+		) VALUES (
+			#fileInfoVO.fileName#
+			, #fileInfoVO.filePath#
+			, #cbSeq#
+		)
+	]]>
+	</insert>
+	
+	<!-- 삭제 -->
+	<delete id="AdmCmmBoardDAO.cmmBoardUpfileDelete" parameterClass="string">
+/* AdmCmmBoardDAO.cmmBoardUpfileDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_CB_UPFILE
+		WHERE CBUP_SEQ = #cbupSeq#
+	]]>
+	</delete>
+	
+	<!-- ***************************************************** 댓글 ***************************************************** -->
+	<!-- 목록 -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardCommentList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmCmmBoardDAO.selectCmmBoardCommentList */
+	<![CDATA[
+		SELECT
+			CBCO_SEQ
+			, CBCO_REG_SEQ
+			, CBCO_REG_NAME
+			, CBCO_CONTENT
+			, DATE_FORMAT(CBCO_REG_DATE, '%Y-%m-%d %H:%i') as CBCO_REG_DATE
+			, CBCO_PASSWORD
+			, CB_SEQ
+		FROM ( 
+			SELECT
+				CBCO_SEQ
+				, CBCO_REG_SEQ
+				, CBCO_REG_NAME
+				, CBCO_CONTENT
+				, CBCO_REG_DATE
+				, CBCO_PASSWORD
+				, CB_SEQ
+			FROM
+				TB_HDA_CB_COMMENT
+			WHERE 
+				cb_seq = #searchWord#
+			ORDER BY
+				CBCO_REG_DATE desc
+			LIMIT #firstIndex#, #recordCountPerPage#
+		) tt
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardCommentListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmCmmBoardDAO.selectCmmBoardCommentListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM
+			TB_HDA_CB_COMMENT
+		WHERE 
+			cb_seq = #searchWord#
+	]]>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmCmmBoardDAO.selectCmmBoardCommentOne" parameterClass="string" resultClass="cbCommentVO">
+/* AdmCmmBoardDAO.selectCmmBoardCommentOne */
+	<![CDATA[
+		SELECT
+			CBCO_SEQ										as cbcoSeq
+			, CBCO_REG_SEQ									as cbcoRegSeq
+			, CBCO_REG_NAME									as cbcoRegName
+			, CBCO_CONTENT									as cbcoContent
+			, DATE_FORMAT(CBCO_REG_DATE, '%Y-%m-%d %H:%i') 	as cbcoRegDate
+			, CBCO_PASSWORD									as cbcoPassword
+			, CB_SEQ										as cbSeq
+		FROM
+			TB_HDA_CB_COMMENT
+		WHERE 
+			CBCO_SEQ = #cbcoSeq#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmCmmBoardDAO.cmmBoardCommentInsert" parameterClass="map">
+/* AdmCmmBoardDAO.cmmBoardCommentInsert */
+	<![CDATA[
+		INSERT INTO TB_HDA_CB_COMMENT (
+			CBCO_REG_SEQ
+			, CBCO_REG_NAME
+			, CBCO_CONTENT
+			, CBCO_REG_DATE
+			, CBCO_PASSWORD
+			, CB_SEQ
+		) VALUES (
+			#adminVO.admSeq#
+			, #adminVO.admName#
+			, #cbCommentVO.cbcoContent#
+			, CURRENT_TIMESTAMP
+			, #cbCommentVO.cbcoPassword#
+			, #cbCommentVO.cbSeq#
+		)
+	]]>
+	<selectKey keyProperty="cbcoSeq" resultClass="string" type="post">
+		select LAST_INSERT_ID() as value
+	</selectKey>
+	</insert>
+	
+	<!-- 삭제 -->
+	<delete id="AdmCmmBoardDAO.cmmBoardCommentDelete" parameterClass="string">
+/* AdmCmmBoardDAO.cmmBoardCommentDelete */
+	<![CDATA[
+		DELETE FROM TB_HDA_CB_COMMENT
+		WHERE CBCO_SEQ = #cbcoSeq#
+	]]>
+	</delete>
+	
+	<!-- 마이그레이션 썸네일 불러오기 -->
+	<select id="AdmCmmBoardDAO.selectShowOldImage" parameterClass="string" resultClass="string">
+/*AdmCmmBoardDAO.selectShowOldImage*/
+	<![CDATA[
+		SELECT 
+			MBTH_IMG_PATH 
+		FROM 
+			TB_HDA_MB_THUMBNAIL 
+		WHERE
+			MB_OLD_SEQ = #oldSeq#
+	]]>
+	</select>
+</sqlMap>

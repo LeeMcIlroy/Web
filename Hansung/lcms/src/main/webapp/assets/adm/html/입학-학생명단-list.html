@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+	<title>학사관리시스템</title>
+
+	<link rel="stylesheet" media="screen" href="../css/style.css">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+	<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="../js/front.js"></script>
+	<script>
+		function closeLayer( obj ) {
+			$(obj).parent().parent().hide();
+		}
+
+		$(function(){
+
+			/* 클릭 클릭시 클릭을 클릭한 위치 근처에 레이어가 나타난다. */
+			$('.imgSelect').click(function(e)
+			{
+				var sWidth = window.innerWidth;
+				var sHeight = window.innerHeight;
+
+				var oWidth = $('.popupLayer').width();
+				var oHeight = $('.popupLayer').height();
+
+				// 레이어가 나타날 위치를 셋팅한다.
+				var divLeft = e.clientX + 10;
+				var divTop = e.clientY + 5;
+
+				// 레이어가 화면 크기를 벗어나면 위치를 바꾸어 배치한다.
+				if( divLeft + oWidth > sWidth ) divLeft -= oWidth;
+				if( divTop + oHeight > sHeight ) divTop -= oHeight;
+
+				// 레이어 위치를 바꾸었더니 상단기준점(0,0) 밖으로 벗어난다면 상단기준점(0,0)에 배치하자.
+				if( divLeft < 0 ) divLeft = 0;
+				if( divTop < 0 ) divTop = 0;
+
+				$('.popupLayer').css({
+					"top": divTop,
+					"left": divLeft,
+					"position": "absolute"
+				}).show();
+			});
+
+		});
+	</script>
+</head>
+<body>
+    <header>
+		<div class="top-area">
+			<div class="content-box">
+				<!-- gnd -->
+				<div class="header-info">
+					접속시간 : 2019.10.10 18:20 (20분 경과)
+					<i class="icon-user ml20"></i>
+					<label for="user-pop">홍길동님</label>
+					<input type="checkbox" id="user-pop">
+					<div class="user-popup">
+						<a href="">Profile</a>
+						<a href="">시간연장</a>
+						<a href="">Logout</a>
+					</div>
+				</div>
+				<!-- // gnd -->
+				<div class="header-menu">
+					<!-- logo -->
+					<h1><a href="">학사관리시스</a></h1>
+					<!--// logo -->
+
+					<!-- top menu -->
+					<nav>
+						<a href="" class="on"><span>입학</span></a>
+						<a href=""><span>등록</span></a>
+						<a href=""><span>학생</span></a>
+						<a href=""><span>수업</span></a>
+						<a href=""><span>행정</span></a>
+						<a href=""><span>현황통계</span></a>
+						<a href=""><span>운영</span></a>
+						<a href=""><span>교육과정</span></a>
+					</nav>
+					<!--// top menu -->
+				</div>
+			</div>
+		</div>
+    </header>
+
+	<!-- contents -->
+	<div class="content-box">
+		<div class="contents">
+			<!-- left menu -->
+			<div id="cssmenu">
+				<div class="left-title"><span>입학</span></div>
+				<ul>
+					<!-- 2뎁스 메뉴추가시 li class="has-sub" 추가됨.-->
+				   <li><a href="#">신입학</a></li>
+				   <li><a href="#">재등록</a></li>
+				   <li><a href="#" class="on">학생명단</a></li>
+				</ul>
+
+			</div>
+			<!--// left menu -->
+			<div class="main-content">
+				<div class="title-area">
+					<p class="page-lv01">학생명단</p>
+					<div class="navi">
+						<span class="icon-home">Home</span>
+						<span>입학</span>
+						<span>학생명단</span>
+					</div>
+				</div>
+				<!-- search -->
+				<div class="search-box none-option">
+					<input type="checkbox" id="search-option-open" />
+					<div class="search">
+						<div class="search-input">
+							<table class="shearch-option">
+								<colgroup>
+									<col style="width:8%;" />
+									<col />
+								</colgroup>
+								<tbody>
+									<tr>
+										<th>접수학기</th>
+										<td>
+											<select>
+												<option>2019</option>
+											</select>
+											<select>
+												<option>가을학기</option>
+											</select>
+											<select>
+												<option>신입학</option>
+												<option>재등록</option>
+											</select>
+											<input type="text" class="input-data" placeholder="학번,이름,국적을 입력하세요" />
+										</td>
+									</tr>
+								</tbody>
+							</table>
+
+							<a href="#">검색하기</a>
+						</div>
+					</div>
+				</div>
+				<!--// search -->
+
+				<!--search info-->
+				<div class="search-infomation">
+					<div class="search-count">
+						<strong>200</strong>건이 검색되었습니다.
+					</div>
+					<div class="paging-select">
+						1 / 10page &nbsp;&nbsp;
+						<select>
+							<option>15</option>
+						</select>
+					</div>
+				</div>
+				<!--// search info-->
+
+				<!-- table -->
+				<div class="list-table-box">
+					<table class="normal-list-table">
+						<colgroup>
+							<col style="width:5%;" />
+							<col />
+							<col />
+							<col />
+							<col />
+							<col />
+							<col />
+							<col />
+							<col />
+						</colgroup>
+						<thead>
+							<tr>
+								<th>No.</th>
+								<th>접수번호</th>
+								<th>학번</th>
+								<th>이름</th>
+								<th>국적</th>
+								<th>생년월일</th>
+								<th>학생구분</th>
+								<th>신청구분</th>
+								<th>접수일자</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>3</td>
+								<td><a href="" class="underline imgSelect">20191-0003</a></td>
+								<td><p class="underline">19K2999</p></td>
+								<td><p class="underline">홍길동</p></td>
+								<td>1999.10.10</td>
+								<td>대한민국</td>
+								<td>어학연수생</td>
+								<td><em>신입학</em></td>
+								<td>2019.10.10</td>
+							</tr>
+							<tr>
+								<td>2</td>
+								<td><a href="" class="underline imgSelect">20191-0003</a></td>
+								<td><p class="underline">19K2999</p></td>
+								<td><p class="underline">홍길동</p></td>
+								<td>1999.10.10</td>
+								<td>대한민국</td>
+								<td>어학연수생</td>
+								<td>재등록</td>
+								<td>2019.10.10</td>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td><a href="" class="underline imgSelect">20191-0003</a></td>
+								<td><p class="underline">19K2999</p></td>
+								<td><p class="underline">홍길동</p></td>
+								<td>1999.10.10</td>
+								<td>대한민국</td>
+								<td>어학연수생</td>
+								<td>재등록</td>
+								<td>2019.10.10</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<!-- table button -->
+				<div class="table-button">
+					<div class="btn-box">
+						<button type="button" class="white btn-down">Download</button>
+					</div>
+				</div>
+				<!--// table button -->
+
+				<!-- paging -->
+				<div class="paging_wrap">
+					<div class="paging">
+						<span class="class">
+							<a class="fist" href=""><img src="../img/btn_paging_first.png" alt="처음" /> </a>
+							<a href=""><img src="../img/btn_paging_prev.png" alt="이전" /></a>
+						</span>
+						<strong>1</strong>
+						<a class="num" href="">2</a>
+						<a class="num" href="">3</a>
+						<a class="num" href="">4</a>
+						<a class="num" href="">5</a>
+						<span class="class">
+							<a href=""><img src="../img/btn_paging_next.png" alt="다음" /></a>
+							<a class="last" href=""><img src="../img/btn_paging_last.png" alt="마지막" /></a>
+						</span>
+					</div>
+				</div>
+				<!--// paging -->
+			</div>
+		</div>
+
+	</div>
+	<!--// contents -->
+	<!-- footer -->
+    <footer>
+       <p>COPYRIGHT@2019 HANSUNG UNIVERSITY All Rights Reserved.</p>
+    </footer>
+	<!--// footer -->
+
+</body>
+</html>

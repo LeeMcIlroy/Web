@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 교사 프로필 조회 -->
+	<select id="lecProfileDAO.selectLecProfile" parameterClass="usrVO" resultClass="usrVO">
+	<![CDATA[
+		SELECT MEMBER_SEQ as memberSeq
+			 , MEMBER_CODE as memberCode
+			 , MEMBER_PW as memberPw
+			 , MEMBER_TYPE as memberType
+			 , NAME as name
+			 , H_NAME as hName
+			 , E_NAME as eName
+			 , BIRTH as birth
+			 , POST as post
+			 , ADDR1 as addr1
+			 , ADDR2 as addr2
+			 , APP_DATE as appDate
+			 , RES_DATE as resDate
+			 , STATUS as status
+			 , TEL as tel  
+			 , MOBILE as mobile
+			 , EMAIL as email
+			 , STD_TYPE as stdType
+			 , STD_CURR as stdCurr
+			 , NATION as nation
+			 , DEPART as depart
+			 , ACCE_IP as acceIp
+			 , CASE USE_YN  WHEN 'Y' THEN '사용' 
+			 				WHEN 'N' THEN '사용안함' END as useYn
+			 , LOGIN_DATE_TIME as loginDateTime
+			 , STEP as step
+			 , GENDER as gender
+			 , PIC as pic
+			 , FINAL_EDU as finalEdu
+			 , FE_SCHOOLNAME as feSchoolname
+			 , FE_COUNTRY as feCountry
+			 , FE_DATE_S as feDateS
+			 , FE_DATE_E as feDateE
+			 , TR_EXPERIENCE as trExperience
+			 , TR_GETPATH as trGetpath
+			 , TR_TERM as trTerm
+			 , NA_TEL as naTel
+			 , NA_ADDR as naAddr
+			 , EMER_NAME as emerName
+			 , EMER_RELATION as emerRelation
+			 , TEL_EMER as telEmer
+			 , EMAIL_EMER emailEmer
+			 , POST_EMER as postEmer
+			 , ADDR1_EMER as affr1Emer
+			 , ADDR2_EMER as addr2Emer
+			 , GUAR_NAME as guarName
+			 , GUAR_RELATION as guarRelation
+			 , TEL_GUAR as telGuar
+			 , EMAIL_GUAR as emailGuar
+			 , POST_GUAR as postGuar
+			 , ADDR1_GUAR as addr1Guar
+			 , ADDR2_GUAR as addr2Guar
+			 , ENTRY_DATE as entryDate
+			 , ISSUE_DATE as issueDate
+			 , EXPIRY_DATE as expryDate
+			 , RC_IS_DATE as rcIsDate
+			 , AES_DECRYPT(UNHEX(RC_CODE), MEMBER_CODE) as rcCode
+			 , AES_DECRYPT(UNHEX(P_NUMBER), MEMBER_CODE) as pNumber
+			 , P_IS_DATE as pIsDate
+			 , P_VALIDITY as pValidity
+			 , INS_COMPANY as insCompany
+			 , STOCK_NUMBER as stockNumber
+			 , INS_SDATE as insSdate
+			 , INS_EDATE as insEdate
+			 , B_NAME as bName
+			 , B_ACCOUNT as bAccount
+			 , AES_DECRYPT(UNHEX(B_NUMBER), MEMBER_CODE) as bNumber
+			 , visa1 as visa1
+			 , visa2 as visa2
+			 , REG_DATE	as regDate
+			 , UPD_DATE as updDate
+			 , #memberPw# AS ttt
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_CODE = #memberCode#
+		
+	]]>	
+	</select>	
+	
+	<!-- 교사 프로필 수정 -->
+	<update id="lecProfileDAO.updateLecProfile" parameterClass="usrVO">
+		/* LecProfileDAO.updateLecProfile */
+		UPDATE
+		TB_LCMS_MEMBER
+		SET
+		 ADDR1 = #addr1#
+		 , ADDR2 = #addr2#
+		 , TEL   = #tel#
+		 , MOBILE = #mobile#
+		 , EMAIL = #email#
+		 , POST = #post#
+		WHERE
+		MEMBER_SEQ = #memberSeq#
+	</update>
+	
+	<!-- 교사 비밀번호 체크 -->
+	<select id="lecProfileDAO.selectadmAjaxMemberPwChk" parameterClass="usrVO" resultClass="int">
+	/* LecProfileDAO.selectadmAjaxMemberPwChk */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_LCMS_MEMBER
+		WHERE
+			MEMBER_PW = #memberPw# 
+			AND 
+			MEMBER_CODE = #memberCode#
+	]]>
+	
+	</select>
+	
+	<!-- 교사 비밀번호 수정 -->
+	<update id="lecProfileDAO.lecAjaxPasswordUpdate" parameterClass="usrVO">
+	/* LecProfileDAO.lecAjaxPasswordUpdate */
+	UPDATE
+	TB_LCMS_MEMBER
+	SET
+	 MEMBER_PW = #memberPw#
+	 ,UPD_DATE = SYSDATE()
+	WHERE
+	MEMBER_SEQ = #memberSeq#
+	</update>
+
+
+</sqlMap>

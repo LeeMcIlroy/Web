@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+                http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+    <context:component-scan base-package="egovframework.com, component, writer">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+    </context:component-scan>
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="webBindingInitializer">
+            <bean class="egovframework.example.cmmn.web.EgovBindingInitializer"/>
+        </property>
+    </bean>
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="interceptors">
+            <list>
+                <ref bean="localeChangeInterceptor" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver" />
+    <!-- 쿠키를 이용한 Locale 이용시 <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"/> -->
+    <bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+        <property name="paramName" value="language" />
+    </bean>
+
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="defaultErrorView" value="/common/error"/>
+        <!-- 
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.springframework.dao.DataAccessException">egovframework/cmmn/dataAccessFailure</prop>
+                <prop key="org.springframework.transaction.TransactionException">egovframework/cmmn/transactionFailure</prop>
+                <prop key="egovframework.rte.fdl.cmmn.exception.EgovBizException">egovframework/cmmn/egovError</prop>
+                <prop key="org.springframework.security.AccessDeniedException">egovframework/cmmn/egovError</prop>
+                <prop key="org.springframework.web.bind.MissingServletRequestParameterException">egovframework/cmmn/parameterError</prop>
+            </props>
+        </property>
+        -->
+    </bean>
+
+    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" p:order="1"
+	    p:viewClass="org.springframework.web.servlet.view.JstlView"
+	    p:prefix="/WEB-INF/jsp/writer/" p:suffix=".jsp"/>
+<!-- 	    p:prefix="/WEB-INF/jsp/muct/" p:suffix=".jsp"/> -->
+
+    <!-- For Pagination Tag -->
+<!--     <bean id="imageRenderer" class="egovframework.example.cmmn.web.EgovImgPaginationRenderer"/> -->
+    <bean id="imageRenderer" class="component.web.CmmImgPaginationRenderer"/>
+    <bean id="imageRenderer2" class="component.web.CmmImgPaginationRenderer2"/>
+
+    <bean id="paginationManager" class="egovframework.rte.ptl.mvc.tags.ui.pagination.DefaultPaginationManager">
+        <property name="rendererType">
+            <map>
+                <entry key="image" value-ref="imageRenderer"/>
+                <entry key="image2" value-ref="imageRenderer2"/>
+            </map>
+        </property>
+    </bean>
+	<!-- /For Pagination Tag -->
+
+    <mvc:view-controller path="/cmmn/validator.do" view-name="cmm/validator"/>
+  
+	<!-- Excel 다운로드 -->
+	<bean id="excelDownUtil" class="component.excel.ExcelDownUtil" />
+	<bean id="excelDownUtil2" class="component.excel.ExcelDownUtil2" />
+	<bean id="beanNameViewResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver" >
+		<property name="order"><value>0</value></property>
+	</bean>
+  
+ 	<!-- Ajax Json View Start -->
+	<bean name="jsonView" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" />
+	
+
+ <!-- 로그인 세션 인터셉터 -->
+    <!-- <mvc:interceptors>
+    	
+    		관리자 인터셉터
+    		관리자 페이지에 대해 관리자 세션여부를 검사한다.
+    	
+    	<mvc:interceptor>
+    		<mvc:mapping path="/xabdmxgr/**/*.do"/>
+    		<mvc:exclude-mapping path="/xabdmxgr/**/*.do"/>
+    		<mvc:exclude-mapping path="/assets/**/*"/>
+    		<mvc:exclude-mapping path="/EgovPageLink.do"/>
+    		<bean class="egovframework.com.cmm.interceptor.AuthenticInterceptorAdm"/>
+    	</mvc:interceptor>
+    	<mvc:interceptor>
+    		<mvc:mapping path="/usr/lec/*.do"/>
+    		<mvc:mapping path="/usr/lec/*Modify.do"/>
+    		<mvc:mapping path="/usr/cnslt/*.do"/>
+    		<mvc:mapping path="/usr/board/qna/boardQnaModifyView.do"/>
+    		<mvc:mapping path="/usr/board/free/*Insert.do"/>
+    		<mvc:mapping path="/usr/board/free/*Modify.do"/>
+    		<mvc:mapping path="/usr/board/free/*Delete.do"/>
+    		<mvc:mapping path="/usr/board/free/*Update.do"/>
+    		<mvc:exclude-mapping path="/xabdmxgr/**/*.do"/>
+    		<mvc:exclude-mapping path="/assets/**/*.do"/>
+    		<mvc:exclude-mapping path="/usr/lgn/*.do"/>
+    		<mvc:exclude-mapping path="/EgovPageLink.do"/>
+    		<bean class="egovframework.com.cmm.interceptor.AuthenticInterceptorUsr"/>
+    	</mvc:interceptor>
+    	<mvc:interceptor>
+    		<mvc:mapping path="/**/*.do"/>
+    		<mvc:exclude-mapping path="/usr/lgn/*.do"/>
+    		<mvc:exclude-mapping path="/xabdmxgr/**/*.do"/>
+    		<mvc:exclude-mapping path="/EgovPageLink.do"/>
+    		<mvc:exclude-mapping path="/cmmn/**/*.do"/>
+    		<bean class="egovframework.com.cmm.interceptor.AuthenticInterceptorUsrCooki"/>
+    	</mvc:interceptor>
+    	
+    		사용자 인터셉터
+    		회원관련 페이지 및 등록, 수정 페이지 접근시 사용자 세션여부를 검사한다. 
+    	<mvc:interceptor>
+    		<mvc:mapping path="/member/**/*.do"/>
+    		<mvc:mapping path="/**/*Register.do"/>
+    		<mvc:mapping path="/**/*Modify.do"/>
+    		<mvc:exclude-mapping path="/admin/**/*.do"/>
+    		<bean class="egovframework.com.cmm.interceptor.AuthenticInterceptorUsr"/>
+    	</mvc:interceptor>
+    	<mvc:interceptor>
+    		<mvc:mapping path="/**/*.do"/>
+    		<mvc:exclude-mapping path="/admin/**/*.do"/>
+    		<mvc:exclude-mapping path="/EgovPageLink.do"/>
+    		<bean class="egovframework.com.cmm.interceptor.AuthenticInterceptorUsrCooki"/>
+    	</mvc:interceptor>
+    	
+    </mvc:interceptors> -->
+
+</beans>

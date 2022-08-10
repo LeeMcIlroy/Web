@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_eve_table">
+		FROM
+			TB_HDA_EVENT t1, (SELECT @ROWNUM:=0) r
+		WHERE
+			1=1	
+		<isNotEmpty property="searchType" prepend="AND">
+			EVE_DEPO_YN = #searchType#
+		</isNotEmpty>
+		<isNotEmpty property="menuType" prepend="AND">
+			EVE_NUM = #menuType#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition1" compareValue="name">
+				EVE_NAME like concat('%', #searchWord#, '%')
+			</isEqual>
+			<isEqual property="searchCondition1" compareValue="tel">
+				EVE_TEL like concat('%', #searchWord#, '%')
+			</isEqual>	
+			<isEqual property="searchCondition1" compareValue="email">
+				EVE_EMAIL like concat('%', #searchWord#, '%')
+			</isEqual>	
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition2" prepend="AND">
+			EVE_REFUND_YN = #searchCondition2#
+		</isNotEmpty>
+		<isNotEmpty property="searchCondition3" prepend="AND">
+			EVE_CANCEL_YN = #searchCondition3#
+		</isNotEmpty>
+	</sql>
+
+	<!-- 신청 목록 -->
+	<select id="AdmEventDAO.selectEventList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmEventDAO.selectEventList */	
+	<![CDATA[
+		SELECT
+			EVE_SEQ
+			, EVE_NUM
+			, EVE_EVNAME
+			, EVE_NAME
+			, EVE_TEL
+			, EVE_EMAIL
+			, EVE_QUES1
+			, EVE_QUES2
+			, EVE_QUES3
+			, EVE_QUES4
+			, EVE_QUES5
+			, EVE_DEPO_NAME
+			, DATE_FORMAT(EVE_DEPO_DATE, '%Y-%m-%d %H:%i') AS EVE_DEPO_DATE
+			, EVE_REFUND_BANK
+			, EVE_REFUND_ACNM
+			, EVE_DEPO_YN
+			, EVE_REFUND_YN
+			, DATE_FORMAT(EVE_CANCEL_DATE, '%Y-%m-%d %H:%i') AS EVE_CANCEL_DATE
+			, DATE_FORMAT(EVE_REG_DATE, '%Y-%m-%d') as EVE_REG_DATE
+	]]>
+	<include refid="adm_eve_table"/>
+	<![CDATA[
+		ORDER BY t1.EVE_REG_DATE desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+
+	<!-- 신청 목록Cnt -->
+	<select id="AdmEventDAO.selectEventListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmEventDAO.selectEventListCnt */	
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+	<include refid="adm_eve_table"/>
+	</select>
+	
+	<!-- 입금여부 -->
+	<update id="AdmEventDAO.updateAdmEventDepoYn" parameterClass="EventVO">
+/* AdmEventDAO.updateAdmEventDepoYn */
+	<![CDATA[
+		UPDATE
+			TB_HDA_EVENT
+		SET
+			EVE_DEPO_YN = #eveDepoYn#
+		WHERE
+			EVE_SEQ = #eveSeq#
+	]]>
+	</update>
+	
+	<!-- 환불여부 -->
+	<update id="AdmEventDAO.updateAdmEventRefundYn" parameterClass="EventVO">
+/* AdmEventDAO.updateAdmEventRefundYn */
+	<![CDATA[
+		UPDATE
+			TB_HDA_EVENT
+		SET
+			EVE_REFUND_YN = #eveRefundYn#
+		WHERE
+			EVE_SEQ = #eveSeq#
+	]]>
+	</update>
+	
+	<!-- 행사 회차 조회 -->
+	<select id="AdmEventDAO.selectEveNumList" resultClass="String">
+/* AdmEventDAO.selectEveNumList */
+	<![CDATA[
+		SELECT 
+			EVE_NUM
+		FROM 
+			TB_HDA_EVENT
+		GROUP BY
+			EVE_NUM
+		ORDER BY 
+			EVE_NUM ASC
+	]]>
+	</select>
+	
+	<!--  목록 -->
+	<select id="AdmEventDAO.selectAdmEventOne" parameterClass="String" resultClass="EventVO">
+/* AdmEventDAO.selectEventOne */	
+	<![CDATA[
+		SELECT
+			EVE_SEQ				AS eveSeq
+			, EVE_EVNAME		AS eveEvname
+			, EVE_NUM			AS eveNum
+			, EVE_NAME			AS eveName 
+			, EVE_TEL			AS eveTel
+			, EVE_EMAIL			AS eveEmail
+			, EVE_QUES1			AS eveQues1
+			, EVE_QUES2			AS eveQues2
+			, EVE_QUES3			AS eveQues3
+			, EVE_QUES4			AS eveQues4
+			, EVE_QUES5			AS eveQues5
+			, EVE_DEPO_NAME		AS eveDepoName
+			, DATE_FORMAT(EVE_DEPO_DATE, '%Y-%m-%d %H:%i') AS eveDepoDate
+			, EVE_REFUND_BANK	AS eveRefundBank
+			, EVE_REFUND_ACNM	AS eveRefundAcnm
+			, EVE_DEPO_YN		AS eveDepoYn
+			, EVE_REFUND_YN		AS eveRefundYn
+			, EVE_CANCEL_YN		AS eveCancelYn
+			, DATE_FORMAT(EVE_CANCEL_DATE, '%Y-%m-%d %H:%i') AS eveCancelDate
+			, DATE_FORMAT(EVE_REG_DATE, '%Y-%m-%d') AS eveRegDate
+		FROM
+			TB_HDA_EVENT
+		WHERE
+			EVE_SEQ = #eveSeq#
+	]]>
+	</select>
+	
+	<!-- 엑셀 목록 -->
+	<select id="AdmEventDAO.selectEventExcelList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmEventDAO.selectEventExcelList */	
+	<![CDATA[
+		SELECT
+			*
+		FROM
+		(
+			SELECT
+				@ROWNUM:=@ROWNUM+1 AS ROW_NUM
+				, EVE_EVNAME
+				, EVE_NAME 
+				, EVE_TEL
+				, EVE_EMAIL
+				, SUBSTRING_INDEX(EVE_QUES1,'/',-1) AS EVE_QUES1
+				, SUBSTRING_INDEX(EVE_QUES2,'/',-1) AS EVE_QUES2
+				, SUBSTRING_INDEX(EVE_QUES3,'/',-1) AS EVE_QUES3
+				, SUBSTRING_INDEX(EVE_QUES4,'/',-1) AS EVE_QUES4
+				, SUBSTRING_INDEX(EVE_QUES5,'/',-1) AS EVE_QUES5
+				, EVE_DEPO_NAME
+				, DATE_FORMAT(EVE_DEPO_DATE, '%Y-%m-%d %H:%i') AS EVE_DEPO_DATE
+				, EVE_REFUND_BANK
+				, EVE_REFUND_ACNM
+				, EVE_DEPO_YN
+				, EVE_REFUND_YN
+				, EVE_CANCEL_YN
+				, DATE_FORMAT(EVE_CANCEL_DATE, '%Y-%m-%d %H:%i') AS EVE_CANCEL_DATE
+				, DATE_FORMAT(EVE_REG_DATE, '%Y-%m-%d') AS EVE_REG_DATE
+	]]>
+	<include refid="adm_eve_table"/>
+	<![CDATA[
+		) AS v1
+		ORDER BY v1.ROW_NUM desc
+	]]>
+	</select>
+	
+	<delete id="AdmEventDAO.deleteAdmEvent" parameterClass="eventVO">
+/* AdmEventDAO.deleteAdmEvent */	
+	<![CDATA[
+		DELETE FROM
+			TB_HDA_EVENT
+		WHERE
+			EVE_SEQ = #eveSeq#
+	]]>
+	</delete>
+
+</sqlMap>

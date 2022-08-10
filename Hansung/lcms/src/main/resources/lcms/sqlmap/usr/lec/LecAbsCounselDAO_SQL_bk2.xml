@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="lec_absCounsel_list">
+		FROM
+			(
+				SELECT
+					LECT_SEQ
+					, MEMBER_CODE
+					, ATT_DATE
+					, COUNT(*) AS ABSENT_CNT
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					LECT_SEQ, MEMBER_CODE, ATT_DATE
+			) TLA
+			LEFT JOIN TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN TB_LCMS_ABSENT_CONSULT TLAC ON TLA.LECT_SEQ = TLAC.LECT_SEQ AND TLA.MEMBER_CODE = TLAC.MEMBER_CODE AND TLA.ATT_DATE = TLAC.ABSENT_DATE
+			LEFT JOIN (
+				SELECT
+					CLSTM_YEAR
+					, CLSTM_SEME
+					, CLSTM_NAME
+					, COUNT(*) AS CLSS_CNT
+				FROM
+					TB_LCMS_CLSTM
+				WHERE
+					CLSTM_STATE = 'Y'
+				GROUP BY
+					CLSTM_YEAR, CLSTM_SEME, CLSTM_NAME
+			) TLC ON TLC.CLSTM_YEAR = TLL.LECT_YEAR AND TLC.CLSTM_SEME = TLL.LECT_SEM AND TLC.CLSTM_NAME = TLL.LECT_PROG
+		WHERE
+			ABSENT_CNT = CLSS_CNT
+		<isNotEmpty prepend="AND" property="searchLecture">
+			TLA.LECT_SEQ = #searchLecture#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="startDate">
+			TLA.ATT_DATE >= #startDate#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			TLA.ATT_DATE <![CDATA[<=]]> #endDate#
+		</isNotEmpty>
+	</sql>
+
+	<!-- 강사 결석자상담 목록Cnt -->
+	<select id="LecAbsCounselDAO.selectLecAbsCounselListCnt" parameterClass="searchVO" resultClass="int">
+	/* LecAbsCounselDAO.selectLecAbsCounselListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+	]]>
+	<include refid="lec_absCounsel_list"/>
+	</select>
+	
+	<!-- 강사 결석자상담 목록 -->
+	<select id="LecAbsCounselDAO.selectLecAbsCounselList" parameterClass="searchVO" resultClass="egovMap">
+	/* LecAbsCounselDAO.selectLecAbsCounselList */
+	<![CDATA[
+		SELECT
+			TLA.ATT_DATE
+			, CASE DAYOFWEEK(REPLACE(TLA.ATT_DATE, '-', '')) 
+				WHEN '1' THEN '일'
+				WHEN '2' THEN '월'
+				WHEN '3' THEN '화'
+				WHEN '4' THEN '수'
+				WHEN '5' THEN '목'
+				WHEN '6' THEN '금'
+				WHEN '7' THEN '토'
+			END AS ATT_WEEK
+			, TLM.MEMBER_CODE
+			, TLL.LECT_GRADE
+			, TLM.NAME
+			, TLM.NATION
+			, TLM.GENDER
+			, TLL.LECT_DIVI
+			, TLAC.ABSENT_SEQ
+			, TLAC.FIRST_YN
+			, TLAC.FIRST_SELOR_CODE
+			, TLAC.FIRST_SELOR_NAME
+			, TLAC.FIRST_TEL
+			, TLAC.FIRST_SNS
+			, TLAC.FIRST_TEAM
+			, TLAC.FIRST_ETC
+			, TLAC.FIRST_REASON
+			, TLAC.FIRST_FOLUP
+	]]>
+	<include refid="lec_absCounsel_list"/>
+	<![CDATA[
+		ORDER BY
+			TLA.ATT_DATE DESC, TLM.NAME ASC
+	]]>
+	</select>
+	
+	<!-- 강사 결석자상담 조회 -->
+	<select id="LecAbsCounselDAO.selectLecAbsCounselModify" parameterClass="string" resultClass="absentConsultVO">
+	/* LecAbsCounselDAO.selectLecAbsCounselModify */
+	<![CDATA[
+		SELECT
+			ABSENT_SEQ			AS absentSeq
+			, ATT_SEQ			AS attSeq
+			, LECT_SEQ			AS lectSeq
+			, LECT_NAME			AS lectName
+			, LECT_DIVI			AS lectDivi
+			, MEMBER_CODE		AS memberCode
+			, MEMBER_NAME		AS memberName
+			, MEMBER_GRADE		AS memberGrade
+			, MEMBER_NATION		AS memberNation
+			, ABSENT_DATE		AS absentDate
+			, FIRST_YN			AS firstYn
+			, FIRST_SELOR_CODE	AS firstSelorCode
+			, FIRST_SELOR_NAME	AS firstSelorName
+			, FIRST_TEL			AS firstTel
+			, FIRST_SNS			AS firstSns
+			, FIRST_TEAM		AS firstTeam
+			, FIRST_ETC			AS firstEtc
+			, FIRST_REASON		AS firstReason
+			, FIRST_FOLUP		AS firstFolup
+			, SECOND_YN			AS secondYn
+			, SECOND_SELOR_CODE	AS secondSelorCode
+			, SECOND_SELOR_NAME	AS secondSelorName
+			, SECOND_TEL		AS secondTel
+			, SECOND_SNS		AS secondSns
+			, SECOND_TEAM		AS secondTeam
+			, SECOND_ETC		AS secondEtc
+			, SECOND_REASON		AS secondReason
+			, SECOND_FOLUP		AS secondFolup
+		FROM
+			TB_LCMS_ABSENT_CONSULT
+		WHERE
+			ABSENT_SEQ = #absentSeq#
+	]]>
+	</select>
+	
+	<!-- 강사 결석자상담 결석자 데이터 조회 -->
+	<select id="LecAbsCounselDAO.selectLecAbsCounselNew" parameterClass="egovMap" resultClass="absentConsultVO">
+	/* LecAbsCounselDAO.selectLecAbsCounselNew */
+	<![CDATA[
+		SELECT
+			TLL.LECT_SEQ		AS lectSeq
+			, TLL.LECT_NAME		AS lectName
+			, TLL.LECT_DIVI		AS lectDivi
+			, TLM.MEMBER_CODE	AS memberCode
+			, TLM.NAME			AS memberName
+			, TLM.STEP			AS memberGrade
+			, TLM.NATION		AS memberNation
+			, TLA.ATT_DATE		AS absentDate
+			, T.ATT_RATE		AS attRate
+		FROM
+			(
+				SELECT
+					LECT_SEQ
+					, MEMBER_CODE
+					, ATT_DATE
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '2'
+				GROUP BY
+					LECT_SEQ, MEMBER_CODE, ATT_DATE
+			) TLA
+			LEFT JOIN TB_LCMS_LECT TLL ON TLA.LECT_SEQ = TLL.LECT_SEQ
+			LEFT JOIN TB_LCMS_MEMBER TLM ON TLA.MEMBER_CODE = TLM.MEMBER_CODE
+			LEFT JOIN(
+				SELECT
+					MEMBER_CODE
+					, LECT_SEQ
+					, ROUND(COUNT(ATTEND)/200*100, 2) AS ATT_RATE
+				FROM
+					TB_LCMS_ATTEND
+				WHERE
+					ATTEND = '1'
+				GROUP BY
+					MEMBER_CODE, LECT_SEQ
+			) T ON TLA.MEMBER_CODE = T.MEMBER_CODE AND TLA.LECT_SEQ = T.LECT_SEQ
+		WHERE
+			TLA.LECT_SEQ = #lectSeq#
+		AND
+			TLA.ATT_DATE = #attDate#
+		AND
+			TLA.MEMBER_CODE = #memberCode#
+	]]>
+	</select>
+	
+	<!-- 강사 결석자상담 등록 -->
+	<insert id="LecAbsCounselDAO.insertLecAbsCounselSubmit" parameterClass="absentConsultVO">
+	/* LecAbsCounselDAO.insertLecAbsCounselSubmit */
+	<![CDATA[
+		INSERT INTO TB_LCMS_ABSENT_CONSULT(
+			LECT_SEQ
+			, LECT_NAME
+			, LECT_DIVI
+			, MEMBER_CODE
+			, MEMBER_NAME
+			, MEMBER_GRADE
+			, MEMBER_NATION
+			, ABSENT_DATE
+			, FIRST_YN
+			, FIRST_SELOR_CODE
+			, FIRST_SELOR_NAME
+			, FIRST_TEL
+			, FIRST_SNS
+			, FIRST_TEAM
+			, FIRST_ETC
+			, FIRST_REASON
+			, FIRST_FOLUP
+		)VALUES(
+			#lectSeq#
+			, #lectName#
+			, #lectDivi#
+			, #memberCode#
+			, #memberName#
+			, #memberGrade#
+			, #memberNation#
+			, #absentDate#
+			, 'Y'
+			, #firstSelorCode#
+			, #firstSelorName#
+			, #firstTel#
+			, #firstSns#
+			, #firstTeam#
+			, #firstEtc#
+			, #firstReason#
+			, #firstFolup#
+		)
+	]]>
+	</insert>
+	
+	<!-- 강사 결석자상담 수정 -->
+	<update id="LecAbsCounselDAO.updateLecAbsCounselSubmit" parameterClass="absentConsultVO">
+	/* LecAbsCounselDAO.updateLecAbsCounselSubmit */
+	<![CDATA[
+		UPDATE
+			TB_LCMS_ABSENT_CONSULT
+		SET
+			FIRST_YN			= 'Y'
+			, FIRST_SELOR_CODE	= #firstSelorCode#
+			, FIRST_SELOR_NAME	= #firstSelorName#
+			, FIRST_TEL			= #firstTel#
+			, FIRST_SNS			= #firstSns#
+			, FIRST_TEAM		= #firstTeam#
+			, FIRST_ETC			= #firstEtc#
+			, FIRST_REASON		= #firstReason#
+			, FIRST_FOLUP		= #firstFolup#
+		WHERE
+			ABSENT_SEQ			= #absentSeq#
+	]]>
+	</update>
+	
+	<!-- 교사 결석자 상담 엑셀 리스트 -->
+	<select id="LecAbsCounselDAO.lecAbsCounselExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* LecAbsCounselDAO.lecAbsCounselExcel */
+	<![CDATA[
+		SELECT
+			TLA.LECT_SEQ
+			, TLL.LECT_GRADE
+			, TLL.LECT_DIVI
+			, TLA.ATT_DATE
+			, CASE DAYOFWEEK(REPLACE(TLA.ATT_DATE, '-', '')) 
+				WHEN '1' THEN '일'
+				WHEN '2' THEN '월'
+				WHEN '3' THEN '화'
+				WHEN '4' THEN '수'
+				WHEN '5' THEN '목'
+				WHEN '6' THEN '금'
+				WHEN '7' THEN '토'
+			END AS ATT_WEEK
+			, TLM.MEMBER_CODE
+			, TLL.LECT_GRADE
+			, TLM.NAME
+			, TLM.NATION
+			, TLM.GENDER
+			, TLL.LECT_DIVI
+			, TLAC.ABSENT_SEQ
+			, TLAC.FIRST_YN
+			, TLAC.FIRST_SELOR_CODE
+			, TLAC.FIRST_SELOR_NAME
+			, TLAC.FIRST_TEL
+			, TLAC.FIRST_SNS
+			, TLAC.FIRST_TEAM
+			, TLAC.FIRST_ETC
+			, TLAC.FIRST_REASON
+			, TLAC.FIRST_FOLUP
+			, TLAC.SECOND_YN
+			, TLAC.SECOND_SELOR_CODE
+			, TLAC.SECOND_SELOR_NAME
+			, TLAC.SECOND_TEL
+			, TLAC.SECOND_SNS
+			, TLAC.SECOND_TEAM
+			, TLAC.SECOND_ETC
+			, TLAC.SECOND_REASON
+			, TLAC.SECOND_FOLUP
+			, (
+				SELECT
+					CASE COUNT(*) WHEN 0 THEN 'N' ELSE 'Y' END
+				FROM
+					TB_LCMS_ATTEND_ETC TLAE
+				WHERE
+					TLAE.LECT_SEQ = TLA.LECT_SEQ
+				AND
+					TLAE.MEMBER_CODE = TLM.MEMBER_CODE
+			) AS ETC_YN
+	]]>
+	<include refid="lec_absCounsel_list"/>
+	<![CDATA[
+		ORDER BY
+			TLA.ATT_DATE DESC, TLM.NAME ASC
+	]]>
+	</select>
+	
+	<select id="LecAbsCounselDAO.lecAbsCounselLect" parameterClass="searchVO" resultClass="egovMap">
+	/* LecAbsCounselDAO.lecAbsCounselLect */
+	<![CDATA[
+		SELECT
+			LECT_GRADE
+			,LECT_DIVI
+		FROM
+			TB_LCMS_LECT
+		WHERE
+			LECT_SEQ = #searchLecture#
+	]]>
+	</select>
+</sqlMap>

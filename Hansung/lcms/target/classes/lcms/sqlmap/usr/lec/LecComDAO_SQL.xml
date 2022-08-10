@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="lect_prf_list">
+		FROM
+			TB_LCMS_LECT TLL
+		LEFT JOIN
+			TB_LCMS_LECTTIMETABLE TLLT ON TLL.LECT_SEQ = TLLT.LECT_CODE
+		WHERE
+			(LECT_CLA_TEA = #memberCode# OR LECT_TEA = #memberCode#)
+		AND
+			TLL.LECT_STATE = 'Y'
+		AND
+			CASE TLL.LECT_PROG
+				WHEN '정규과정' THEN
+					CONCAT(TLL.LECT_YEAR, TLL.LECT_SEM) = (
+																SELECT
+																	CONCAT(SEM_YEAR, SEMESTER)
+																FROM
+																	TB_LCMS_SEME
+																WHERE
+																	OPEN_SEM = 'Y'
+															)
+				ELSE
+					(LECT_SDATE <![CDATA[<=]]> SYSDATE() AND LECT_EDATE >= SYSDATE())
+			END
+	</sql>
+	
+	<sql id="lect_std_list">
+		FROM
+			TB_LCMS_LECT_MAP TLLM 
+			LEFT JOIN TB_LCMS_LECT TLL
+			ON TLLM.LECT_SEQ = TLL.LECT_SEQ
+		WHERE
+			TLLM.MEMBER_CODE = #memberCode#
+		AND
+			TLL.LECT_STATE = 'Y'
+		AND
+			CASE TLL.LECT_PROG
+				WHEN '정규과정' THEN
+					CONCAT(TLL.LECT_YEAR, TLL.LECT_SEM) = (
+																SELECT
+																	CONCAT(SEM_YEAR, SEMESTER)
+																FROM
+																	TB_LCMS_SEME
+																WHERE
+																	OPEN_SEM = 'Y'
+															)
+				ELSE
+					(LECT_SDATE <![CDATA[<=]]> SYSDATE() AND LECT_EDATE >= SYSDATE())
+			END
+	</sql>
+
+	<!-- 강의정보 리스트 조회 강사-->
+	<select id="LecComDAO.LectList" parameterClass="usrVO" resultClass="egovMap">
+	<![CDATA[
+		SELECT DISTINCT
+			TLL.LECT_SEQ
+			,TLL.LECT_NAME
+			,TLL.LECT_DIVI
+			,TLL.LECT_CLA_TEA
+			,TLL.LECT_CLASSROOM
+			,TLL.LECT_SDATE
+			,TLL.LECT_EDATE
+			,TLL.LECT_STATE
+			,TLL.LECT_YEAR
+			,TLL.LECT_SEM
+			,TLL.LECT_PROG
+			,TLL.LECT_CURR
+			,TLL.LECT_PER
+			,(SELECT 
+					NAME 
+				FROM 
+					TB_LCMS_MEMBER 
+				WHERE 
+					LECT_CLA_TEA = MEMBER_CODE) AS NAME
+			,(SELECT 
+				COUNT(*) 
+			FROM 
+				TB_LCMS_LECT)
+			,TLL.GRADE_YN
+			,TLL.GRADE_ID
+			,TLL.ADMIS_YN
+			,TLL.ADMIS_ID
+			,TLL.LECT_GRADE
+	]]>
+	<isEqual property="memberType" compareValue="PRF">
+		<include refid="lect_prf_list"/>
+	</isEqual>
+	<isEqual property="memberType" compareValue="STD">
+		<include refid="lect_std_list"/>
+	</isEqual>
+	<![CDATA[
+		ORDER BY 
+			 LECT_PROG ASC, LECT_SEQ DESC
+	]]>	
+	</select>
+	
+	<!-- 강의정보  조회 강사-->
+	<select id="LecComDAO.selectLectMap" parameterClass="String" resultClass="egovMap">
+	<![CDATA[
+		SELECT 
+			LECT_SEQ
+			,LECT_NAME
+			,LECT_DIVI
+			,LECT_CLA_TEA
+			,LECT_CLASSROOM
+			,LECT_SDATE
+			,LECT_EDATE
+			,LECT_STATE
+			,LECT_YEAR
+			,LECT_SEM
+			,LECT_PROG
+			,LECT_CURR
+			,LECT_PER
+			,GRADE_YN
+			,GRADE_ID
+			,ADMIS_YN
+			,ADMIS_ID
+			,LECT_GRADE
+			,(SELECT 
+				NAME 
+			FROM 
+				TB_LCMS_MEMBER 
+			WHERE 
+				LECT_CLA_TEA = MEMBER_CODE) AS NAME
+			,(SELECT 
+				COUNT(*) 
+			FROM 
+				TB_LCMS_LECT)
+		FROM
+			TB_LCMS_LECT
+		WHERE LECT_SEQ = #selLectCode#
+		ORDER BY 
+			LECT_SEQ DESC
+			
+	]]>	
+	</select>
+	
+	<select id="LecComDAO.selectSemeter" resultClass="egovMap">
+	<![CDATA[
+		SELECT
+			SEM_CODE
+			, SEM_YEAR
+			, SEMESTER
+			, CASE SEMESTER WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS SEME_NM
+			, SEM_HAKGI
+			, GRADE_S
+			, GRADE_E
+			, SATIS_PRF_YN
+		FROM
+			TB_LCMS_SEME
+		WHERE
+			OPEN_SEM = 'Y'
+	]]>
+	</select>
+
+	<select id="LecComDAO.selectLecSemeter" resultClass="egovMap" parameterClass="egovMap">
+	/* LecComDAO.selectLecSemeter */
+	<![CDATA[
+		SELECT
+			SEM_CODE
+			, SEM_YEAR
+			, SEMESTER
+			, CASE SEMESTER WHEN '1' THEN '봄학기'
+							WHEN '2' THEN '여름학기'
+							WHEN '3' THEN '가을학기'
+							WHEN '4' THEN '겨울학기' END AS SEME_NM
+			, SEM_HAKGI
+			, GRADE_S
+			, GRADE_E
+			, SATIS_PRF_YN
+		FROM
+			TB_LCMS_SEME
+		WHERE
+			SEM_YEAR = #lectYear#
+		AND
+			SEMESTER = #lectSem#
+	]]>
+	</select>
+	
+</sqlMap>

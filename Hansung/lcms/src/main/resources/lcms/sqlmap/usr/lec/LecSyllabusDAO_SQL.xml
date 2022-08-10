@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 강의계획서 -->
+	<select id="LecSyllabusDAO.selectLecSyll" parameterClass="string" resultClass="syllabusVO">
+	/* lecSyllabusDAO.selectLecSyll */
+	<![CDATA[
+	    SELECT 
+	    	CLSS_SEQ		AS clssSeq
+	        , SYLLA_SEQ		AS syllaSeq
+	        , CASE SYLLA_YN WHEN 'Y' THEN '게시'
+	        				WHEN 'N' THEN'게시안함' END AS syllaYn
+	        , SYLLA_STND	AS syllaStnd
+	        , REG_DATE		AS regDate
+	        , REG_ID		AS regId
+	        , UPD_DATE		AS updDate
+	        , UPD_ID		AS updId
+	        , (SELECT COUNT(*) FROM TB_LCMS_ATTACH WHERE BOARD_SEQ = SYLLA_SEQ) FILECOUNT
+	      FROM 
+	      	TB_LCMS_CLSS_SYLLA
+	     WHERE 
+	     	CLSS_SEQ = #clssSeq#
+	]]>	
+	</select>
+	
+	<!-- 강의계획서 파일 -->
+	<select id="LecSyllabusDAO.selectLecSyllaFiles" parameterClass="string" resultClass="egovMap">
+	/* lecSyllabusDAO.selectLecSyllaFiles */
+	<![CDATA[
+		SELECT BRD_SEQ
+		     , UP_SEQ
+		     , UP_ORIGIN_FILE_NAME
+		     , UP_SAVE_FILE_NAME
+		     , UP_SAVE_FILE_PATH
+		     , REG_DATE
+		     , REG_ID
+		     , UPD_DATE
+		     , UPD_ID
+		  FROM TB_LCMS_CLSS_SYLLAATTACHFILE
+		 WHERE BRD_SEQ = #clssSeq#
+	]]>	
+	</select>	
+	<!-- 주차계획 등록 -->
+	<!--<insert id="LecSyllabusDAO.insertlecWeek" parameterClass="syllabusVO">
+	/* lecSyllabusDAO.insertlecWeek */
+
+		<![CDATA[
+			INSERT INTO TB_LCMS_CLSS_SYLLAWEEK
+			(SYLLA_SEQ
+			 , SYLLAWEEK_SEQ
+		     , SYLLAWEEK_NM
+		     , SYLLAWEEK_MON_1
+		     , SYLLAWEEK_MON_2
+		     , SYLLAWEEK_MON_RMK
+		     , SYLLAWEEK_TUE_1
+		     , SYLLAWEEK_TUE_2
+		     , SYLLAWEEK_TUE_RMK
+		     , SYLLAWEEK_WED_1
+		     , SYLLAWEEK_WED_2
+		     , SYLLAWEEK_WED_RMK
+		     , SYLLAWEEK_THU_1
+		     , SYLLAWEEK_THU_2
+		     , SYLLAWEEK_THU_RMK
+		     , SYLLAWEEK_FRI_1
+		     , SYLLAWEEK_FRI_2
+		     , SYLLAWEEK_FRI_RMK
+		     , UPD_DATE
+		     , UPD_ID			
+			)VALUES(
+			#syllaSeq#
+			,(
+				SELECT
+					IFNULL(MAX(SYLLAWEEK_SEQ),0)+1
+				FROM
+					TB_LCMS_CLSS_SYLLAWEEK AS syllaweekSeq
+			)
+			,#syllaweekNm#
+			,#syllaweekMon1#
+			,#syllaweekMon2#
+			,#syllaweekMonRmk#
+			,#syllaweekTue1#
+			,#syllaweekTue2#
+			,#syllaweekTueRmk#
+			,#syllaweekWed1#
+			,#syllaweekWed2#
+			,#syllaweekWedRmk#
+			,#syllaweekThu1#
+			,#syllaweekThu2#
+			,#syllaweekThuRmk#
+			,#syllaweekFri1#
+			,#syllaweekFri2#
+			,#syllaweekFriRmk#
+			,SYSDATE()
+			,#updId#
+			)
+		]]>
+	</insert>
+	
+	강의계획서 주차정보
+	<select id="LecSyllabusDAO.selectLecSyllaWeek" parameterClass="string" resultClass="syllabusVO">
+	/* lecSyllabusDAO.selectLecSyllaWeek */
+	<![CDATA[
+		SELECT SYLLA_SEQ			AS syllaSeq
+			 , SYLLAWEEK_SEQ		AS syllaweekSeq 
+		     , SYLLAWEEK_NM			AS syllaweekNm
+		     , SYLLAWEEK_MON_1		AS syllaweekMon1
+		     , SYLLAWEEK_MON_2		AS syllaweekMon2
+		     , SYLLAWEEK_MON_RMK	AS syllaweekMonRmk
+		     , SYLLAWEEK_TUE_1		AS syllaweekTue1
+		     , SYLLAWEEK_TUE_2		AS syllaweekTue2
+		     , SYLLAWEEK_TUE_RMK	AS syllaweekTueRmk
+		     , SYLLAWEEK_WED_1		AS syllaweekWed1
+		     , SYLLAWEEK_WED_2		AS syllaweekWed2
+		     , SYLLAWEEK_WED_RMK	AS syllaweekWedRmk
+		     , SYLLAWEEK_THU_1		AS syllaweekThu1
+		     , SYLLAWEEK_THU_2		AS syllaweekThu2
+		     , SYLLAWEEK_THU_RMK	AS syllaweekThuRmk
+		     , SYLLAWEEK_FRI_1		AS syllaweekFri1
+		     , SYLLAWEEK_FRI_2		AS syllaweekFri2
+		     , SYLLAWEEK_FRI_RMK	AS syllaweekFriRmk
+		     , REG_DATE				AS regDate
+		     , REG_ID				AS regId
+		     , UPD_DATE				AS updDate
+		     , UPD_ID				AS updId
+		  FROM TB_LCMS_CLSS_SYLLAWEEK
+		 WHERE SYLLA_SEQ = #syllaSeq#
+	]]>	
+	</select>	 -->
+	
+	  <!-- 강의계획서 등록 -->
+	  <insert id="LecSyllabusDAO.insertlecSyll" parameterClass="syllabusVO">
+		/* LecSyllabusDAO.insertlecSyll */
+		<selectKey keyProperty="syllaSeq" resultClass="string" type="post">
+			SELECT MAX(SYLLA_SEQ) FROM TB_LCMS_CLSS_SYLLA
+		</selectKey>
+	<![CDATA[
+		INSERT INTO TB_LCMS_CLSS_SYLLA
+			(
+				CLSS_SEQ				
+				,SYLLA_YN
+				,SYLLA_STND
+				,REG_DATE
+				,REG_ID
+			)
+		VALUES 
+			(
+				#clssSeq#
+				,#syllaYn#
+				,#syllaStnd#
+				,SYSDATE()
+				,#regId#
+			)
+	]]>
+	</insert>
+	<!-- 강의계획서 수정 -->
+	<update id="LecSyllabusDAO.updatelecSyll" parameterClass="syllabusVO">
+		<![CDATA[
+			UPDATE
+				TB_LCMS_CLSS_SYLLA
+			SET
+				 CLSS_SEQ	 = #clssSeq#	
+				,SYLLA_SEQ	 = #syllaSeq#
+				,SYLLA_YN	 = #syllaYn#
+				,SYLLA_STND  = #syllaStnd#
+				,REG_DATE	 = SYSDATE()
+				,REG_ID		 = #regId#
+			WHERE 
+				SYLLA_SEQ	 = #syllaSeq# 
+		]]>
+	</update>
+	
+	<!-- 주차계획 수정 -->
+	<!-- <update id="LecSyllabusDAO.updatelecWeek" parameterClass="syllabusVO">
+		<![CDATA[
+			UPDATE
+				TB_LCMS_CLSS_SYLLAWEEK
+	
+			SET
+			   SYLLA_SEQ		  = #syllaSeq#
+			 , SYLLAWEEK_SEQ	  = #syllaweekSeq#
+		     , SYLLAWEEK_NM		  = #syllaweekNm#
+		     , SYLLAWEEK_MON_1	  = #syllaweekMon1#
+		     , SYLLAWEEK_MON_2	  = #syllaweekMon2#
+		     , SYLLAWEEK_MON_RMK  = #syllaweekMonRmk#
+		     , SYLLAWEEK_TUE_1	  = #syllaweekTue1#
+		     , SYLLAWEEK_TUE_2	  = #syllaweekTue2#
+		     , SYLLAWEEK_TUE_RMK  = #syllaweekTueRmk#
+		     , SYLLAWEEK_WED_1	  = #syllaweekWed1#
+		     , SYLLAWEEK_WED_2	  = #syllaweekWed2#
+		     , SYLLAWEEK_WED_RMK  = #syllaweekWedRmk#
+		     , SYLLAWEEK_THU_1	  = #syllaweekThu1#
+		     , SYLLAWEEK_THU_2	  = #syllaweekThu2#
+		     , SYLLAWEEK_THU_RMK  = #syllaweekThuRmk#
+		     , SYLLAWEEK_FRI_1	  = #syllaweekFri1#
+		     , SYLLAWEEK_FRI_2	  = #syllaweekFri2#
+		     , SYLLAWEEK_FRI_RMK  = #syllaweekFriRmk#
+		     , UPD_DATE			  = SYSDATE()
+		     , UPD_ID			  = #updId#
+		
+			WHERE 
+				SYLLAWEEK_SEQ	 = #syllaweekSeq# 
+		]]>
+	
+			
+
+	</update> -->
+	<!-- 주차계획 등록 -->
+	<!-- <insert id="LecSyllabusDAO.insertlecWeekOne" parameterClass="syllabusVO">
+	/* LecSyllabusDAO.insertlecWeekOne */
+		<![CDATA[
+			INSERT INTO TB_LCMS_CLSS_SYLLAWEEK(
+			 SYLLA_SEQ
+			 , SYLLAWEEK_SEQ
+		     , SYLLAWEEK_NM
+		     , SYLLAWEEK_MON_1
+		     , SYLLAWEEK_MON_2
+		     , SYLLAWEEK_MON_RMK
+		     , SYLLAWEEK_TUE_1
+		     , SYLLAWEEK_TUE_2
+		     , SYLLAWEEK_TUE_RMK
+		     , SYLLAWEEK_WED_1
+		     , SYLLAWEEK_WED_2
+		     , SYLLAWEEK_WED_RMK
+		     , SYLLAWEEK_THU_1
+		     , SYLLAWEEK_THU_2
+		     , SYLLAWEEK_THU_RMK
+		     , SYLLAWEEK_FRI_1
+		     , SYLLAWEEK_FRI_2
+		     , SYLLAWEEK_FRI_RMK
+		     , UPD_DATE
+		     , UPD_ID			
+			)VALUES(
+				#syllaSeq#
+				,(
+					SELECT
+						IFNULL(MAX(SYLLAWEEK_SEQ),0)+1
+					FROM
+						TB_LCMS_CLSS_SYLLAWEEK AS syllaweekSeq
+				)
+				,#syllaweekNm#
+				,#syllaweekMon1#
+				,#syllaweekMon2#
+				,#syllaweekMonRmk#
+				,#syllaweekTue1#
+				,#syllaweekTue2#
+				,#syllaweekTueRmk#
+				,#syllaweekWed1#
+				,#syllaweekWed2#
+				,#syllaweekWedRmk#
+				,#syllaweekThu1#
+				,#syllaweekThu2#
+				,#syllaweekThuRmk#
+				,#syllaweekFri1#
+				,#syllaweekFri2#
+				,#syllaweekFriRmk#
+				,SYSDATE()
+				,#updId#
+			)
+		]]>
+	</insert> -->
+
+	 <!-- 강의개설 수업시간 상세보기 -->
+	<!--<select id="LecSyllabusDAO.selectLectTimetables" parameterClass="string" resultClass="LectureTimeTableVO">
+	/* LecSyllabusDAO.selectLectTimetables */
+	<![CDATA[
+		SELECT 
+    		LECT_CODE		AS lectCode
+			,LECT_TBSEQ		AS lectTbseq
+			,LECT_TEA		AS lectTea
+			,LECT_WEEK  	AS lectWeek
+			
+			,CASE LECT_SCLASS WHEN '1' THEN '1교시'
+							  WHEN '2' THEN '2교시'
+							  WHEN '3' THEN '3교시'
+							  WHEN '4' THEN '4교시'
+							  WHEN '5' THEN '5교시'
+							  WHEN '6' THEN '6교시' END AS lectSclass
+		   
+		    ,CASE LECT_ECLASS 	WHEN '1' THEN '09:00 ~ 09:50'    
+								WHEN '2' THEN '10:00 ~ 10:50'
+								WHEN '3' THEN '11:00 ~ 11:50'
+								WHEN '4' THEN '12:00 ~ 12:50'
+								WHEN '5' THEN '13:00 ~ 13:50'
+								WHEN '6' THEN '14:00 ~ 14:50' END AS lectEclass
+			,LECT_GRAMMAR	AS lectGrammar
+    	FROM 
+    		TB_LCMS_LECTTIMETABLE 
+    	WHERE 
+    		LECT_CODE = #lectSeq#
+	]]>	
+	</select> -->
+	
+	 <!-- 강의계획서 수업시간  -->
+	<select id="LecSyllabusDAO.selectLectTimetables" parameterClass="String" resultClass="lectureTimeTableVO">
+	/* LecSyllabusDAO.selectLectTimetables */
+	<![CDATA[
+		SELECT 
+    		LECT_CODE		AS lectCode
+			,LECT_TBSEQ		AS lectTbseq
+			,LECT_TEA		AS lectTea
+			,CASE WHEN LECT_WEEK = '월요일' THEN 'mon'
+				  WHEN LECT_WEEK = '화요일' THEN 'tue'
+				  WHEN LECT_WEEK = '수요일' THEN 'wed'
+				  WHEN LECT_WEEK = '목요일' THEN 'thu'
+				  WHEN LECT_WEEK = '금요일' THEN 'fri' END AS lectWeek
+			,LECT_SCLASS AS lectSclass
+		    ,LECT_ECLASS AS lectEclass
+			,LECT_GRAMMAR	AS lectGrammar
+    	FROM 
+    		TB_LCMS_LECTTIMETABLE 
+    	WHERE 
+    		LECT_CODE = #lectSeq#
+
+	]]>	
+	</select>
+	
+	
+</sqlMap>

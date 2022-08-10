@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="usr_writingtips_table">
+		FROM
+			TB_HSWC_WRITINGTIPS
+		WHERE 1=1
+		<isNotEmpty property="searchWord" prepend="AND">
+			<isEqual property="searchCondition" compareValue="title">
+				TIP_TITLE like '%' || #searchWord# || '%'
+			</isEqual>
+			<isEqual property="searchCondition" compareValue="content">
+				TIP_CONTENT like '%' || #searchWord# || '%'
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<resultMap class="egovMap" id="usr_writingtips_listMap">
+		<result property="TIP_SEQ" column="TIP_SEQ"/>
+		<result property="TIP_TITLE" column="TIP_TITLE"/>
+		<result property="TIP_PUBLIC_DATE" column="TIP_PUBLIC_DATE"/>
+		<result property="TIP_CONTENT" column="TIP_CONTENT" jdbcType="CLOB" javaType="string"/>
+		<result property="REG_ID" column="REG_ID"/>
+		<result property="REG_NAME" column="REG_NAME"/>
+		<result property="REG_DATE" column="REG_DATE"/>
+		<result property="TIP_HITCOUNT" column="TIP_HITCOUNT"/>
+		<result property="TIP_IMG_NAME" column="TIP_IMG_NAME"/>
+		<result property="TIP_IMG_PATH" column="TIP_IMG_PATH"/>
+		<result property="TIP_IMG_THUMB_PATH" column="TIP_IMG_THUMB_PATH"/>
+		<result property="TIP_FILE_NAME" column="TIP_FILE_NAME"/>
+		<result property="TIP_FILE_PATH" column="TIP_FILE_PATH"/>
+	</resultMap>
+
+	<!-- 목록 -->
+	<select id="WcGuideTipsDAO.selectWcGuideTipsList" parameterClass="searchVO" resultMap="usr_writingtips_listMap">
+/* WcGuideTipsDAO.selectWcGuideTipsList */
+	<![CDATA[
+		SELECT
+			TIP_SEQ
+			, TIP_TITLE
+			, TIP_PUBLIC_DATE
+			, TIP_CONTENT
+			, REG_ID
+			, REG_NAME
+			, to_char(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') as REG_DATE
+			, TIP_HITCOUNT
+			, TIP_IMG_NAME
+			, TIP_IMG_PATH
+			, TIP_IMG_THUMB_PATH
+			, TIP_FILE_NAME
+			, TIP_FILE_PATH
+		FROM (
+			SELECT
+				rownum AS rn
+				, TIP_SEQ
+				, TIP_TITLE
+				, TIP_PUBLIC_DATE
+				, TIP_CONTENT
+				, REG_ID
+				, REG_NAME
+				, REG_DATE
+				, TIP_HITCOUNT
+				, TIP_IMG_NAME
+				, TIP_IMG_PATH
+				, TIP_IMG_THUMB_PATH
+				, TIP_FILE_NAME
+				, TIP_FILE_PATH
+			FROM (
+				SELECT 
+					TIP_SEQ
+					, TIP_TITLE
+					, TIP_PUBLIC_DATE
+					, TIP_CONTENT
+					, REG_ID
+					, REG_NAME
+					, REG_DATE
+					, TIP_HITCOUNT
+					, TIP_IMG_NAME
+					, TIP_IMG_PATH
+					, TIP_IMG_THUMB_PATH
+					, TIP_FILE_NAME
+					, TIP_FILE_PATH
+	]]>
+		<include refid="usr_writingtips_table"/>
+	<![CDATA[
+				ORDER BY
+					REG_DATE desc
+			)
+		) t1
+		WHERE rn BETWEEN #firstIndex# + 1 AND #firstIndex# + #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="WcGuideTipsDAO.selectWcGuideTipsListCnt" parameterClass="searchVO" resultClass="int">
+/* WcGuideTipsDAO.selectWcGuideTipsListCnt */
+	<![CDATA[
+		SELECT
+			count(*)
+	]]>
+		<include refid="usr_writingtips_table"/>
+	</select>
+
+	<!-- 조회 수 증가 -->
+	<update id="WcGuideTipsDAO.updateWcGuideTipsHitcountOne" parameterClass="string">
+/* WcGuideTipsDAO.updateWcGuideTipsHitcountOne */
+	<![CDATA[
+		UPDATE
+			TB_HSWC_WRITINGTIPS
+		SET
+			TIP_HITCOUNT = TIP_HITCOUNT + 1
+		WHERE
+			TIP_SEQ = #tipSeq#
+	]]>
+	
+	</update>
+</sqlMap>
