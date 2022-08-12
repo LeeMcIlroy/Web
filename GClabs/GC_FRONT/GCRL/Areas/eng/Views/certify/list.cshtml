@@ -1,0 +1,175 @@
+﻿@model GCRL.Models.certifyListModel
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "Certifications"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "International certificates"; }
+@{ var meta_page_url = "http://121.140.143.35:4060/eng/certify"; }
+@{ var meta_keywords = "Accreditations, Certifications"; }
+@{ var meta_twitter_site = ""; }
+
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+}
+
+<div id="container" class="container support">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">HOME</a></span>
+                <span><a href="#">ABOUT</a></span>
+                <span><a href="#">Accreditations</a></span>
+                <span class="current">Certifications</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">Certifications</h2>
+                <p class="text">Here are the accreditation earned by GC Labs</p>
+            </div>
+
+            <div class="board-wrap">
+                <div class="contents-section">
+                    <div class="title-wrap">
+                        <h3 class="title-h3">International certificates</h3><!-- 해외인증 -->
+                    </div>
+                    <div class="board-list">
+                        <div class="list-wrap">
+                            <ul class="lists type2 certify">
+                                @foreach (var item in Model.globalCertifies)
+                                {
+                                    <li class="item">
+                                        <div class="box">
+                                            <div class="thumbnail">
+                                                <img src="@(Functions.GetImageUrl(item.IMAGE_SAVE_NAME))" alt="">
+                                            </div>
+
+                                            <div class="contents">
+                                                <strong class="title">@Html.Raw(item.CERTIFY_NAME)</strong>
+                                                <ul class="content">
+                                                    @if (!string.IsNullOrEmpty(item.PROGRAM_NAME))
+                                                    {
+                                                        <li>프로그램명 : @item.PROGRAM_NAME</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.COUNTRY_NAME))
+                                                    {
+                                                        <li>국가명 : @item.COUNTRY_NAME</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.ISSUER_NAME))
+                                                    {
+                                                        <li>발급기관 : @item.ISSUER_NAME</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.ISSUE_DATE))
+                                                    {
+                                                        <li>취득일 : @item.ISSUE_DATE</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.CERTIFY_CONTENT))
+                                                    {
+                                                        <li>인증내용 : @item.CERTIFY_CONTENT</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.ANALYSIS_ITEM))
+                                                    {
+                                                        <li>분석항목 : @item.ANALYSIS_ITEM</li>
+                                                    }
+                                                </ul>
+                                                <div class="btn-group">
+                                                    @if (!string.IsNullOrEmpty(item.ATTACH_SAVE_NAME))
+                                                    {
+                                                        <a href="@(Functions.GetFileUrl(item.ATTACH_SAVE_NAME))" target="_blank" class="btn btn-preview"><span>View</span></a>
+                                                        <a href="@Url.Action("download")?filesname=@item.ATTACH_SAVE_NAME&fileoname=@item.ATTACH_ORG_NAME" class="btn btn-download"><span>Download</span></a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contents-section">
+                    <div class="title-wrap">
+                        <h3 class="title-h3">Korean Certificates</h3><!-- 국내인증 // 서브텍스트가 안나옴 -->
+                    </div>
+                    <div class="board-list">
+                        <div class="list-wrap">
+                            <ul class="lists type2 certify">
+                                @foreach (var item in Model.localCertifies)
+                                {
+                                    <li class="item">
+                                        <div class="box">
+                                            <div class="thumbnail">
+                                                <img src="@(Functions.GetImageUrl(item.IMAGE_SAVE_NAME))" alt="">
+                                            </div>
+
+                                            <div class="contents">
+                                                <strong class="title">@Html.Raw(item.CERTIFY_NAME)</strong>
+                                                <ul class="content">
+                                                    @if (!string.IsNullOrEmpty(item.PROGRAM_NAME))
+                                                    {
+                                                        <li>프로그램명 : @item.PROGRAM_NAME</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.ISSUER_NAME))
+                                                    {
+                                                        <li>발급기관 : @item.ISSUER_NAME</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.ISSUE_DATE))
+                                                    {
+                                                        <li>취득일 : @item.ISSUE_DATE</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.CERTIFY_CONTENT))
+                                                    {
+                                                        <li>인증내용 : @item.CERTIFY_CONTENT</li>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(item.ANALYSIS_ITEM))
+                                                    {
+                                                        <li>분석항목 : @item.ANALYSIS_ITEM</li>
+                                                    }
+                                                </ul>
+                                                <div class="btn-group">
+                                                    @if (!string.IsNullOrEmpty(item.ATTACH_SAVE_NAME))
+                                                    {
+                                                        <a href="@(Functions.GetFileUrl(item.ATTACH_SAVE_NAME))" target="_blank" class="btn btn-preview"><span>View</span></a>
+                                                        <a href="@Url.Action("download")?filesname=@item.ATTACH_SAVE_NAME&fileoname=@item.ATTACH_ORG_NAME" class="btn btn-download"><span>Download</span></a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

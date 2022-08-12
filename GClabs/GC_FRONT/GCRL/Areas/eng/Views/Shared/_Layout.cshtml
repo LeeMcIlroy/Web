@@ -1,0 +1,498 @@
+﻿@using GCRL.Modules
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    @RenderSection("meta", required: false)
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>GCLabs</title>
+    <link rel="stylesheet" type="text/css" href="~/assets/css/style-eng.css">
+    <link rel="shortcut icon" href="~/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="~/assets/images/favicon.ico" type="image/x-icon">
+    <script src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-51810062-3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-51810062-3');
+    </script>
+</head>
+<body @RenderSection("main_class_main", required: false)>
+    <div class="skip_nav">
+        <a href="#gnb" class="goto-menu">주메뉴 바로가기</a>
+        <a href="#container" class="goto-content">본문 바로가기</a>
+    </div>
+    <div class="wrap @RenderSection("main_class_wrap", required: false)">
+        @RenderSection("main_class_DIV_START", required: false)
+        <header id="header" class="white">
+            <!-- gnb open class: gnb-open -->
+            <div class="dimmed"></div>
+            <div class="header-wrap">
+                <h1 class="top-logo">
+                    <a href="@Url.Action("Index", "main", new { Area = "eng" })">
+                        <span class="hidden">GC Labs</span>
+                    </a>
+                </h1>
+
+                <!-- mobile gnb open-->
+                <div class="toggle-memu-mo">
+                    <button type="button" class="toggle-btn"></button><span class="hidden">주 메뉴 열기</span></button>
+                </div>
+
+                <nav id="gnb" class="gnb">
+                    <div class="gnb-wrap">
+                        <!-- mobile only -->
+                        <div class="mobile-top">
+                            <div class="mo-inner">
+                                <ul class="lang-list">
+                                    <li class=""><a href="@Url.Action("Index", "Home", new { Area = ""})"><span>KOR</span></a></li>
+                                    <li class="active"><a href="@Url.Action("Index", "main", new { Area = "eng"})"><span>ENG</span></a></li>
+                                </ul>
+                                <div class="mobile-close">
+                                    <button type="button" class="mo-closed"><span class="hidden">메뉴 닫기</span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- // mobile only -->
+                        <h2 class="hidden">주 메뉴</h2>
+                        <div class="back-bg"></div>
+                        <ul class="depth1-wrap">
+                            <li class="depth1">
+                                <!-- addclass : active -->
+                                <a href="#n" class="item"><span>BUSINESS</span></a>
+                                <div class="depth2-menu">
+                                    <ul class="depth2-wrap">
+                                        <li class="depth2">
+                                            <!-- addclass : active -->
+                                            <a href="@Url.Action("send", "business", new { Area = "eng"})" class="item-d2 pc"><span>Business Areas </span></a>
+                                            <a href="#n" class="item-d2 mobile"><span>Business Areas </span></a>
+                                            <ul class="depth3-wrap">
+                                                <li class="depth3"><a href="@Url.Action("send", "business", new { Area = "eng"})" class="item-d3"><span>Clinical Diagnostics</span></a></li><!-- addclass : active -->
+                                                <li class="depth3"><a href="@Url.Action("consulting", "business", new { Area = "eng"})" class="item-d3"><span>Consulting</span></a></li>
+                                                <li class="depth3"><a href="@Url.Action("insights", "business", new { Area = "eng"})" class="item-d3"><span>Academic Insights</span></a></li>
+                                            </ul>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("networks", "business", new { Area = "eng"})" class="item-d2 pc"><span>Global Networks</span></a>
+                                            <a href="@Url.Action("networks", "business", new { Area = "eng"})" class="item-d2 mobile"><span>Global Networks</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("gdn", "business", new { Area = "eng"})" class="item-d2 pc"><span>GDN</span></a>
+                                            <a href="@Url.Action("gdn", "business", new { Area = "eng"})" class="item-d2 mobile"><span>GDN</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="depth1">
+                                <a href="#n" class="item"><span>TEST</span></a>
+                                <div class="depth2-menu">
+                                    <ul class="depth2-wrap">
+                                        <li class="depth2">
+                                            <a href="@Url.Action("list", "update", new { Area = "eng"})" class="item-d2 pc"><span>Test Updates</span></a>
+                                            <a href="@Url.Action("list", "update", new { Area = "eng"})" class="item-d2 mobile"><span>Test Updates</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("list", "testlists", new { Area = "eng"})" class="item-d2 pc"><span>Test Lists</span></a>
+                                            <a href="@Url.Action("list", "testlists", new { Area = "eng"})" class="item-d2 mobile"><span>Test Lists</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="#n" class="item-d2 pc"><span>Test Specialty </span></a>
+                                            <a href="#n" class="item-d2 mobile"><span>Test Specialty </span></a>
+                                            <ul class="depth3-wrap">
+                                                <li class="depth3"><a href="@Url.Action("medicine", "test", new { Area = "eng"})" class="item-d3"><span>Laboratory Medicine</span></a></li>
+                                                <li class="depth3"><a href="@Url.Action("pathology", "test", new { Area = "eng"})" class="item-d3"><span>Pathology</span></a></li>
+                                                @*<li class="depth3"><a href="@Url.Action("infections", "test", new { Area = "eng"})" class="item-d3"><span class="line">Infections Diseases<br /> Research Center</span></a></li>*@
+                                                <li class="depth3"><a href="@Url.Action("infections", "test", new { Area = "eng"})" class="item-d3"><div class="line">Infectious Diseases<br>Research Center</div></a></li>
+
+                                              
+
+                                            </ul>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("how", "test", new { Area = "eng"})" class="item-d2 pc"><span>How to Order Tests</span></a>
+                                            <a href="@Url.Action("how", "test", new { Area = "eng"})" class="item-d2 mobile"><span>How to Order Tests</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("list", "forms", new { Area = "eng"})" class="item-d2 pc"><span>Test Request Forms </span></a>
+                                            <a href="@Url.Action("list", "forms", new { Area = "eng"})" class="item-d2 mobile"><span>Test Request Forms </span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="depth1">
+                                <a href="#n" class="item"><span>ABOUT</span></a>
+                                <div class="depth2-menu">
+                                    <ul class="depth2-wrap">
+                                        <li class="depth2">
+                                            <a href="#n" class="item-d2 pc"><span>Introduction</span></a>
+                                            <a href="#n" class="item-d2 mobile"><span>Introduction</span></a>
+                                            <ul class="depth3-wrap">
+                                                <li class="depth3"><a href="@Url.Action("greeting", "about", new { Area = "eng"})" class="item-d3"><span>Greetings</span></a></li>
+                                                <li class="depth3"><a href="@Url.Action("history", "about", new { Area = "eng"})" class="item-d3"><span>History</span></a></li>
+                                                @*<li class="depth3"><a href="@Url.Action("mission", "about", new { Area = "eng"})" class="item-d3"><span>Mission&amp;Vision</span></a></li>*@
+                                                <li class="depth3"><a href="@Url.Action("mission", "about", new { Area = "eng"})" class="item-d3"><span>Mission &amp; Vision</span></a></li>
+                                                <li class="depth3"><a href="@Url.Action("figures", "about", new { Area = "eng"})" class="item-d3"><span>Key Facts &amp; Figures</span></a></li>
+
+                                                @*<li class="depth3"><a href="@Url.Action("figures", "about", new { Area = "eng"})" class="item-d3"><span>Key Facts and Figures</span></a></li>*@
+                                                <li class="depth3"><a href="@Url.Action("list", "doctors", new { Area = "eng"})" class="item-d3"><span>Medical Doctors</span></a></li>
+                                            </ul>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("list", "clients", new { Area = "eng"})" class="item-d2 pc"><span>Clients</span></a>
+                                            <a href="@Url.Action("list", "clients", new { Area = "eng"})" class="item-d2 mobile"><span>Clients</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="#n" class="item-d2 pc"><span>Accreditations</span></a>
+                                            <a href="#n" class="item-d2 mobile"><span>Accreditations</span></a>
+                                            <ul class="depth3-wrap">
+                                                <li class="depth3"><a href="@Url.Action("accreditations", "about", new { Area = "eng"})" class="item-d3"><span>Quality Assurance</span></a></li>
+                                                <li class="depth3"><a href="@Url.Action("list", "certify", new { Area = "eng"})" class="item-d3"><span>Certifications</span></a></li>
+                                            </ul>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("locations", "about", new { Area = "eng"})" class="item-d2 pc"><span>Locations</span></a>
+                                            <a href="@Url.Action("locations", "about", new { Area = "eng"})" class="item-d2 mobile"><span>Locations</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="depth1">
+                                <a href="#n" class="item"><span>PR</span></a>
+                                <div class="depth2-menu">
+                                    <ul class="depth2-wrap">
+                                        <li class="depth2">
+                                            <a href="@Url.Action("list", "press", new { Area = "eng"})" class="item-d2 pc"><span>Press Releases</span></a>
+                                            <a href="@Url.Action("list", "press", new { Area = "eng"})" class="item-d2 mobile"><span>Press Releases</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("list", "newsletter", new { Area = "eng"})" class="item-d2 pc"><span>Newsletters</span></a>
+                                            <a href="@Url.Action("list", "newsletter", new { Area = "eng"})" class="item-d2 mobile"><span>Newsletters</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("list", "info", new { Area = "eng"})" class="item-d2 pc"><span>Info &amp; Tech</span></a>
+                                            <a href="@Url.Action("list", "info", new { Area = "eng"})" class="item-d2 mobile"><span>Info &amp; Tech</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("list", "marketing", new { Area = "eng"})" class="item-d2 pc"><span>Marketing Materials</span></a>
+                                            <a href="@Url.Action("list", "marketing", new { Area = "eng"})" class="item-d2 mobile"><span>Marketing Materials</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="depth1">
+                                <a href="#n" class="item"><span>CONTACT</span></a>
+                                <div class="depth2-menu">
+                                    <ul class="depth2-wrap">
+                                        <li class="depth2">
+                                            <a href="@Url.Action("write", "qna", new { Area = "eng"})" class="item-d2 pc"><span>Contact Us</span></a>
+                                            <a href="@Url.Action("write", "qna", new { Area = "eng"})" class="item-d2 mobile"><span>Contact Us</span></a>
+                                        </li>
+                                        <li class="depth2">
+                                            <a href="@Url.Action("virtuals", "contact", new { Area = "eng"})" class="item-d2 pc"><span>Virtual Lab Tour</span></a>
+                                            <a href="@Url.Action("virtuals", "contact", new { Area = "eng"})" class="item-d2 mobile"><span>Virtual Lab Tour</span></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                        <!-- pc only : menu closed -->
+                        <div class="menu-closed-pc">
+                            <div class="inner">
+                                <button type="button" class="btn-menu-closed"><span class="hidden">메뉴 닫기</span></button>
+                            </div>
+                        </div>
+                        <!-- // pc only : menu closed -->
+                    </div>
+                </nav>
+                <div class="top-util">
+                    <div class="top-search">
+                        <!-- search-layer open class: sch-open -->
+                        <!-- <button type="button" class="btn-search btn-open"><span class="hidden">검색 열기</span></button>-->
+                        <div class="search-layer">
+                            <div class="search-inner">
+                                <div class="inner">
+                                    <form action="">
+                                        <div class="search-area">
+                                            <span class="search-box">
+                                                <input type="text" id="" class="inp-search" title="검색어 입력" placeholder="검색어를 입력하세요.">
+                                            </span>
+                                            <span class="search-btn">
+                                                <button type="submit" class="search-go"></button>
+                                            </span>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- pc lang-->
+                    <div class="top-lang">
+                        <p class="curr-lang"><a href="#n"><span>ENG</span></a></p>
+                        <div class="lang-list-wrap">
+                            <ul class="lang-list">
+                                <li class=""><a href="@Url.Action("Index", "home", new { Area = ""})"><span>KOR</span><img src="../../../assets/images/lang-kor.png" alt=""></a></li>
+                                <li class=""><a href="@Url.Action("Index", "main", new { Area = "eng"})"><span>ENG</span><img src="../../../assets/images/lang-eng.png" alt=""></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div><!-- // top util -->
+            </div>
+        </header>
+
+        @RenderSection("main_class_DIV_END", required: false)
+
+        @RenderBody()
+        <div class="floating-wrap">
+            <ul class="quick-menu">
+               
+                @*<li class="highlight"><a href="@Url.Action("list", "testlists", new { Area = "eng"})"><span>Test lists</span></a></li>*@
+                    
+              
+            </ul>
+            <button type="button" class="to-top"><span class="hidden">TOP</span></button>
+        </div>
+                @*<li>
+            <a href="https://answer.moaform.com/answers/Mq9dr4" target="_blank">
+                <input type="image" class="img" src="../../../assets/images/lab_tour.png" alt="" title="">
+            </a>
+        </li>
+
+        <li class="chat">
+            <div>
+                <div id="ch-plugin">
+                    <div id="ch-plugin-core">
+                        <style data-styled="active" data-styled-version="5.1.1"></style>
+                        <div size="300" class="Screenstyled__Screen-sc-3ge3qf-0 gNcrUK"></div>
+                        <div data-ch-testid="launcher" class="Launcherstyled__Wrapper-oef45p-0 bZbaFh">
+                            <div class="Launcherstyled__LauncherIconWrapper-oef45p-1 hgRlbE">
+                                <div class="LauncherIconstyled__LauncherWrapper-mnslcf-0 fBGgqH launcherIcon">
+                                    <div style="position: absolute; inset: 0px; margin: auto;">
+                                        <img src="https://cf.channel.io/asset/plugin/images/shadow-body.png" role="presentation" alt="" class="InnerIconstyled__Icon-sc-197h5bb-0 cUneux LauncherIconstyled__Bubble-mnslcf-1 cRwgrT" color="#008bbb" width="48" height="48" defaultopacity="1" hoveredopacity="1" margintop="0" marginright="0" marginbottom="0" marginleft="0" style="position: absolute;"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="InnerIconstyled__Icon-sc-197h5bb-0 cUneux LauncherIconstyled__Bubble-mnslcf-1 cRwgrT" color="#008bbb" defaultOpacity="1" hoveredOpacity="1" margintop="0" marginright="0" marginbottom="0" marginleft="0" style="position: absolute;"><path fill="#008bbb" fill-opacity="0.6" d="M24 6C14.0589 6 6 14.0589 6 24C6 33.9411 14.0589 42 24 42C26.5503 42 28.9767 41.4696 31.175 40.5132C32.4937 39.9394 33.9715 39.7362 35.3397 40.1796L39.7048 41.5942C40.8697 41.9717 41.9717 40.8697 41.5942 39.7048L40.1796 35.3397C39.7362 33.9715 39.9394 32.4937 40.5132 31.175C41.4696 28.9767 42 26.5503 42 24C42 14.0589 33.9411 6 24 6Z"></path></svg>
+                                        <img src="https://cf.channel.io/asset/plugin/images/gradient-body.png" role="presentation" alt="" class="InnerIconstyled__Icon-sc-197h5bb-0 cUneux LauncherIconstyled__Bubble-mnslcf-1 cRwgrT" color="#008bbb" width="48" height="48" defaultopacity="1" hoveredopacity="1" margintop="0" marginright="0" marginbottom="0" marginleft="0" style="position: absolute;"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="InnerIconstyled__Icon-sc-197h5bb-0 cUneux LauncherIconstyled__Bubble-mnslcf-1 cRwgrT" color="#008bbb" defaultOpacity="1" hoveredOpacity="1" margintop="0" marginright="0" marginbottom="0" marginleft="0" style="position: absolute;">
+                                            <g filter="url(#filter0_i)"><path fill="white" fill-opacity="0.01" d="M24 6C14.0589 6 6 14.0589 6 24C6 33.9411 14.0589 42 24 42C26.5503 42 28.9767 41.4696 31.175 40.5132C32.4937 39.9394 33.9715 39.7362 35.3397 40.1796L39.7048 41.5942C40.8697 41.9717 41.9717 40.8697 41.5942 39.7048L40.1796 35.3397C39.7362 33.9715 39.9394 32.4937 40.5132 31.175C41.4696 28.9767 42 26.5503 42 24C42 14.0589 33.9411 6 24 6Z"></path></g>
+                                            <defs><filter id="filter0_i" x="4" y="2" width="38" height="40" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood><feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix><feOffset dx="-2" dy="-4"></feOffset><feGaussianBlur stdDeviation="4"></feGaussianBlur><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0.5450980392156862 0 0 0 0 0.7333333333333333 0 0 0 0.2 0"></feColorMatrix><feBlend mode="normal" in2="shape" result="effect1_innerShadow"></feBlend></filter></defs>
+                                        </svg><svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" class="InnerIconstyled__Icon-sc-197h5bb-0 cUneux LauncherIconstyled__Bubble-mnslcf-1 cRwgrT" color="#008bbb" defaultOpacity="1" hoveredOpacity="1" margintop="0" marginright="0" marginbottom="0" marginleft="0" style="position: absolute;"><g filter="url(#filter0_f)"><path fill="white" fill-opacity="0.15" d="M19.8462 20.1538C19.8462 22.448 19.2404 24.3077 17.4231 24.3077C15.6058 24.3077 15 22.448 15 20.1538C15 17.8597 15.6058 16 17.4231 16C19.2404 16 19.8462 17.8597 19.8462 20.1538Z"></path><path fill="white" fill-opacity="0.15" d="M24.0001 29.8462C21.201 29.8462 19.7599 27.5828 19.3109 25.9843C19.1615 25.4526 19.6016 25.0001 20.1539 25.0001H27.8462C28.3985 25.0001 28.8386 25.4526 28.6893 25.9843C28.2402 27.5828 26.7992 29.8462 24.0001 29.8462Z"></path><path fill="white" fill-opacity="0.15" d="M30.5768 24.3077C32.3941 24.3077 32.9999 22.448 32.9999 20.1538C32.9999 17.8597 32.3941 16 30.5768 16C28.7595 16 28.1537 17.8597 28.1537 20.1538C28.1537 22.448 28.7595 24.3077 30.5768 24.3077Z"></path></g><path fill="#008bbb" d="M19.8462 19.1538C19.8462 21.448 19.2404 23.3077 17.4231 23.3077C15.6058 23.3077 15 21.448 15 19.1538C15 16.8597 15.6058 15 17.4231 15C19.2404 15 19.8462 16.8597 19.8462 19.1538Z"></path><path fill="#17113F" fill-opacity="0.7" d="M19.8462 19.1538C19.8462 21.448 19.2404 23.3077 17.4231 23.3077C15.6058 23.3077 15 21.448 15 19.1538C15 16.8597 15.6058 15 17.4231 15C19.2404 15 19.8462 16.8597 19.8462 19.1538Z"></path><path fill="#008bbb" d="M24.0001 28.8462C21.201 28.8462 19.7599 26.5828 19.3109 24.9843C19.1615 24.4526 19.6016 24.0001 20.1539 24.0001H27.8462C28.3985 24.0001 28.8386 24.4526 28.6893 24.9843C28.2402 26.5828 26.7992 28.8462 24.0001 28.8462Z"></path><path fill="#17113F" fill-opacity="0.7" d="M24.0001 28.8462C21.201 28.8462 19.7599 26.5828 19.3109 24.9843C19.1615 24.4526 19.6016 24.0001 20.1539 24.0001H27.8462C28.3985 24.0001 28.8386 24.4526 28.6893 24.9843C28.2402 26.5828 26.7992 28.8462 24.0001 28.8462Z"></path><path fill="#008bbb" d="M30.5768 23.3077C32.3941 23.3077 32.9999 21.448 32.9999 19.1538C32.9999 16.8597 32.3941 15 30.5768 15C28.7595 15 28.1537 16.8597 28.1537 19.1538C28.1537 21.448 28.7595 23.3077 30.5768 23.3077Z"></path><path fill="#17113F" fill-opacity="0.7" d="M30.5768 23.3077C32.3941 23.3077 32.9999 21.448 32.9999 19.1538C32.9999 16.8597 32.3941 15 30.5768 15C28.7595 15 28.1537 16.8597 28.1537 19.1538C28.1537 21.448 28.7595 23.3077 30.5768 23.3077Z"></path><defs><filter id="filter0_f" x="13" y="14" width="21.9999" height="17.8462" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood><feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend><feGaussianBlur stdDeviation="1" result="effect1_foregroundBlur"></feGaussianBlur></filter></defs></svg>
+                                    </div><div data-ch-testid="badge" hidden="" class="Badgestyled__Badge-sc-1ztqq4-0 LauncherIconstyled__Badge-mnslcf-2 dPdaQA">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><div id="ch-plugin-script" style="display:none" class="ch-messenger-hidden"><iframe id="ch-plugin-script-iframe" style="position:relative!important;height:100%;width:100%!important;border:none!important;"></iframe></div>
+                </div>
+            </div>
+        </li>*@
+        <div id="virtual" style="position: fixed;bottom: 180px; right: 100px">
+            <a href="https://answer.moaform.com/answers/Mq9dr4" target="_blank">
+                <img src="~/assets/images/lab_tour.png" />
+            </a>
+        </div>
+        <!-- Channel Plugin Scripts -->
+        <script>
+            if ($(window).width() > 800) {
+                $('#virtual').css('display', 'fixed');
+
+                (function () {
+                    var w = window;
+                    if (w.ChannelIO) {
+                        return (window.console.error || window.console.log || function () { })('ChannelIO script included twice.');
+                    }
+                    var ch = function () {
+                        ch.c(arguments);
+                    };
+                    ch.q = [];
+                    ch.c = function (args) {
+                        ch.q.push(args);
+                    };
+                    w.ChannelIO = ch;
+                    function l() {
+                        if (w.ChannelIOInitialized) {
+                            return;
+                        }
+                        w.ChannelIOInitialized = true;
+                        var s = document.createElement('script');
+                        s.type = 'text/javascript';
+                        s.async = true;
+                        s.src = 'https://cdn.channel.io/plugin/ch-plugin-web.js';
+                        s.charset = 'UTF-8';
+                        var x = document.getElementsByTagName('script')[0];
+                        x.parentNode.insertBefore(s, x);
+                    }
+                    if (document.readyState === 'complete') {
+                        l();
+                    } else if (window.attachEvent) {
+                        window.attachEvent('onload', l);
+                    } else {
+                        window.addEventListener('DOMContentLoaded', l, false);
+                        window.addEventListener('load', l, false);
+                    }
+                })();
+                ChannelIO('boot', {
+                    "pluginKey": "2669cb30-d9fc-40f7-a409-d324d72948fd"
+                });
+            }
+            else {
+                $('#virtual').css('display', 'none');
+            }
+        </script>
+        <!-- End Channel Plugin -->
+
+
+        <footer class="footer-wrap">
+            <div class="foot-head">
+                <div class="inner">
+                    <div class="foot-util">
+                        <a href="#n" class="link">
+                            <span>GC FAMILY SITE</span>
+                        </a>
+                        <!-- [팝업] GC FAMILY SITE -->
+                        <article class="layer-foot-site family">
+                            <div class="site-inner">
+                                <h2 class="title"><span class="hidden">GC FAMILY SITE</span></h2>
+                                <ul class="site-links">
+                                    <li>
+                                        <h3 class="link-title"><span>Pharmaceutical</span> </h3>
+                                        <ul class="links">
+                                            <li><a href="http://www.globalgreencross.com/eng/index.do " target="_blank">GC Biopharma</a></li>
+                                            <li><a href="http://www.greencrossms.com/eng/main.do?lang=EN" target="_blank">GC MS</a></li>
+                                            <li><a href="https://www.greencrosswb.com/en/" target="_blank">GC Wellbeing</a></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <h3 class="link-title"><span>Healthcare</span> </h3>
+                                        <ul class="links">
+                                            <li><a href="https://gccell.com/eng/main" target="_blank">GC Cell</a></li>
+                                            <li><a href="https://www.gc-genome.com/" id="genome"target="_blank">GC Genome</a></li>
+                                            <li><a href="https://www.gccare.net/" target="_blank">GC Care</a></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <h3 class="link-title"><span>Healthcare</span></h3>
+                                        <ul class="links">
+                                            <li><a href="https://gccl.co.kr/index.asp" target="_blank">GCCL</a></li>
+                                            <li><a href="https://greenvet.co.kr/intro" target="_blank">GREEN VET</a></li>
+                                            <li><a href="https://www.ubcare.co.kr/" target="_blank">UB Care</a></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <h3 class="link-title"><span>Overseas</span> </h3>
+                                        <ul class="links">
+                                            <li><a href="http://www.gcchina.com.cn/" target="_blank">GC China</a></li>
+                                            <li><a href="https://www.greencrosschina.com/" target="_blank">GC China Pharm</a></li>
+                                            <li><a href="https://www.gclabtech.com/" target="_blank">GCLabTech</a></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <h3 class="link-title"><span>Overseas</span> </h3>
+                                        <ul class="links">
+                                            <li><a href="https://curevovaccine.com/" target="_blank">Curevo</a></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <h3 class="link-title"><span>Foundation</span> </h3>
+                                        <ul class="links">
+                                            <li><a href="http://www.mogam.re.kr/eng/" id="mogam" target="_blank">MOGAM</a></li>
+                                            <li><a href="https://gclabs.co.kr/eng" target="_blank">GC Labs</a></li>
+                                            <li><a href="https://www.gcimed.com " target="_blank">GC i-Med</a></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <h3 class="link-title"><span>Others</span> </h3>
+                                        <ul class="links">
+                                            <li><a href="http://www.gcem.co.kr/en/index" target="_blank">GC EM</a></li>
+                                            <li><a href="#n">GC Invacfarm</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <button type="button" class="layer-close"><span class="hidden">닫기</span></button>
+                        </article>
+
+                        @*<a href="#n" class="link">
+                            <span>RELATED SITE</span>
+                        </a>*@
+                        <!-- [팝업] RELATED SITE -->
+                        <article class="layer-foot-site related">
+                            <div class="site-inner">
+                                <h2 class="title"><span class="hidden">GC RELATED SITE</span></h2>
+                                <ul class="site-links">
+                                    <li>
+                                        <ul class="links">
+                                            <li><a href="https://www.kslm.org/eng" target="_blank">Korean Society for Laboratory Medicine</a></li>
+                                            <li><a href="https://keqas.org/" target="_blank">Korean Association of External Quality Assessment Service</a></li>
+                                            <li><a href="http://kigte.or.kr/eng/" target="_blank">Korean Institute of Genetic Testing Evaluation</a></li>
+                                            <li><a href="http://www.hira.or.kr/eng/" target="_blank">Health Insurance Review and Assessment Service (HIRA)</a></li>
+                                            <li><a href="http://www.mohw.go.kr/eng" target="_blank">Ministry of Health and Welfare</a></li>
+                                            <li><a href="https://www.kdca.go.kr/index.es?sid=a3" target="_blank">Korea Disease Control and Prevention Agency</a></li>
+                                            <li><a href="https://www.hematology.or.kr/eng" target="_blank">The Korean Society of Hematology</a></li>
+                                            <li><a href="http://www.msk.or.kr/jsp/about_jm.asp" target="_blank">The Microbiological Society of Korea</a></li>
+                                            <li><a href="https://www.pathology.or.kr/english/" target="_blank">Korean Society of Pathologists</a></li>
+                                            <li><a href="https://www.nier.go.kr/NIER/eng/index.do" target="_blank">National Institute of Environmental Research</a></li>
+                                            <li><a href="https://www.ksnm.or.kr/eng/" target="_blank">The Korean Society of Nuclear Medicine (KSNM)</a></li>
+
+                                            <li><a href="https://www.fda.gov/" target="_blank">FDA</a></li>
+                                            <li><a href="http://www.cnrres.com/" target="_blank">C&amp;R RESEARCH</a></li>
+                                            <li><a href="https://www.questdiagnostics.com/" target="_blank">Quest Diagnostics</a></li>
+
+                                            <li><a href="https://www.cap.org/" target="_blank">College of American <br class="pc tablet">Pathologists</a></li>
+                                            <li><a href="https://clsi.org/" target="_blank">Clinical and Laboratory <br class="pc tablet">Standards Institute</a></li>
+                                            <li><a href="https://www.cdc.gov/" target="_blank">Centers for Disease <br class="pc tablet">Control and Prevention</a></li>
+
+                                            <li><a href="http://www.bml.co.jp/" target="_blank">BML <br class="pc tablet"><span class="jp">株式会社ビー・エム・エル</span></a></li>
+                                            <li><a href="https://www.srlmedi.com/" target="_blank">SRL Medisearch <br class="pc tablet"><span class="jp">株式会社エスアールエル・メディサーチ</span></a></li>
+                                            <li>&nbsp;</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <button type="button" class="layer-close"><span class="hidden">닫기</span></button>
+                        </article>
+                    </div>
+                    <div class="foot-sns">
+                        <span class="text"></span>
+                        <ul class="sns-list">
+                            <li><a href="https://www.youtube.com/channel/UC4dbE66nBgDfsKu5h13RVyg" target="_blank"><img src="../../../assets/images/footer-sns-youtube.png" alt="youtube"></a></li>
+                            <li><a href="https://www.facebook.com/GCLabs.global/ " target="_blank"><img src="../../../assets/images/footer-sns-facebook.png" alt="facebook"></a></li>
+                            <li><a href="https://www.linkedin.com/company/gc-labs/" target="_blank"><img src="../../../assets/images/footer-sns-linkedin.png" alt="linkedin"></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="foot-body">
+                <div class="inner">
+                    <div class="foot-logo">
+                        <a href="/eng/main/index" class="logo"><span class="hidden">GCLabs</span></a>
+                    </div>
+                    <div class="foot-content">
+                        <ul class="foot-link">
+                            <li class="highlight"><a href="@Url.Action("privacy", "main", new { Area = "eng"})">Privacy policy</a></li>
+                            <li><a href="@Url.Action("locations", "about", new { Area = "eng"})">Locations</a></li>
+                        </ul>
+                        <div class="foot-address">
+                            <div class="info">
+                                <span>TEL : +82-31-280-9908</span>
+                                <span>E-MAIL : gclabsob@gclabs.co.kr</span>
+                                <span><address>ADDRESS : 107, Ihyeonro 30beon-gil, Giheng-gu, Yongin-Si, Gyeonggi-do, Korea(R.O.K)</address></span>
+                            </div>
+                            <div class="copyright">COPYRIGHT ⓒ GC Labs. All rights reserved.</div>
+                        </div>
+                    </div>
+                    <!-- <div class="foot-support">
+                    <a href="#n"><span class="text">Contact Us</span></a>
+                    <div class="call-area">
+                        <em class="number">82-31-280-9908</em>
+                    </div>
+                </div> -->
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+
+@RenderSection("script", required: false)
+
+</html>

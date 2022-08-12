@@ -1,0 +1,108 @@
+﻿@model  List<GCRL.Models.doctorsListModel>
+@using GCRL.Modules
+
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "전문의"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "GC Labs의 전문의를 소개합니다."; }
+@{ var meta_page_url = "http://121.140.143.35:4060/gclabs/doctor"; }
+@{ var meta_keywords = "재단소개,전문의"; }
+@{ var meta_twitter_site = ""; }
+
+@{
+    var list_count = 1;
+}
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+}
+
+<div id="container" class="container gclabs">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+                <span><a href="#">재단소개</a></span>
+                <span class="current">전문의</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">전문의</h2>
+                <p class="text">GC Labs의 전문의를 소개합니다.</p>
+            </div>
+
+            <div class="doctors-wrap tabcontrol-wrap">
+
+                <div class="tabs-wrap">
+                    <ul class="tabs wide  ">
+
+                        <li class="tab @(String.IsNullOrEmpty(ViewBag.deptcode) ? "active" : "")">
+                            <a href="@(Url.Action("list"))"><span>전체</span></a>
+                        </li>
+
+                        @foreach (var item in Functions.GetCommList_V2("doctor_div", ""))
+                        {
+                            <li class="tab @(ViewBag.deptcode == item.CODE ? "active" : "")">
+                                <a href="@(Url.Action("list"))?deptcode=@item.CODE"><span>@item.NAME</span></a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="tab-content doctors-content">
+                    <div class="section-tab list-wrap active">
+
+                        <div class="board-wrap">
+                            <div class="board-list">
+                                <div class="list-wrap">
+                                    <ul class="lists doctors">
+
+                                        @foreach (var item in Model)
+                                        {
+                                            <li class="item">
+                                                <a href="@(Url.Action("view", new { id = item.IDX }))?@Request.QueryString.ToString()" class="box">
+                                                    <div class="contents">
+                                                        <strong class="title">@item.NAME</strong>
+                                                        @*<span class="content eng">@item.NAME_ENG</span>*@
+                                                    </div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

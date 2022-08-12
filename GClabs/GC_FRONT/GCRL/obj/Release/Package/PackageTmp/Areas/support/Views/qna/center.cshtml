@@ -1,0 +1,130 @@
+﻿@model GCRL.Models.qnaConfirmModel
+@using GCRL.Modules
+
+@{
+    ViewBag.Title = "center";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "고객센터"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "GC Labs 고객센터는 고객만족을 위해 최상의 서비스를 제공합니다."; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = "고객지원,고객문의"; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+    <script>
+        function onWrite() {
+            location.href = '@Url.Action("write", "qna", new { Area = "support" })';
+
+        }
+        function onList() {
+            location.href = '@Url.Action("list", "faq", new { Area = "support" })';
+
+        }
+    </script>
+  
+}
+
+<div id="container" class="container support qna">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+
+
+                <span><a href="#">고객지원</a></span>
+
+
+                <span class="current">고객문의</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">고객센터</h2>
+                <p class="text">GC Labs 고객센터는 고객만족을 위해 최상의 서비스를 제공합니다.</p>
+            </div>
+
+
+
+
+
+            <div class="board-wrap">
+
+                <h3 class="title-h3">GC Labs 고객센터 </h3>
+                <div class="point"><span class="tel">1566-0131</span></div>
+                <div class="text"><span>(평일 : 8시 ~ 19시, 토요일 : 8시 ~ 15시)</span></div>
+
+                <div class="cs-wrap">
+                    <div class="info">
+                        <ul>
+                            <li class="online">
+                                <h3>전문적인 고객상담∙신뢰할 수 있는 정보 제공</h3>
+                                <div>
+                                    <ul class="type-center-info">
+                                        <li class="img">
+                                            <i class="icon type1"><img src="../../../assets/images/icon-center03.png" alt="전문적인 고객상담∙신뢰할 수 있는 정보 제공"></i>
+                                        </li>
+                                        <li class="cs-text">
+                                            <div class="text-area">
+                                                <p class="desc">최신 CTI 프로그램을 바탕으로 오랜 경험을 갖춘 상담원들이 전문적인 상담 서비스를 제공하며, 신뢰할 수 있는 학술 정보를 제공합니다.</p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="online">
+                                <h3>고객 맞춤형 정보 지원</h3>
+                                <div>
+                                    <ul class="type-center-info">
+                                        <li class="img">
+                                            <i class="icon type1"><img src="../../../assets/images/icon-center02.png" alt="고객 맞춤형 정보 지원"></i>
+                                        </li>
+                                        <li class="cs-text">
+                                            <div class="text-area">
+                                                <p class="desc">다양한 고객 요구사항에 맞춰 각 분야별 전문 상담원이 검사문의, 검사 결과문의, 검사 추가문의에 대한 맞춤형 정보를 제공합니다.</p>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="btn-area center">
+                    <button type="button" class="btn btn-faq" onclick="onList();"><span>자주하는 질문</span></button>
+                    <button type="button" class="btn btn-black" onclick="onWrite();"><span>문의하기</span></button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+

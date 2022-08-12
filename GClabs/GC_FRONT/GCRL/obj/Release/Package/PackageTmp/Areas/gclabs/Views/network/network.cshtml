@@ -1,0 +1,218 @@
+﻿@model List<GCRL.Areas.gclabs.Models.networkModel>
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "network";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "네트워크"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "GC녹십자의료재단의 전국 네트워크를 안내해 드립니다."; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+    @*<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=cacf973aedb3001da83f956e40e46ba3"></script>*@
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=af4b630dd45db15edd0e4c9d07711779"></script>
+
+    <script>
+        function onSearch() {
+
+            let branchName = $('#branchname').val();
+
+            location.href = '@(Url.Action("network"))?branchname=' + branchName;
+        }
+
+        $('li', '#RegionCode').click(function () {
+
+            let regionCode = $(this).data('code');
+
+            if (regionCode)
+                location.href = '@(Url.Action("network"))?regioncode=' + regionCode;
+            else
+                location.href = '@(Url.Action("network"))';
+
+        });
+
+
+
+
+        $(document).ready(function () {
+
+
+            $('a', '.network-lists').click(function () {
+
+                let lat = $(this).data('lat');
+                let lng = $(this).data('lng');
+
+                if (lat == "" && lng == "") {
+
+                    $('.map-area').remove();
+                    return false;
+
+                }
+
+                var container1 = document.getElementById('map-view-pc');
+                var container2 = document.getElementById('map-view-mob');
+
+                var options = {
+                    center: new kakao.maps.LatLng(lat, lng),
+                    level: 5
+                };
+                // 위도, 경도는 관리자에서 입력함
+
+                var map1 = new kakao.maps.Map(container1, options);
+                var map2 = new kakao.maps.Map(container2, options);
+
+                // 마커가 표시될 위치입니다
+                var markerPosition = new kakao.maps.LatLng(lat, lng);
+
+                // 마커를 생성합니다
+                var marker1 = new kakao.maps.Marker({
+                    position: markerPosition,
+                });
+                var marker2 = new kakao.maps.Marker({
+                    position: markerPosition,
+                });
+
+                // 마커가 지도 위에 표시되도록 설정합니다
+                marker1.setMap(map1);
+                marker2.setMap(map2);
+
+                $('.name', '#networkInfo').text($('.name', this).text());
+                $('.address', '#networkInfo').text($('.address', this).text());
+                $('.number', '#networkInfo').html($('.number', this).html());
+
+            });
+
+            $('li', '#RegionCode').each(function () {
+                if ($(this).attr('selected')) {
+                    $('span', '#selectedRegionName').text($(this).text());
+                }
+            });
+
+            $('a', '.network-lists').eq(0).click();
+
+        });
+
+    </script>
+
+}
+
+<div id="container" class="container gclabs">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+                <span><a href="#">재단소개</a></span>
+                <span class="current">네트워크</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">네트워크</h2>
+                <p class="text">GC녹십자의료재단의 전국 네트워크를 <br class='mobile'>안내해 드립니다.</p>
+            </div>
+            <div class="network-wrap">
+                <div class="network-search-area">
+                    <div class="network-search">
+                        <div class="selectbox-wrap">
+                            <div class="selectbox">
+                                <a href="#n" id="selectedRegionName" class="select"><span>지역을 선택하세요.</span></a>
+                                <ul class="lists" id="RegionCode">
+                                    <li>지역을 선택하세요.</li>
+                                    @foreach (var item in Functions.GetCommList_V2("network_lo_cd", ""))
+                                    {
+                                        <li data-code="@item.CODE" @(ViewBag.regioncode == item.CODE ? "selected" : "")>@item.NAME</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="search-wrap">
+                            <form action="">
+                                <div class="search-area">
+                                    <span class="search-box">
+                                        @Html.TextBox("branchname", null, new { @class = "inp-search", maxlength = "30", placeholder = "지점명을 입력하세요.", title = "지점명 입력" })
+                                    </span>
+                                    <span class="search-btn">
+                                        <button type="submit" class="search-go" onclick="onSearch();"></button>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="network-lists">
+                        <ul>
+                            @foreach (var item in Model)
+                            {
+                                <li>
+                                    <a href="#networkInfo" class="layer on-mobile" data-lat="@item.LATITUDE" data-lng="@item.LONGITUDE">
+                                        <div class="network-info">
+                                            <span class="name">@item.BRANCH_NAME</span>
+                                            <span class="address">@item.ADDRESS</span>
+                                            <span class="number">
+                                                <em>Tel @item.TEL_NO</em>
+                                                <em>Fax @item.FAX_NO</em>
+                                            </span>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <div class="map-wrap">
+                    <div id="map-view-pc" class="map-area" style="width:100%;height:100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 모바일용 네트워크 상세 팝업 -->
+<article id="networkInfo" class="popup-layer full">
+    <div class="popup-wrap">
+        <div class="popup-container">
+            <div class="popup-body">
+                <div class="network-info-wrap">
+                    <div class="network-info">
+                        <span class="name"></span>
+                        <span class="address"></span>
+                        <span class="number">
+                        </span>
+                    </div>
+                    <div class="map-wrap">
+                        <div id="map-view-mob" class="map-area" style="width:100%;height:100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="popup-close">
+            <span class="close"><em class="hidden">팝업 닫기</em></span>
+        </button>
+    </div>
+</article>

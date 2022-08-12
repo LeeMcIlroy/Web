@@ -1,0 +1,96 @@
+﻿@model GCMaster.Models.LoginModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <title>GC Labs 웹사이트 관리시스템</title>
+    @*<link rel="stylesheet" media="screen" href="../css/style.css">*@
+    <link href="~/css/style.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    @*<script src="../js/front.js"></script>*@
+    <script src="~/js/front.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $('#Password').attr('type', 'password');
+
+            @if (TempData["loginError"] != null) {
+                @Html.Raw("alert('" + TempData["loginError"] + "');");
+            }
+
+            $('#btnLogin').click(function () {
+                if ($('#LoginID').val() == '') {
+                    alert('아이디를 입력해 주세요.');
+                    return false;
+                }
+                if ($('#Password').val() == '') {
+                    alert('비밀번호를 입력해 주세요.');
+                    return false;
+                }
+                return true;
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="main-login-bg">
+        <div class="login-input-box">
+            <div class="login-logo">
+                <p><img src="~/img/login-top-logo.png" alt="GC Labs GC Labs Website Management System" /></p>
+            </div>
+
+            @using (Html.BeginForm("Login", "Login", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken();
+
+            <div class="login-input">
+                <ul>
+                    <li>아이디</li>
+                    <li>
+                        @Html.TextBoxFor(m => m.LoginID, new { placeholder = "아이디를 입력해 주세요." })
+                        @*<input type="text" placeholder="아이디를 입력해 주세요." value="@Model.LoginID" />*@
+                    </li>
+                    <li>
+                        @*<input type="checkbox" name="check-id" id="check-id" />*@
+                        @Html.CheckBoxFor(m => m.RememberID)
+                        @Html.LabelFor(m => m.RememberID)
+                    </li>
+                </ul>
+                <ul>
+                    <li>비밀번호</li>
+                    <li>
+                        @Html.TextBoxFor(m => m.Password, new { placeholder = "비밀번호를 입력해 주세요." })
+                        @*<input type="password" placeholder="비밀번호를 입력해주세요." value="@Model.Password" />*@
+                    </li>
+                    <li>
+                        @*<input type="checkbox" name="check-pass" id="check-pass" />*@
+                        @Html.CheckBoxFor(m => m.RememberPWD)
+                        @Html.LabelFor(m => m.RememberPWD)
+                    </li>
+                </ul>
+
+                <button type="submit" id="btnLogin">로그인</button>
+
+                <div class="login-help">헬프데스크 1566-1031</div>
+            </div>
+
+                
+            }
+
+            <div class="copy-right">COPYRIGHTⓒ GC Labs ALL RIGHTS RESERVED.</div>
+        </div>
+    </div>
+</body>
+</html>

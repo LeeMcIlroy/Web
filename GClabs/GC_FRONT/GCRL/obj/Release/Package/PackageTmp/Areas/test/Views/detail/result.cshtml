@@ -1,0 +1,278 @@
+﻿@{
+    ViewBag.Title = "result";
+}
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "결과확인"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "언제 어디서든 온라인으로 검사결과를 확인하실 수 있습니다."; }
+@{ var meta_page_url = "http://121.140.143.35:4060/test/detail"; }
+@{ var meta_keywords = "검사안내, 결과확인"; }
+@{ var meta_twitter_site = ""; }
+@{
+    var list_count = 1;
+}
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+    <script>
+        function chkForm(form) {
+
+            var reschk = 0;
+            for (i = 0; i < form.elements.length; i++) {
+                currEl = form.elements[i];
+                if (currEl.disabled) continue;
+                if (currEl.getAttribute("required") != null || currEl.getAttribute("req") != null) {
+                    if (currEl.type == "checkbox" || currEl.type == "radio") {
+                        if (!chkSelect(form, currEl, currEl.getAttribute("msgR"))) return false;
+                    } else {
+                        if (!chkText(currEl, currEl.value, currEl.getAttribute("msgR"))) return false;
+                    }
+                }
+
+                if (currEl.getAttribute("option") != null && currEl.value.length > 0) {
+                    if (!chkPatten(currEl, currEl.getAttribute("option"), currEl.getAttribute("msgO"))) return false;
+                }
+                if (currEl.getAttribute("minlength") != null) {
+                    if (!chkLength(currEl, currEl.getAttribute("minlength"))) return false;
+                }
+            }
+
+            if (form.admin_pwd2) {
+                if (form.admin_pwd.value != form.admin_pwd2.value) {
+                    alert("비밀번호가 일치하지 않습니다");
+                    form.admin_pwd.value = "";
+                    form.admin_pwd2.value = "";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        //쿠키 설정
+        function setCookie(name, value, expiredays) {
+            var todayDate = new Date();
+            todayDate.setDate(todayDate.getDate() + expiredays);
+            document.cookie = name + "=" + escape(value) + "; path=/; expires=" + todayDate.toGMTString() + ";";
+        }
+
+        //로그인폼 체크
+        function loginFormCheck(form) {
+            if ($('#userid').val() == "" || $('#passwd').val() == "") {
+                alert("아이디 또는 비밀번호를 입력해주세요");
+                return false;
+            }
+            //if (!chkForm(form)) return false;
+
+            if ($("#idsave").prop("checked")) {
+                setCookie("userid", form.userid.value, 365);
+            } else {
+                setCookie("userid", "", -1);
+            }
+            if ($("#pwdsave").prop("checked")) {
+                setCookie("pwdsave", form.passwd.value, 365);
+            } else {
+                setCookie("pwdsave", "", -1);
+            }
+
+            $("#info").val(form.userid.value + "^" + form.passwd.value);
+        }
+    </script>
+}
+<div id="container" class="container test-information">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+                <span><a href="#">검사안내</a></span>
+                <span class="current">결과확인</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">결과확인</h2>
+                <p class="text">언제 어디서든 온라인으로 검사결과를 <br class='mobile'>확인하실 수 있습니다.</p>
+            </div>
+            <div class="test-result-wrap">
+                <div class="contents-section">
+                    <div class="gradient-box inquiry-result">
+                        <div class="input-area">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">검사결과조회</h3>
+                            </div>
+                            @if (ViewBag.isMobile == true)
+                            {
+                                <form action="https://www.gclabs.net/Shared/RequestTobeLogin" method="post" target="_self" onsubmit="return loginFormCheck(this)">
+                                    <div class="result-login-box">
+                                        <div class="form-box">
+                                            <label for="userid" class="title">아이디</label>
+                                            <div class="form-wrap">
+                                                <input type="text" id="userid" name="userid" class="inp" value="" placeholder="아이디">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-box">
+                                            <label for="passwd" class="title">비밀번호</label>
+                                            <div class="form-wrap">
+                                                <input type="password" id="passwd" name="passwd" class="inp" value="" placeholder="비밀번호">
+                                            </div>
+                                        </div>
+                                        <div class="btn-area">
+                                            <input type="hidden" id="info" name="info" />
+                                            <button type="submit" form="login" class="btn btn-green"><span>로그인</span></button>
+                                            <input type="hidden" name="viewType" id="viewType" />
+
+                                        </div>
+                                    </div>
+                                </form>
+                            }
+                            else
+                            {
+                                <form action="https://www.gclabs.net/Shared/RequestTobeLogin" method="post" target="_self" onsubmit="return loginFormCheck(this)">
+                                    <div class="result-login-box">
+                                        <div class="form-box">
+                                            <label for="userid" class="title">
+                                                아이디
+                                            </label>
+                                            <div class="form-wrap">
+                                                <input type="text" id="userid" name="userid" class="inp" value="" placeholder="아이디">
+                                            </div>
+                                        </div>
+                                        <div class="form-box">
+                                            <label for="passwd" class="title">
+                                                비밀번호
+                                            </label>
+                                            <div class="form-wrap">
+                                                <input type="password" id="passwd" name="passwd" class="inp" value="" placeholder="비밀번호">
+                                            </div>
+                                        </div>
+                                        <div class="btn-area">
+                                            <input type="hidden" id="info" name="info" />
+
+                                            <button type="submit" class="btn btn-green"><span>로그인</span></button>
+                                            <input type="hidden" name="viewType" id="viewType" />
+
+                                        </div>
+                                    </div>
+                                </form>
+                            }
+                        </div>
+                        <div class="info-area">
+                            <ul class="result-info">
+                                <li>
+                                    <i class="icon issue"></i>
+                                    <div class="text-area">
+                                        <span class="title">결과조회 아이디 발급</span>
+                                        <p class="desc">ID를 신청하시면 홈페이지에서 실시간으로 결과를 확인하실 수 있습니다.<br>(ID는 영업소 또는 영업사원을 통해 신청하실 수 있습니다.)</p>
+                                    </div>
+                                </li>
+                                <li>
+                                    <i class="icon customer"></i>
+                                    <div class="text-area">
+                                        <span class="title">
+                                            전국네트워크(영업소)  <!-- <em class="number">1566-0131</em></span> -->
+                                            <!-- <p class="desc">(평일 08시 ~ 19시 / 토요일 08시 ~15시)</p> --></span>
+                                            <a href="@Url.Action("network", "network", new { Area = "gclabs"})" class="btn btn-arrow"><span>확인하기</span></a>
+                                    </div>
+
+                                 
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="contents-section">
+                    <div class="title-wrap">
+                        <h3 class="title-h3">홈페이지를 통한 결과확인 방법</h3>
+                    </div>
+                    <div class="image-list-wrap">
+                        <ul class="image-list">
+                            <li>
+                                <div class="image">
+                                    <img src="../../../assets/images/img-result-01.png" alt="">
+                                </div>
+                                <div class="text-area center">
+                                    <p class="text">GC녹십자의료재단 홈페이지에 접속 <br>www.gclabs.co.kr</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="image">
+                                    <img src="../../../assets/images/img-result-02.png" alt="">
+                                </div>
+                                <div class="text-area center">
+                                    <p class="text">검사결과 조회에 <br>ID와 비밀번호를 입력</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="image">
+                                    <img src="../../../assets/images/img-result-03.png" alt="">
+                                </div>
+                                <div class="text-area center">
+                                    <p class="text">조회기간 설정, 성명, Chart No, 접수번호 등을 <br>설정하여 빠르게 원하는 검사결과를 조회</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="contents-section">
+                    <div class="title-wrap">
+                        <h3 class="title-h3">스마트폰을 통한 결과확인 방법</h3>
+                    </div>
+                    <div class="image-list-wrap">
+
+                        <ul class="image-list">
+
+                            <li>
+                                <div class="image">
+                                    <img src="../../../assets/images/img-result-04.png" alt="">
+                                </div>
+                                <div class="text-area center">
+                                    <p class="text">스마트폰에서 GC녹십자의료재단 홈페이지에 접속 <br>www.gclabs.co.kr</p>
+                                </div>
+                            </li>
+
+                            <li>
+                                <div class="image">
+                                    <img src="../../../assets/images/img-result-05.png" alt="">
+                                </div>
+                                <div class="text-area center">
+                                    <p class="text">검사결과 조회에 <br>ID와 비밀번호를 입력</p>
+                                </div>
+                            </li>
+
+                            <li>
+                                <div class="image">
+                                    <img src="../../../assets/images/img-result-06.png" alt="">
+                                </div>
+                                <div class="text-area center">
+                                    <p class="text">조회기간 설정, 성명, Chart No, 접수번호 등을 <br>설정하여 빠르게 원하는 검사결과를 조회</p>
+                                </div>
+                            </li>
+
+                        </ul>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

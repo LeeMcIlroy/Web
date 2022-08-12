@@ -1,0 +1,152 @@
+﻿@using GCMaster.Modules
+
+@{ 
+
+    AdminProfile _adminProfile = ViewBag.AdminProfile;
+
+    object areaName;
+
+    if (!ViewContext.RouteData.DataTokens.TryGetValue("area", out areaName))
+    {
+        areaName = "";
+    }
+
+    string controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <title>GC Labs 웹사이트 관리시스템</title>
+
+
+    <link rel="stylesheet" media="screen" href="~/css/style.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="shortcut icon" href="~/img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="~/img/favicon.ico" type="image/x-icon">
+
+    @RenderSection("Styles", required: false)
+
+    <script type="text/javascript" src="~/DEXT/dext5editor/js/dext5editor.js"></script>
+
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <script src="~/js/front.js"></script>
+
+    @RenderSection("Scripts", required: false)
+    <script>
+        function logout() {
+            location.href = '@Url.Action("logout", "login", new { Area = "" })';
+
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="top-area">
+            <div class="top-area-box">
+                <div class="toplogo">
+                    <div class="top-logo-img"><img src="~/img/top-logo.png" alt="GC Labs" /></div>
+                    <span>웹사이트 관리시스템</span>
+                </div>
+                <div class="log-info">
+                    <div class="user-id">@_adminProfile.Name</div>
+                    <div class="log-time">@_adminProfile.LoginDate.ToString("yyyy-MM-dd HH:mm:ss")</div>
+                    @*<div class="user-info">
+            <a href="#"><span>회원정보</span></a>
+        </div>*@
+                    @*<button type="button" id="btnLogout" onclick="location.href='/login/logout';">로그아웃</button>*@
+                   <button type="button" id="btnLogout" onclick="logout();">로그아웃</button>
+
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- content -->
+    <div class="main-body">
+        <div class="left-menu-box">
+            <div class="menu-open">
+                <a href="#">전체메뉴 열기</a>
+            </div>
+
+            <!-- ../img/icon-allmenu_close.png 아이콘 필요함.
+            <div class="menu-close">
+                <a href="#">전체메뉴 닫기</a>
+            </div>
+            -->
+
+            <div class="left-menu-link">
+                <ul>
+
+                    @foreach (var item in Functions.GetSelectListItems(groupCode: "menu_group_div", useEmptyValue: false))
+                    {
+                        var authMenu = _adminProfile.AuthMenus.Where(w => w.Area == item.Value);
+
+                        if (authMenu != null && authMenu.Any())
+                        {
+                            <li>
+                                <a href="#" class="@((item.Value == areaName.ToString()) ? "on" : "off")">@item.Text</a>
+                                <ul>
+                                    @foreach (var menu in authMenu)
+                                    {
+                                    <li><a href="@Url.Action(menu.Action, menu.Controller, new { Area = menu.Area})" class="@(menu.Controller == controllerName ? "on" : "off")">@menu.MenuName</a></li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="right-content">
+            @RenderBody()
+        </div>
+    </div>
+    <!-- content -->
+
+    <script>
+
+        const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+        const MAX_FILE_SIZE = 20 * 1024 * 1024;
+        const MAX_MAIN_IMAGE_SIZE = 1920 * 1024;
+
+
+        function setWordSize() {
+            let maxLen = $(this).prop('maxlength');
+            let valLen = $(this).val().length;
+
+            $(this).next('.wordsize').text(valLen + '/' + maxLen + ' 자');
+        }
+
+        $(document).ready(function () {
+
+            $('input,select,textarea', 'form').change(function () {
+                $('form').data('changed', true);
+            });
+
+            $('input[type=text]', 'form').on('input keyup change', setWordSize);
+            $('input[type=text]', 'form').each(setWordSize);
+
+            $('#keyword').keydown(function (e) {
+                if (e.which == 13) {
+                    onSearch();
+                }
+            });
+
+            @if (TempData["viewMessage"] != null)
+            {
+                @Html.Raw("alert('" + TempData["viewMessage"] + "');");
+            }
+        });
+    </script>
+
+</body>
+</html>

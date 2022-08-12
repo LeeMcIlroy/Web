@@ -1,0 +1,238 @@
+﻿
+@{
+    ViewBag.Title = "order";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "검사의뢰절차"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "전국 어디서나 검체 접수가 가능하며, 당일 검사가 이루어집니다."; }
+@{ var meta_page_url = "http://121.140.143.35:4060/test/detail"; }
+@{ var meta_keywords = "검사안내, 검사의뢰, 검사의뢰절차"; }
+@{ var meta_twitter_site = ""; }
+
+@{
+    var list_count = 1;
+}
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+}
+
+<div id="container" class="container test-information">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+
+
+                <span><a href="#">검사안내</a></span>
+
+                <span><a href="@Url.Action("order", "detail", new { Area = "test"})">검사의뢰</a></span>
+
+
+                <span class="current">검사의뢰절차</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">검사의뢰절차</h2>
+                <p class="text">전국 어디서나 검체 접수가 가능하며, <br class='mobile'>당일 검사가 이루어집니다.</p>
+            </div>
+
+            <div class="banner-wrap">
+                <div class="banner-inner">
+                    <div class="image-area">
+                        <img src="../../assets/images/banner-test-order-pc.png" class="pc tablet" alt="">
+                        <img src="../../assets/images/banner-test-order-mo.png" class="mobile" alt="">
+                    </div>
+                    <div class="text-area">
+
+                        <span class="title">전국 브랜치를 통해 빠른 검사 접수</span>
+                        <p class="desc">전국 어느 곳에서나 검체 접수가 가능하며, <br class='mobile'>본원 검사실에 당일 도착되어 검사가 이루어 집니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-wrap">
+                <div class="board-list">
+                    <div class="list-wrap">
+                        <ul class="lists type-row gradient test-order">
+                            <li class="item">
+                                <div class="box">
+
+                                    <div class="thumbnail">
+                                        <img src="../../assets/images/img-test-order-01.png" alt="">
+
+
+                                        <span class="text"><em>01</em>고객(병원)</span>
+
+                                    </div>
+
+                                    <div class="contents">
+
+                                        <ul class="content">
+
+                                            <li>검체채취</li>
+
+                                            <li>검사의뢰<ul class='list-style dot'><li>양방향 인터페이스로 자동입력</li><li>OCR slip 작성 등</li></ul></li>
+
+                                        </ul>
+
+                                        <div class="btn-group">
+
+                                            <a href="@Url.Action("sample", "detail", new { Area = "test"})" class="btn btn-arrow">
+                                                <span>검체채취</span>
+                                            </a>
+
+                                            <a href="@Url.Action("list", "item", new { Area = "test"})" class="btn btn-arrow">
+                                                <span>검사항목조회</span>
+                                            </a>
+
+                                            <a href="@Url.Action("list", "request", new { Area = "test"})" class="btn btn-arrow">
+                                                <span>검사의뢰서</span>
+                                            </a>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="item">
+
+                                <div class="box">
+                                    <div class="thumbnail">
+                                        <img src="../../assets/images/img-test-order-02.png" alt="">
+
+
+                                        <span class="text"><em>02</em>GC Labs 지역별 지점</span>
+
+                                    </div>
+                                    <div class="contents">
+
+                                        <ul class="content">
+
+                                            <li>검체별 ID부여</li>
+
+                                            <li>의뢰항목 온라인 전송</li>
+
+                                            <li>임상검체 전용 운송 박스로 운송<ul class='list-style dot'><li>전 운송상황 실시간 컨트롤(온도, 위치)</li><li>전국 운송망 구축, 운송 전 과정 직영운송</li></ul></li>
+
+                                        </ul>
+
+                                        <div class="btn-group">
+
+                                            <a href="@Url.Action("network", "network", new { Area = "gclabs"})" class="btn btn-arrow">
+                                                <span>네트워크</span>
+                                            </a>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="item">
+                                <div class="box">
+
+
+                                    <div class="thumbnail">
+                                        <img src="../../assets/images/img-test-order-03.png" alt="">
+
+
+                                        <span class="text"><em>03</em>검사실 검체접수</span>
+
+                                    </div>
+
+                                    <div class="contents">
+
+                                        <ul class="content">
+
+                                            <li>검체접수 및 분류</li>
+
+                                            <li>검사실별 검체분주</li>
+
+                                        </ul>
+
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="item">
+
+                                <div class="box">
+                                    <div class="thumbnail">
+
+                                        <img src="../../assets/images/img-test-order-04.png" alt="">
+                                        <span class="text"><em>04</em>검사실별 분석</span>
+
+                                    </div>
+
+                                    <div class="contents">
+
+                                        <ul class="content">
+
+                                            <li>분석</li>
+                                            <li>검사결과 입력(양방향 인터페이스로 자동입력)</li>
+                                            <li>검체 보관/폐기</li>
+                                        </ul>
+
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="item">
+                                <div class="box">
+                                    <div class="thumbnail">
+                                        <img src="../../assets/images/img-test-order-05.png" alt="">
+
+
+                                        <span class="text"><em>05</em>검사결과 확인</span>
+
+                                    </div>
+
+                                    <div class="contents">
+
+                                        <ul class="content">
+
+                                            <li>결과보고서 출력</li>
+                                            <li>실시간 결과 홈페이지/모바일 조회<p class='text'>분석된 결과는 GC녹십자의료재단의 홈페이지(www.gclabs.co.kr)를 통해 실시간으로 조회가 가능합니다.</p></li>
+
+                                        </ul>
+
+                                        <div class="btn-group">
+
+                                            <a href="@Url.Action("result", "detail", new { Area = "test"})" class="btn btn-arrow">
+                                                <span>결과확인방법</span>
+                                            </a>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

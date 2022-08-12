@@ -1,0 +1,238 @@
+﻿@model GCMaster.Areas.test.Models.panelDetail
+@using GCMaster.Modules;
+
+@{
+    bool _editing = Model.IDX > 0;
+}
+
+@section Styles {
+    <style>
+        td select {
+            width: 171px !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function onCreate() {
+
+            if (!onValidation(true))
+                return false;
+
+            if (confirm("Panel 검사를 등록 하시겠습니까?")) {
+                $('form').attr('action', '@Url.Action("create")').submit();
+            }
+        }
+
+        function onEdit() {
+
+            if (!onValidation(false))
+                return false;
+
+            if ($('form').data('changed') == undefined) {
+                alert('@Messages.A5');
+                return false;
+            }
+
+            if (confirm('@Messages.C4')) {
+                //$('form').attr('action', '@Url.Action("edit")').submit();
+                $('form').attr('action', '@Url.Action("edit")?@(Html.Raw(Request.QueryString))').submit();
+            }
+        }
+
+        function onDelete() {
+            if (confirm('@Messages.C1')) {
+                $('form').attr('action', '@Url.Action("delete")?@(Html.Raw(Request.QueryString))').submit();
+            }
+        }
+
+        function onCancel() {
+            if (confirm("@(_editing ? Messages.C5 : Messages.C3)")) {
+                location.href = '@(Url.Action("list"))?@(Html.Raw(Request.QueryString))';
+            }
+        }
+
+        function onValidation(isCreate) {
+            if ($('#PAN_NM').val() == '') {
+                alert('@Messages.A4e("검사명")');
+                return false;
+            }
+
+            if ($('#PAN_CD').val() == '') {
+                alert('@Messages.A4e("검사코드")');
+                return false;
+            }
+
+            return true;
+        }
+
+        $(document).ready(function () {
+            if ('@_editing' == 'True') {
+                $('#PAN_TYP_1').attr('disabled', 'disabled');
+                $('#PAN_TYP_2').attr('disabled', 'disabled');
+                $('#TRB_TYP').attr('disabled', 'disabled');
+                $('#PAN_CD').attr('disabled', 'disabled');
+            }
+
+            fnResetTrbtyp($('#PAN_TYP_2').val());
+        });
+
+        function fnResetTrbtyp(pan_typ) {
+            //alert(pan_typ);
+
+            if (pan_typ == '01') {
+                //alert('1');
+                $('#trb0').removeAttr('style');
+                $('#trb1').attr('style', 'display:none;');
+            }
+            else {
+                //alert('2');
+                $('#trb1').removeAttr('style');
+                $('#trb0').attr('style', 'display:none;');
+            }
+        }
+    </script>
+}
+
+<div class="page-title">Panel 검사</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.IDX)
+
+    <div class="list-box">
+        <!-- table -->
+        <div class="list-table-box ">
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+
+            </table>
+
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col />
+                    @*<col style="width:8%;" />
+                    <col />*@
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>조회</th>
+                        <td>
+                            @*@Model.READ_CNT*@
+                            @(Convert.ToInt32(Model.READ_CNT)+1)
+                        </td>
+                        @*<th>노출순서</th>
+                        <td>
+                            @Html.EditorFor(model => model.VIEW_SEQ, new { htmlAttributes = new { @class = "w100px txt-r", @Value = "10" } })&nbsp;&nbsp;
+                        </td>*@
+                    </tr>
+                    <tr>
+                        <th>노출여부 <span>*</span></th>
+                        <td>
+                            @Html.RadioButtonFor(model => model.VIEW_YN, "Y", new { id = "VIEW_YN_Y", Checked = "checked" }) <label for="VIEW_YN_Y">YES</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.VIEW_YN, "N", new { id = "VIEW_YN_N" }) <label for="VIEW_YN_N">NO</label>&nbsp;&nbsp;
+                        </td>
+                        @*<th>상단고정 <span>*</span></th>
+                        <td>
+                            @Html.RadioButtonFor(model => model.FIX_YN, "Y", new { id = "FIX_YN_Y", Checked = "checked" }) <label for="FIX_YN_Y">YES</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.FIX_YN, "N", new { id = "FIX_YN_N" }) <label for="FIX_YN_N">NO</label>&nbsp;&nbsp;
+                        </td>*@
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" /> 
+                    <col />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>구분 <span>*</span></th>
+                        <td>
+                            @Html.RadioButtonFor(model => model.PAN_TYP, "01", new { id = "PAN_TYP_1", Checked = "checked", onclick = "fnResetTrbtyp('01')" }) <label for="PAN_TYP_Y">질환</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.PAN_TYP, "02", new { id = "PAN_TYP_2", onclick = "fnResetTrbtyp('02')" }) <label for="PAN_TYP_N">종합검진</label>&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>질환명 <span>*</span></th>
+                        <td>
+                            <div id="trb0"> @Html.DropDownListFor(model => model.TRB_TYP, (ViewBag.TrobleList1 as List<SelectListItem>)) </div>
+                            <div id="trb1"> @Html.DropDownListFor(model => model.TRB_TYP, (ViewBag.TrobleList2 as List<SelectListItem>)) </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>검사코드 <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.PAN_CD, new { htmlAttributes = new { @class = "w200px", @maxlength = "10" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>검사명 <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.PAN_NM, new { htmlAttributes = new { @class = "w500px", @maxlength = "100" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>등록자</th>
+                        <td>@(Model.INS_USER)(@Model.INS_USER)</td>
+                        <th>등록일시</th>
+                        <td>@Model.INS_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th>수정자</th>
+                        <td>@(Model.UPD_USER)(@Model.UPD_USER)</td>
+                        <th>수정일자</th>
+                        <td>@Model.UPD_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--// table -->
+        <!-- paging -->
+        <div class="pg-btn">
+            <!-- table button -->
+            <div class="table-button">
+                <div class="btn-box">
+                   
+                    <span class="flo-center">
+                        <button type="button" onclick="onCancel();" class="btn-cancel">취소</button>
+
+                        @if (_editing)
+                        {
+                            <input type="hidden" value="G" id="group" />
+                            <button type="button" onclick="onDelete();" class="btn-save">삭제</button>
+                            <button type="button" onclick="onEdit();" class="btn-save">저장</button>
+                        }
+                        else
+                        {
+                            <button type="button" onclick="onCreate();" class="btn-save">등록</button>
+                        }
+                    </span>
+                </div>
+            </div>
+            <!--// table button -->
+        </div>
+        <!--// paging -->
+    </div>
+}

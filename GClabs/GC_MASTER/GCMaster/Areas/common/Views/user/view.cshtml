@@ -1,0 +1,384 @@
+﻿@model GCMaster.Areas.common.Models.userViewModel
+@using GCMaster.Modules;
+
+@{
+    bool _editing = Model.IDX > 0;
+
+    var _qnaDivs = Functions.GetSelectListItems(groupCode: "qna_div", useEmptyValue: false);
+}
+
+@section Styles {
+    <style>
+
+    </style>
+}
+
+@section Scripts {
+
+    <script>
+
+        let checkedID = false;
+
+        function onCreate() {
+
+            if (!onValidation(true))
+                return false;
+
+            if (confirm('@Messages.C2')) {
+                $('form').attr('action', '@Url.Action("create")').submit();
+            }
+        }
+
+        function onEdit() {
+
+            if ($('form').data('changed') == undefined) {
+                alert('@Messages.A5');
+                return false;
+            }
+
+            if (!onValidation(false))
+                return false;
+
+            if (confirm('@Messages.C4')) {
+                $('form').attr('action', '@Url.Action("edit")').submit();
+            }
+        }
+
+        function onDelete() {
+            if (confirm('@Messages.C1')) {
+                $('form').attr('action', '@Url.Action("edit")').submit();
+            }
+        }
+
+        function onCancel() {
+            if (confirm("@(_editing ? Messages.C5 : Messages.C3)")) {
+                location.href = '@(Url.Action("list"))?@(Html.Raw(Request.QueryString))';
+            }
+        }
+
+        const pattern_id = /^[a-zA-Z0-9_]{2,20}$/;
+        const pattern_pwd = /(?=.*\d{1,20})(?=.*[~`!@@#$%\^&*()-+=]{1,20})(?=.*[a-zA-Z]{1,20}).{4,20}$/;
+
+        function onValidation(isCreate) {
+
+            if ($('#AUTH_CODE').val() == '') {
+                alert('@Messages.A4s("권한")');
+                return false;
+            }
+
+            if ($('#ADM_NAME').val() == '') {
+                alert('@Messages.A4e("이름")');
+                return false;
+            }
+
+            var admId = $('#ADM_ID').val();
+
+            if (admId == '') {
+                alert('@Messages.A4e("아이디")');
+                return false;
+            }
+
+            if (pattern_id.test(admId) == false) {
+                alert("아아디는 영문 숫자만 입력해 주세요.");
+                return false;
+            }
+
+            if (isCreate && !checkedID) {
+                alert("아아디 중복확인을 해주세요.");
+                return false;
+            }
+
+            var org_pwd = $('#ADM_PWD').val();
+            var cfm_pwd = $('#ADM_PWD_CFM').val();
+
+            if (isCreate && org_pwd == '') {
+                alert('@Messages.A4e("비밀번호")');
+                return false;
+            }
+
+            if (org_pwd != '') {
+                if (cfm_pwd == '') {
+                    alert('@Messages.A4e("비밀번호 확인")');
+                    return false;
+                }
+
+                if (!(pattern_pwd.test(org_pwd))) {
+                    alert("영문+숫자+특수문자 조합으로 비밀번호를 입력해주세요.");
+                    return false;
+                }
+
+                if (org_pwd != cfm_pwd) {
+                    alert('비밀번호와 비밀번호 확인이 다릅니다.');
+                    return false;
+                }
+            }
+
+            @*if ($('#DEPT_CODE').val() == '') {
+                alert('@Messages.A4s("소속")');
+                return false;
+            }*@
+
+            @*if ($('#PHONE').val() == '') {
+                alert('@Messages.A4e("연락처")');
+                return false;
+            }*@
+
+            @*if ($('#EMAIL').val() == '') {
+                alert('@Messages.A4e("이메일")');
+                return false;
+            }*@
+
+            return true;
+        }
+
+        var dialogEditHistory, dialogAccessHistory;
+
+
+        $(document).ready(function () {
+
+            $('#ADM_ID').change(function () {
+                checkedID = false;
+            });
+
+
+            $('#btnCheckID').click(function () {
+
+                let admId = $('#ADM_ID').val();
+
+                if (admId == '') {
+                    alert('@Messages.A4e("아이디")');
+                    return false;
+                }
+
+                $.getJSON('@Url.Action("checkid", new { idx = Model.IDX })', { id: admId }, function (data) {
+
+                    if (data) {
+                        alert("사용할 수 없는 아이디 입니다.");
+                    }
+                    else {
+                        checkedID = true;
+                        alert("사용 가능한 아이디 입니다.");
+                    }
+                });
+            });
+
+
+
+            dialogEditHistory = $("#dialogEditHistory").dialog({
+                width: 'auto',
+                height: 'auto',
+                autoOpen: false,
+                modal: true
+            });
+
+            dialogAccessHistory = $("#dialogAccessHistory").dialog({
+                width: 'auto',
+                height: 'auto',
+                autoOpen: false,
+                modal: true
+            });
+
+            $('.ui-widget-header').remove();
+
+            $("#openEditHistory").on("click", function () {
+                dialogEditHistory.dialog("open");
+            });
+
+            $("#openAccessHistory").on("click", function () {
+                dialogAccessHistory.dialog("open");
+            });
+
+        });
+
+    </script>
+
+}
+
+<div class="page-title">관리자관리</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.IDX)
+
+    <div class="list-box">
+        <!-- table -->
+        <div class="list-table-box ">
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>최근접속일</th>
+                        <td>
+                            @Model.ACCESS_DATE.ToString("yyyy-MM-dd HH:mm")
+                        </td>
+                        <th>사용여부 <span>*</span></th>
+                        <td>
+                            @Html.RadioButtonFor(model => model.USE_YN, "Y", new { id = "USE_YN_Y" }) <label for="USE_YN_Y">YES</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.USE_YN, "N", new { id = "USE_YN_N" }) <label for="USE_YN_N">NO</label>&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>권한 <span>*</span></th>
+                        <td>
+                            @Html.DropDownListFor(model => model.AUTH_CODE, Functions.GetSelectListItems(groupCode: "admin_auth_div", useEmptyValue: true, emptyText: "선택"))
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>이름 <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.ADM_NAME, new { htmlAttributes = new { @class = "w100px", @maxlength = "10" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>아이디 <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.ADM_ID, new { htmlAttributes = new { @class = "w100px", @maxlength = "20" } })&nbsp;&nbsp;<span class="wordsize"></span>&nbsp;&nbsp;<button type="button" id="btnCheckID" class="sh-btn">중복확인</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>비밀번호 <span>*</span></th>
+                        <td>
+                            @Html.PasswordFor(model => model.ADM_PWD, new { @class = "w20p", @maxlength = "20" })&nbsp;&nbsp;0/20 자, 영문+숫자+특수문자
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>비밀번호 확인<span>*</span></th>
+                        <td>
+                            @Html.Password("ADM_PWD_CFM", "", new { @class = "w20p", @maxlength = "20" })&nbsp;&nbsp;0/20 자, 영문+숫자+특수문자
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>소속</th>
+                        <td>
+                            @Html.DropDownListFor(model => model.DEPT_CODE, Functions.GetSelectListItems(groupCode: "admin_dept_div", useEmptyValue: true, emptyText: "선택"))
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>연락처</th>
+                        <td>
+                            @Html.EditorFor(model => model.PHONE, new { htmlAttributes = new { @class = "w20p", @maxlength = "15" } })&nbsp;&nbsp;<span class="wordsize"></span>, 숫자만 입력
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>이메일</th>
+                        <td>
+                            @Html.EditorFor(model => model.EMAIL, new { htmlAttributes = new { @class = "w30p", @maxlength = "100" } })&nbsp;&nbsp;<span class="wordsize"></span>, * 예) test@test.com
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>문의 수신</th>
+                        <td>
+                            @foreach (var item in _qnaDivs)
+                            {
+                                <label>
+                                    <input type="checkbox" name="SelectedMailTos" value="@item.Value" @if (Model.QNA_MAIL_TO.Contains(item.Value)) { <text> checked </text> } />
+                                    @item.Text
+                                </label>
+                                <text>&nbsp;&nbsp;&nbsp;</text>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>참조 수신</th>
+                        <td>
+                            @foreach (var item in _qnaDivs)
+                            {
+                                <label>
+                                    <input type="checkbox" name="SelectedMailCCs" value="@item.Value" @if (Model.QNA_MAIL_CC.Contains(item.Value)) { <text> checked </text> } />
+                                    @item.Text
+                                </label>
+                                <text>&nbsp;&nbsp;&nbsp;</text>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>숨은참조 수신</th>
+                        <td>
+                            @foreach (var item in _qnaDivs)
+                            {
+                                <label>
+                                    <input type="checkbox" name="SelectedMailBCCs" value="@item.Value" @if (Model.QNA_MAIL_BCC.Contains(item.Value)) { <text> checked </text> } />
+                                    @item.Text
+                                </label>
+                                <text>&nbsp;&nbsp;&nbsp;</text>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>등록자</th>
+                        <td>@(Model.REGIST_NAME)(@Model.REGIST_ID)</td>
+                        <th>등록일시</th>
+                        <td>@Model.REGIST_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th>수정자</th>
+                        <td>@(Model.UPDATE_NAME)(@Model.UPDATE_ID)</td>
+                        <th>수정일자</th>
+                        <td>@Model.UPDATE_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--// table -->
+        <!-- paging -->
+        <div class="pg-btn">
+
+            <!-- table button -->
+            <div class="table-button">
+                <div class="btn-box">
+                    <span class="flo-left">
+                        <a id="openAccessHistory" class="gary btn-cancel">관리자 접속이력</a>
+                        <a id="openEditHistory" class="gary btn-cancel">관리자 수정이력</a>
+                    </span>
+                    <span class="flo-right">
+                        <button type="button" onclick="onCancel();" class="btn-cancel">취소</button>
+                        @if (_editing)
+                        {
+                            <button type="button" onclick="onEdit();" class="btn-save">저장</button>
+                        }
+                        else
+                        {
+                            <button type="button" onclick="onCreate();" class="btn-save">등록</button>
+                        }
+                    </span>
+                </div>
+            </div>
+            <!--// table button -->
+        </div>
+        <!--// paging -->
+    </div>
+}
+
+<div id="dialogEditHistory">
+    <iframe src="@Url.Action("edithistory", "user", new { Area = "common", idx = Model.IDX})" width="670" frameborder="0" scrolling="no" style="min-height:610px;"></iframe>
+</div>
+<div id="dialogAccessHistory">
+    <iframe src="@Url.Action("accesshistory", "user", new { Area = "common", idx = Model.IDX})" width="670" frameborder="0" scrolling="no" style="min-height:610px;"></iframe>
+</div>

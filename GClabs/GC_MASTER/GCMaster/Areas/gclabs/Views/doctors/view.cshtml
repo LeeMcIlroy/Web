@@ -1,0 +1,369 @@
+﻿@model GCMaster.Models.doctorsViewModel
+@using GCMaster.Modules;
+
+@{
+    bool _editing = Model.IDX > 0;
+
+    var paperModel = ViewBag.PaperList as PagedList.IPagedList<GCMaster.Models.paperListModel>;
+}
+
+@section Styles {
+    <style>
+    </style>
+}
+
+@section Scripts {
+
+    <script>
+
+        function onCreate() {
+
+            if (!onValidation(true))
+                return false;
+
+            if (confirm('@Messages.C2')) {
+                $('form').attr('action', '@Url.Action("create")').submit();
+            }
+        }
+
+        function onEdit() {
+
+            if (!onValidation(false))
+                return false;
+
+            if ($('form').data('changed') == undefined) {
+                alert('@Messages.A5');
+                return false;
+            }
+
+            if (confirm('@Messages.C4')) {
+                $('form').attr('action', '@Url.Action("edit")').submit();
+            }
+        }
+
+        function onDelete() {
+            if (confirm('@Messages.C1')) {
+                $('form').attr('action', '@Url.Action("delete")').submit();
+            }
+        }
+
+        function onCancel() {
+            if (confirm("@(_editing ? Messages.C5 : Messages.C3)")) {
+                location.href = '@(Url.Action("list"))?@(Html.Raw(Request.QueryString))';
+            }
+        }
+
+        function onValidation(isCreate) {
+
+            if ($('#NAME').val() == '') {
+                alert('@Messages.A4e("성명")');
+                return false;
+            }
+
+            if ($('#NAME_ENG').val() == '') {
+                alert('@Messages.A4e("영문성명")');
+                return false;
+            }
+
+            if ($('#DEPT_CODE').val() == '') {
+                alert('@Messages.A4s("학부")');
+                return false;
+            }
+
+            if (!getEditorValue()) {
+                alert('@Messages.A4e("약력")');
+                return false;
+            }
+
+            return true;
+        }
+
+        function onSearch() {
+
+            let keyType = $('#keytype').val();
+            let keyWord = $('#keyword').val();
+
+            location.href = "@Url.Action("view", "doctors", new { Area = "gclabs", id = Model.IDX})" + '?'
+                + 'subkeytype=' + keyType
+                + '&subkeyword=' + keyWord;
+        }
+
+
+        function setEditorValue() {
+            let hdVal = $('#SUMMARY').val();
+            DEXT5.setBodyValue(hdVal, 'edtSUMMARY');
+        }
+
+        function getEditorValue() {
+            let hdVal = $('#CONTENT_F').val();
+            let edtVal = DEXT5.getBodyValue('edtSUMMARY');
+            if (hdVal != edtVal) {
+                $('form').data('changed', true);
+            }
+            $('#SUMMARY').val(edtVal);
+
+            return !DEXT5.isEmpty('edtSUMMARY');
+        }
+
+        function openPaperView(idx) {
+
+            let url = "@Url.Action("viewpaper", "doctors", new { Area = "gclabs", id = Model.IDX})" + "?idx=" + idx;
+
+            $('iframe', "#dialogPaperView").attr("src", url);
+
+            dialogPaperView.dialog("open");
+        }
+
+        var dialogPaperView;
+
+
+        $(document).ready(function () {
+
+            setEditorValue();
+
+            dialogPaperView = $("#dialogPaperView").dialog({
+                width: 'auto',
+                height: 'auto',
+                autoOpen: false,
+                modal: true,
+                close: function () {
+                    location.reload();
+                }
+            });
+        });
+
+    </script>
+
+}
+
+<div class="page-title">전문의</div>
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.IDX)
+    @Html.HiddenFor(model => model.SUMMARY)
+
+
+    <div class="list-box">
+        <!-- table -->
+        <div class="list-table-box ">
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>조회</th>
+                        <td>@Model.VIEW_CNT</td>
+                        <th>노출순서</th>
+                        <td>
+                            @Html.EditorFor(model => model.VIEW_ORDER, new { htmlAttributes = new { @class = "w50px" } })&nbsp;&nbsp;*낮은숫자 상단 (기본값 10)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>노출여부 <span>*</span></th>
+                        <td colspan="3">
+                            @Html.RadioButtonFor(model => model.VIEW_YN, "Y", new { id = "VIEW_YN_Y" }) <label for="VIEW_YN_Y">YES</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.VIEW_YN, "N", new { id = "VIEW_YN_N" }) <label for="VIEW_YN_N">NO</label>&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>성명 <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.NAME, new { htmlAttributes = new { @class = "w50p", @placeholder = "성명을 입력하세요.", @maxlength = "10" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>영문성명 <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.NAME_ENG, new { htmlAttributes = new { @class = "w50p", @placeholder = "영문성명을 입력하세요.", @maxlength = "30" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>학부 <span>*</span></th>
+                        <td>
+                            @Html.DropDownListFor(model => model.DEPT_CODE, Functions.GetSelectListItems(groupCode: "doctor_div", useEmptyValue: true, emptyText: "선택")) <br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>약력 <span>*</span></th>
+                        <td>
+
+                            <script type="text/javascript">
+                                var dext5Editor = new Dext5editor("edtSUMMARY");
+                            </script>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>등록자</th>
+                        <td>@(Model.REGIST_NAME)(@Model.REGIST_ID)</td>
+                        <th>등록일시</th>
+                        <td>@Model.REGIST_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th>수정자</th>
+                        <td>@(Model.UPDATE_NAME)(@Model.UPDATE_ID)</td>
+                        <th>수정일자</th>
+                        <td>@Model.UPDATE_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--// table -->
+        <!-- paging -->
+        <div class="pg-btn mb30">
+
+            <!-- table button -->
+            <div class="table-button">
+                <div class="btn-box">
+                    <button type="button" onclick="onCancel();" class="btn-cancel">취소</button>
+                    @if (_editing)
+                    {
+                        <button type="button" onclick="onDelete();" class="btn-del">삭제</button>
+                        <button type="button" onclick="onEdit();" class="btn-save">저장</button>
+                    }
+                    else
+                    {
+                        <button type="button" onclick="onCreate();" class="btn-save">등록</button>
+                    }
+                </div>
+            </div>
+            <!--// table button -->
+        </div>
+        <!--// paging -->
+    </div>
+}
+<div class="mb30">
+&nbsp;
+</div>
+<div class="page-title">전문의 주요 논문</div>
+<div class="list-box">
+    <!--search info-->
+    <div class="search-infomation">
+        <div class="search-count">
+            총 <strong>@paperModel.TotalItemCount</strong>건
+        </div>
+        <div class="paging-select">
+            <div>
+                @Html.DropDownList("keytype",
+                                new List<SelectListItem>()
+                                {
+                                    new SelectListItem() { Value = "", Text = "전체" },
+                                    new SelectListItem() { Value = "1", Text = "논문명" },
+                                    new SelectListItem() { Value = "2", Text = "년도" },
+                                    new SelectListItem() { Value = "3", Text = "출처" }
+                                },
+                                new { @class = "w69px" })
+                @Html.TextBox("keyword", null, new { maxlength = "30", placeholder = "검색어" })
+                <button type="button" class="sh-btn" onclick="onSearch();">조회</button>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                @if (_editing)
+                {
+                    <button type="button" class="sh-btn" onclick="openPaperView('0');">등록</button>
+                }
+                else
+                {
+                    <button type="button" class="sh-btn" style="cursor:no-drop" disabled>등록</button>
+                }
+
+            </div>
+        </div>
+    </div>
+    <!--// search info-->
+    <!-- table -->
+    <div class="list-table-box">
+        <table class="normal-list-table">
+            <colgroup>
+                <col style="width:5%;" />
+                <col />
+                <col style="width:8%;" />
+                <col style="width:10%;" />
+                <col style="width:5%;" />
+                <col style="width:5%;" />
+                <col style="width:8%;" />
+                <col style="width:8%;" />
+                <col style="width:8%;" />
+                <col style="width:8%;" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>논문명</th>
+                    <th>년도</th>
+                    <th>출처</th>
+                    <th>노출여부</th>
+                    <th>첨부파일</th>
+                    <th>등록자</th>
+                    <th>등록자아이디</th>
+                    <th>등록일자</th>
+                    <th>수정일자</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in paperModel)
+                {
+                <tr>
+                    <td>@item.IDX</td>
+                    <td class="txt-l"><a href="#" onclick="openPaperView('@item.IDX')" class="underline">@item.NAME</a></td>
+                    <td>@item.YEAR</td>
+                    <td>@item.SOURCE</td>
+                    <td>@item.VIEW_YN</td>
+                    <td>@item.ATTACH_FILE</td>
+                    <td>@item.REGIST_NAME</td>
+                    <td>@item.REGIST_ID</td>
+                    <td>@item.REGIST_DATE.ToString("yyyy-MM-dd")</td>
+                    <td>@item.UPDATE_DATE.ToString("yyyy-MM-dd")</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <!--// table -->
+    <!-- paging -->
+    <div class="pg-btn">
+        <div class="paging_wrap">
+            <div class="paging">
+                @Html.PagingBoardPager(paperModel, subpage => Url.Action("view",
+                                                        new
+                                                        {
+                                                            id = Model.IDX,
+                                                            subpage,
+                                                            subkeytype = ViewBag.keytype,
+                                                            subkeyword = ViewBag.keyword
+                                                        }
+                                                    ))
+            </div>
+        </div>
+    </div>
+    <!--// paging -->
+
+</div>
+
+<div id="dialogPaperView">
+    <iframe src="" width="670" frameborder="0" scrolling="no" style="min-height:480px;"></iframe>
+</div>

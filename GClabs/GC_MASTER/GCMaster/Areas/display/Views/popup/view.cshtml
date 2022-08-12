@@ -1,0 +1,347 @@
+﻿@model GCMaster.Areas.display.Models.popupDetail
+@using GCMaster.Modules;
+
+@{
+    bool _editing = Model.TITLE != null;
+}
+
+@section Styles {
+    <style>
+    </style>
+}
+
+@section Scripts {
+    @*<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">*@
+
+<script>
+        function onCreate() {
+            if (!onValidation(true))
+                return false;
+
+            if (confirm('@Messages.C2')) {
+                $('form').attr('action', '@Url.Action("create")').submit();
+            }
+        }
+
+        function onEdit() {
+            //if ($('form').data('changed') == undefined) {
+            //    alert('수정된 내용이 없습니다.');
+            //    return false;
+            //}
+
+            if (!onValidation(false))
+                return false;
+
+
+            if (confirm('@Messages.C4')) {
+                $('form').attr('action', '@Url.Action("edit")').submit();
+            }
+        }
+
+        function onDelete() {
+            if (confirm('@Messages.C1')) {
+                $('form').attr('action', '@Url.Action("delete")').submit();
+            }
+        }
+
+        function onCancel() {
+            if (confirm("@(_editing ? Messages.C5 : Messages.C3)")) {
+                location.href = '@(Url.Action("list"))?@(Html.Raw(Request.QueryString))';
+            }
+        }
+
+        function onValidation(isCreate) {
+            if ($('#TITLE').val() == '') {
+                alert('@Messages.A4e("제목")');
+                return false;
+            }
+
+            if ($('input[name="INS_TYP"]:checked').val() == 'E') {
+                if (!getEditorValue()) {
+                    alert('@Messages.A4e("내용")');
+                    return false;
+                }
+            }
+
+            if ($('input[name="INS_TYP"]:checked').val() == 'I') {
+                var b_rul = $("#URL").val();
+                var Url = /(http|https):\/\/((\w+)[.])+(asia|biz|cc|cn|com|de|eu|in|info|jobs|jp|kr|mobi|mx|name|net|nz|org|travel|tv|tw|uk|us)(\/(\w*))*$/i;
+                var urlTest = Url.test(b_rul);
+
+                if (!urlTest) {
+                    alert("URL형식이 잘못되었습니다.");
+                    $("#URL").focus();
+                    return false;
+                }
+            }
+
+            let image = $('#attachedImage')[0].files[0];
+
+            //if (isCreate && image == undefined) {
+            //    alert('대표 이미지를 선택해 주세요.');
+            //    return false;
+            //}
+
+            if (image && image.size > MAX_IMAGE_SIZE) {
+                alert('@Messages.A9');
+                return false;
+            }
+
+            return true;
+        }
+
+        function setInputImage(e) {
+            let file = this.files[0];
+
+            if (file) {
+
+                if (file.size > MAX_IMAGE_SIZE) {
+                    alert('@Messages.A9');
+                }
+
+                let fileReader = new FileReader();
+                fileReader.onload = function (e) {
+                    $('#open-image', '.upload-img-box').attr('src', e.target.result);
+                    $('#selected-image-name', '.upload-file').text(file.name);
+                }
+                fileReader.readAsDataURL(file);
+            }
+        }
+
+        function setImageSize(obj) {
+            $('#selected-image-size', '.upload-file').text('사이즈 : 가로 ' + obj.naturalWidth + 'px X 세로 ' + obj.naturalHeight + 'px');
+        }
+
+        function onDeleteFile() {
+            if (confirm('@Messages.C8')) {
+                $('form').attr('action', '@Url.Action("deletefile")').submit();
+            }
+        }
+
+        function setEditorValue() {
+            let hdVal = $('#CONTENT').val();
+            DEXT5.setBodyValue(hdVal, 'edtCONTENT');
+        }
+
+        function getEditorValue() {
+            let edtVal = DEXT5.getBodyValue('edtCONTENT');
+            $('#CONTENT').val(edtVal);
+
+            return !DEXT5.isEmpty('edtCONTENT');
+        }
+
+
+        function setViewType() {
+            let viewYN = $('input[name="DVI_TYP"]:checked').val();
+
+            if (viewYN == "P") {
+                $('#LFT').removeAttr('disabled');
+            }
+            else {
+                $('#LFT').attr('disabled', true);
+            }
+        }
+
+        function setViewType2() {
+            let viewType = $('input[name="INS_TYP"]:checked').val();
+
+            if (viewType == "E") {
+                $('.editor_area').css('display', '');
+                $('.image_area').css('display', 'none');
+            }
+            else {
+                $('.image_area').css('display', '');
+                $('.editor_area').css('display', 'none');
+            }
+        }
+
+        $(document).ready(function () {
+            //$(".datepicker").datep//ker();
+
+            //setViewType();
+            setViewType2();
+            setEditorValue();
+            //$('input[name="INS_TYP"]').on('change', setViewType2());
+            $('#attachedImage', '.upload-file').on('change', setInputImage);
+        });
+
+</script>
+
+}
+
+<div class="page-title">팝업관리</div>
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.IDX)
+    @Html.HiddenFor(model => model.CONTENT)
+
+    @Html.HiddenFor(model => model.IMG)
+    @Html.HiddenFor(model => model.IMG_NM)
+    @Html.HiddenFor(model => model.IMG_SIZE)
+
+    <div class="list-box">
+        <!-- table -->
+        <div class="list-table-box ">
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>노출여부 <span>*</span></th>
+                        <td>
+                            @Html.RadioButtonFor(model => model.VIEW_YN, "Y", new { id = "VIEW_YN_Y" }) <label for="VIEW_YN_Y">YES</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.VIEW_YN, "N", new { id = "VIEW_YN_N" }) <label for="VIEW_YN_N">NO</label>&nbsp;&nbsp;
+                            &nbsp;&nbsp;
+                            @Html.EditorFor(model => model.VIEW_DATE_ST, new { htmlAttributes = new { @class = "w100px datepicker", @maxlength = "10" } })
+                            @Html.EditorFor(model => model.VIEW_TIME_ST, new { htmlAttributes = new { @class = "w69px", @maxlength = "5" } })
+                            &nbsp; ~ &nbsp;
+                            @Html.EditorFor(model => model.VIEW_DATE_ED, new { htmlAttributes = new { @class = "w100px datepicker", @maxlength = "10" } })
+                            @Html.EditorFor(model => model.VIEW_TIME_ED, new { htmlAttributes = new { @class = "w69px", @maxlength = "5" } })
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col />
+                    <col style="width:8%;" />
+                    <col />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        @*<th>디바이스</th>
+                        <td>
+                            @Html.RadioButtonFor(model => model.DVI_TYP, "P", new { id = "DVI_TYP_P" }) <label for="DVI_TYP_P">PC</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.DVI_TYP, "M", new { id = "DVI_TYP_M" }) <label for="DVI_TYP_M">Mobile</label>&nbsp;&nbsp;
+                        </td>*@
+                        <th>국/영문</th>
+                        <td>
+                            @Html.RadioButtonFor(model => model.LANG_TYP, "K", new { id = "LANG_TYP_K" }) <label for="LANG_TYP_K">국문</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.LANG_TYP, "E", new { id = "LANG_TYP_E" }) <label for="LANG_TYP_E">영문</label>&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>제목 <span>*</span></th>
+                        <td >
+                            @Html.EditorFor(model => model.TITLE, new { htmlAttributes = new { @class = "w50p", @placeholder = "제목을 입력하세요.", @maxlength = "100" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>팝업위치</th>
+                        <td>
+                            위로부터 @Html.EditorFor(model => model.TOP, new { htmlAttributes = new { @class = "w50px txt-r" } }) px &nbsp;&nbsp;/&nbsp;&nbsp;
+                            왼쪽으로부터 @Html.EditorFor(model => model.LFT, new { htmlAttributes = new { @class = "w50px txt-r" } }) px 
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>팝업사이즈</th>
+                        <td >
+                            가로 @Html.EditorFor(model => model.WID, new { htmlAttributes = new { @class = "w50px txt-r" } }) px &nbsp;&nbsp;/&nbsp;&nbsp;
+                            세로 @Html.EditorFor(model => model.HEI, new { htmlAttributes = new { @class = "w50px txt-r" } }) px &nbsp;&nbsp;
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>팝업구분</th>
+                        <td >
+                            @Html.RadioButtonFor(model => model.INS_TYP, "E", new { id = "INS_TYP_E", onclick = "setViewType2()" }) <label for="CLS_TYP_P">에디터</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.INS_TYP, "I", new { id = "INS_TYP_I", onclick = "setViewType2()" }) <label for="CLS_TYP_N">이미지</label>&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                    <tr class="editor_area">
+                        <th>내용</th>
+                        <td >
+                            <script type="text/javascript">
+                                var dext5Editor = new Dext5editor("edtCONTENT");
+                            </script>
+                        </td>
+                    </tr>
+                    <tr class="image_area">
+                        <th>링크이동</th>
+                        <td >
+                            @Html.RadioButtonFor(model => model.CLS_TYP, "P", new { id = "CLS_TYP_P" }) <label for="CLS_TYP_P">팝업닫힘 > 부모페이지로이동</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.CLS_TYP, "M", new { id = "CLS_TYP_N" }) <label for="CLS_TYP_N">팝업닫힘 > 새창열림</label>&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                    <tr class="image_area">
+                        <th>링크 URL <span>*</span></th>
+                        <td >
+                            @Html.EditorFor(model => model.URL, new { id="txtLINK", htmlAttributes = new { @class = "w50p" } }) &nbsp;&nbsp;0/300자, (예:https://www.gclabs.co.kr)
+                        </td>
+                    </tr>
+                    <tr class="image_area">
+                        <th>이미지</th>
+                        <td >
+                            <div class="upload-img">
+                                <div class="upload-img-box">
+                                    <img src="@Functions.GetImageUrl(Model.IMG_NM)" id="open-image" alt="" onload="setImageSize(this)" />
+                                </div>
+                                <div class="upload-file">
+                                    <input type="file" id="attachedImage" name="attachedImage" accept="image/jpeg,image/gif,image/png" style="display:none;" />
+                                    <label for="attachedImage"><span class="open-file">파일선택</span></label>
+                                    <span id="selected-image-size"></span>
+                                    <p id="selected-image-name">@Model.IMG</p>
+                                </div>
+                            </div>
+                            <p class="mt10">
+                                ※ 이미지 사이즈 : 123*123
+                            </p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>등록자</th>
+                        <td>@(Model.INS_USR_NM)(@Model.INS_USER)</td>
+                        <th>등록일시</th>
+                        <td>@Model.INS_DATE.ToString()</td>
+                    </tr>
+                    <tr>
+                        <th>수정자</th>
+                        <td>@(Model.UPD_USR_NM)(@Model.UPD_USER)</td>
+                        <th>수정일자</th>
+                        <td>@Model.UPD_DATE.ToString()</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--// table -->
+        <!-- paging -->
+        <div class="pg-btn  mb30">
+
+            <!-- table button -->
+            <div class="table-button">
+                <div class="btn-box">
+                    <button type="button" onclick="onCancel();" class="btn-cancel">취소</button>
+                    @if (_editing)
+                    {
+                        <button type="button" onclick="onDelete();" class="btn-del">삭제</button>
+                        <button type="button" onclick="onEdit();" class="btn-save">저장</button>
+                    }
+                    else
+                    {
+                        <button type="button" onclick="onCreate();" class="btn-save">등록</button>
+                    }
+                </div>
+            </div>
+            <!--// table button -->
+        </div>
+        <!--// paging -->
+
+    </div>
+}

@@ -1,0 +1,71 @@
+﻿@model GCRL.Areas.eng.Models.engViewModel
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "view";
+}
+
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+}
+<div id="container" class="container pr">
+    <div class="contents-wrap">
+        <div class="board-wrap">
+
+            <div class="board-view-head">
+                <div class="contents-inner">
+                    <div class="title-area">
+                        <div class="location">
+                            <span>Newsletters</span>
+                        </div>
+                        <strong class="title">@Model.TITLE</strong>
+                        <span class="date">@Model.REGIST_DATE.ToString("yyyy-MM-dd")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-view">
+                <div class="contents-inner">
+                    <div class="view-wrap">
+                        <div class="view-contents">
+                            @Html.Raw(Model.CONTENT_F)
+                        </div>
+                    </div>
+
+                    <div class="board-navi">
+                        <div class="navi prev">
+                            <span class="label">Previous</span>
+                            @if (Model.PREV_IDX > 0)
+                            {
+                                <a href='@(Url.Action("view", new {id = Model.PREV_IDX}))?@(Request.QueryString.ToString())' class='desc'>@Model.PREV_TITLE</a>
+                            }
+                            else
+                            {
+                                <a href='#' class='desc'>Not found previous post.</a>
+                            }
+                        </div>
+                        <div class="navi next">
+                            <span class="label">Next</span>
+                            @if (Model.NEXT_IDX > 0)
+                            {
+                                <a href='@(Url.Action("view", new {id = Model.NEXT_IDX}))?@(Request.QueryString.ToString())' class='desc'>@Model.NEXT_TITLE</a>
+                            }
+                            else
+                            {
+                                <a href='#' class='desc'>Not found next post.</a>
+                            }
+                        </div>
+                    </div>
+                    <div class="btn-area center">
+                        <a href="@(Url.Action("list"))?@(Html.Raw(Request.QueryString))" class="btn btn-list">List</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

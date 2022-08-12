@@ -1,0 +1,327 @@
+﻿@model PagedList.IPagedList<GCRL.Areas.test.Models.instrumentModel>
+
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "list";
+    List<string> tmp = ViewBag.indexs as List<string>;
+
+}
+<style>
+</style>
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "검체 용기"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "검체 채취를 위한 용기를 안내해 드립니다"; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+
+    <script>
+        $(window).on('load resize', function () {
+            if ($(window).width() > 800) {
+                $('.pg_pc').css('display', 'block');
+                $('.pg_mb').css('display', 'none');
+            } else {
+                $('.pg_pc').css('display', 'none');
+                $('.pg_mb').css('display', 'block');
+            }
+        });
+
+        //$(function () {
+
+        //if ($('#detailPopup').length == 0) {
+
+        //    $('#detailPopup').hide();
+
+        //    $('.dimmed-layer').eq(0).remove();
+        //}
+        //})
+        function enterkey(initial, thisObj) {
+            if (window.event.keyCode == 13) {
+
+                // 엔터키가 눌렸을 때 실행하는 반응
+                onFieldSearch(initial, thisObj);
+            }
+        }
+
+        var pInitial = '';
+        var pSearchType = '';
+
+        function openWindowLayer(idx) {
+            //초기값
+
+            //var prev = preIdx;
+            //var next = nextIdx;
+
+            //alert(idx);
+
+            if (idx == 'empty')
+                return;
+           
+
+            $.getJSON('@Url.Action("view")' + '?' + 'idx=' + idx, function (data) {
+
+                if ($('.popup-wrap').length > 0) {
+                    $('.popup-wrap').remove();
+                }
+
+                //alert(data.pre_idx + ',' + (data.next_idx == '' ? "empty" : data.next_idx))
+
+                if (data != false) {
+                    var html = "";
+                    html += '<div class="popup-wrap">';
+                    html += '<div class="popup-container">';
+                    html += '<div class="popup-head"><span class="text">검체 용기</span></div>';
+                    html += '<div class="popup-body">';
+                    html += '<div class="instrument-contents">';
+                    html += '<strong class="title">' + data.name + '</strong>';
+                    html += '<div class="contents">';
+                    html += '<div class="thumbnail"> ';
+                    html += '<img src="data:image/jpeg;base64,' + data.imagePath + '" alt="' + data.name + '">';
+                    html += '</div>';
+                    html += '<ul class="info">';
+                    html += '<li><dl><dt>첨가제</dt>';
+                    html += '<dd>' + data.additive + '</dd></dl></li>';
+                    html += '<li><dl><dt>검사항목</dt>';
+                    html += '<dd>' + data.tests + '</dd></dl></li>';
+                    html += '<li><dl><dt>채취량</dt>';
+                    html += '<dd>' + data.collection + '</dd></dl></li>';
+                    html += '<li> <dl><dt>보관</dt>';
+                    html += '<dd>' + data.storage + '</dd></dl></li>';
+                    html += '<li><dl><dt>취급방법</dt>';
+                    html += '<dd>' + data.method + '</dd></dl></li>';
+                    html += '</ul></div>';
+                    html += '<div class="btn-group">';
+                    html += '<a href="#" class="btn-arrow prev first" onclick="openWindowLayer(\'' + (data.pre_idx == '' ? "empty" : data.pre_idx) + '\');">';
+                    html += '   <span class="arrow"> <em class="hidden">이전</em></span ></a>';
+                    html += '<a href="#" class="btn-arrow next" onclick="openWindowLayer(\'' + (data.next_idx == '' ? "empty" : data.next_idx) + '\');">';
+                    html += '   <span class="arrow"> <em class="hidden">다음</em></span ></a>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '   <button type="button" class="popup-close" onclick="popupClose();">';
+                    html += '   <span class="close"> <em class="hidden">팝업 닫기</em></span ></button> ';
+                    html += '</div>';
+
+                    $('#detailPopup').append(html);
+                    $('#detailPopup').show();
+
+                    $('.popup-wrap').attr('style', 'top:' + (document.querySelector('html').scrollTop + ($('.popup-wrap').outerHeight() / 2) - 300) + 'px;');
+                }
+                else {
+                    next + 1;
+                    openWindowLayer(next);
+                }
+            });
+        }
+
+        function popupOpen() {
+            $('#detailPopup').show();
+        }
+
+        function popupClose() {
+            $('#detailPopup').hide();
+            $('.dimmed-layer').eq(0).remove();
+        }
+
+        function onFieldSearch(initial, thisObj) {
+            pInitial = initial;
+            var searchType = '전체';
+
+            location.href = '@Url.Action("list")' + '?'
+                + '&initial=' + initial
+                + '&searchType=' + searchType
+                + '&searchText=' + $('#search').val();
+        }
+    </script>
+}
+
+<div id="container" class="container test-information">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+
+                <span><a href="#">검사안내</a></span>
+
+                <span><a href="#">검체채취</a></span>
+
+                <span class="current">검체 용기</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">검체 용기</h2>
+                <p class="text">검체 채취를 위한 용기를 <br class='mobile'>안내해 드립니다</p>
+            </div>
+            <div class="board-wrap">
+                <div class="board-list-head">
+                    <div class="search-wrap">
+
+                        <div class="search-area">
+                            <span class="search-box">
+                                <input type="text" class="inp-search" id="search" name="search" title="검색어 입력" placeholder="검색어를 입력하세요." onkeyup="enterkey('', this);">
+                            </span>
+                            <span class="search-btn">
+                                <button type="button" class="search-go" onclick="onFieldSearch('', this);"></button>
+                            </span>
+                        </div>
+
+                        <div class="search-detail">
+                            <button class="btn btn-filter"><span>상세검색</span></button>
+                        </div>
+
+                    </div>
+                    <div class="total-count">Total <span>@ViewBag.totalCount.count</span></div>
+                </div>
+                <div class="search-filter-box">
+
+                    <div class="search-detail">
+                        <p class="tit">초성</p>
+                        <div class="btn-detail type2">
+                            @{
+                                if (ViewBag.initial == "All")
+                                {
+                                    <input type="button" class="all" value="All" onclick="onFieldSearch( '', this);">
+                                }
+                                else
+                                {
+                                    <input type="button" class="" value="All" onclick="onFieldSearch( '', this);">
+                                }
+
+                                for (int i = 65; i <= 92; i++)
+                                {
+                                    var val = string.Concat((char)i);
+
+                                    if (i == 91)
+                                    {
+                                        val = "123";
+                                    }
+                                    if (i == 92)
+                                    {
+                                        val = "ETC";
+                                    }
+
+                                    if (ViewBag.initial == val)
+                                    {
+                                       
+                                            <input type="button" class="all" value="@val" onclick="onFieldSearch('@val', this);">
+
+
+                                    }
+                                    else
+                                    {
+                                        
+                                        if (ViewBag.initRs[@i-65] ==  "false")
+                                        {
+
+                                            <input type="button" class="" value="@val" style="display:none;">
+                                        }
+                                        else
+                                        {
+
+                                            <input type="button" class="" value="@val" onclick="onFieldSearch('@val', this);">
+                                        }
+
+                                    }
+                                }
+
+                            }
+
+                        </div>
+                    </div>
+                </div>
+                <div class="board-list">
+                    <div class="list-wrap">
+                        <ul class="lists type2 instrument">
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                <li class="item2 bottle_@(i + 1)">
+                                    <input type="hidden" class="tmp_pre" value="@Model[i].pre_idx" />
+                                    <input type="hidden" class="tmp_next" value="@Model[i].next_idx" />
+
+                                    <a onclick="openWindowLayer(@Model[i].idx);" class="box layer">
+                                        <div class="thumbnail">
+                                            <img src="data:image/jpeg;base64,@Model[i].imagePath" alt="" />
+                                        </div>
+
+                                        <div class="contents">
+                                            <strong class="title">@Model[i].name</strong>
+                                            <span class="btn btn-detail"><span>자세히보기</span></span>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                            @if (Model.Count == 0)
+                            {
+                                <!-- 검색결과 없음 -->
+                                <ul>
+                                    <li class="no-data2">검색된 자료가 없습니다.</li>
+                                </ul>
+                                <!-- 검색결과 없음 -->
+                            }
+                    </div>
+                </div>
+                <div class="pg-btn">
+                    <div class="paging-wrap">
+                        <div class="paging">
+
+                        </div>
+
+                        <div class="pg_pc">
+                            @Html.PagingBoardPager(Model, pageNo => Url.Action("list", new
+                            {
+                                pageNo,
+                                pageSize = ViewBag.pageSize,
+                                initial = ViewBag.initial,
+                                searchText = ViewBag.searchText
+
+                            }), new PagedList.Mvc.PagedListRenderOptions() { MaximumPageNumbersToDisplay = 10 })
+                        </div>
+
+                        <div class="pg_mb">
+                            @Html.PagingBoardPager_M(Model, pageNo => Url.Action("list", new
+                            {
+                                pageNo,
+                                pageSize = ViewBag.pageSize,
+                                initial = ViewBag.initial,
+                                searchText = ViewBag.searchText
+                            }))
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<article id="detailPopup" class="popup-layer"></article>
+
+
+

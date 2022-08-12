@@ -1,0 +1,144 @@
+﻿@model GCRL.Areas.eng.Models.updateViewModel
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "view";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "Test Updates"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "Check the news on new diagnostic services and updates on testing offered by the GC Labs."; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+    <script>
+        function onList(keytype, keyword) {
+            location.href = '@(Url.Action("list"))?keytype = ' + keytype + '&keyword=' + keyword;
+        }
+
+        function onOther(idx, keytype, keyword) {
+            if (idx == '0')
+                location.href = '@(Url.Action("list"))?keytype = ' + keytype + '&keyword=' + keyword;
+            else
+                location.href = '@(Url.Action("view"))?id=' + idx + '&keytype = ' + keytype + '&keyword=' + keyword;
+        }
+    </script>
+}
+<div id="container" class="container pr">
+    <div class="contents-wrap">
+        <div class="board-wrap">
+
+            <div class="board-view-head">
+                <div class="contents-inner">
+                    <div class="title-area">
+                        <div class="location">
+                            <span>Test Updates</span>
+                        </div>
+                        <strong class="title">
+                            @(Model.TITLE)
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-view">
+                <div class="contents-inner">
+                    <div class="view-wrap">
+                        <h3 class="head_title">Test Change</h3>
+                        <div class="table-wrap section">
+                            <div class="table-inner">
+                                <table class="table grid-ty4 border-b">
+                                    <colgroup>
+                                        <col class="" width="20%">
+                                        <col class="" width="30%">
+                                        <col class="" width="20%">
+                                        <col class="" width="30%">
+                                    </colgroup>
+                                    <tbody>
+                                        <tr class="">
+                                            <th class="">
+                                                Type
+                                            </th>
+                                            <td class="left">
+                                                @(Model.DIV_NAME1)
+                                            </td>
+
+                                            <th class="">
+                                                GC Labs code
+                                            </th>
+                                            <td class="left">
+                                                @(Model.CONTENT_S)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th class="">
+                                                Posted Date
+                                            </th>
+                                            <td class="left">
+                                                @(Model.DIV_DATE1)
+                                            </td>
+
+                                            <th class="">
+                                                Effective Date
+                                            </th>
+                                            <td class="left">
+                                                @(Model.REGIST_DATE)
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="view-contents">
+                            @Html.Raw(Model.CONTENT_F)
+                        </div>
+                    </div>
+
+                    <div class="board-navi">
+                        <div class="navi prev">
+                            <span class="label">Previous</span>
+                            <a onclick="onOther('@Model.PRE_IDX','@ViewBag.keytype','@ViewBag.keyword');" class="desc" style="cursor:pointer;">@Model.PRE_TITLE</a>
+                        </div>
+                        <div class="navi next">
+                            <span class="label">Next</span>
+                            <a onclick="onOther('@Model.NEXT_IDX','@ViewBag.keytype','@ViewBag.keyword');" class="desc" style="cursor:pointer;">@Model.NEXT_TITLE</a>
+                        </div>
+                    </div>
+
+                    <div class="btn-area center">
+                        <button type="button" class="btn btn-list" onclick="onList('@ViewBag.keytype','@ViewBag.keyword');"><span>List</span></button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

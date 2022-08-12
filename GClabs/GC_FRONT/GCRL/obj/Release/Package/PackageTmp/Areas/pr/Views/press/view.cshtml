@@ -1,0 +1,153 @@
+﻿@model GCRL.Areas.pr.Models.prViewModel
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "view";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "언론보도"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "미디어 매체에 보도된 GC의료재단의 소식을 확인하세요"; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+
+}
+
+<div id="container" class="container pr">
+    <div class="contents-wrap">
+        <div class="board-wrap">
+            <div class="board-view-head">
+                <div class="contents-inner">
+                    <div class="title-area">
+                        <div class="location">
+                            <span><a href="#n">언론보도</a></span>
+                        </div>
+                        <strong class="title">@Model.TITLE</strong>
+                        <span class="date">@Model.REGIST_DATE.ToString("yyyy-MM-dd")</span>
+                    </div>
+                </div>
+            </div>
+            <div class="board-view">
+                <div class="contents-inner">
+                    <div class="view-wrap">
+                        <div class="view-contents">
+
+                            @Html.Raw(Model.CONTENT_F)
+
+
+                            @if (!string.IsNullOrEmpty(Model.LINK1_URL) || !string.IsNullOrEmpty(Model.LINK2_URL) || !string.IsNullOrEmpty(Model.LINK3_URL))
+                            {
+                            <div class="related-article">
+                                <span class="title">관련기사</span>
+
+                                @if (!string.IsNullOrEmpty(Model.LINK1_URL))
+                                {
+                                <p class="text">@Model.LINK1_NAME | <a href="@Model.LINK1_URL" target="_blank">@Model.LINK1_URL</a></p>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.LINK2_URL))
+                                {
+                                <p class="text">@Model.LINK2_NAME | <a href="@Model.LINK2_URL" target="_blank">@Model.LINK2_URL</a></p>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.LINK3_URL))
+                                {
+                                <p class="text">@Model.LINK3_NAME | <a href="@Model.LINK3_URL" target="_blank">@Model.LINK3_URL</a></p>
+                                }
+                            </div>
+                            }
+
+
+                            @{
+                                /*
+
+                                <div class="image-area">
+                                    <img src="../../../assets/images/dummy/dummy-img06.jpg" alt="">
+                                </div>
+
+                                <div class="headline">
+
+                                    <p class="text">| 엠비디, 오가노이드 통한 질병 모델링 및 약물 스크리닝 기술로 국내외 시장에서 주목</p>
+
+                                    <p class="text">| 엠비디와 지속 협업을 통해 암 환자에게 최적화된 진단검사 개발 매진 예정</p>
+
+                                </div>
+
+                                <div class="contents">
+                                    GC녹십자의료재단(이사장 이은희)과 엠비디(대표이사 구보성)는 최근 ‘오가노이드 솔루션 기반 항암제 감수성 진단검사’ 사업을 위한 업무협약을 체결했다고 5일 밝혔다.<br><br>오가노이드란 환자 정보를 바탕으로 3차원 배양 기술을 통해 생리학적으로 실제 장기와 매우 유사하게 구현한 장기 유사체를 말한다.<br>환자의 유전정보를 기반으로 제작된 오가노이드를 통해 질병 모델링 및 약물 스크리닝을 할 수 있다.<br><br>이번 협약을 통해 GC녹십자의료재단과 엠비디가 보유한 기술과 서비스 네트워크를 기반으로 ‘개인 맞춤형 항암제 감수성 진단검사 비스의 국내외 런칭 및 사업’에 대한 포괄적인 사업을 추진해 나갈 계획이다.<br><br>GC녹십자의료재단은 일반검사부터 분자유전검사, 특수 생화학검사 등 특수 검사에 이르기까지 약 5,000여 항목의 검사를 수행하고 있는 전문의료기관이다. 개방적인 혁신 방법으로 꾸준히 신기술을 임상 검사에 적용하고 있으며, 첨단 장비를 도입해 각 임상검사 분야의 첨단 특수 검사를 중점적으로 연구 개발하고 있다.<br><br>3차원 세포배양 플랫폼 기업인 엠비디는 ‘환자 암세포 유래 오가노이드 기반 3차원 세포배양 기술 및 독창적 Cell HTS (High Throughput Screening) Platform Technology’를 토대로 정밀 의학과 신약개발을 추진하며 국내외 시장으로부터 주목받고 있다.
+                                </div>
+
+                                <div class="related-article">
+                                    <span class="title">관련기사</span>
+
+                                    <p class="text">메디컬투데이 | 엠비디, 오가노이드 통한 질병 모델링 및 약물 스크리닝 기술로 국내외 시장에서 주목</p>
+
+                                    <p class="text">중앙일보 | 엠비디와 지속 협업을 통해 암 환자에게 최적화된 진단검사 개발 매진 예정</p>
+                                </div>
+
+                                */
+
+                            }
+
+                        </div>
+                    </div>
+                    <div class="board-navi">
+                        <div class="navi prev">
+                            <span class="label">이전글</span>
+                            @if (Model.PREV_IDX > 0)
+                            {
+                                <a href='@(Url.Action("view", new {id = Model.PREV_IDX}))?@(Request.QueryString.ToString())' class='desc'>@Model.PREV_TITLE</a>
+                            }
+                            else
+                            {
+                                <a href='#' class='desc'>이전글이 없습니다.</a>
+                            }
+                        </div>
+                        <div class="navi next">
+                            <span class="label">다음글</span>
+                            @if (Model.NEXT_IDX > 0)
+                            {
+                                <a href='@(Url.Action("view", new {id = Model.NEXT_IDX}))?@(Request.QueryString.ToString())' class='desc'>@Model.NEXT_TITLE</a>
+                            }
+                            else
+                            {
+                                <a href='#' class='desc'>다음글이 없습니다.</a>
+                            }
+                        </div>
+                    </div>
+                    <div class="btn-area center">
+                        <a href="@(Url.Action("list"))?@(Html.Raw(Request.QueryString))" class="btn btn-list">목록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

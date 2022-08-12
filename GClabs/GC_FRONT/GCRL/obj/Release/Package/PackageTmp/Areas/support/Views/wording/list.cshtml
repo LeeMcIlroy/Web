@@ -1,0 +1,223 @@
+﻿@model PagedList.IPagedList<GCRL.Areas.support.Models.supportListModel>
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "list";
+
+    var showDetailPanel = !string.IsNullOrEmpty(ViewBag.firstletter);
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "검사방법 약어"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "검사방법 약어에대해 안내해 드립니다."; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+
+    <script>
+        $(function () {
+            $(window).on('load resize', function () {
+                if ($(window).width() > 800) {
+                    $('.pg_pc').css('display', 'block');
+                    $('.pg_mb').css('display', 'none');
+                } else {
+                    $('.pg_pc').css('display', 'none');
+                    $('.pg_mb').css('display', 'block');
+                }
+            });
+        })
+        function onSearch() {
+
+            let keyWord = $('#keyword').val();
+
+            location.href = '@(Url.Action("list"))?keyword=' + keyWord;
+        }
+
+        $('input', '#btnFirstLetters').click(function () {
+            let selectedValue = $(this).val();
+            if (selectedValue == 'All') {
+                location.href = '@(Url.Action("list"))';
+            }
+            else {
+                location.href = '@(Url.Action("list"))?firstletter=' + selectedValue;
+            }
+
+        });
+
+        $(document).ready(function () {
+
+            if ('@showDetailPanel' == "True") {
+                $('#btnShowDetail').click();
+            }
+        });
+    </script>
+}
+
+<div id="container" class="container support">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+                <span><a href="#">고객지원</a></span>
+                <span class="current">검사방법 약어</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">검사방법 약어</h2>
+                <p class="text">검사방법 약어에대해 안내해 드립니다.</p>
+            </div>
+            <div class="board-wrap">
+                <div class="board-list-head">
+
+
+                    <div class="search-wrap">
+                        <form action="">
+                            <div class="search-area">
+                                <span class="search-box">
+                                    @Html.TextBox("keyword", null, new { @class = "inp-search", maxlength = "30", placeholder = "검색어를 입력하세요.", title = "검색어 입력" })
+                                </span>
+                                <span class="search-btn">
+                                    <button type="button" class="search-go" onclick="onSearch();"></button>
+                                </span>
+                            </div>
+                        </form>
+
+                        <div class="search-detail">
+                            <button class="btn btn-filter" id="btnShowDetail"><span>상세검색</span></button>
+                        </div>
+
+                    </div>
+                    <div class="total-count">Total <span>@Model.TotalItemCount.ToString("n0")</span></div>
+                </div>
+
+                <div class="search-filter-box">
+                    <div class="search-detail">
+                        <p class="tit">초성</p>
+                        <div class="btn-detail type2" id="btnFirstLetters">
+                            <input type="button" class="@(string.IsNullOrEmpty(ViewBag.firstletter) ? "all" : "")" value="All">
+                            <input type="button" class="@(ViewBag.firstletter == "A" ? "all" : "")" value="A">
+                            <input type="button" class="@(ViewBag.firstletter == "B" ? "all" : "")" value="B">
+                            <input type="button" class="@(ViewBag.firstletter == "C" ? "all" : "")" value="C">
+                            <input type="button" class="@(ViewBag.firstletter == "D" ? "all" : "")" value="D">
+                            <input type="button" class="@(ViewBag.firstletter == "E" ? "all" : "")" value="E">
+                            <input type="button" class="@(ViewBag.firstletter == "F" ? "all" : "")" value="F">
+                            <input type="button" class="@(ViewBag.firstletter == "G" ? "all" : "")" value="G">
+                            <input type="button" class="@(ViewBag.firstletter == "H" ? "all" : "")" value="H">
+                            <input type="button" class="@(ViewBag.firstletter == "I" ? "all" : "")" value="I">
+                            <input type="button" class="@(ViewBag.firstletter == "J" ? "all" : "")" value="J">
+                            <input type="button" class="@(ViewBag.firstletter == "K" ? "all" : "")" value="K">
+                            <input type="button" class="@(ViewBag.firstletter == "L" ? "all" : "")" value="L">
+                            <input type="button" class="@(ViewBag.firstletter == "M" ? "all" : "")" value="M">
+                            <input type="button" class="@(ViewBag.firstletter == "N" ? "all" : "")" value="N">
+                            <input type="button" class="@(ViewBag.firstletter == "O" ? "all" : "")" value="O">
+                            <input type="button" class="@(ViewBag.firstletter == "P" ? "all" : "")" value="P">
+                            <input type="button" class="@(ViewBag.firstletter == "Q" ? "all" : "")" value="Q">
+                            <input type="button" class="@(ViewBag.firstletter == "R" ? "all" : "")" value="R">
+                            <input type="button" class="@(ViewBag.firstletter == "S" ? "all" : "")" value="S">
+                            <input type="button" class="@(ViewBag.firstletter == "T" ? "all" : "")" value="T">
+                            <input type="button" class="@(ViewBag.firstletter == "U" ? "all" : "")" value="U">
+                            <input type="button" class="@(ViewBag.firstletter == "V" ? "all" : "")" value="V">
+                            <input type="button" class="@(ViewBag.firstletter == "W" ? "all" : "")" value="W">
+                            <input type="button" class="@(ViewBag.firstletter == "X" ? "all" : "")" value="X">
+                            <input type="button" class="@(ViewBag.firstletter == "Y" ? "all" : "")" value="Y">
+                            <input type="button" class="@(ViewBag.firstletter == "Z" ? "all" : "")" value="Z">
+                            <input type="button" class="@(ViewBag.firstletter == "123" ? "all" : "")" value="123">
+                            <input type="button" class="@(ViewBag.firstletter == "ETC" ? "all" : "")" value="ETC">
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="accordion-wrap acc-default acc-test">
+                    <div class="accordion-inner">
+                        <div class="accordion-header">
+                            <span class="tit tit-num">번호</span>
+                            <span class="tit tit-cell">약어</span>
+                            <span class="tit tit-cont">감사방법 약어 및 설명</span>
+                        </div>
+                        <ul class="accordion-list">
+                            @foreach (var item in Model)
+                            {
+                                <li class="acc-item">
+                                    <a href="#n" class="acc-tit">
+                                        <span class="num">@item.ROW_NO</span>
+                                        <span class="tit-cell sm">@item.TITLE</span>
+                                        <span class="tit-txt">@item.CONTENT_S</span>
+                                    </a>
+                                    <div class="acc-cont">
+                                        <div class="cont-txt">
+                                            @Html.Raw(item.CONTENT_F)
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+
+                        </ul>
+                        @if(Model.TotalItemCount == 0)
+                        {
+
+                            <ul>
+                                <li class="no-data3">검색된 자료가 없습니다.</li>
+                            </ul>
+                        }
+                    </div>
+                </div>
+
+                <div class="paging-wrap">
+                    <div class="paging">
+                        <div class="pg_pc">
+                            @Html.PagingBoardPager(Model, page => Url.Action("list",
+                                                           new
+                                                           {
+                                                               page,
+                                                               keyword = ViewBag.keyword,
+                                                               firstletter = ViewBag.firstletter
+                                                           }
+                                                       ), new PagedList.Mvc.PagedListRenderOptions() { MaximumPageNumbersToDisplay = 10 })
+                        </div>
+                        <div class="pg_mb">
+                            @Html.PagingBoardPager_M(Model, page => Url.Action("list",
+                                                        new
+                                                        {
+                                                            page,
+                                                            keyword = ViewBag.keyword,
+                                                            firstletter = ViewBag.firstletter
+                                                        }
+                             ))
+                        </div>
+                    </div>
+             
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,197 @@
+﻿@model GCMaster.Areas.common.Models.menuViewModel
+@using GCMaster.Modules;
+
+@{
+    bool _editing = Model.IDX > 0;
+
+}
+
+@section Styles {
+    <style>
+
+    </style>
+}
+
+@section Scripts {
+
+    <script>
+
+        function onCreate() {
+
+            if (!onValidation(true))
+                return false;
+
+            if (confirm('@Messages.C2')) {
+                $('form').attr('action', '@Url.Action("create")').submit();
+            }
+        }
+
+        function onEdit() {
+
+            if ($('form').data('changed') == undefined) {
+                alert('@Messages.A5');
+                return false;
+            }
+
+            if (!onValidation(false))
+                return false;
+
+            if (confirm('@Messages.C4')) {
+                $('form').attr('action', '@Url.Action("edit")').submit();
+            }
+        }
+
+
+        function onCancel() {
+            if (confirm("@(_editing ? Messages.C5 : Messages.C3)")) {
+                location.href = '@(Url.Action("list"))?@(Html.Raw(Request.QueryString))';
+            }
+        }
+
+        function onValidation(isCreate) {
+
+            if ($('#GROUP_CODE').val() == '') {
+                alert('@Messages.A4s("메뉴그룹")');
+                return false;
+            }
+
+            if ($('#CONTROLLER').val() == '') {
+                alert('@Messages.A4e("CONTROLLER")');
+                return false;
+            }
+
+            if ($('#ACTION').val() == '') {
+                alert('@Messages.A4e("ACTION")');
+                return false;
+            }
+
+            if ($('#NAME').val() == '') {
+                alert('@Messages.A4e("메뉴명")');
+                return false;
+            }
+
+
+            return true;
+        }
+
+
+
+        $(document).ready(function () {
+
+
+        });
+
+    </script>
+
+}
+
+<div class="page-title">메뉴관리</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.IDX)
+
+    <div class="list-box">
+        <!-- table -->
+        <div class="list-table-box ">
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>사용여부 <span>*</span></th>
+                        <td colspan="3">
+                            @Html.RadioButtonFor(model => model.USE_YN, "Y", new { id = "USE_YN_Y" }) <label for="USE_YN_Y">YES</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.USE_YN, "N", new { id = "USE_YN_N" }) <label for="USE_YN_N">NO</label>&nbsp;&nbsp;
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>메뉴그룹 <span>*</span></th>
+                        <td>
+                            @Html.DropDownListFor(model => model.GROUP_CODE, Functions.GetSelectListItems(groupCode: "menu_group_div", useEmptyValue: true, emptyText: "선택"))
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>CONTROLLER <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.CONTROLLER, new { htmlAttributes = new { @class = "w50p", @maxlength = "50" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>ACTION <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.ACTION, new { htmlAttributes = new { @class = "w50p", @maxlength = "50" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>메뉴명 <span>*</span></th>
+                        <td>
+                            @Html.EditorFor(model => model.NAME, new { htmlAttributes = new { @class = "w50p", @maxlength = "50" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>등록자</th>
+                        <td>@(Model.REGIST_NAME)(@Model.REGIST_ID)</td>
+                        <th>등록일시</th>
+                        <td>@Model.REGIST_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th>수정자</th>
+                        <td>@(Model.UPDATE_NAME)(@Model.UPDATE_ID)</td>
+                        <th>수정일자</th>
+                        <td>@Model.UPDATE_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--// table -->
+        <!-- paging -->
+        <div class="pg-btn">
+
+            <!-- table button -->
+            <div class="table-button">
+                <div class="btn-box">
+                    <span class="flo-right">
+                        <button type="button" onclick="onCancel();" class="btn-cancel">취소</button>
+                        @if (_editing)
+                        {
+                            <button type="button" onclick="onEdit();" class="btn-save">저장</button>
+                        }
+                        else
+                        {
+                            <button type="button" onclick="onCreate();" class="btn-save">등록</button>
+                        }
+                    </span>
+                </div>
+            </div>
+            <!--// table button -->
+        </div>
+        <!--// paging -->
+    </div>
+}

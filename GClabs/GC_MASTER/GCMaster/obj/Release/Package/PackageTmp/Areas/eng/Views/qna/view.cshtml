@@ -1,0 +1,297 @@
+﻿@model GCMaster.Models.qnaViewModel
+@using GCMaster.Modules;
+
+@section Styles {
+    <style>
+    </style>
+}
+
+@section Scripts {
+
+    <script>
+
+        function onAnswer() {
+
+            if (!onValidation())
+                return false;
+
+            if (confirm("답변을 저장 하시겠습니까?")) {
+                $('form').attr('action', '@Url.Action("answer")').submit();
+            }
+        }
+
+        function onDelete() {
+            if (confirm("문의를 삭제 하시겠습니까?")) {
+                $('form').attr('action', '@Url.Action("delete")').submit();
+            }
+        }
+
+        function onCancel() {
+            if (confirm("답변을 취소 하시겠습니까?")) {
+                location.href = '@(Url.Action("list"))?@(Html.Raw(Request.QueryString))';
+            }
+        }
+
+        function onValidation() {
+
+            //if ($('#TITLE').val() == '') {
+            //    alert('제목을 입력해 주세요.');
+            //    return false;
+            //}
+
+            if (!getEditorValue()) {
+                alert('@Messages.A4e("답변내용")');
+                return false;
+            }
+
+            let file;
+
+            if ($('#attachedFile').length > 0) {
+                file = $('#attachedFile')[0].files[0];
+            }
+
+            if (file && file.size > MAX_FILE_SIZE) {
+                alert('@Messages.A8');
+                return false;
+            }
+
+            return true;
+        }
+
+        function onDeleteFile() {
+            if (confirm('@Messages.C8')) {
+                $('form').attr('action', '@Url.Action("deletefile")').submit();
+            }
+        }
+
+        function setEditorValue() {
+            let hdVal = $('#ANS_CONTENTS').val();
+            DEXT5.setBodyValue(hdVal, 'edtANS_CONTENTS');
+        }
+
+        function getEditorValue() {
+            let hdVal = $('#ANS_CONTENTS').val();
+            let edtVal = DEXT5.getBodyValue('edtANS_CONTENTS');
+            if (hdVal != edtVal) {
+                $('form').data('changed', true);
+            }
+            $('#ANS_CONTENTS').val(edtVal);
+
+            return !DEXT5.isEmpty('edtANS_CONTENTS');
+        }
+
+
+        $(document).ready(function () {
+
+            setEditorValue();
+
+        });
+
+    </script>
+
+}
+
+<div class="page-title">Contact Us</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.IDX)
+    @Html.HiddenFor(model => model.ANS_CONTENTS)
+
+    @Html.HiddenFor(model => model.NAME)
+    @Html.HiddenFor(model => model.EMAIL)
+    @Html.HiddenFor(model => model.TITLE)
+    @Html.HiddenFor(model => model.CONTENTS)
+
+    @Html.HiddenFor(model => model.ATTACH2_ORG_NAME)
+    @Html.HiddenFor(model => model.ATTACH2_SAVE_NAME)
+
+    <div class="list-box">
+        <!-- table -->
+        <div class="list-table-box ">
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>번호</th>
+                        <td>@Model.IDX</td>
+                        <th>상태</th>
+                        <td>
+                            @Model.ANS_ST_NAME
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>문의유형</th>
+                        <td>
+                            @Html.DropDownListFor(mode => mode.QUESTION_TYPE, Functions.GetSelectListItems(groupCode: "qna_div"))
+                        </td>
+                        <th></th>
+                        <td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>작성자</th>
+                        <td>
+                            @Model.NAME
+                        </td>
+                        <th>국가 / 도시</th>
+                        <td>
+                            @Model.COUNTRY_NAME / @Model.REGION_NAME
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>기관명</th>
+                        <td>
+                            @Model.ORG_NAME
+                        </td>
+                        <th>부서</th>
+                        <td>
+                            @Model.DEPT_NAME
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>연락처</th>
+                        <td>
+                            @Model.CONTACT
+                        </td>
+                        <th>이메일</th>
+                        <td>
+                            @Model.EMAIL
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>등록일시</th>
+                        <td>
+                            @Model.QUESTION_DATE.ToString("yyyy-MM-dd HH:mm")
+                        </td>
+                        <th>확인일시</th>
+                        <td>
+                            @Model.CHECK_DATE.ToString("yyyy-MM-dd HH:mm")
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>제목</th>
+                        <td>@Model.TITLE</td>
+                    </tr>
+                    <tr>
+                        <th>내용</th>
+                        <td>@Html.Raw(Model.CONTENTS.Replace("\r\n", "<br />"))</td>
+                    </tr>
+                    <tr>
+                        <th>첨부파일</th>
+                        <td>
+                            @if (!string.IsNullOrEmpty(Model.ATTACH1_ORG_NAME))
+                            {
+                                <a href="@Functions.GetFileUrl(Model.ATTACH1_SAVE_NAME)">@Model.ATTACH1_ORG_NAME</a>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p class="mid-title"><strong>답변</strong></p>
+            <table class="normal-wmv-table mb30">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col />
+                </colgroup>
+                <tbody>
+
+                    <tr>
+                        <th>답변제목</th>
+                        <td>
+                            @Html.EditorFor(model => model.ANS_TITLE, new { htmlAttributes = new { @class = "w50p", @placeholder = "제목을 입력하세요.", @maxlength = "50" } })&nbsp;&nbsp;<span class="wordsize"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>메일발송여부</th>
+                        <td>
+                            @Html.RadioButtonFor(model => model.ANS_SENDEMAIL, "Y", new { id = "ANS_SENDEMAIL_Y" }) <label for="ANS_SENDEMAIL_Y">YES</label>&nbsp;&nbsp;
+                            @Html.RadioButtonFor(model => model.ANS_SENDEMAIL, "N", new { id = "ANS_SENDEMAIL_N" }) <label for="ANS_SENDEMAIL_N">NO</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>답변내용 <span>*</span></th>
+                        <td>
+
+                            <script type="text/javascript">
+                                var dext5Editor = new Dext5editor("edtANS_CONTENTS");
+                            </script>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>첨부파일</th>
+                        <td>
+                            <div>
+                                @if (string.IsNullOrEmpty(Model.ATTACH2_ORG_NAME))
+                                {
+                                    <input type="file" id="attachedFile" name="attachedFile" />
+                                }
+                                else
+                                {
+                                    <p>
+                                        <a href="@Functions.GetFileUrl(Model.ATTACH2_SAVE_NAME)"><span id="selected-file-name">@Model.ATTACH2_ORG_NAME</span></a><a href="javascript:onDeleteFile()">[삭제]</a>
+                                    </p>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="normal-wmv-table">
+                <colgroup>
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                    <col style="width:8%;" />
+                    <col style="width:42%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th>답변자</th>
+                        <td>@(Model.ANS_REG_NAME)(@Model.ANS_REG_ID)</td>
+                        <th>답변일시</th>
+                        <td>@Model.ANS_REG_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th>수정자</th>
+                        <td>@(Model.ANS_UPD_NAME)(@Model.ANS_UPD_ID)</td>
+                        <th>수정일자</th>
+                        <td>@Model.ANS_UPD_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <!--// table -->
+        <!-- paging -->
+        <div class="pg-btn  mb30">
+
+            <!-- table button -->
+            <div class="table-button">
+                <div class="btn-box">
+                    <button type="button" onclick="onCancel();" class="btn-cancel">취소</button>
+                    <button type="button" onclick="onDelete();" class="btn-del">삭제</button>
+                    <button type="button" onclick="onAnswer();" class="btn-save">저장</button>
+                </div>
+            </div>
+            <!--// table button -->
+        </div>
+        <!--// paging -->
+    </div>
+}

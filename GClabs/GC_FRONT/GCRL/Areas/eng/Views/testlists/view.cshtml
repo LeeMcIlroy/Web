@@ -1,0 +1,403 @@
+﻿@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "view";
+}
+
+@section script {
+
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+
+
+    <script>
+            //$(window).on('load resize', function () {
+            //    if ($(window).width() > 800) {
+            //        $('.pg_pc').css('display', 'block');
+            //        $('.pg_mb').css('display', 'none');
+            //    } else {
+            //        $('.pg_pc').css('display', 'none');
+            //        $('.pg_mb').css('display', 'block');
+            //    }
+            //});
+        $(document).ready(function () {
+            ViewBottle(0);
+        });
+
+        function list() {
+
+            history.back();
+            //location.href = '@Url.Action("list")';
+        }
+
+        function ViewBottle(idx) {
+            var maxCnt = @ViewBag.bottleCnt;
+
+            if (idx < 0) {
+                idx = maxCnt - 1;
+                //return false;
+            }
+
+            if (maxCnt <= idx) {
+                idx = 0;
+                //return false;
+            }
+
+            var prev = idx - 1;
+            var next = idx + 1;
+
+            $.getJSON('@Url.Action("view_bottle")' + '?' + 'code=' + '@ViewBag.Code' + '&' + 'idx=' + idx, function (data) {
+                if ($('.instrument-contents').length > 0) {
+                    $('.instrument-contents').remove();
+                }
+
+                if ($('.bottle').length > 0) {
+                    $('.bottle').remove();
+                }
+
+                if (data != false) {
+                    var html = "";
+                    html += '<div class="bottle">   ';
+                    html += '   <p class="tit2">    ';
+                    html += '       <span class="">Container</span>  ';
+                    if (maxCnt > 1) {
+                        html += '       <span class="" style=""><a onclick="ViewBottle(' + prev + ');"> ＜ </a></span> ';
+                        html += '       <span class="" style=""><a onclick="ViewBottle(' + next + ');"> ＞ </a></span> ';
+                    }
+                    html += '   </p>    ';
+                    html += '   <div class="img-area">  ';
+                    html += '       <a href="javascript:popupOpen();">  ';
+                    html += '           <img src=' + data.imagePath + ' alt=' + data.name + '>  ';
+                    html += '       </a>    ';
+                    html += '       <div class="txt"><span class="itembtn btn-detail"><a href="javascript:popupOpen();">' + data.name + '</a></span></div>';
+                    html += '    </div> ';
+                    html += '</div> ';
+
+                    var html2 = "";
+                    html2 += '<div class="instrument-contents">                          ';
+                    html2 += '    <strong class="title">' + data.name + '</strong>       ';
+                    html2 += '    <div class="contents">                                   ';
+                    html2 += '        <div class="thumbnail">                              ';
+                    html2 += '            <img src=' + data.imagePath + ' alt=' + data.name + '> ';
+                    html2 += '        </div>                                               ';
+                    html2 += '        <ul class="info">                                    ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                     <dt>Addition agent</dt>                          ';
+                    html2 += '                    <dd>' + data.additive + '</dd>         ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>Items</dt>                       ';
+                    html2 += '                    <dd><pre style="white-space:pre-wrap;">' + data.tests + '</pre></dd>            ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>Volume</dt>                          ';
+                    html2 += '                    <dd><pre style="word-break:keep-all; white-space:pre-wrap;">' + data.collection + '</pre></dd>       ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>Stability</dt>                            ';
+                    html2 += '                    <dd><pre>' + data.storage + '</pre></dd>          ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>Handling</dt>                        ';
+                    html2 += '                    <dd><pre>' + data.method + '</pre></dd>           ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '        </ul>                                                ';
+                    html2 += '    </div>                                                   ';
+                    if (maxCnt > 1) {
+                        html2 += '    <div class="btn-group">                                               ';
+                        html2 += '        <!-- 맨 처음일 경우 first 클래스 추가 -->                         ';
+                        html2 += '        <a onclick="ViewBottle(' + prev + ');" class="btn-arrow prev first">  ';
+                        html2 += '            <span class="arrow"><em class="hidden">이전</em></span>       ';
+                        html2 += '        </a>                                                              ';
+                        html2 += '        <!-- 맨 마지막일 경우 last 클래스 추가 -->                        ';
+                        html2 += '        <a onclick="ViewBottle(' + next + ');" class="btn-arrow next">    ';
+                        html2 += '            <span class="arrow"><em class="hidden">다음</em></span>       ';
+                        html2 += '        </a>                                                              ';
+                        html2 += '    </div>                                                                ';
+                    }
+                    html2 += '</div>                                                       ';
+
+                    $('#bottle_area').append(html);
+                    $('.popup-body').append(html2);
+
+                }
+
+            });
+        }
+        function popupOpen() {
+            $('body').append('<div class="dimmed-layer" aria-hidden="true"></div>');
+
+            $('#detailPopup').show();
+            $('.popup-wrap').attr('style', 'top:' + (document.querySelector('html').scrollTop + ($('.popup-wrap').outerHeight() / 2) - 300) + 'px;');
+        }
+
+        function popupClose() {
+            $('#detailPopup').hide();
+        }
+    </script>
+    <script type="text/javascript">
+   //   *수정 20220613 -->
+        var initBody;
+        function beforePrint() {
+            initbody = document.body.innerHTML;
+            document.body.innerHTML = print_page.innerHTML;
+        }
+
+        function afterPrint() {
+            document.body.innerHTML = initBody;
+        }
+
+        function pageprint() {
+            window.onbeforeprint = beforePrint;
+            window.onafterprint = afterPrint;
+            window.print();
+            location.reload();// 다시 기존 화면을 뿌려줌
+        }
+    </script>
+
+
+}
+<div id="container" class="container test-information">
+    <div class="contents-wrap test-index-detail" id="print_page">
+        <!-- //   *수정 20220613 -->
+
+        <div class="board-wrap">
+
+
+            <div class="board-view-head">
+                <div class="contents-inner">
+                    <div class="title-area">
+                        <div class="location">
+                            <span class="current">Search for Test Items</span>
+                        </div>
+                        <strong class="title">@Model.itemName</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board-view">
+                <div class="contents-inner">
+                    <div class="view-wrap">
+                        <!-- view-contents -->
+                        <div class="print_btn"><button onclick="pageprint();">Print</button></div><!-- //   *수정 20220613 -->
+
+                        <div class="table-wrap section">
+                            <div class="table-inner">
+                                <table class="table grid-ty4 border-b">
+                                    <colgroup>
+
+                                        <col class="" width="12%">
+
+                                        <col class="" width="38%">
+
+                                        <col class="" width="12%">
+
+                                        <col class="" width="*">
+
+                                    </colgroup>
+
+
+                                    <tbody>
+                                        <tr class="">
+
+                                            <th class="">GC Labs code</th>
+                                            <td class="left"> @Model.itemCode  </td>
+
+                                            <th class="">Test Field</th>
+                                            <td class="left">@Model.field</td>
+                                        </tr>
+                                        @*<tr>
+                                            <th class="">InsNo</th>
+                                            <td class="left">@Model.insNo</td>
+
+                                            <th class="">InsCode </th>
+                                            <td class="left">@Model.insCode </td>
+                                        </tr>*@
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="grid-flex section test-info">
+                            <div class="flex-cont">
+                                <p class="tit">Information</p>
+                                <div class="table-wrap">
+                                    <div class="table-inner">
+                                        <table class="table grid-ty4 tb-sm border-b">
+
+
+                                            <colgroup>
+
+                                                <col class="" width="15%">
+
+                                                <col class="" width="*">
+
+                                            </colgroup>
+
+                                            <tbody>
+                                                <tr class="">
+                                                    <th class="">Test method</th>
+                                                    <td class="left">@Model.Method</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class=""> Specimen (mL)</th>
+                                                    <td class="left"> @Html.Raw(Model.Specimen)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class="">Specimen storage</th>
+                                                    <td class="left">@Model.Storage</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class="">Specimen stability</th>
+                                                    <td class="left">@Model.Stability</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class="">Test schedule</th>
+                                                    <td class="left">@Model.Day</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class=""> Analytical time (day)</th>
+                                                    <td class="left">@Model.During</td>
+
+                                                </tr>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-cont flex-none" id="bottle_area">
+                                @*<p class="tit">Containers</p>
+
+                                <div class="img-area">
+                                    <a href="javascript:popupOpen();" class="">
+                                        <img src="@Model.imagePath" alt="@Model.itemName">
+                                    </a>
+                                    <div class="txt"><span class="itembtn btn-detail"><a href="javascript:popupOpen();">"@Model.itemName</a></span></div>
+                                </div>*@
+
+
+                            </div>
+                            @*<div class="flex-cont flex-none">
+                                <p class="tit">Containers</p>
+                                <div class="img-area">
+                                    <a href="javascript:popupOpen();">
+                                        <img src="@Model.imagePath" alt="@Model.itemName">
+
+                                    </a>
+                                </div>
+                            </div>*@
+                        </div>
+
+                        <div class="table-wrap">
+                            <div class="table-inner">
+                                <table class="table grid-ty4 tb-sm border-b">
+                                    <colgroup>
+
+                                        <col class="" width="13%">
+
+                                        <col class="" width="*">
+
+                                    </colgroup>
+
+                                    <tbody>
+                                        <tr class="">
+                                            <th class="left">Reference range/Unit</th>
+                                            <td class="left"><pre>@Model.Reference</pre></td>
+
+                                        </tr>
+                                        @*<tr class="">
+                                            <th class="left"> Meaning</th>
+                                            <td class="left">@Html.Raw(Model.Meaning)</td>
+                                        </tr>*@
+                                        <tr class="">
+                                            <th class="left">Compulsory forms</th>
+                                            <td class="left">@Model.Essential </td>
+                                        </tr>
+                                        <tr class="">
+                                            <th class="left">Remark</th>
+                                            <td class="left"><pre>@Model.Caution</pre></td>
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- // view-contents -->
+
+                        <div class="btn-area center">
+                            <button type="button" class="btn btn-list" onclick="list();"><span>List</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<article id="detailPopup" class="popup-layer">
+    <div class="popup-wrap">
+        <div class="popup-container">
+            <div class="popup-head"><span class="text">Containers</span></div>
+            <div class="popup-body">
+                @*<div class="instrument-contents">
+                        <strong class="title">@Model.itemName</strong>
+                        <div class="contents">
+                            <div class="thumbnail">
+                                <img src="@Model.imagePath" alt="@Model.itemName">
+                            </div>
+                            <ul class="info">
+                                <li>
+                                    <dl>
+                                        <dt>Additive</dt>
+                                        <dd>@Model.additive</dd>
+                                    </dl>
+                                </li>
+                                <li>
+                                    <dl>
+                                        <dt>Tests</dt>
+                                        <dd>@Model.tests</dd>
+                                    </dl>
+                                </li>
+                                <li>
+                                    <dl>
+                                        <dt>Collection</dt>
+                                        <dd>@Model.collection</dd>
+                                    </dl>
+                                </li>
+                                <li>
+                                    <dl>
+                                        <dt>Storage</dt>
+                                        <dd>@Model.storage</dd>
+                                    </dl>
+                                </li>
+                                <li>
+                                    <dl>
+                                        <dt>Method</dt>
+                                        <dd>@Model.method</dd>
+                                    </dl>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>*@
+            </div>
+        </div>
+        <button type="button" class="popup-close" onclick="popupClose();">
+            <span class="close"><em class="hidden">Close</em></span>
+        </button>
+    </div>
+</article>

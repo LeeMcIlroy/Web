@@ -1,0 +1,173 @@
+﻿
+@model PagedList.IPagedList<GCMaster.Areas.common.Models.menuListModel>
+@using GCMaster.Modules;
+@using PagedList.Mvc;
+
+@section Styles {
+    <style>
+    </style>
+}
+
+@section Scripts {
+
+    <script>
+
+        function onSearch() {
+            let authCode = $('#authcode').val();
+            let groupCode = $('#groupcode').val();
+
+            location.href = '@Url.Action("list")' + '?'
+                + 'authcode=' + authCode
+                + '&groupcode=' + groupCode
+                ;
+        }
+
+
+        function onEdit() {
+
+            if ($('form').data('changed') == undefined) {
+                alert('@Messages.A5');
+                return false;
+            }
+
+            if ($('#authcode').val() == '') {
+                alert('권한을 선택해 주세요.');
+                return false;
+            }
+
+            if (confirm('@Messages.C4')) {
+                $('form').submit();
+            }
+        }
+
+        $(document).ready(function () {
+            $('#authcode, #groupcode').change(onSearch);
+
+            $("#checkAll").click(function () {
+                $('input:checkbox', 'table tbody').not(this).prop('checked', this.checked);
+            });
+        });
+    </script>
+
+}
+
+<div class="page-title">메뉴관리</div>
+<div class="sh-option">
+    <dl>
+        <dt>권한 <span>*</span></dt>
+        <dd>
+            @Html.DropDownList("authcode", Functions.GetSelectListItems(groupCode: "admin_auth_div", useEmptyValue: true, emptyText: "선택"))
+        </dd>
+    </dl>
+    <dl>
+        <dt>메뉴그룹</dt>
+        <dd>
+            @Html.DropDownList("groupcode", Functions.GetSelectListItems(groupCode: "menu_group_div", useEmptyValue: true, emptyText: "전체"))
+        </dd>
+    </dl>
+</div>
+<div class="list-box">
+    <!--search info-->
+    <div class="search-infomation">
+        <div class="search-count">
+            총 <strong>@Model.TotalItemCount</strong>건
+        </div>
+        <div class="paging-select">
+            <div>
+                <a href="@(Url.Action("view", new { idx = 0 }))?@(Request.QueryString.ToString())" class="sh-btn">메뉴등록</a>
+            </div>
+        </div>
+    </div>
+    <!--// search info-->
+    <!-- table -->
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="list-table-box">
+            <table class="normal-list-table">
+                <colgroup>
+                    <col style="width:5%;" />
+                    <col style="width:10%;" />
+                    <col />
+                    <col style="width:8%;" />
+                    <col style="width:8%;" />
+                    <col style="width:8%;" />
+                    <col style="width:8%;" />
+                    <col style="width:8%;" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>메뉴그룹</th>
+                        <th>메뉴명</th>
+                        <th>권한부여 <input type="checkbox" id="checkAll"></th>
+                        <th>등록자</th>
+                        <th>등록일자</th>
+                        <th>수정자</th>
+                        <th>수정일자</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Count(); i++)
+                    {
+                        <tr>
+                            <td>
+                                @Model[i].IDX
+                                @Html.HiddenFor(m => m[i].IDX)
+                                @Html.HiddenFor(m => m[i].AUTH_CODE)
+                            </td>
+                            <td>@Model[i].GROUP_NAME</td>
+                            <td class="txt-l"><a href="@(Url.Action("view", new { idx = Model[i].IDX }))?@(Request.QueryString.ToString())" class="underline">@Model[i].NAME</a></td>
+                            <td>@Html.CheckBoxFor(m => m[i].USE_YN)</td>
+                            <td>@Model[i].REGIST_NAME</td>
+                            <td>@Model[i].REGIST_DATE.ToString("yyyy-MM-dd")</td>
+                            <td>@Model[i].UPDATE_NAME</td>
+                            <td>@Model[i].UPDATE_DATE.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <!--// table -->
+    <!-- paging -->
+    <div class="pg-btn">
+        <div class="paging_wrap">
+            <div class="paging">
+                @Html.PagingBoardPager(Model, page => Url.Action("list",
+                                                        new
+                                                        {
+                                                            page,
+                                                            authcode = ViewBag.authcode,
+                                                            groupcode = ViewBag.groupcode
+                                                        }),
+                                                        new PagedListRenderOptions
+                                                        {
+
+                                                            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                                                            DisplayLinkToLastPage = PagedListDisplayMode.Never,
+                                                            MaximumPageNumbersToDisplay = 10,
+                                                            LinkToNextPageFormat = "Next",
+                                                            LinkToPreviousPageFormat = "Prev"
+
+                                                        })
+            </div>
+        </div>
+    </div>
+    <!--// paging -->
+
+    <div class="pg-btn">
+
+        <!-- table button -->
+        <div class="table-button">
+            <div class="btn-box">
+                <span >
+                    <button type="button" onclick="onEdit();" class="btn-save">저장</button>
+                </span>
+            </div>
+        </div>
+        <!--// table button -->
+    </div>
+
+</div>

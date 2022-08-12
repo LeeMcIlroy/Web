@@ -1,0 +1,176 @@
+﻿@model PagedList.IPagedList<GCRL.Areas.pr.Models.prListModel>
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "홍보영상"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "GC의료재단의 홍보영상을 소개합니다"; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+
+    <script>
+        $(function () {
+            $(window).on('load resize', function () {
+                if ($(window).width() > 800) {
+                    $('.pg_pc').css('display', 'block');
+                    $('.pg_mb').css('display', 'none');
+                } else {
+                    $('.pg_pc').css('display', 'none');
+                    $('.pg_mb').css('display', 'block');
+                }
+            });
+        })
+        function onSearch() {
+
+            let keyWord = $('#keyword').val();
+
+            location.href = '@(Url.Action("list"))?keyword=' + keyWord;
+        }
+
+        $(document).ready(function () {
+            $('a.layer').click(function () {
+                let url = $(this).data('url');
+                $('iframe', '#videoPopup').attr('src', url);
+            });
+        });
+    </script>
+}
+
+<div id="container" class="container pr">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+                <span><a href="#">재단홍보</a></span>
+                <span class="current">홍보영상</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">홍보영상</h2>
+                <p class="text">GC녹십자의료재단의 홍보영상을 소개합니다</p>
+            </div>
+            <div class="board-wrap">
+                <div class="board-list-head">
+
+
+                    <div class="search-wrap">
+                        <form action="">
+                            <div class="search-area">
+                                <span class="search-box">
+                                    @Html.TextBox("keyword", null, new { @class = "inp-search", maxlength = "30", placeholder = "검색어를 입력하세요.", title = "검색어 입력" })
+                                </span>
+                                <span class="search-btn">
+                                    <button type="button" class="search-go" onclick="onSearch();"></button>
+                                </span>
+                            </div>
+                        </form>
+
+                    </div>
+                    <div class="total-count">Total <span>@Model.TotalItemCount.ToString("n0")</span></div>
+                </div>
+
+
+                <div class="board-list">
+                    <div class="list-wrap">
+                        <ul class="lists video">
+
+                            @foreach (var item in Model)
+                            {
+                                <li class="item">
+                                    <a href="#videoPopup" class="box layer" data-url="@item.CONTENT_S">
+                                        <div class="thumbnail">
+                                            <img src="@(Functions.GetImageUrl(item.IMAGE1_SAVE_NAME))" alt="">
+                                        </div>
+
+                                        <div class="contents">
+                                            <strong class="title">@item.TITLE</strong>
+                                            <span class="date">@item.REGIST_DATE.ToString("yyyy-MM-dd")</span>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                            @if (Model.TotalItemCount == 0)
+                            {
+                                <!-- 검색결과 없음 -->
+                                <ul>
+                                    <li class="no-data2">검색된 자료가 없습니다.</li>
+                                </ul>
+                                <!-- 검색결과 없음 -->
+                            }
+                    </div>
+                </div>
+                <div class="paging-wrap">
+                    <div class="paging">
+                        <div class="pg_pc">
+                            @Html.PagingBoardPager(Model, page => Url.Action("list",
+                                                             new
+                                                             {
+                                                                 page,
+                                                                 keyword = ViewBag.keyword
+                                                             }
+                                                         ), new PagedList.Mvc.PagedListRenderOptions() { MaximumPageNumbersToDisplay = 10 })
+                        </div>
+                        <div class="pg_mb">
+                            @Html.PagingBoardPager_M(Model, page => Url.Action("list",
+                                                        new
+                                                        {
+                                                            page,
+                                                            keyword = ViewBag.keyword
+                                                        }
+                             ))
+                        </div>
+                    </div>
+                 
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 홍보영상 상세 팝업 -->
+<article id="videoPopup" class="popup-layer full">
+    <div class="popup-wrap">
+        <div class="popup-container">
+            <div class="popup-body">
+                <div class="media">
+                    <iframe width="100%" height="100%" src="" title="GC녹십자의료재단 홍보영상입니다." frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="popup-close">
+            <span class="close"><em class="hidden">팝업 닫기</em></span>
+        </button>
+    </div>
+</article>
+

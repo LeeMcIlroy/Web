@@ -1,0 +1,373 @@
+﻿@model PagedList.IPagedList<GCRL.Areas.test.Models.itemModel>
+
+@using GCRL.Modules;
+@using PagedList.Mvc;
+
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "검사항목"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "최첨단 시스템으로 신속하고 정확한 검사를 수행합니다."; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+
+    <script>
+        var onoff;
+        var fieldVal = '@ViewBag.field';
+        var initialVal = '@ViewBag.initial';
+
+        $(document).ready(function () {
+            onoff = '@Html.Raw(ViewBag.onoff)';
+            if (onoff == 'on') {
+                $($('.search-detail').find('button')).click();
+            }
+
+            $(window).on('load resize', function () {
+                if ($(window).width() > 800) {
+                    $('.pg_pc').css('display', 'block');
+                    $('.pg_mb').css('display', 'none');
+                } else {
+                    $('.pg_pc').css('display', 'none');
+                    $('.pg_mb').css('display', 'block');
+                }
+            });
+        });
+
+        function enterkey() {
+            if (window.event.keyCode == 13) {
+
+                // 엔터키가 눌렸을 때 실행하는 반응
+                onInitSearch();
+            }
+        }
+
+        function onInitSearch() {
+            var searchType = '전체';
+            @*var keyword = $('#keyword').val();
+            location.href = '@Url.Action("list")' + '?'
+                + 'pageNo=1'
+                + '&pageSize=10'
+                + '&initial=' + initial
+                + '&field=' + field
+                + '&searchType=전체'
+                + '&searchText=' + keyword
+                + '&lng=KO';*@
+
+            onoff = $('.search-detail').find('button')[0].className == 'btn btn-filter' ? 'off' : 'on';
+            var param = '@Url.Action("list")' + '?'
+                + '&initial=' + initialVal
+                + '&field=' + fieldVal
+                + '&searchType=' + searchType
+                + '&searchText=' + $('#search').val()
+                + '&onoff=' + onoff;
+
+            location.href = param;
+        }
+
+        function onFieldSearch(field, initial, thisObj, area) {
+            var searchType = '전체';
+            onoff = $('.search-detail').find('button')[0].className == 'btn btn-filter' ? 'off' : 'on';
+            fieldVal = (area == 'f' ? field : fieldVal);
+            initialVal = (area == 'f' ? initialVal : initial);
+
+            if (area == 'f') {
+                $($('#field').find('.all')).attr('class', '');
+            }
+            else {
+                $($('.type2').find('.all')).attr('class', '');
+            }
+
+            $(thisObj)[0].className = "all";
+
+            var param = '@Url.Action("list")' + '?'
+                + '&initial=' + initial
+                + '&field=' + field
+                + '&searchType=' + searchType
+                + '&searchText=' + $('#search').val()
+                + '&onoff=' + onoff;
+
+            location.href = param;
+        }
+
+      
+        function view(code) {
+            location.href = '@Url.Action("view")' + '?' + 'code=' + code;
+        }
+
+        function fnCssCheck() {
+            onoff = $('.search-detail').find('button')[0].className == 'btn btn-filter' ? 'on' : 'off';
+        }
+    </script>
+}
+
+<div id="container" class="container test-information">
+    <div class="contents-wrap test-index">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+
+                <span><a href="#">검사안내</a></span>
+
+                <span><a href="#">검사항목</a></span>
+
+                <span class="current">검사항목</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">검사항목</h2>
+                <p class="text">최첨단 시스템으로 신속하고 정확한 검사를 수행합니다.</p>
+            </div>
+            <div class="board-wrap">
+                <div class="board-list-head">
+
+
+                    <div class="search-wrap">
+
+                        <div class="search-area">
+                            <span class="search-box">
+
+                                <input type="text" class="inp-search" name="search" id="search" title="검색어 입력" value="@ViewBag.searchText" placeholder="검색어를 입력하세요." onkeyup="enterkey();">
+                            </span>
+                            <span class="search-btn">
+                                <button type="button" class="search-go" onclick="onInitSearch();"></button>
+                                @*<button type="button" class="search-go" onclick="onFieldSearch('', '', this);"></button>*@
+                            </span>
+                        </div>
+
+                        <div class="search-detail">
+                            <button class="btn btn-filter" onclick="fnCssCheck();"><span>상세검색</span></button>
+                        </div>
+
+                    </div>
+
+                    <div class="total-count">Total <span>@ViewBag.head</span></div>
+                </div>
+
+                <div class="search-filter-box">
+
+                    <div class="search-detail">
+                        <p class="tit">분야</p>
+                        <div class="btn-detail" id="field">
+                            @{
+                                if (ViewBag.field == "")
+                                {
+                                    <input type="button" class="all" value="All" onclick="onFieldSearch('', '@ViewBag.initial', this, 'f');" />
+                                }
+                                else
+                                {
+                                    <input type="button" class="" value="All" onclick="onFieldSearch('', '@ViewBag.initial', this, 'f');" />
+                                }
+
+                                var commlist = Functions.GetCommList_V2("item_cd", "");
+
+                                for (int i = 0; i < commlist.Count; i++)
+                                {
+                                    if (ViewBag.field == commlist[i].CODE)
+                                    {
+                                        <input type="button" class="all" value="@commlist[i].NAME" onclick="onFieldSearch('@commlist[i].CODE', '@ViewBag.initial', this, 'f');" />
+                                    }
+                                    else
+                                    {
+                                        <input type="button" class="" value="@commlist[i].NAME" onclick="onFieldSearch('@commlist[i].CODE', '@ViewBag.initial', this, 'f');" />
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+
+
+                    <div class="search-detail">
+                        <p class="tit">초성</p>
+                        <div class="btn-detail type2">
+                            @{
+                                if (ViewBag.initial == "")
+                                {
+                                    <input type="button" class="all" value="All" onclick="onFieldSearch('@ViewBag.field', '', this);">
+                                }
+                                else
+                                {
+                                    <input type="button" class="" value="All" onclick="onFieldSearch('@ViewBag.field', '', this);">
+                                }
+
+                                for (int i = 65; i <= 92; i++)
+                                {
+                                    var val = string.Concat((char)i);
+
+                                    if (i == 91)
+                                    {
+                                        val = "123";
+                                    }
+                                    if (i == 92)
+                                    {
+                                        val = "ETC";
+                                    }
+
+                                    if (ViewBag.initial == val)
+                                    {
+                                        <input type="button" class="all" value="@val" onclick="onFieldSearch('@ViewBag.field', '@val', this);">
+                                    }
+                                    else
+                                    {
+                                        <input type="button" class="" value="@val" onclick="onFieldSearch('@ViewBag.field', '@val', this);">
+                                    }
+                                }
+                            }
+                            @*<input type="button" class="all" value="All" onclick="onInitSearch('');">
+                                <input type="button" class="tmp" value="A" onclick="onInitSearch('A');">
+                                <input type="button" class="" value="B" onclick="onInitSearch('B');">
+                                <input type="button" class="" value="C" onclick="onInitSearch('C');">
+                                <input type="button" class="" value="D" onclick="onInitSearch('D');">
+                                <input type="button" class="" value="E" onclick="onInitSearch('E');">
+                                <input type="button" class="" value="F" onclick="onInitSearch('F');">
+                                <input type="button" class="" value="G" onclick="onInitSearch('G');">
+                                <input type="button" class="" value="H" onclick="onInitSearch('H');">
+                                <input type="button" class="" value="I" onclick="onInitSearch('I');">
+                                <input type="button" class="" value="J" onclick="onInitSearch('J');">
+                                <input type="button" class="" value="K" onclick="onInitSearch('K');">
+                                <input type="button" class="" value="L" onclick="onInitSearch('L');">
+                                <input type="button" class="" value="M" onclick="onInitSearch('M');">
+                                <input type="button" class="" value="N" onclick="onInitSearch('N');">
+                                <input type="button" class="" value="O" onclick="onInitSearch('O');">
+                                <input type="button" class="" value="P" onclick="onInitSearch('P');">
+                                <input type="button" class="" value="Q" onclick="onInitSearch('Q');">
+                                <input type="button" class="" value="R" onclick="onInitSearch('R');">
+                                <input type="button" class="" value="S" onclick="onInitSearch('S');">
+                                <input type="button" class="" value="T" onclick="onInitSearch('T');">
+                                <input type="button" class="" value="U" onclick="onInitSearch('U');">
+                                <input type="button" class="" value="V" onclick="onInitSearch('V');">
+                                <input type="button" class="" value="W" onclick="onInitSearch('W');">
+                                <input type="button" class="" value="X" onclick="onInitSearch('X');">
+                                <input type="button" class="" value="Y" onclick="onInitSearch('Y');">
+                                <input type="button" class="" value="Z" onclick="onInitSearch('Z');">
+                                <input type="button" class="" value="123" onclick="onInitSearch('123');">
+                                <input type="button" class="etc" value="ETC" onclick="onInitSearch('ETC');">*@
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <div class="table-inner">
+                        <table class="table tb-default grid-ty2">
+                            <colgroup>
+                                <col class="" width="7%">
+                                <col class="" width="10%">
+                                <col class="" width="*">
+                                <col class="" width="10%">
+                                <col class="" width="10%">
+                                <col class="" width="15%">
+                                <col class="" width="15%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="">번호</th>
+                                    <th class="">검사코드</th>
+                                    <th class="">검사명</th>
+                                    <th class="">검사일</th>
+                                    <th class="">소요일</th>
+                                    <th class="">분류번호</th>
+                                    <th class="">보험코드</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr onclick="view('@item.itemCode');" style="cursor:pointer;">
+                                        <td class="sm-none">@item.no</td>
+                                        <td class="sm-inline">@item.itemCode</td>
+                                        <td class="sm-block left2">@item.itemName</td>
+                                        <td class="sm-none">@item.day </td>
+                                        @if (item.during == null)
+                                        {
+                                            <td class="sm-none">@item.during </td>
+
+                                        }
+                                        else
+                                        {
+                                            <td class="sm-none">@item.during 일</td>
+                                        }
+                                        <td class="sm-inline">@item.insNo</td>
+                                        <td class="sm-inline">@item.insCode </td>
+                                    </tr>
+                                }
+                                @if(@ViewBag.head == 0)
+                                {
+                                <tr class="">
+                                    <td colspan="7">
+                                        검색된 자료가 없습니다.
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="paging-wrap">
+                    <div class="paging">
+                        <div class="pg_pc">
+                            @Html.PagingBoardPager2(Model, pageNo => Url.Action("list", new
+                                {
+                                    pageNo,
+                                    pageSize = ViewBag.pageSize,
+                                    initial = ViewBag.initial,
+                                    field = ViewBag.field,
+                                    searchType = ViewBag.searchType,
+                                    searchText = ViewBag.searchText
+                                }),
+                                new PagedListRenderOptions
+                                {
+                                     DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                                     DisplayLinkToLastPage = PagedListDisplayMode.Never,
+                                     MaximumPageNumbersToDisplay = 10,
+                                     LinkToNextPageFormat = "Next",
+                                     LinkToPreviousPageFormat = "Prev"
+                                })
+                        </div>
+
+                        <div class="pg_mb">
+                            @Html.PagingBoardPager2_M(Model, pageNo => Url.Action("list", new
+                           {
+                               pageNo,
+                               pageSize = ViewBag.pageSize,
+                               initial = ViewBag.initial,
+                               field = ViewBag.field,
+                               searchType = ViewBag.searchType,
+                               searchText = ViewBag.searchText
+                           }))
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

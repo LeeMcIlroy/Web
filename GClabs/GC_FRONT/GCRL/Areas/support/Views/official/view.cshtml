@@ -1,0 +1,97 @@
+﻿@model GCRL.Areas.support.Models.supportViewModel
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "view";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "GC Labs 공문"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "검사관련 주요 신규검사 및 검사정보 변경 안내"; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+}
+
+<div id="container" class="container support">
+    <div class="contents-wrap">
+        <div class="board-wrap">
+            <div class="board-view-head">
+                <div class="contents-inner">
+                    <div class="title-area">
+                        <div class="location">
+                            <span><a href="#n">GC Labs 공문</a></span>
+                        </div>
+                        <strong class="title">@Model.TITLE</strong>
+                        <span class="date">@Model.REGIST_DATE.ToString("yyyy-MM-dd")</span>
+                    </div>
+                </div>
+            </div>
+            <div class="board-view">
+                <div class="contents-inner">
+                    <div class="view-wrap">
+                        <div class="view-contents">
+                            @Html.Raw(Model.CONTENT_F)
+                        </div>
+                    </div>
+                    <div class="board-navi">
+                        <div class="navi prev">
+                            <span class="label">이전글</span>
+                            @if (Model.PREV_IDX > 0)
+                            {
+                                <a href='@(Url.Action("view", new {id = Model.PREV_IDX}))?@(Request.QueryString.ToString())' class='desc'>@Model.PREV_TITLE</a>
+                            }
+                            else
+                            {
+                                <a href='#' class='desc'>이전글이 없습니다.</a>
+                            }
+                        </div>
+                        <div class="navi next">
+                            <span class="label">다음글</span>
+                            @if (Model.NEXT_IDX > 0)
+                            {
+                                <a href='@(Url.Action("view", new {id = Model.NEXT_IDX}))?@(Request.QueryString.ToString())' class='desc'>@Model.NEXT_TITLE</a>
+                            }
+                            else
+                            {
+                                <a href='#' class='desc'>다음글이 없습니다.</a>
+                            }
+                        </div>
+                    </div>
+                    <div class="btn-area center">
+                        <a href="@(Url.Action("list"))?@(Html.Raw(Request.QueryString))" class="btn btn-list">목록</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,2176 @@
+﻿@{
+    ViewBag.Title = "diagnosis";
+}
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "진단검사 검체취급"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "실시간 모니터링이 가능한 검체운송시스템으로 검체 안정성을 최적화합니다."; }
+@{ var meta_page_url = "http://121.140.143.35:4060/test/detail"; }
+@{ var meta_keywords = "검사안내,검체채취,진단검사 검체취급"; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+    <script>
+
+    $(window).on('load resize', function () {
+        if ($(window).width() < 800) {
+
+            document.getElementById('resize').style.width = '800px';
+
+        } else {
+
+
+            document.getElementById('resize').style.width = '';
+        }
+
+    });
+    </script>
+}
+
+<div id="container" class="container test-information">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+
+
+                <span><a href="#">검사안내</a></span>
+
+                <span><a href="#">검체채취</a></span>
+
+
+                <span class="current">진단검사 검체취급</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">진단검사 검체취급</h2>
+                <p class="text">실시간 모니터링이 가능한 검체운송시스템으로 <br class='mobile'>검체 안정성을 최적화합니다.</p>
+            </div>
+
+
+            <div class="test-diagnosis-wrap tabcontrol-wrap">
+
+                <div class="tabs-wrap">
+                    <ul class="tabs  wide type2 ">
+
+                        <li class="tab active">
+                            <a href="#n"><span>진단혈액</span></a>
+                        </li>
+
+                        <li class="tab ">
+                            <a href="#n"><span>진단면역</span></a>
+                        </li>
+
+                        <li class="tab ">
+                            <a href="#n"><span>임상화학</span></a>
+                        </li>
+
+                        <li class="tab ">
+                            <a href="#n"><span>임상미생물</span></a>
+                        </li>
+
+                        <li class="tab ">
+                            <a href="#n"><span>유전학검사</span></a>
+                        </li>
+
+                    </ul>
+                </div>
+
+                <div class="tab-content test-diagnosis-content">
+                    <div class="section-tab blood-wrap2 active">
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">일반혈액검사(Complete Blood Count)</h3>
+
+
+
+
+
+
+                            </div>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    혈액 3.0mL을 채취하여 EDTA 용기에 넣고 용기를 위 아래로 5~10회 정도 전도혼합하여 항응고제와 혈액이 충분히 섞이도록 합니다. 이때, 항응고제 (EDTA)와 혈액량의 비율이 적합하지 않거나, 혼합이 불충분할 경우 미세한 응고가 생겨 세포수 계산 등 검사결과의 오차가 발생할 수 있으므로 주의합니다.
+                                </li>
+
+                                <li class="">
+                                    검사는 2시간 이내에 이루어져야 하지만 즉시 검사할 수 없을 경우에는 4℃에서 냉장 보관하며, 24시간까지는 CBC 결과가 안정합니다.
+                                </li>
+
+                                <li class="">
+                                    실온에서 6시간 이상 방치 시 MCV, ESR, PLT, WBC count, reticulocyte (2일 내 소실) 등 결과에 영향을 미칠 수 있습니다.
+                                </li>
+
+                                <li class="">
+                                    냉동 보관된 검체는 분석이 불가능합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                        </div>
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">혈액도말검사(PB Morphology)</h3>
+
+
+
+
+
+
+                            </div>
+                            <div class="flex-box">
+
+                                <ul class="list-style dot">
+
+                                    <li class="">
+                                        신선한 혈액을 사용하여 얇고, 고르게 도말 슬라이드를 제작합니다.
+                                    </li>
+
+                                    <li class="">
+                                        도말의 길이는 약 3~4cm가 좋으며 세포 변형을 초래할 수 있으므로, 슬라이드는 신속하게 건조 시켜야 합니다.
+                                    </li>
+
+                                    <li class="">
+                                        혈구의 형태감별을 위한 검사는 일반혈액검사와 함께 의뢰하거나 귀원의 검사실에서 실시한 검사의 결과지와 도말 슬라이드, 소견서를 첨부하여 주시면 정확한 임상진단과 결과 판독에 도움이 됩니다.
+                                    </li>
+
+                                </ul>
+
+
+
+                                <div class="img-area">
+                                    <img src="../../../assets/images/img-pb.png" alt="">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">혈액응고검사(Blood Coagulation Test)</h3>
+
+
+
+
+
+
+                            </div>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    혈액응고검사만 단독으로 의뢰된 경우 첫 번째 채혈한 검체는 폐기하고 두 번째 채혈한 검체로 검사하며, 다른 검사와 함께 의뢰된 경우 두 번째 혹은 세 번째로 채혈한 검체를 사용합니다. 이는 채혈 시 조직액이 미량 섞이는 것을 방지하기 위함입니다.
+                                </li>
+
+                                <li class="">
+                                    헤파린 오염의 우려가 있는 카테터(catheter)로 채혈하는 경우 5.0mL 또는 catheter dead space volume의 6배를 뽑아낸 후 검체를 채취합니다.이는 채혈 시 조직액이 미량 섞이는 것을 방지하기 위함입니다.
+                                </li>
+
+                                <li class="">
+                                    PT는 24시간, APTT는 4시간, 다른 응고검사는 4시간 이내에 검사를 시행하는 것이 원칙이지만 불가능할 경우 혈소판 결핍 혈장(platelet poor plasma, PPP)을 분리하여 냉동 보관합니다(-20℃에서 14일 동안 안정).
+                                </li>
+
+                                <li class="">
+                                    응고검사 중 Factor II(2) ~ XII(12) 등의 항목은 표준 혈장의 응고시간과 환자의 응고시간을 비교하여 환자 혈장내 특정 응고 인자의 활성도를 %로 나타내는 검사로서 검체 안정성이 지연될 경우, 응고인자가 소모되어 활성도가 거짓 감소될 수 있으므로 반드시 혈소판 결핍 혈장을 분리하여 냉동으로 보관해야 합니다.
+                                </li>
+
+                                <li class="">
+                                    Hct의 값이 45%일 때, 항응고제와 혈액량의 비율은 1:9로 채혈합니다. Hct의 값에 따른 항응고제와의 비율은 다음 표와 같습니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">Hct 결과에 따른 항응고제와 혈액량의 비율</h4>
+                            <div class="scroll-table">
+                                <div class="table-wrap section border-left">
+                                    <div class="table-inner">
+                                        <table class="table tb-sm2">
+
+
+                                            <colgroup>
+
+                                                <col class="" width="12.5%">
+
+                                                <col class="" width="12.5%">
+
+                                                <col class="" width="12.5%">
+
+                                                <col class="" width="12.5%">
+
+                                                <col class="" width="12.5%">
+
+                                                <col class="" width="12.5%">
+
+                                                <col class="" width="12.5%">
+
+                                                <col class="" width="*">
+
+                                            </colgroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                            <thead>
+                                                <tr>
+
+
+
+
+
+                                                    <th class="">
+                                                        Hct
+                                                    </th>
+
+                                                    <th class="">
+                                                        6%
+                                                    </th>
+
+                                                    <th class="">
+                                                        20%
+                                                    </th>
+
+                                                    <th class="">
+                                                        30%
+                                                    </th>
+
+                                                    <th class="">
+                                                        45%
+                                                    </th>
+
+                                                    <th class="">
+                                                        55%
+                                                    </th>
+
+                                                    <th class="">
+                                                        63%
+                                                    </th>
+
+                                                    <th class="">
+                                                        70%
+                                                    </th>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="">
+
+
+
+
+
+
+
+
+
+                                                    <td class="">
+                                                        Ratio
+                                                    </td>
+
+                                                    <td class="">
+                                                        1 &#58; 5
+                                                    </td>
+
+                                                    <td class="">
+                                                        1 &#58; 6
+                                                    </td>
+
+                                                    <td class="">
+                                                        1 &#58; 7
+                                                    </td>
+
+                                                    <td class="">
+                                                        1 &#58; 9
+                                                    </td>
+
+                                                    <td class="">
+                                                        1 &#58; 11
+                                                    </td>
+
+                                                    <td class="">
+                                                        1 &#58; 13
+                                                    </td>
+
+                                                    <td class="">
+                                                        1 &#58; 16
+                                                    </td>
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- // 진단혈액-->
+
+                    <div class="section-tab immune-wrap">
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">세포면역검사(Lymphocytes Subset)</h3>
+
+
+
+
+
+
+                            </div>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    K2 EDTA 용기를 사용하여 3.0mL을 채취한 후 반드시 실온 보관하며, 토요일 및 공휴일 전날 검체 접수 삼가하여 주시기 바랍니다(검체에 검체채취 일시 기재).
+                                </li>
+
+                                <li class="">
+                                    4℃ 보관 또는 림프구 분리 후 보관은 양성률이 낮으며 CD8 세포에 비하여 CD4 세포가 저하될 수 있습니다.
+                                </li>
+
+                            </ul>
+
+
+
+                        </div>
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">Interferon-gamma releasing assay</h3>
+
+
+
+
+
+
+                            </div>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    전용용기는 4~25℃에서 보관하며, 냉장 보관 시 사용 1시간 전에 실온에 두었다가 사용합니다.
+                                </li>
+
+                                <li class="">
+                                    전용용기(4개의 용기)에 환자이름과 채취 시간을 기입합니다.
+                                </li>
+
+                                <li class="">
+                                    반드시 회색(Nil) → 녹색(TB1 antigen) → 노랑(TB2 antigen) → 보라(Mitogen)용기 순서로 1.0 mL씩 채혈 후(검은 선까지) 즉시 전용용기 벽면의 내용물(antigen)이 혈액과 잘 섞일 수 있도록 상하로 10회, 또는 5초 동안 반복 혼합합니다.
+                                </li>
+
+                                <li class="">
+                                    반드시 세워서 16시간 이내에 본원에 도착해야 합니다.
+                                </li>
+
+                                <li class="">
+                                    채혈 시 전용용기의 검은 선까지가 채혈 튜브의 코팅물질과 혈액이 반응할 수 있는 최적의 범위이므로 채혈량을 반드시 준수 해야합니다. 채혈량이 0.8 mL
+
+                                    이하의 경우 리튬헤파린 용기에 추가 채혈하여 보충이 가능하나, 1.2 mL 이상의 경우는 재 채혈을 해야합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">Interferon-gamma releasing assay 전용용기 채혈순서</h4>
+                            <div class="gray-box img-box type2">
+                                <ul class="lists">
+
+                                    <li>
+
+                                        <p class="img">
+                                            <img src="../../../assets/images/img-test-bottle01.png" alt="">
+                                        </p>
+
+
+                                        <p class="text">① 회색(Nil) 용기</p>
+
+
+                                    </li>
+
+                                    <li>
+
+                                        <p class="img">
+                                            <img src="../../../assets/images/img-test-bottle02.png" alt="">
+                                        </p>
+
+
+                                        <p class="text">② 녹색(TB1 antigen) 용기</p>
+
+
+                                    </li>
+
+                                    <li>
+
+                                        <p class="img">
+                                            <img src="../../../assets/images/img-test-bottle04.png" alt="">
+                                        </p>
+
+
+                                        <p class="text">③ 노랑색(TB2 antigen) 용기</p>
+
+
+                                    </li>
+
+                                    <li>
+
+                                        <p class="img">
+                                            <img src="../../../assets/images/img-test-bottle03.png" alt="">
+                                        </p>
+
+
+                                        <p class="text">④ 보라색(Mitogen) 용기</p>
+
+
+                                    </li>
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div><!-- // 진단면역-->
+
+                    <div class="section-tab chemistry-wrap">
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">산전기형아검사</h3>
+
+
+
+
+
+                                <div class="text-box">
+
+                                    <p class="title-icon">주의 사항</p>
+
+
+
+
+
+                                    <ul class="list-style dot">
+
+                                        <li>
+                                            검사 의뢰 시 산전관련검사 의뢰서의 기재사항은 반드시 작성하여 첨부합니다.<p class='txt'>: 생년월일, 체중, LMP, 임신 주수(LMP, 초음파), 과거력(Down, NTD, IDDM 등), NT(nuchal translucency), 재검 의뢰 시 1차 결과, 기타소견 등.</p>
+                                        </li>
+
+                                        <li>
+                                            임신 주수(시기)별 검사의 종류는 아래의 표와 같습니다.
+                                        </li>
+
+                                    </ul>
+
+
+
+
+                                </div>
+
+
+                            </div>
+                            <h4 class="title-h4">임신주수(시기)별 검사종류</h4>
+
+                            <!-- <ul class="list-style dot">
+
+                                <li class="">
+                                    K2 EDTA 용기를 사용하여 3.0mL을 채취한 후 반드시 실온 보관하며, 토요일 및 공휴일 전날 검체 접수 삼가하여 주시기 바랍니다(검체에 검체채취 일시 기재).
+                                </li>
+
+                                <li class="">
+                                    4℃ 보관 또는 림프구 분리 후 보관은 양성률이 낮으며 CD8 세포에 비하여 CD4 세포가 저하될 수 있습니다.
+                                </li>
+
+                            </ul> -->
+
+
+
+                            <div class="scroll-table">
+                                <div class="table-wrap section border-left">
+                                    <div class="table-inner">
+                                        <table class="table tb-sm2">
+
+
+                                            <colgroup>
+
+                                                <col class="" width="18%">
+
+                                                <col class="" width="15%">
+
+                                                <col class="" width="*">
+
+                                                <col class="" width="18%">
+
+                                            </colgroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                            <thead>
+                                                <tr>
+
+
+
+
+
+                                                    <th class="">
+                                                        검사시기
+                                                    </th>
+
+                                                    <th class="">
+                                                        분류
+                                                    </th>
+
+                                                    <th class="">
+                                                        검사항목
+                                                    </th>
+
+                                                    <th class="">
+                                                        검체량
+                                                    </th>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="">
+                                                    <td rowspan="3">임신 10~13주</td>
+                                                    <td rowspan="7">선별검사</td>
+                                                    <td class="left">First double marker (PAPP-A, Free β-HCG)</td>
+                                                    <td rowspan="3">혈청1.0mL</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td class="left boder-lf">Integrated test 1차(PAPP-A)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td class="left boder-lf">Sequential test 1차(PAPP-A, Free β-HCG)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td rowspan="4">임신 14~22주</td>
+                                                    <td class="left">Triple test (AFP, uE3, hCG)</td>
+                                                    <td rowspan="4">혈청 1.0mL</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td class="left boder-lf">Quadruple test (AFP, uE3, hCG, Inhibin-A)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td class="left boder-lf">Integrated test 2차(AFP, uE3, hCG, Inhibin-A)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td class="left boder-lf">Sequential test 2차(AFP, uE3, hCG, Inhibin-A)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td rowspan="2">임신 15~22주</td>
+                                                    <td rowspan="2">생화학 정밀검사</td>
+                                                    <td class="left">AFP(양수)</td>
+                                                    <td>양수 2.0mL</td>
+                                                </tr>
+                                            <td class="left boder-lf">SAcetylcholinesterase 정성</td>
+                                            <td>양수 3.0mL</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">선천성대사이상검사</h3>
+
+
+
+
+
+
+                            </div>
+                            <h4 class="title-h4">채취 시기</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    건강한 신생아의 가장 이상적인 채혈 시기는 48~72시간(일반적으로 퇴원 전 채혈) 사이에 하는 것이 좋습니다.
+                                </li>
+
+                                <li class="">
+                                    특정 아미노산의 혈중 증가율은 질환의 심각성이나 단백질 섭취량에 따라 달라지므로 너무 일찍 검사를 실시하는 경우 위음성을 초래하며, 정상 신생아는 출생
+
+                                    직후 TSH의 갑작스런 증가(surge)가 있어 출생 후 48시간 이전에 채취한 검체에서 갑상선기능저하증에 대한 위양성 결과를 초래할 수 있습니다.
+                                </li>
+
+                                <li class="">
+                                    입원 기간이 연장되는 미숙아 등에서는 생후 7일 정도에 검체를 채취하는 것이 좋으며, 입원일이 14일을 초과하는 경우는 퇴원 시, 1개월 이상일 경우는 1개월째 재검을 하는 것이 바람직합니다.
+                                </li>
+
+                                <li class="">
+                                    수혈이 필요한 경우는 가능하면 수혈 받기 전 초기 검체를 채취하도록 합니다. 이때, 생후 24시간 이내인 신생아는 생후 30일 및 60일에 재검을 실시하는 것이 좋습니다. 또한, 채혈지에 수혈 후 검체를 채취하였다는 내용과 함께 가장 최근 수혈한 날짜를 반드시 기재하여 의뢰합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">채취 방법</h4>
+
+                            <ul class="list-style">
+
+                                <li class="">
+                                    ① 혈액여지(blood paper)를 이용하여 신생아 발뒤꿈치의 모세혈관에서 혈액을 채취합니다.
+                                </li>
+
+                                <li class="">
+                                    ② 발에 혈류를 증가시키기 위해 다리를 심장보다 아래쪽에 위치하도록 하고, 3분 정도 따뜻한 물수건으로 뒤꿈치를 감싸 발을 따뜻하게 합니다.
+                                </li>
+
+                                <li class="">
+                                    ③ 발뒤꿈치의 외측부를 소독한 일회용 란셋(2.4mm point 이하)을 이용하여 천자합니다.<div class='img-area'><img src='../../../assets/images/img-method.png' class='pc tablet' alt=''><img src='../../../assets/images/img-method-mo.png' class='mobile' alt=''></div>
+                                </li>
+
+                                <li class="">
+                                    ④ 처음 나온 혈액 한 방울을 닦아 낸 후 혈액여지의 한쪽 면을 발뒤꿈치의 혈액방울에 접촉한 후 뒷면까지 혈액이 충분히 스며들었는지 확인합니다.발에 혈류를 증가시키기 위해 다리를 심장보다 아래쪽에 위치하도록 하고, 3분 정도 따뜻한 물수건으로 뒤꿈치를 감싸 발을 따뜻하게 합니다.
+                                </li>
+
+                                <li class="">
+                                    ⑤ 혈액여지 4개의 원에 가득 차게 혈액을 스며들도록 채혈합니다.
+                                </li>
+
+                                <li class="">
+                                    ⑥ 채혈이 끝난 혈액여지는 표면에 오염물질이 없는 평평한 곳에서 3~4시간 정도 충분히 건조 시킵니다.
+                                </li>
+
+                                <li class="">
+                                    ⑦ 혈액여지가 완전히 건조되면 검체 비닐봉투에 넣어 의뢰합니다.
+                                </li>
+
+                            </ul>
+
+
+
+
+
+
+                            <div class="text-wrap">
+
+
+
+
+
+
+
+                                <div class="text-box">
+
+                                    <p class="title-icon">주의사항</p>
+
+
+
+                                    <div class="flex-box">
+
+
+
+                                        <ul class="list-style dot">
+
+                                            <li>
+                                                오염을 막기 위해 혈액여지에 그려진 원을 손으로 절대로 만져서는 안됩니다.
+                                            </li>
+
+                                            <li>
+                                                물이나 알코올, 방부제, 로션, 파우더 등에 닿지 않도록 주의합니다.
+                                            </li>
+
+                                            <li>
+                                                혈액여지를 채혈부위에 대고 누르거나, 채혈부위를 쥐어짜면 안됩니다.
+                                            </li>
+
+                                            <li>
+                                                Capillary 용기를 사용하여 채취하면 불충분하고 균일하지 못한 혈액흡수의 원인이 되므로 사용하면 안됩니다.
+                                            </li>
+
+                                            <li>
+                                                혈액을 혈액여지 한쪽 면에만 묻혀 스며들도록 합니다.
+                                            </li>
+
+                                            <li>
+                                                혈액여지는 오염물질이 없는 평평한 곳에서 실온상태로 3~4시간 정도를 충분히 건조합니다. <br>수직으로 매달아두거나 세워서 건조 또는 보관하면 혈액성분이 흘러내려 혈청분리가 일어날 수 있습니다.
+                                            </li>
+
+                                            <li>
+                                                혈액여지가 열이나 직사광선에 직접적으로 노출되지 않도록 합니다.
+                                            </li>
+
+                                            <li>
+                                                혈액여지가 완전히 건조되기 전에는 봉투 속에 넣지 않습니다. 충분히 건조 시키지 않고 비닐 백이나 봉투에 밀봉하면 혈청 분리 혹은 균류나 곰팡이 증식 원인이 될 수 있습니다.
+                                            </li>
+
+                                            <li>
+                                                환자 정보가 빠짐없이 기재되었는지 확인합니다(17-OHP의 경우 반드시 출생 시 체중이 필요).
+                                            </li>
+
+                                            <li>
+                                                바코드는 혈액여지 앞면의 blood spot 밑면에 위치하도록 부착합니다.
+                                            </li>
+
+                                        </ul>
+
+
+
+                                        <div class="img-area ">
+                                            <img src="../../../assets/images/img-barcode-ex.png" alt="">
+
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div><!-- // 임상화학 -->
+
+                    <div class="section-tab microbe-wrap">
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">세균검사</h3>
+
+
+
+
+
+
+                            </div>
+
+                            <div class="title-wrap">
+
+
+
+
+
+
+
+
+                                <div class="text-box">
+
+                                    <p class="title-icon">주의사항</p>
+
+
+
+                                    <div class="flex-box">
+
+
+
+                                        <ul class="list-style dot">
+
+                                            <li>
+                                                정확한 감염부위와 적절한 시기에 채취해야 합니다.
+                                            </li>
+
+                                            <li>
+                                                모든 검체는 지정된 멸균용기에 채취하고 분변 이외의 검체는 무균조작으로 시행되어야 하며 면봉, 시험관, 수송배지, 혈액배양배지 등은 사용 전에 오염 여부나 유효기간을 확인한 후 사용합니다.
+                                            </li>
+
+                                            <li>
+                                                혈액배양배지, 수송배지는 실온에 보관하며, 수송배지로 검체를 보낼 때는 반드시 2개의 면봉 모두에 검체를 잘 묻혀서 건조되지 않도록 배지에 깊이 찔러 넣어 보냅니다.
+                                            </li>
+
+                                            <li>
+                                                임상소견, 검체종류 및 채취부위와 시간, 항생제 투여 여부를 기재하여야 하며 검체채취는 통상적으로 항생제 투여 전에 합니다.<span class='txt'>(기재된 정보에 따라 1차 접종배지의 종류, 배양조건, 동정을 요하는 균의 종류 등이 달라질 수 있으므로 반드시 기재합니다.)</span>
+                                            </li>
+
+                                            <li>
+                                                수송배지를 즉시 배양할 수 없을 때는 냉장 보관하여 운송합니다. 단, 수막구균이나 임균 등의 Neisseria 균속이나 Haemophilus 균속이 의심되는 검체는 30℃ 이하로 내려가면 사멸하므로 실온이나 37℃에 보관합니다.
+                                            </li>
+
+                                            <li>
+                                                혈액배양에 붙어있는 바코드가 보존되도록 발행 된 바코드를 다른 위치에 세로로 부착합니다 (그림 A).
+                                            </li>
+
+                                            <li>
+                                                균주 검체를 의뢰할 경우 균주를 확인할 수 있도록 사면을 가리지 않는 위치에 바코드를 부착하여 의뢰합니다 (그림 B).
+                                            </li>
+
+                                        </ul>
+
+
+
+                                        <div class="img-area type2">
+                                            <img src="../../../assets/images/img-bottle-a.png" alt="그림 A">
+
+                                            <img src="../../../assets/images/img-bottle-b.png" alt="그림 B">
+
+                                        </div>
+
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">검체별 채취 방법</h3>
+
+
+
+
+
+
+                            </div>
+                            <h4 class="title-h4">혈액(blood)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    검체채취 시 피부 정상균의 오염을 방지하기 위해 피부소독용 알코올, 요오드액으로 소독 후 충분히 건조하여 채혈하는 것이 중요합니다.
+                                </li>
+
+                                <li class="">
+                                    항생제 사용 전에 채혈하여야 하고 일반적으로 발열 주기를 예측할 수 있는 경우는 발열 직전에 채혈합니다. 예측이 어려울 경우에는 발열 시 채혈합니다.
+                                </li>
+
+                                <li class="">
+                                    동시에 혈액채취를 시행하는 방법이나, 24시간까지 시차를 두고 시행한 방법 간에 양성률의 차이가 없다고 보고됨에 따라 채혈은 동시에 하거나 짧은 시차를 두고 2~3회 실시하는 것이 권장됩니다.
+                                </li>
+
+                                <li class="">
+                                    1회에 혈액 20.0mL을 채취하여 호기성 배지와 혐기성 배지에 각각 10.0mL씩 접종을 권장합니다. 혈액이 많을수록 양성률이 높아지기 때문에 충분한 혈액량을 접종합니다. 소아인 경우 2.0~4.0mL을 채취하여 소아용 배지에 접종합니다.
+                                </li>
+
+                                <li class="">
+                                    감염성 심내막염이나 카테터(catheter)관련 혈관 내 감염과 관련된 지속적 균혈증에서는 시차를 두고 채혈하는 것이 추천됩니다. <br>감염성 심내막염은 혈액배양 양성률이 90% 이상으로, 급성 심내막염인 경우 병원성이 강한 균주에 의한 것이 많으므로 즉시 혈액배양을 시행하는 것이 좋으며, 항균제 투여 전 30분 내에 채혈합니다. 아급성 심내막염인 경우는 30분~1시간 간격을 두고 채혈합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">체액(body fluid)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    뇌척수액(CSF)<p class='txt'>무균적으로 3개의 용기에 채취하며, 그 중에 2번째 채취한 뇌척수액을 미생물 검사용으로 사용합니다. <br>채취 후에는 즉시 밀봉하여 검사실로 보내야 하며, 검사가 지연이 되면 실온 보관합니다.</p>
+                                </li>
+
+                                <li class="">
+                                    기타 체액(관절액, 흉수, 복수 검체 등)<p class='txt'>단 한 개의 집락이 자라도 의미가 있으므로 검체채취 시 오염되지 않도록 하며, 주사기로 흡인 후 무균 상태로 보관합니다. <br>시험관으로 옮기면 혐기성세균이 사멸할 수 있으므로 주의를 요합니다.</p>
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">객담(sputum)</h4>
+                            <ul class="list-style dot">
+                                <li>
+                                    객담은 폐렴의 원인균을 진단하기 위해서 사용하며, 아침에 일어나 양치한 후 큰기침을 하여 무균컵에 채취합니다. 객담을 받을 수 없는 소아환자는 흡인으로 채취합니다.
+                                    <div class="gray-box img-box type4 arrow">
+                                        <ul class="lists">
+
+                                            <li>
+
+                                                <p class="img">
+                                                    <img src="../../../assets/images/img-sputum-01.png" alt="">
+                                                </p>
+
+
+                                                <p class="text">입안을 맑은 물로 세척합니다.</p>
+
+
+                                            </li>
+
+                                            <li>
+
+                                                <p class="img">
+                                                    <img src="../../../assets/images/img-sputum-02.png" alt="">
+                                                </p>
+
+
+                                                <p class="text">심호흡을 3회 실시하여 폐 깊숙히 있는<br> 가래가 나올 수 있도록 합니다.</p>
+
+
+                                            </li>
+
+                                            <li>
+
+                                                <p class="img">
+                                                    <img src="../../../assets/images/img-sputum-03.png" alt="">
+                                                </p>
+
+
+                                                <p class="text">깊은 기침을 하여 객담을 받으며<br> 침이 섞이지 않도록 주의합니다.</p>
+
+
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li>
+                                    침이 많이 섞이면 구강 내 상재균이 많이 포함되어 정확한 결과를 얻기 힘드므로, 검사실에서 객담도말 표본을 그람 염색하여 100배 시야에서 상피세포와
+                                    백혈구를 관찰하여 객담의 품질을 판정합니다. Murray와 Washington 변법에서는 두 가지 세포 수의 비율에 따라 6개의 군으로 나누며, 객담의 품질 등급에
+                                    의해 4~6 등급은 수용되며, 1~3등급은 부적합 검체로 판정합니다.
+                                </li>
+                                <li>검체는 채취 후 즉시 검사실로 운반하며, 지연될 경우에는 냉장 보관해야 합니다.</li>
+                            </ul>
+                            <h5 class="title-h5">객담의 품질 등급 (grade of sputum quality)</h5>
+                            <div class="scroll-table">
+                                <div class="table-wrap section border-left">
+                                    <div class="table-inner">
+                                        <table class="table tb-sm2">
+
+
+                                            <colgroup>
+
+                                                <col class="" width="10%">
+
+                                                <col class="" width="45%">
+
+                                                <col class="" width="*">
+
+                                            </colgroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                            <thead>
+                                                <tr>
+                                                    <th rowspan="2">Grade</th>
+                                                    <th colspan="2">Number of cell &#47; Low-power field</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>Epithelial cell</th>
+                                                    <th>WBC</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="">
+
+
+
+
+
+
+
+
+
+                                                    <td class="">
+                                                        1
+                                                    </td>
+
+                                                    <td class="">
+                                                        > 25
+                                                    </td>
+
+                                                    <td class="">
+                                                        < 10
+                                                    </td>
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                                <tr class="">
+
+
+
+
+
+
+
+
+
+                                                    <td class="">
+                                                        2
+                                                    </td>
+
+                                                    <td class="">
+                                                        > 25
+                                                    </td>
+
+                                                    <td class="">
+                                                        10~25
+                                                    </td>
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                                <tr class="">
+
+
+
+
+
+
+
+
+
+                                                    <td class="">
+                                                        3
+                                                    </td>
+
+                                                    <td class="">
+                                                        > 25
+                                                    </td>
+
+                                                    <td class="">
+                                                        > 25
+                                                    </td>
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                                <tr class="">
+
+
+
+
+
+
+
+
+
+                                                    <td class="">
+                                                        4
+                                                    </td>
+
+                                                    <td class="">
+                                                        10~25
+                                                    </td>
+
+                                                    <td class="">
+                                                        > 25
+                                                    </td>
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                                <tr class="">
+
+
+
+
+
+
+
+
+
+                                                    <td class="">
+                                                        5
+                                                    </td>
+
+                                                    <td class="">
+                                                        < 10
+                                                    </td>
+
+                                                    <td class="">
+                                                        > 25
+                                                    </td>
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                                <tr class="">
+
+
+
+
+
+
+
+
+
+                                                    <td class="">
+                                                        6
+                                                    </td>
+
+                                                    <td class="">
+                                                        < 10
+                                                    </td>
+
+                                                    <td class="">
+                                                        < 10
+                                                    </td>
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+
+                                    <div class="mb-20">
+                                        <ul class="list-style dot ">
+
+                                            <li class="">
+                                                Acceptable sputum&#58; Grade 4, 5, 6
+                                            </li>
+
+                                            <li class="">
+                                                Unacceptable sputum&#58; Grade 1, 2, 3
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+                            <h4 class="title-h4">분변(stool)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    분변에 혈액, 점액이 섞여 있는 부분을 선택적으로 약 1~2g 정도를 채취합니다.
+                                </li>
+
+                                <li class="">
+                                    변을 채취할 수 없을 때는 면봉을 항문 괄약근 1인치 정도까지 넣어 부드럽게 회전시켜 검체를 얻은 후, 수송배지에 넣어 보관합니다.
+                                </li>
+
+                                <li class="">
+                                    장염세균을 검사하기에 가장 좋은 검체는 급성기에 채취한 설사변으로 검체 유출로 인한 오염 가능성이 있으므로 완전하게 밀봉합니다.
+                                </li>
+
+                                <li class="">
+                                    장티푸스균의 분리는 감염 후 2~3주의 변에서 2~3회 반복하여 검사할 경우 양성률을 높일 수 있습니다.
+                                </li>
+
+                                <li class="">
+                                    설사 증세를 보이면서 항균제 사용력이 있는 연령 6개월 이상의 모든 환자에 대하여 C. difficile toxin 검출을 위해 액상이거나 부드러운 변을 용기에 받아 C. difficile toxin 검사를 시행합니다(면봉 검체는 적합하지 않습니다).
+                                </li>
+
+                                <li class="">
+                                    직장도말 검사로 성매개감염(sexually transmitted disease, STD)를 위한 검체는 실온에 보관합니다.
+                                </li>
+
+                                <li class="">
+                                    바륨 관장을 한 대변으로는 검사하지 않습니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">요(urine)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    아침 첫 요가 가장 적합하며, 세균배양을 하기 위해서는 환자의 요도 주위를 잘 소독한 후 처음 몇 mL을 버리고 중간 요 10.0mL 정도를 무균적으로 채취합니다.
+                                </li>
+
+                                <li class="">
+                                    카테터 요는 소변을 볼 수 없는 환자나 무균 조작이 반드시 필요한 환자에서만 시행합니다.
+                                </li>
+
+                                <li class="">
+                                    혐기성 배양 시 치골 결합부에서의 흡인뇨(suprapubic aspiration)를 무균적으로 채취합니다.
+                                </li>
+
+                                <li class="">
+                                    항산성균 배양 시 아침 첫 요를 계속해서 3~5일간 채취하는 것을 원칙으로 합니다.
+                                </li>
+
+                                <li class="">
+                                    반드시 멸균용기에 채취한 후 30분 이내에 보내야 하며, 부득이한 경우에는 반드시 냉장 보관하고 채취 시간을 기록합니다. <br>Neisseria 균속이 의심되는 검체는 30℃ 이하로 내려가면 사멸하므로 실온이나 37℃에 보관합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">농(pus)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    주사기로 흡인하여 채취하는 것이 원칙이며, 채취 후 즉시 밀봉합니다.
+                                </li>
+
+                                <li class="">
+                                    주사기로 흡인액을 얻지 못하는 개방된 농인 경우에는 두 개의 면봉으로 병소 깊이 채취하여 수송배지에 넣어 보냅니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">생식기 검체</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    여성 생식기<p class='txt'>자궁경관에서는 질 내의 세균이 오염되지 않게 하면서, 윤활제를 쓰지 않고 질경(speculum)을 이용하여 자궁경부를 보이게 한 다음 면봉으로 점액을 제거한 후 새로운 면봉을 사용하여 자궁경부내강(endocervical canal)에 넣어 검체를 채취 후 수송배지에 넣습니다.</p>
+                                </li>
+
+                                <li class="">
+                                    남성 생식기<p class='txt'>요도 검체는 분비물이 많을 때는 면봉으로 채취하고, 적을 때는 요도의 2cm 깊이까지 가느다란 면봉을 넣어 채취 후 수송배지에 넣습니다.</p>
+                                </li>
+
+                                <li class="">
+                                    골반 염증성 질환(pelvic inflammatory) 진단에는 흡인 검체가 좋습니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">조직(tissue)</h4>
+                            <p class="dot">조직 검체는 멸균용기에 멸균식염수를 넣거나 멸균식염수를 적신 거즈로 싸서 마르지 않게 검사실로 보냅니다.</p>
+                            <h4 class="title-h4">혐기성 세균 배양을 위한 검체</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    혐기성 세균은 공기에 노출되면 사멸되기 쉬우므로 검체의 수송 및 채취가 중요하며, 산소에 노출되는 것을 막기 위해서는 CO2나 N2 가스를 채운 시험관이나 병 등을 사용합니다.
+                                </li>
+
+                                <li class="">
+                                    흡인했을 때는 주사기에서 공기를 배출시킨 후, 마개로 막고 즉시 검사실로 보냅니다. 혐기성세균이 정상 상재균으로 존재하는 검체(객담, 요, 대변, 인두액 등) 는 혐기성 배양을 하지 않고, 주로 체액, 농, 경기관 흡인액, 생검 조직 및 혈액 등을 대상으로 합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                        </div>
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">바이러스 검사</h3>
+
+
+
+
+
+
+                            </div>
+
+                            <div class="title-wrap">
+
+
+
+
+
+
+
+
+                                <div class="text-box">
+
+                                    <p class="title-icon">주의사항</p>
+
+
+
+
+
+                                    <ul class="list-style dot">
+
+                                        <li>
+                                            바이러스 배양법은 원인 바이러스가 자랄 수 있는 가장 특이한 세포를 사용하므로 검체는 감염 병소에서 채취합니다.
+                                        </li>
+
+                                        <li>
+                                            일반적으로 질병 경과가 길수록 바이러스 검출률은 낮아지므로, 바이러스 농도가 높은 감염 초기에 채취하는 것이 좋습니다.
+                                        </li>
+
+                                        <li>
+                                            바이러스 운송 배지(VTM)에는 세균의 증식을 억제하는 성분이 함유되어 있으며, 채취 즉시 검사실로 보내어 검사를 해야 하나, 만약 그렇지 못한 경우에는 2~3일 이내에 검사가 이루어져야 합니다.
+                                        </li>
+
+                                        <li>
+                                            장기간 보관 시에는 -70℃에 냉동 보관하며, 반복 해동 시 바이러스 역가가 감소할 수 있습니다.
+                                        </li>
+
+                                        <li>
+                                            전혈검체는 토요일 및 공휴일 전날 검체 접수를 삼가하여 주시기 바랍니다.
+                                        </li>
+
+                                    </ul>
+
+
+
+
+                                </div>
+
+
+                            </div>
+                            <h4 class="title-h4">바이러스 배양검사 검체별 안내</h4>
+                            <div class="scroll-table">
+                                <div class="table-wrap section border-left">
+                                    <div class="table-inner" id="resize">
+                                        <!-- *수정 20220508 -->
+                                        <table class="table tb-sm2">
+
+
+                                            <colgroup>
+
+                                                <col class="" width="15%">
+
+                                                <col class="" width="35%">
+
+                                                <col class="" width="10%">
+
+                                                <col class="" width="40%">
+
+                                            </colgroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                            <thead>
+                                                <tr>
+
+
+
+
+
+                                                    <th scope="col" class="">
+                                                        검체종류
+                                                    </th>
+
+                                                    <th scope="col" class="">
+                                                        채취 및<br> 검체량
+                                                    </th>
+
+                                                    <th scope="col" class="">
+                                                        검체용기
+                                                    </th>
+
+                                                    <th scope="col" class="">
+                                                        주의사항
+                                                    </th>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="">
+                                                    <td>Stool</td>
+                                                    <td class="left">3~5g (설사변일 경우 5g)</td>
+                                                    <td rowspan="3">멸균용기</td>
+                                                    <td class="left">
+                                                        <ul class="list-style dot">
+                                                            <li>발병 후 4일 이내 검체채취</li>
+                                                            <li>수막염은 발병 후 2주까지의 검체가능</li>
+                                                            <li>기저귀 착용 시 대변을 긁어서 보냄</li>
+                                                        </ul>
+                                                    </td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>Urine</td>
+                                                    <td class="left">5.0mL (신생아: 2.0~3.0mL)</td>
+                                                    <td class="left">CMV 배양의 경우 VTM 용기 사용</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>CSF</td>
+                                                    <td class="left">3.0~5.0mL</td>
+                                                    <td class="left">
+                                                        혈액이 혼입된 검체는 혈액 내에
+                                                        존재하는 항체가 바이러스 배양을 억제
+                                                    </td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>Rectal swab</td>
+                                                    <td class="left">
+                                                        면봉을 직장 내 2~4cm 부위에서
+                                                        rub and rotation 방법으로 채취
+                                                    </td>
+                                                    <td rowspan="8">VTM</td>
+                                                    <td class="left">
+                                                        대변을 채취하지 못할 경우 사용
+                                                    </td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>상부호흡기</td>
+                                                    <td class="left">
+                                                        ① 비인두흡입물<br>
+                                                        ② 비인두도말물<br>
+                                                        ③ 구인두도말물
+                                                        바이러스 분리율 <br>① > ② > ③
+                                                    </td>
+                                                    <td class="left">
+                                                        <ul class="list-style dot">
+                                                            <li>발병 후 수 일 이내에 채취</li>
+                                                            <li>
+                                                                구인두도말물보다는
+                                                                비인두도말물이 오염이 적어서 좋음
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>하부호흡기</td>
+                                                    <td class="left">기관지흡입물<br>기관지세척액</td>
+                                                    <td class="left">
+                                                        <ul class="list-style dot">
+                                                            <li>발병 후 수 일 이내에 채취</li>
+                                                            <li>
+                                                                구객담도 사용할 수 있으나
+                                                                흡입하는 것보다 효율성이 떨어짐
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                </tr>
+
+                                                <tr class="">
+                                                    <td>
+                                                        Skin,
+                                                        Mucous
+                                                        membrane
+                                                        lesion
+                                                    </td>
+                                                    <td class="left">
+                                                        수포(vesicle)를 26 gauge 주사침이나
+                                                        tuberculin syringe 또는 면봉을
+                                                        사용하여 채취
+                                                    </td>
+                                                    <td class="left">
+                                                        <ul class="list-style dot">
+                                                            <li>
+                                                                비궤양성 병소일 경우에는 면봉을
+                                                                사용하여 병소 부위를 문지른 후
+                                                                수송배지에 넣음.
+                                                            </li>
+                                                            <li>
+                                                                주사기 이용 시 수송배지에 넣음.
+                                                                (흡인 및 배출과정 반복)
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>Eye</td>
+                                                    <td class="left">
+                                                        결막
+                                                        <ul class="list-style dot">
+                                                            <li>
+                                                                면봉을 소독된 생리식염수에
+                                                                적신 후 검체채취
+                                                            </li>
+                                                            <li>
+                                                                두 번째 면봉으로 남아있는
+                                                                물기를 제거
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                    <td class="left">운송배지에 사용된 면봉 모두를 넣음.</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>Cervical urethral</td>
+                                                    <td class="left">면봉검체 사용</td>
+                                                    <td class="left">-</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>타액</td>
+                                                    <td class="left">2.0~3.0mL</td>
+                                                    <td class="left">-</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>Semen</td>
+                                                    <td class="left">-</td>
+                                                    <td class="left">CMV 배양에 주로 이용</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <td>Blood</td>
+                                                    <td class="left">전혈 5.0~8.0mL</td>
+                                                    <td>
+                                                        Heparin, <br>
+                                                        Sod. Citrate
+                                                    </td>
+                                                    <td class="left">-</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <h4 class="title-h4">비인두도말물 & 비인두흡인액(nasopharyngeal swab & nasopharyngeal aspirate)</h4>
+                            <div class="img-area">
+                                <img src="../../../assets/images/img-nasopharyngeal.png" class="pc tablet" alt="">
+                                <img src="../../../assets/images/img-nasopharyngeal-mo.png" class="mobile" alt="">
+                            </div>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    비인두도말 시 멸균면봉을 하비갑개의 중하부 근처에서 점막을 부드럽게 3~4회 돌려서 채취합니다.
+                                </li>
+
+                                <li class="">
+                                    비강흡인물 채취 시에는 비강을 통하여 카테터 끝이 인두 후벽까지 다다르게 한 다음 진공흡입을 걸고 카테터를 약간씩 돌리며 천천히 부드럽게 빼내면 됩니다. 진공흡입 후 카테터가 비인두부에 10초 이상 길게 머물지 않도록 주의합니다.
+                                </li>
+
+                                <li class="">
+                                    카테터를 멸균 생리식염수(약 1.0mL)로 세척하여 무균용기에 담습니다.
+                                </li>
+
+                                <li class="">
+                                    비인두흡인액 3~5 mL을 무균용기에 넣고, 비인두도말물은 VTM 용기에 넣어 4℃ 냉장 상태에서 보관 후 운송(운송 시 내부온도 4℃ 유지) 합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">구인두도말물(oropharyngeal swab)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    환자의 입을 벌리고 반드시 &#34;아-&#34;하는 소리를 실제로 내게 합니다.
+                                </li>
+
+                                <li class="">
+                                    왼손으로 설압자를 잡고 설압자로 혀를 누릅니다.
+                                </li>
+
+                                <li class="">
+                                    오른손에 멸균면봉을 잡고 인두 후벽을 면봉으로360°로 3~4회 돌려 도말합니다. <br>이때 환자 목젖을 건드리면 환자가 구역질을 하게 되므로 목젖을 피해서 도말을 합니다.
+                                </li>
+
+                                <li class="">
+                                    채취한 구인두도말물은 VTM 용기에 넣어 4℃ 냉장 상태에서 보관 후 운송(운송 시 내부온도 4℃ 유지) 합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <div class="img-area">
+                                <img src="../../../assets/images/img-oropharyngeal.png" class="pc tablet" alt="">
+                                <img src="../../../assets/images/img-oropharyngeal-mo.png" class="mobile" alt="">
+                            </div>
+                        </div>
+                    </div><!-- // 임상미생물 -->
+
+
+                    <div class="section-tab genetics-wrap">
+                        <div class="section">
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">유전자검사 동의서</h3>
+
+
+
+
+
+
+                            </div>
+                            <ul class="list-style dot">
+                                <li>
+                                    「생명윤리 및 안전에 관한 법률」제51조 제1항 및 제3항에 의거하여 유전자 검사기관에 유전자 검사를 의뢰할 때에는 검사대상자(또는 법정 대리인)로부터 소정의 서면동의를 받도록 규정 하고 있습니다.
+
+                                    <div class="title-wrap">
+
+
+
+
+
+
+
+
+                                        <div class="text-box">
+
+                                            <p class="title-icon">유전자검사기관의 유전자검사 동의서(질병관리본부)에 대한 안내사항</p>
+
+
+
+
+
+                                            <ul class="list-style dot">
+
+                                                <li>
+                                                    유전자검사기관 외의 자가 검사대상물을 채취하여 유전자 검사기관에 유전자검사를 의뢰하는 경우에는 제1항에 따라 검사대상자로부터 서면동의를 받아 첨부하여야 하며, 보건복지부령으로 정하는 바에 따라 개인정보를 보호하기 위한 조치를 하여야 한다. <br>(「생명윤리 및 안전에 관한 법률」제51조 제1항 및 제3항)
+                                                </li>
+
+                                                <li>
+                                                    유전자검사기관 외의 자가 유전자검사기관에 유전자검사를 의뢰할 때에는 제2항에 따른 동의서에서 성명, 생년월일 등 검사대상자 개인을 식별할 수 있는 사항을 삭제 하여야 한다. <br> (「생명윤리 및 안전에 관한 법률 시행규칙」제51조 제3항)
+                                                </li>
+
+                                                <li>
+                                                    제56조 제1항에 따라, 제51조 제1항부터 제4항까지의 규정을 위반하였을 경우 1년 이내의 업무정지 등의 행정처분 또는 제68조에 따라, 제51조제2항, 제3항을 위반한 경우 1년 이하의 징역 또는 2천만원 이하의 벌금에 처한다.<br> (「생명윤리 및 안전에 관한 법률」제56조 제1항, 제68조 제11항)
+                                                </li>
+
+                                            </ul>
+
+
+
+
+                                        </div>
+
+
+                                    </div>
+                                </li>
+                                <li>질병관리본부 안내사항에 따라 유전자검사 의뢰 시 유전자검사 동의서가 첨부되지 않은 검사에 대해서는 처벌의 대상이 되므로 검사를 시행할 수 없으며, 유전자검사 동의서에 검사대상자의 성명, 생년월일, 전화번호 등 개인식별정보를 삭제 또는 암호화하여 첨부하여 주시기 바랍니다.</li>
+                                <li>본원에서 시행하는 유전자검사뿐만 아니라 재위탁하는 유전자검사도 검사대상자의 서면동의서를 반드시 첨부하여 주시기 바랍니다.</li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">세포유전</h3>
+                                <div class="text-box">
+
+                                    <p class="title-icon">주의사항</p>
+
+
+
+
+
+                                    <ul class="list-style dot">
+
+                                        <li>
+                                            검체는 무균적으로 채취하며 보관 및 운송은 실온 상태로 합니다.
+                                        </li>
+
+                                        <li>
+                                            검체 채취부터 배양까지 24시간 이내에 진행될 수 있도록 운송하며, 24시간 이내의 경우 세포분열능이 좋아 검사 소요일 내 보고율이 높으며, 24시간 이상일 경우 냉장 보관합니다.
+                                        </li>
+
+                                        <li>
+                                            의학유전체(분자·세포유전)검사의뢰서, 유전자검사 동의서를 기재하여 검체와 함께 의뢰합니다.
+                                        </li>
+
+                                        <li>
+                                            태아를 대상으로 하는 염색체 검사는 검체채취 전 검사의 정확성 및 검사한계에 대해 환자나 보호자에게 충분히 설명을 하여 동의를 얻은 후에 검사를 시행하는 것이 바람직합니다.
+                                        </li>
+
+                                    </ul>
+
+
+
+
+                                </div>
+                            </div>
+                            <div class="title-wrap">
+                                <h3 class="title-h4-1">검체별 채취 방법</h3>
+                            </div>
+                            <h4 class="title-h4">말초혈액(peripheral blood, PB)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    Sodium heparin 용기에 혈액 5.0mL(소아 3.0mL)을 무균적으로 채취합니다. 응고된 검체는 검사가 불가능하며 sodium heparin 이외의 항응고제는 세포분열능 저하로 인하여 배양 실패 확률이 높습니다.
+                                </li>
+
+                                <li class="">
+                                    환자의 임상소견 및 추정 진단에 따라 검사방법 자체가 달라지므로 반드시 의뢰서에 소견 및 진단명을 기재합니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">골수(bone marrow, BM)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    본원에서 제공하는 전용 운송용 배지 또는 sodium heparin 용기에 골수를 무균적으로 채취하며, 응고된 검체는 검사가 불가능합니다.
+                                </li>
+
+                                <li class="">
+                                    환자의 임상소견 및 추정 진단에 따라 검사방법 자체가 달라지므로 반드시 의뢰서에 소견 및 진단명을 기재합니다.
+                                </li>
+
+                                <li class="">
+                                    혈액종양에서는 세포 배양 시 혈액검사(CBC) 결과를 고려해서 적절한 세포 수가 되도록 배양해야 하므로 귀 원에서 시행한 CBC 결과를 기재하거나 첨부하여 보냅니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">양수(amniotic fluid, AF)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    검체에 모체세포가 혼입되는 것을 방지하기 위해 채취 시 처음의 소량(약 2.0mL 정도)은 반드시 버린 다음 약 20.0~30.0mL 정도의 양수를 채취하여 무균용기(50.0mL 용)로 옮겨 의뢰합니다.
+                                </li>
+
+                                <li class="">
+                                    혈액이 혼입되어 육안적으로 양수의 색깔이 붉거나 짙은 갈색의 경우 또는 양수 내 태아 유래 세포가 적은 경우(원심 후 침전물이 육안으로 확인이 안되는 경우)는 결과 지연 및 배양 실패의 원인이 됩니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">태아조직(production of conceptus, POC)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    태아조직의 경우 오염될 확률이 매우 높아 주의가 필요합니다.
+                                </li>
+
+                                <li class="">
+                                    무균적으로 채취하며, 성공적인 배양을 위해 융모막(chorionic villi)을 포함한 조직을 본원에서 제공하는 전용 운송용 배지에 넣어 의뢰합니다.
+                                </li>
+
+                                <li class="">
+                                    자궁 내에서 사망한지 24시간 이상이 경과한 검체는 배양에 실패할 확률이 높습니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">융모막(chorionic villi sampling, CVS)</h4>
+
+                            <ul class="list-style dot">
+
+                                <li class="">
+                                    융모막 20~40mg을 채취하여 본원에서 제공하는 융모막 전용 운송용 배지에 넣어 의뢰합니다.
+                                </li>
+
+                                <li class="">
+                                    Zoom-stereo microscope으로 관찰하여 순수한 융모막으로 검사를 시행합니다.
+                                </li>
+
+                                <li class="">
+                                    융모막의 양이 충분할 경우 In situ (직접법)와 플라스크 방법을 병행합니다.
+                                </li>
+
+                                <li class="">
+                                    융모막의 양이 적을 경우 플라스크 방법만을 시행하기 때문에 모체 세포의 오염 가능성이 높아지고 결과가 지연되거나 혹은 배양에 실패할 수도 있습니다.
+                                </li>
+
+                            </ul>
+
+
+
+                            <h4 class="title-h4">제대혈(cord blood)</h4>
+                            <p class="dot">제대혈(cord blood) 검체는 응고가 잘되므로 채취 후 sodium heparin 용기에 넣어 즉시 여러 번 혼합하여 의뢰합니다.</p>
+                        </div>
+                        <div class="section">
+
+
+                            <div class="title-wrap">
+
+
+
+
+                                <h3 class="title-h3">분자유전</h3>
+
+
+
+
+
+                                <div class="text-box">
+
+                                    <p class="title-icon">주의사항</p>
+
+
+
+
+
+                                    <ul class="list-style dot">
+
+                                        <li>
+                                            분자진단검사에서 가장 중요한 것은 적절한 검체와 오염의 방지입니다.
+                                        </li>
+
+                                        <li>
+                                            검모든 혈액 및 골수를 이용하여 PCR 검사를 의뢰하고자 할 경우 원칙적으로 모든 검체는 EDTA blood를 사용합니다. <br> 항응고제 중 헤파린은 Taq. polymerase의 활성화를 억제하여 검사가 불가능합니다.
+                                        </li>
+
+                                        <li>
+                                            조직을 의뢰하는 경우는 포르말린 고정 없이 멸균 생리식염수에 넣어 의뢰합니다.
+                                        </li>
+
+                                        <li>
+                                            다른 검사와 동시 의뢰된 검체는 PCR 전용용기에 따로 구분하여 보내며 멸균용기를 사용합니다. <p class='txt'>Hepatitis virus 관련 검사는 SST 사용을 원칙으로 합니다.</p><p class='txt'>Human papilloma virus 관련 검사는 반드시 각 종목에 해당되는 전용용기를 사용합니다.</p>
+                                        </li>
+
+                                        <li>
+                                            유전질환이나 기타 신중을 요하는 검사는 반드시 의학유전체(분자·세포유전)검사의뢰서, 유전자검사 동의서를 첨부합니다.
+                                        </li>
+
+                                    </ul>
+
+
+
+
+                                </div>
+
+
+                            </div>
+
+
+                            <div class="title-wrap">
+                                <h3 class="title-h4-1">코로나바이러스감염증-19 (SARS-CoV-2) 검사</h3>
+                            </div>
+                            <ul class="list-style dot">
+                                <li>의료기관 내 다른 공간과 격리된 장소에서 검체를 채취하며, N95 동급의 호흡기보호구, 장갑, 가운, 고글 등의 개인보호구를 필수적으로 착용해야 합니다.</li>
+                                <li>검체는 비인두도말물(nasopharyngeal swab)또는 구인두도말물(oropharyngeal swab)을 채취하여 의뢰하고, 기침이나 가래가 있는 환자의 경우 하기도 검체도 함께 의뢰합니다.</li>
+                                <li>상기도 검체인 비인두도말물은 콧구멍을 지나 입천장과 평행한 각도로 면봉을 밀어넣고 하비갑개 중하부에서 분비물을 긁어서 채취, 하비갑개 중하부에서 몇 초간 분비물을 흡수할 수 있는 시간을 두도록 하여 채취하고, 구인두도말물은 혀를 누르고 인두후벽에서 분비물을 긁어서 채취합니다</li>
+                                <li>
+                                    검체 채취 후 수송배지가 담긴 병에 도말한 면봉을 담그고 병마개 부위에서 면봉을 부러뜨린 후 뚜껑을 단단히 잠그도록 합니다. 부러뜨릴 때 안쪽에 손이 닿아 오염되지 않도록 주의하고, 검체가 담긴 병은 즉시 냉장(4℃) 보관합니다.
+                                    <div class="img-area">
+                                        <img src="../../../assets/images/img-covid.png" class="pc tablet" alt="">
+                                        <img src="../../../assets/images/img-covid-mo.png" class="mobile" alt="">
+                                    </div>
+                                </li>
+                                <li>
+                                    하기도검체인 객담(sputum)은 에어로졸 발생 가능성이 있으므로 음압시설에서 채취해야 하며, 음압시설이 없는 경우 외부 환기가 잘 되는 독립된 공간에서
+                                    채취합니다. 환자 스스로 구강 내를 깨끗한 물로 세척한 후, 멸균용기(가래통 등)에 타액 등이 포함되지 않도록 깊이 기침하여 채취합니다.
+                                    <div class="gray-box img-box type4">
+                                        <ul class="lists">
+
+                                            <li>
+
+                                                <p class="img">
+                                                    <img src="../../../assets/images/img_mers_step1.png" alt="">
+                                                </p>
+
+
+                                                <p class="text">① 구강세척</p>
+
+
+                                            </li>
+
+                                            <li>
+
+                                                <p class="img">
+                                                    <img src="../../../assets/images/img_mers_step2.png" alt="">
+                                                </p>
+
+
+                                                <p class="text">② 무균용기 사용</p>
+
+
+                                            </li>
+
+                                            <li>
+
+                                                <p class="img">
+                                                    <img src="../../../assets/images/img_mers_step3.png" alt="">
+                                                </p>
+
+
+                                                <p class="text">③ 기침 유도하여 객담채취	</p>
+
+
+                                            </li>
+
+                                            <li>
+
+                                                <p class="img">
+                                                    <img src="../../../assets/images/img_mers_step4.png" alt="">
+                                                </p>
+
+
+                                                <p class="text">④ 완전밀봉(4℃ 유지)</p>
+
+
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li>
+                                    채취용기에 환자의 인적사항(성명, 성별, 연령) 및 채취일을 기입하고, 감염성물질 안전수송 지침에 따라 전용용기에 3중 안전 포장 후 냉장(4℃) 상태를
+                                    유지하여 의뢰합니다.
+                                </li>
+                            </ul>
+                            <p class="desc">[출처: 코로나바이러스감염증-19 대응지침]</p>
+                        </div>
+                        <div class="section">
+
+                            <div class="title-wrap">
+                                <h3 class="title-h4-1">친자감별검사</h3>
+                            </div>
+                            <h4 class="title-h4">필수서류</h4>
+                            <ul class="list-style dot">
+                                <li>
+                                    유전자검사 동의서<br>
+                                    검사 대상자 1인당 1부씩 유전자검사 동의서를 작성하며, 미성년자나 금치산자의 경우 법정대리인이 작성합니다.
+
+                                </li>
+
+                                <li>
+                                    친자확인 검사의뢰서<br>
+                                    검체 채취 장소 및 일시(시간포함), 채혈자, 검사대상자의 정보(이름, 생년월일, 인종, 추정관계 등), 검사목적(예: 국적취득, 출생신고 등),
+                                    검체종류(Whole blood, Buccal swab 등), 수혈 및 골수 이식력 여부 등을 친자확인 검사의뢰서에 기재하여 의뢰합니다.
+
+                                </li>
+
+                                <li>
+                                    신분증명서 사본(사진 포함) 및 채혈 장면 사진<br>
+                                    검사대상자의 개인정보와 검체의 일치 여부를 확인하는 절차가 규정되어 있으므로, 주민등록증, 운전면허증, 여권 등검 사대상자의
+                                    증명사진이 포함된 신분증명서 사본과 채혈 시 검사대상자의 얼굴 정면과 채혈 장면이 모두 포함된 사진을 촬영하여 의뢰 시 첨부합니다.
+                                    <div class="img-area">
+                                        <img src="../../../assets/images/img-document.png" class="pc tablet" alt="">
+                                        <img src="../../../assets/images/img-document-mo.png" class="mobile" alt="">
+                                    </div>
+                                </li>
+                                <li>
+                                    검체에 병원체가 포함될 수 있으므로 장갑, 실험가운 등 적절한 보호장비를 착용하며 검체 의뢰 시 3중 안전포장한 뒤 검체의뢰서와 함께 검사를 의뢰합니다.
+                                </li>
+
+
+
+                            </ul>
+                            <h4 class="title-h4">검사가능 검체</h4>
+                            <p class="dot">EDTA 용기에 혈액 3.0mL을 채취하여 의뢰하며, 채혈이 어려울 경우에는 구강 swab으로 검사가 가능합니다. 구강 swab은 면봉으로 채취 후 멸균용기에 면봉 tip이 잠길 정도의 생리식염수를 넣어 의뢰합니다(검사 실패 가능성 있음). 이외 검체는 검사가 불가합니다.</p>
+                            <div class="title-wrap">
+                                <div class="text-box">
+                                    <p class="title-icon">주의사항</p>
+                                    <ul class="list-style dot">
+                                        <li>
+                                            친자감별검사는 2인이 기본이며, 1인이 추가될때마다 친자감별 추가검사를 의뢰하시면 됩니다.
+                                        </li>
+
+                                        <li>
+                                            유전자검사 동의서, 친자확인 검사의뢰서는 홈페이지 및 전국 지점을 통해 제공하여 드립니다.
+                                        </li>
+
+                                        <li>
+                                            신분증명서가 없는 신생아일 경우, 유전자검사 동의서(법정대리인 서명) 및 친자확인 검사의뢰서(생년월일, 이름, 성별만 기재) 를 보내주시면 됩니다.
+                                        </li>
+
+                                        <li>
+                                            부모, 자녀 이외의 관계는 검사가 불가합니다(형제 등과 같은 모계, 부계 확인 불가).
+                                        </li>
+
+                                    </ul>
+                                </div>
+
+                            </div>
+                        </div><!-- // 유전학검사 -->
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>

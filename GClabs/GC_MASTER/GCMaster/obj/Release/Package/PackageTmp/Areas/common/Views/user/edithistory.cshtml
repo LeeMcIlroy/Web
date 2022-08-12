@@ -1,0 +1,94 @@
+﻿
+@model PagedList.IPagedList<GCMaster.Areas.common.Models.userEditHistoryModel>
+@using GCMaster.Modules;
+
+@{
+    Layout = null;
+
+    int i = 0;
+}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <title>GC Labs 웹사이트 관리시스템</title>
+
+    <link rel="stylesheet" media="screen" href="~/css/style.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="~/js/front.js"></script>
+
+    <script>
+        
+
+        $(document).ready(function () {
+            $('.close-btn').click(function () {
+                parent.dialogEditHistory.dialog("close");
+            });
+        });
+    </script>
+</head>
+<body>
+    <!-- content -->
+    <!-- popup -->
+    <div class="popup-box">
+        <div class="popup-open">
+            <div class="popup-title">관리자 수정이력</div>
+
+            <div class="results-box">
+                <!-- table -->
+                <div class="list-table-box">
+                    <table class="normal-list-table">
+                        <colgroup>
+                            <col style="width:10%;" />
+                            <col />
+                            <col />
+                            <col style="width:15%;" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>일시</th>
+                                <th>수정항목</th>
+                                <th>수정자</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.ROW_NO</td>
+                                    <td>@item.REGIST_DATE.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@item.ITEM</td>
+                                    <td>
+                                        @item.REGIST_NAME<br />
+                                        (@item.REGIST_ID)
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <!--// table -->
+                <!-- paging -->
+                <div class="paging_wrap">
+                    <div class="paging">
+                        @Html.PagingBoardPager(Model, page => Url.Action(null, new { page }))
+                    </div>
+                </div>
+                <!--// paging -->
+            </div>
+        </div>
+        <div class="close-btn"><a href="#"></a></div>
+    </div>
+    <!-- popup -->
+    <!-- content -->
+
+</body>
+</html>

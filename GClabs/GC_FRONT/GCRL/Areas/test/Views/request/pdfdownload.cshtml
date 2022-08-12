@@ -1,0 +1,89 @@
+﻿
+@{
+    Layout = null;
+
+    ViewBag.Title = "PdfDownload";
+}
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <script type="text/javascript">
+        window.onload = function () {
+            setTimeout(function () {
+                downloadPDF();
+            }, 0);
+        };
+
+        function downloadPDF(pdf) {
+            var browserName = undefined;
+            var userAgent = navigator.userAgent;
+
+            switch (true) {
+                case /Trident|MSIE/.test(userAgent):
+                    browserName = 'ie';
+                    break;
+
+                case /Edge/.test(userAgent):
+                    browserName = 'edge';
+                    break;
+
+                case /Chrome/.test(userAgent):
+                    browserName = 'chrome';
+                    break;
+
+                case /Safari/.test(userAgent):
+                    browserName = 'safari';
+                    break;
+
+                case /Firefox/.test(userAgent):
+                    browserName = 'firefox';
+                    break;
+
+                case /Opera/.test(userAgent):
+                    browserName = 'opera';
+                    break;
+
+                default:
+                    browserName = 'unknown';
+            }
+
+            //ie 브라우저 및 EDGE 브라우저
+            if (browserName == 'ie' || browserName == 'edge') {
+                //alert("익스플로러");
+                //ie11
+                var linkSource = "@ViewBag.visit.PDF_pdfFile";
+                //var downloadLink = document.createElement("a");
+                var fileName = "@ViewBag.visit.PDF_fileName";
+
+                var byteCharacters = atob(linkSource);
+                var byteNumbers = new Array(byteCharacters.length);
+                for (var i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                var byteArray = new Uint8Array(byteNumbers);
+                var blob = new Blob([byteArray], { type: 'application/pdf' });
+                window.navigator.msSaveOrOpenBlob(blob, fileName);
+
+                //self.close();
+                //return;
+                //window.close();
+                setTimeout(function () { self.close(); }, 20000);
+            } else {
+
+                var linkSource = "data:application/pdf;base64,@ViewBag.visit.PDF_pdfFile";
+                var downloadLink = document.createElement("a");
+                var fileName = "@ViewBag.visit.PDF_fileName";
+                downloadLink.href = linkSource;
+                downloadLink.download = fileName;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                window.close();
+            }
+        }
+    </script>
+</body>
+</html>
+

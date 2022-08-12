@@ -1,0 +1,301 @@
+﻿@*@model PagedList.IPagedList<GCRL.Areas.test.Models.requestModel>*@
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "검사의뢰서"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "검사의뢰 방법 및 안내사항을 확인하세요."; }
+@{ var meta_page_url = "http://121.140.143.35:4060/test/request"; }
+@{ var meta_keywords = "검사안내, 검사의뢰, 검사의뢰서"; }
+@{ var meta_twitter_site = ""; }
+
+@{
+    var list_count = 1;
+}
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+}
+
+<script lang="en" type="text/javascript">
+    $(document).ready(function () {
+        $('#btnCheckID').click(function () {
+            $("#Pdf_download").on("click", function () {
+                dialogEditHistory.dialog("open");
+            });
+            $('.nowon-slider').slick({
+                infinite: false,
+                responsive: [
+                    {
+                        breakpoint: 9999,
+                        settings: "unslick"
+                    },
+                    {
+                        breakpoint: 800,
+                        settings: {
+                            slidesToShow: 1,
+                            slidesToScroll: 1,
+                            centerMode: false,
+                            variableWidth: true,
+                            arrows: false,
+                        }
+                    }]
+            });
+        });
+</script>
+
+<div id="container" class="container test-information">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="/">홈</a></span>
+
+                <span><a href="@Url.Action("order", "detail", new { Area = "test"})">검사안내</a></span>
+
+                <span><a href="@Url.Action("order", "detail", new { Area = "test"})">검사의뢰</a></span>
+
+                <span class="current">검사의뢰서</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">검사의뢰서</h2>
+                <p class="text">검사의뢰 방법 및 안내사항을 확인하세요.</p>
+            </div>
+        </div>
+        <div class="slider-section">
+            <div class="title-wrap contents-inner"><h3 class="title-h3">자주 찾는 의뢰서</h3></div>
+                            <b>@ViewBag.viewOrderbylist</b>
+            <div class="contents-wide bg-gray">
+                <div class="test-slider-wrap contents-inner">
+                    <div class="slider-wrap">
+                        <div class="sliders test-slider request">
+
+                            <!--// loop start //-->
+                            <div class="slick-slide">
+                                <div class="item">
+                                    <a href="#n" class="box">
+                                        <div class="thumbnail">
+                                            <img src="data:image/jpg;base64,@ViewBag.visit.jpgFile1" alt="">
+                                        </div>
+                                        <div class="contents">
+                                            <strong class="title">@ViewBag.visit.name1</strong>
+                                        </div>
+                                    </a>
+                                    <div class="hover-cont">
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn view" onclick="window.open('@Url.Action("Preview", "request", new { Area = "test", idx = ViewBag.visit.load_idx1})')"><span>미리보기</span></button>
+                                        </span>
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn down" onclick="window.open('@Url.Action("PdfDownload", "request", new { Area = "test", idx = ViewBag.visit.load_idx1})')"><span>다운로드</span></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="slick-slide">
+                                <div class="item">
+                                    <a href="#n" class="box">
+                                        <div class="thumbnail">
+                                            <img src="data:image/jpg;base64,@ViewBag.visit.jpgFile2" alt="">
+                                        </div>
+                                        <div class="contents">
+                                            <strong class="title">@ViewBag.visit.name2</strong>
+                                        </div>
+                                    </a>
+                                    <div class="hover-cont">
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn view" onclick="window.open('@Url.Action("Preview", "request", new { Area = "test", idx = ViewBag.visit.load_idx2})')"><span>미리보기</span></button>
+                                        </span>
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn down" onclick="window.open('@Url.Action("PdfDownload", "request", new { Area = "test", idx = ViewBag.visit.load_idx2})')"><span>다운로드</span></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="slick-slide">
+                                <div class="item">
+                                    <a href="#n" class="box">
+                                        <div class="thumbnail">
+                                            <img src="data:image/jpg;base64,@ViewBag.visit.jpgFile3" alt="">
+                                        </div>
+                                        <div class="contents">
+                                            <strong class="title">@ViewBag.visit.name3</strong>
+                                        </div>
+                                    </a>
+                                    <div class="hover-cont">
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn view" onclick="window.open('@Url.Action("Preview", "request", new { Area = "test", idx = ViewBag.visit.load_idx3})')"><span>미리보기</span></button>
+                                        </span>
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn down" onclick="window.open('@Url.Action("PdfDownload", "request", new { Area = "test", idx = ViewBag.visit.load_idx3})')"><span>다운로드</span></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="slick-slide">
+                                <div class="item">
+                                    <a href="#n" class="box">
+                                        <div class="thumbnail">
+                                            <img src="data:image/jpg;base64,@ViewBag.visit.jpgFile4" alt="">
+                                        </div>
+                                        <div class="contents">
+                                            <strong class="title">@ViewBag.visit.name4</strong>
+                                        </div>
+                                    </a>
+                                    <div class="hover-cont">
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn view" onclick="window.open('@Url.Action("Preview", "request", new { Area = "test", idx = ViewBag.visit.load_idx4})')"><span>미리보기</span></button>
+                                        </span>
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn down" onclick="window.open('@Url.Action("PdfDownload", "request", new { Area = "test", idx = ViewBag.visit.load_idx4})')"><span>다운로드</span></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="slick-slide">
+                                <div class="item">
+                                    <a href="#n" class="box">
+                                        <div class="thumbnail">
+                                            <img src="data:image/jpg;base64,@ViewBag.visit.jpgFile5" alt="">
+                                        </div>
+                                        <div class="contents">
+                                            <strong class="title">@ViewBag.visit.name5</strong>
+                                        </div>
+                                    </a>
+                                    <div class="hover-cont">
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn view" onclick="window.open('@Url.Action("Preview", "request", new { Area = "test", idx = ViewBag.visit.load_idx5})')"><span>미리보기</span></button>
+                                        </span>
+                                        <span class="button-wrap">
+                                            <button type="button" class="btn down" onclick="window.open('@Url.Action("PdfDownload", "request", new { Area = "test", idx = ViewBag.visit.load_idx5})')"><span>다운로드</span></button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--// loop end //-->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="contents-inner">
+            <div class="board-wrap">
+                <div class="title-wrap"><h3 class="title-h3">의뢰서/소견서/동의서</h3></div>
+                <div class="board-list-head">
+
+
+                    <div class="search-wrap">
+                        @*<form action="@Url.Action("list", "request", new { Area = "test"})" method="post">*@
+                            @using (Html.BeginForm("list", "request", FormMethod.Post))
+                            {
+                                <div class="search-area">
+                                    <span class="search-box">
+                                        @*@Html.TextBoxFor(m => m.search)*@
+                                        <input type="text" class="inp-search" name="search" id="search" title="검색어 입력" placeholder="검색어를 입력하세요." value="@ViewBag.search">
+                                    </span>
+                                    <span class="search-btn">
+                                        <button type="submit" class="search-go"></button>
+                                    </span>
+                                </div>
+                            }
+                        @*</form>*@
+
+                    </div>
+                    <div class="total-count">Total <span>@ViewBag.head.count</span></div>
+                </div>
+
+                <div class="board-list">
+                    <div class="list-wrap">
+                        <ul class="lists request">
+
+
+                            @foreach (var item in Model)
+                            {
+                                if (item.name != null)
+                                {
+                                    <li class="item">
+                                        <a href="#n" class="box">
+                                            <div class="thumbnail">
+                                                <img src="data:image/jpg;base64,@item.jpgFile" alt="">
+                                            </div>
+                                            <div class="contents">
+                                                <strong class="title">@item.name</strong>
+                                            </div>
+                                        </a>
+                                        <div class="hover-cont">
+                                            <span class="button-wrap">
+                                                <button type="button" class="btn view" onclick="window.open('@Url.Action("Preview", "request", new { Area = "test", idx = item.idx })')"><span>미리보기</span></button>
+                                            </span>
+                                            &nbsp;
+                                            <span class="button-wrap">
+                                                <button type="button" class="btn down" onclick="window.open('@Url.Action("PdfDownload", "request", new { Area = "test", idx = item.idx })')"><span>다운로드</span></button>
+                                            </span>
+                                        </div>
+                                    </li>
+                                }
+                            }
+
+                        </ul>
+                            @if (@ViewBag.head.count.Equals("0"))
+                            {
+                                <!-- 검색결과 없음 -->
+                                <ul>
+                                    <li class="no-data2">검색된 자료가 없습니다.</li>
+                                </ul>
+                                <!-- 검색결과 없음 -->
+                            }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*<script>
+    function filter() {
+        let search = document.getElementById("search").value.toLowerCase();
+        let item = document.getElementsByClassName("item");
+        let contents = document.getElementsByClassName("contents");
+
+        for (let i = 0; i < item.length; i++) {
+            title = item[i].getElementsByClassName("title");
+
+            if (title[0].innerHTML.toLowerCase().indexOf(search) != -1) {
+                item[i].style.display = "flex"
+            } else {
+                item[i].style.display = "none"
+            }
+        }
+    }
+</script>*@

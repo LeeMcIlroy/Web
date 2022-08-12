@@ -1,0 +1,554 @@
+﻿@using GCRL.Modules
+
+
+@{
+    ViewBag.Title = "medicine";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "Laboratory Medicine"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "We are the first laboratory in Korea to establish an automated clinical testing system."; }
+@{ var meta_page_url = "http://121.140.143.35:4060/eng/test"; }
+@{ var meta_keywords = "test, Laboratory Medicine"; }
+@{ var meta_twitter_site = ""; }
+
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+@section script {
+
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+
+    <script>
+
+        $('a', '.equipment-buttons').click(function () {
+            $('a', '.equipment-buttons').removeClass('active');
+            $(this).addClass('active');
+
+            let code = $(this).data('code');
+
+            showEquipment(0, code);
+        });
+
+        $('a', '.equipment-status .btn-group').click(function () {
+
+            let idx = $(this).data('idx');
+            let code = $(this).data('code');
+
+            if (idx == undefined || idx == '0')
+                return false;
+
+            showEquipment(idx, code);
+        });
+
+        function showEquipment(idx, code) {
+
+            let url = '@(Url.Action("equipment"))?idx=' + idx + '&code=' + code + '&pcd=';
+
+            $.getJSON(url, function (data) {
+
+                $('img', '.equipment-status .contents .thumbnail').attr('src', '@Functions.StaticFilesLocation.ImageUrl' + data.IMAGE_NAME);
+
+                $('.name', '.equipment-status .contents .info').text(data.TITLE);
+                $('.desc', '.equipment-status .contents .info').html(data.PURPOSE);
+
+                $('.prev', '.equipment-status .btn-group').data({ 'idx': data.PREV_IDX, 'code': code });
+                $('.next', '.equipment-status .btn-group').data({ 'idx': data.NEXT_IDX, 'code': code });
+
+                if (data.PREV_IDX == 0)
+                    $('.prev', '.equipment-status .btn-group').addClass('first');
+                else
+                    $('.prev', '.equipment-status .btn-group').removeClass('first');
+
+                if (data.NEXT_IDX == 0)
+                    $('.next', '.equipment-status .btn-group').addClass('last');
+                else
+                    $('.next', '.equipment-status .btn-group').removeClass('last');
+            });
+
+        }
+
+        $(document).ready(function () {
+            showEquipment(0, "");
+        });
+    </script>
+}
+<div id="container" class="container gclabs">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+
+            <div class="breadcrumb">
+                <span><a href="#">Home</a></span>
+
+
+                <span><a href="#">TEST</a></span>
+                <!-- <span><a href="#">Business Areas</a></span> -->
+
+                <span class="current">Laboratory Medicine</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">Laboratory Medicine</h2>
+                <p class="text">We are the first laboratory in Korea to establish an automated clinical testing system.</p>
+            </div>
+
+            <div class="test-diagnosis-wrap tabcontrol-wrap">
+
+                <div class="tabs-wrap">
+                    <ul class="tabs  wide type2 ">
+                        <li class="tab active">
+                            <a href="#n"><span>Automation Unit </span></a><!-- 1 -->
+                        </li>
+                        <li class="tab">
+                            <a href="#n"><span>Hematology</span></a><!-- 2 -->
+                        </li>
+                        <li class="tab">
+                            <a href="#n"><span>Microbiology</span></a><!-- 3 -->
+                        </li>
+                        <li class="tab">
+                            <a href="#n"><span>Molecular Microbiology</span></a><!-- 4 -->
+                        </li>
+                        <li class="tab">
+                            <a href="#n"><span>Tuberculosis</span></a><!-- 5 -->
+                        </li>
+                        <li class="tab">
+                            <a href="#n"><span>Human Genetics</span></a><!-- 6 -->
+                        </li>
+                        <li class="tab">
+                            <a href="#n"><span>Special Chemistry</span></a><!-- 7 -->
+                        </li>
+                        <li class="tab">
+                            <a href="#n"><span>Immunology</span></a><!-- 8 -->
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="tab-content test-diagnosis-content">
+
+                    <div class="section-tab blood-wrap2 active">
+                        <!-- 1 -->
+                        <div class="section">
+                            <div class="board-title">
+                                <div class="title-wrap">
+                                    <h3 class="title-h3">Automation Unit </h3>
+                                </div>
+                                <div class="button-wrap" style="display:none;">
+                                    <a href="#equipmentStatus" class="btn btn-arrow layer"><span>Equipment</span></a>
+                                </div>
+                            </div>
+                            <div class="img-area">
+                                <img src="../../../assets/images/img-lm-au-01-pc.png" class="pc tablet" alt="">
+                                <img src="../../../assets/images/img-lm-au-01-mo.png" class="mobile" alt="">
+                            </div>
+                            <ul class="list-style">
+                                <li class="text-info">
+                                    Equipped with a total laboratory automation (TLA) system for clinical testing, we strive to shorten turn around time, minimize error rate, and maximize efficiency by automating the entire process from sample arrival to sample dispensing, reagent dispensing, reagent and sample mixing, measurement, and report of results.
+
+                                </li>
+                                <li class="">
+                                    We secure reliability through thorough quality control and provide fast and accurate test results 24 hours a day. Through this TLA system, we carry out a variety of tests including basic tests necessary for diagnosis, treatment and prevention of various diseases such as cardiovascular disease tests, diabetes-related tests, hormone tests, bone metabolism tests, pregnancy-related tests, therapeutic drug concentration monitoring, drug abuse tests , and tumor marker tests.
+
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">Automation Test </h3>
+                            </div>
+                            <div class="flex-box">
+                                <ul class="list-style">
+                                    <li class="text-info">
+                                        <!-- With the state-of-art technology & ever-increasing testing volume, GC Labs has rapidly grown in overseas field 텍스트 삭제-->
+
+                                        <div class="img-area"><img src="../../../assets/images/img-lm-au-02-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-au-02-mo.png" class="mobile" alt=""></div>
+
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div><!-- 1 -->
+                    <div class="section-tab immune-wrap">
+                        <!-- 2 -->
+                        <div class="section">
+                            <div class="board-title">
+                                <div class="title-wrap">
+                                    <h3 class="title-h3">Hematology </h3>
+                                </div>
+                                <div class="button-wrap">
+                                    @*<a href="#equipmentStatus" class="btn btn-arrow layer"><span>Equipment</span></a>*@
+                                </div>
+                            </div>
+                            <div class="img-area"><img src="../../../assets/images/img-lm-ht-01-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-ht-01-mo.png" class="mobile" alt=""></div>
+                            <ul class="list-style">
+                                <li class="text-info">
+                                    The Hematology team performs general blood tests (CBC and PB morphology), coagulation test, special hematology tests(Bone marrow morphology and special stains), flow cytometric tests(lymphocyte subset, leukemia/lymphoma immunophenotyping, PNH), glycated hemoglobin(HbA1c), and pre-transfusion tests. The Hematology team consists of 11 professional technicians with a hematology specialist, and we always conduct reliable tests to ensure fast results and strict quality control.
+
+                                </li>
+                                <li class="">
+                                    The equipment composition of the hematology team at the hospital is Introduction of 2 lines of XN-9000 (blood automation equipment) connecting 6 SYSMEX XN-10 (CBC equipment) and 2 SP-50 (stain equipment) units and 2 STA-R MAX (blood coagulation equipment) units of Stago, Roche's Cobas c513 (glycated hemoglobin) 2 units, DIAGAST's Qwalys 3 (blood bank automation equipment) 2 units, flow cytometry equipment includes NAVIOS (Beckman Coulter) and Facs Canto II (BD).
+
+                                </li>
+
+                                <li class="">
+                                    Our Hematology team is doing our best to keep advanced quality about new tests and equipment based on accumulated professional manpower and data, providing more precise results and rapid TAT.
+
+
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">Test information </h3>
+                            </div>
+                            <div class="flex-box2">
+                                <div class="img-area" style="text-align:center;">
+                                    <img src="../../../assets/images/img-lm-ht-02.png" style="height:auto; width:auto;" alt="">
+                                </div>
+                                <ul class="list-style2">
+                                    <li class="strong">
+                                        lymphocytes subset, NK cell subset
+                                    </li>
+                                    <li class="text">
+                                        Lymphocytes are immune cells consisted of heterogeneous subgroups, roughly composed of T cells, B cells, and natural killer (NK) cells in mainly peripheral blood. Each subset owns specific cell-surface markers and functions. NK cells are roughly composed of cytotoxic NK cells and cytokine producing NK cells. The flow cytometric analysis could identify each of these subsets by a combination of one or more cell surface markers. These assays provide absolute (cells/micL) and relative (%) quantitation of total lymphocytes.
+
+                                    </li>
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div><!-- 2 -->
+                    <div class="section-tab chemistry-wrap">
+                        <!-- 3 -->
+                        <div class="section">
+                            <div class="board-title">
+                                <div class="title-wrap">
+                                    <h3 class="title-h3">Microbiology </h3>
+                                </div>
+                                <div class="button-wrap">
+                                    @*<a href="#equipmentStatus" class="btn btn-arrow layer"><span>Equipment</span></a>*@
+                                </div>
+                            </div>
+                            <ul class="list-style">
+                                <li class="text-info">
+                                    <div class="img-area"><img src="../../../assets/images/img-lm-mb-01-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-mb-01-mo.png" class="mobile" alt=""></div>
+
+                                    A microbiology laboratory performs microscopic examination, culture, identification and antimicrobial susceptibility testing of microorganisms including bacteria, fungi, yeasts, etc. The Microbiology Laboratory is composed of several sections including Aerobic and Anaerobic Bacteriology, Mycology, Parasitology.
+
+                                    <div class="img-area"><img src="../../../assets/images/img-lm-mb-02-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-mb-02-mo.png" class="mobile" alt=""></div>
+
+
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">Test information </h3>
+                            </div>
+                            <div class="flex-box2">
+                                <div class="img-area">
+                                    <img src="../../../assets/images/img-lm-mb-03.png" alt="">
+                                </div>
+                                <ul class="list-style2 dot">
+                                    <li>Gram stain</li>
+                                    <li>KOH mount</li>
+                                    <li>Blood culture</li>
+                                    <li>Ordinary culture</li>
+                                    <li>CRE, VRE culture</li>
+                                    <li>Fungus culture</li>
+                                    <li>Stool parasite</li>
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div><!-- 3 -->
+                    <div class="section-tab microbe-wrap">
+                        <!-- 4 -->
+                        <div class="section">
+                            <div class="board-title">
+                                <div class="title-wrap">
+                                    <h3 class="title-h3">Molecular Microbiology </h3>
+                                </div>
+                                <div class="button-wrap">
+                                    @*<a href="#equipmentStatus" class="btn btn-arrow layer"><span>Equipment</span></a>*@
+                                </div>
+                            </div>
+                            <ul class="list-style">
+                                <li class="text-info">
+                                    <div class="img-area"><img src="../../../assets/images/img-lm-mm-01-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-mm-01-mo.png" class="mobile" alt=""></div>
+
+                                    In Molecular Microbiology department, Automated DNA extraction procedure using magnetic glass particle technology enables faster and more testing to be placed. Also automated real PCR system reduces analytical time by screening multiple DNA sequences when detecting what microorganism actually causes the infection.
+
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">Test information </h3>
+                            </div>
+                            <div class="flex-box2">
+                                <div class="img-area">
+                                    <img src="../../../assets/images/img-lm-mm-02.png" alt="">
+                                </div>
+                                <ul class="list-style2 dot">
+                                    <li>CMV, EBV, BK</li>
+                                    <li>HBV, HCV, HIV</li>
+                                    <li>SARS-CoV-2</li>
+                                    <li>Respiratory Disease Pathogen Panel</li>
+                                    <li>Malaria, Dengue, SFTS</li>
+                                    <li>Gastrointestinal Disease Pathogen Panel</li>
+                                    <li>Sexual Transmitted Diseases, HPV</li>
+                                    <li>Meningitis Pathogen Panel</li>
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div><!-- 4 -->
+                    <div class="section-tab genetics-wrap">
+                        <!-- 5 -->
+                        <div class="section">
+                            <div class="board-title">
+                                <div class="title-wrap">
+                                    <h3 class="title-h3">Tuberculosis</h3>
+                                </div>
+                                <div class="button-wrap">
+                                    @*<a href="#equipmentStatus" class="btn btn-arrow layer"><span>Equipment</span></a>*@
+                                </div>
+                            </div>
+                            <div class="img-area"><img src="../../../assets/images/img-lm-tub-01-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-tub-01-mo.png" class="mobile" alt=""></div>
+                            <ul class="list-style dot">
+                                <li>
+                                    Established in 2020 (Spin-off as a independent team for tuberculosis related tests which were dispersed in Microbiology, Molecular microbiology, Immunology team)
+                                </li>
+                                <li>
+                                    Diagnosis and treatment for patients can be conducted through highly accurate tests
+                                </li>
+                                <li>
+                                    Performs government projects and continuously conducts research with center for Infectious disease
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">Test information </h3>
+                            </div>
+                            <div class="flex-box2">
+                                <div class="img-area">
+                                    <img src="../../../assets/images/img-lm-tub-02.png" alt="">
+                                </div>
+                                <ul class="list-style2 dot">
+                                    <li>
+                                        <em class="strong">Microbiology</em><br>
+                                        AFB stain, AFB Culture (solid, liquid), AFB susceptibility, NTM susceptibility
+                                    </li>
+
+                                    <li>
+                                        <em class="strong">Molecular</em><br>
+                                        M.Tb real time PCR, M.tb & NTM real time PCR, Rapid drugs susceptibility, NTM ID, Sequencing Drug susceptibility (RFP, INH, Quinolone)
+                                    </li>
+
+                                    <li>
+                                        <em class="strong">Latent tuberculosis infection</em><br>
+                                        Interferon gamma releasing assay (QuantiFeron-TB Plus)
+                                    </li>
+
+                                </ul>
+
+                            </div>
+                        </div>
+                    </div><!-- 5 -->
+                    <div class="section-tab genetics-wrap">
+                        <!-- 6 -->
+                        <div class="section">
+                            <div class="board-title">
+                                <div class="title-wrap">
+                                    <h3 class="title-h3">Human Genetics</h3>
+                                </div>
+                                <div class="button-wrap">
+                                    @*<a href="#equipmentStatus" class="btn btn-arrow layer"><span>Equipment</span></a>*@
+                                </div>
+                            </div>
+                            <div class="img-area"><img src="../../../assets/images/img-lm-hg-01-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-hg-01-mo.png" class="mobile" alt=""></div>
+                            <ul class="list-style">
+                                <li class="text-info">
+                                    Human Genetics Unit is composed of department of Human molecular genetics and Cytogenetics. The department of Human molecular genetics performs genetic tests to diagnose genetic disease and hematologic malignancy, predict or monitor drug response, and provide information for companion diagnostics. The department of Cytogenetics conducts chromosomal analysis and various types of FISH tests to diagnose constitutional disease and hematological malignancy, and monitor therapeutic response.
+
+
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">Test information </h3>
+                            </div>
+                            <div class="flex-box2">
+                                <div class="img-area">
+                                    <img src="../../../assets/images/img-lm-hg-02.png" alt="">
+                                </div>
+                                <ul class="list-style2 dot">
+                                    <li>Hereditary disease</li>
+                                    <li>FISH, Pharmacogenetics</li>
+                                    <li>Chromosome analysis</li>
+                                    <li>Somatic mutation</li>
+                                    <li>Paternity</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div><!-- 6 -->
+                    <div class="section-tab genetics-wrap">
+                        <!-- 7 -->
+                        <div class="section">
+                            <div class="board-title">
+                                <div class="title-wrap">
+                                    <h3 class="title-h3">Special Chemistry</h3>
+                                </div>
+                                <div class="button-wrap">
+                                    @*<a href="#equipmentStatus" class="btn btn-arrow layer"><span>Equipment</span></a>*@
+                                </div>
+                            </div>
+                            <div class="img-area"><img src="../../../assets/images/img-lm-sc-01-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-sc-01-mo.png" class="mobile" alt=""></div>
+                            <ul class="list-style">
+                                <li class="text-info">
+                                    Special Chemistry unit uses more than 60 special chemistry analytical equipment called LC-MS/MS, HPLC, GC-MS, ICP-MS, AAS, etc. These mass analyzers measure the mass to charge ratios of ions, and their results are typically presented as mass spectra. These spectra are used to determine the elemental or isotopic signatures of various types of samples.<br><br>
+
+                                    Using this state-of-the-art technology, Special Chemistry unit analyzes more than 150 items such as Newborn Screening Tests, amino acids, organic acids, fatty acids, hormones, vitamins, neurotransmitters, drugs, heavy metals, trace elements, and enzymes, etc. Finally, the total number of tests per year reaches about 400,000. Especially, Special Chemistry unit performs highest numbers of Newborn Screening Tests (NST)s around 25% of whole demands in South Korea.<br><br>
+
+                                    This Special Chemistry unit consists of 4 subunits, including Special Chemistry subunit 1, Special Chemistry subunit 2, Special Chemistry Research subunit, and Special Health Examination subunit.<br>
+
+                                    The special chemistry unit member consists of more than 55 specialists, including 3 clinical pathologists (doctors) and 1 Occupational and Environmental Medicine (OEM) doctor, 40 laboratory technologists, 10 analytical chemists, as well as nurses, radiologic technologist, and engineer industrial hygiene managers for Special Health Examination subunit.
+
+
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">Test information </h3>
+                            </div>
+                            <div class="flex-box2">
+                                <div class="img-area">
+                                    <img src="../../../assets/images/img-lm-sc-02.png" alt="">
+                                </div>
+                                <ul class="list-style2 dot">
+                                    <li>Metabolites</li>
+                                    <li>Drug &amp; Poisoning</li>
+                                    <li>Vitamin</li>
+                                    <li>Enzyme</li>
+                                    <li>Blood heavy metals</li>
+                                    <li>Orotic acid</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div><!-- 7 -->
+                    <div class="section-tab genetics-wrap">
+                        <!-- 8 -->
+                        <div class="section">
+                            <div class="board-title">
+                                <div class="title-wrap">
+                                    <h3 class="title-h3">Immunology</h3>
+                                </div>
+                                <div class="button-wrap">
+                                    @*<a href="#equipmentStatus" class="btn btn-arrow layer"><span>Equipment</span></a>*@
+                                </div>
+                            </div>
+                            <div class="img-area"><img src="../../../assets/images/img-lm-il-01-pc.png" class="pc tablet" alt=""><img src="../../../assets/images/img-lm-il-01-mo.png" class="mobile" alt=""></div>
+                            <ul class="list-style">
+                                <li class="text-info">
+                                    Immunology department performs the highest number of immunologic test items in Korea. We mainly perform immunoassays by manual methods such as ELISA, IFA, RIA, immunoblot and etc. Immunoassays performed by our department cover diagnostic markers for various diseases including autoimmune diseases, allergic diseases, infectious diseases, endocrine and thrombotic diseases, and many more. We also perform PRA and HLA tests by Luminex technology for organ transplantation.
+
+
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="section">
+                            <div class="title-wrap">
+                                <h3 class="title-h3">Test information </h3>
+                            </div>
+                            <div class="flex-box2">
+                                <div class="img-area">
+                                    <img src="../../../assets/images/img-lm-il-02.png" alt="">
+                                </div>
+                                <ul class="list-style2 dot">
+                                    <li>Autoimmune diseases</li>
+                                    <li>Allergic diseases</li>
+                                    <li>Infectious diseases</li>
+                                    <li>Endocrine and Thrombotic diseases</li>
+                                    <li>Radioimmunoassays</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div><!-- 8 -->
+
+
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+<!-- 장비현황 팝업 -->
+<article id="equipmentStatus" class="popup-layer">
+    <div class="popup-wrap">
+        <div class="popup-container">
+            <div class="popup-head"><span class="text">Equipment</span></div>
+            <div class="popup-body">
+                <div class="equipment-status pathology">
+                    <div class="button-wrap equipment-buttons">
+                        <a href="#n" class="active" data-code=""><span>All</span></a>
+                        @foreach (var item in Functions.GetCommList_V2("dept_div_en", ""))
+                        {
+                            <a href="#n" data-code="@item.CODE"><span>@item.NAME</span></a>
+                        }
+                    </div>
+                    <div class="contents">
+                        <div class="thumbnail">
+                            <img src="#" class="pc tablet" alt="">
+                            <img src="#" class="mobile" alt="">
+                        </div>
+                        <div class="info">
+                            <strong class="name"></strong>
+                            <span class="desc"></span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <!-- 맨 처음일 경우 first 클래스 추가 -->
+                        <a href="#n" class="btn-arrow prev">
+                            <span class="arrow"><em class="hidden">이전</em></span>
+                        </a>
+                        <!-- 맨 마지막일 경우 last 클래스 추가 -->
+                        <a href="#n" class="btn-arrow next">
+                            <span class="arrow"><em class="hidden">다음</em></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="popup-close">
+            <span class="close"><em class="hidden">팝업 닫기</em></span>
+        </button>
+    </div>
+</article>

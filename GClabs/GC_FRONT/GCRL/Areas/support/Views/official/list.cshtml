@@ -1,0 +1,205 @@
+﻿@model PagedList.IPagedList<GCRL.Areas.support.Models.supportListModel>
+@using GCRL.Modules;
+
+
+@{
+    ViewBag.Title = "list";
+
+    List<GCRL.Areas.support.Models.supportListModel> _notiList = ViewBag.NotiList as List<GCRL.Areas.support.Models.supportListModel>;
+
+
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "GC Labs 공문"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "검사관련 주요 신규검사 및 검사정보 변경 안내"; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+
+    <script>
+        $(function () {
+            $(window).on('load resize', function () {
+                if ($(window).width() > 800) {
+                    $('.pg_pc').css('display', 'block');
+                    $('.pg_mb').css('display', 'none');
+                } else {
+                    $('.pg_pc').css('display', 'none');
+                    $('.pg_mb').css('display', 'block');
+                }
+            });
+        })
+        function onSearch() {
+
+            let keyWord = $('#keyword').val();
+
+            location.href = '@(Url.Action("list"))?keyword=' + keyWord;
+        }
+    </script>
+}
+
+<div id="container" class="container support">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+
+                <span><a href="#">고객지원</a></span>
+
+                <span class="current">GC Labs 공문</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">GC Labs 공문</h2>
+                <p class="text">검사관련 주요 신규검사 및 검사정보 변경 안내</p>
+            </div>
+            <div class="board-wrap">
+                <div class="board-list-head">
+
+                    <div class="search-wrap">
+                        <form action="">
+                            <div class="search-area">
+                                <span class="search-box">
+                                    @Html.TextBox("keyword", null, new { @class = "inp-search", maxlength = "30", placeholder = "검색어를 입력하세요.", title = "검색어 입력" })
+                                </span>
+                                <span class="search-btn">
+                                    <button type="button" class="search-go" onclick="onSearch();"></button>
+                                </span>
+                            </div>
+                        </form>
+
+                    </div>
+                    <div class="total-count">Total <span>@Model.TotalItemCount.ToString("n0")</span></div>
+                </div>
+
+                <div class="table-wrap">
+                    <div class="table-inner">
+                        <table class="table tb-default grid-ty3">
+                            <colgroup>
+                                <col class="" width="10%">
+                                <col class="" width="auto">
+                                <col class="" width="15%">
+                                <col class="" width="200px">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="sm-none">번호</th>
+                                    <th class="">제목</th>
+                                    <th class="sm-none">등록일</th>
+                                    <th class="">첨부파일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in _notiList)
+                                {
+                                    <tr class="">
+                                        <td class="num min-pc">
+                                            -
+                                        </td>
+                                        <td class="left td-title">
+                                            <a href='@(Url.Action("view", new {id = item.IDX}))?@(Request.QueryString.ToString())' class='link-txt'>@item.TITLE</a>
+                                            <span class="icon_new"><img src="../../../assets/images/icon_new_s.png" class="@(item.NEW_YN ? "img_new" : "")"></span>
+
+                                            
+                                            <span class='max-tablet date'>@item.REGIST_DATE.ToString("yyyy-MM-dd")</span>
+                                        </td>
+                                        <td class="min-pc nowrap">
+                                            @item.REGIST_DATE.ToString("yyyy-MM-dd")
+                                        </td>
+                                        <td class="btn-wrap">
+                                            @if (!string.IsNullOrEmpty(item.ATTACH1_ORG_NAME))
+                                            {
+                                                <a href="@Url.Action("download")?filesname=@item.ATTACH1_SAVE_NAME&fileoname=@item.ATTACH1_ORG_NAME" class="btn btn-download"><span>다운로드</span></a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                @foreach (var item in Model)
+                                {
+                                    <tr class="">
+                                        <td class="num min-pc">
+                                            @item.ROW_NO
+                                        </td>
+                                        <td class="left td-title">
+                                            <a href='@(Url.Action("view", new {id = item.IDX}))?@(Request.QueryString.ToString())' class='link-txt'>@item.TITLE</a>
+                                            <span class="icon_new"><img src="../../../assets/images/icon_new_s.png" class="@(item.NEW_YN ? "img_new" : "")"></span>
+
+                                            <span class='max-tablet date'>@item.REGIST_DATE.ToString("yyyy-MM-dd")</span>
+                                        </td>
+                                        <td class="min-pc nowrap">
+                                            @item.REGIST_DATE.ToString("yyyy-MM-dd")
+                                        </td>
+                                        <td class="btn-wrap">
+                                            @if (!string.IsNullOrEmpty(item.ATTACH1_ORG_NAME))
+                                            {
+                                                <a href="@Url.Action("download")?filesname=@item.ATTACH1_SAVE_NAME&fileoname=@item.ATTACH1_ORG_NAME" class="btn btn-download"><span>다운로드</span></a>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                                @if (Model.TotalItemCount == 0)
+                                {
+                                    <tr class="">
+                                        <td colspan="4">
+                                            검색된 자료가 없습니다.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="paging-wrap">
+                    <div class="paging">
+                        <div class="pg_pc">
+                            @Html.PagingBoardPager(Model, page => Url.Action("list",
+                                                          new
+                                                          {
+                                                              page,
+                                                              keyword = ViewBag.keyword
+                                                          }
+                                                      ), new PagedList.Mvc.PagedListRenderOptions() { MaximumPageNumbersToDisplay = 10 })
+                        </div>
+                        <div class="pg_mb">
+                            @Html.PagingBoardPager_M(Model, page => Url.Action("list", new
+                            {
+                                page,
+                                keyword = ViewBag.keyword
+
+                            }))
+                        </div>
+                    </div>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

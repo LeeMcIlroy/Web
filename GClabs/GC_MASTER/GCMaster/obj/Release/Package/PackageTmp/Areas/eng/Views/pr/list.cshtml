@@ -1,0 +1,211 @@
+﻿
+@model PagedList.IPagedList<GCMaster.Areas.eng.Models.engListModel>
+@using GCMaster.Modules;
+
+@section Styles {
+    <style>
+    </style>
+}
+
+@section Scripts {
+
+    <script>
+
+        function onSearch() {
+
+            let dateType = $('#datetype').val();
+            let datePick1 = $('#datepick1').val();
+            let datePick2 = $('#datepick2').val();
+            let datePeriod = $('input[name="dateperiod"]:checked').val();
+
+            let viewType = $('input[name="viewtype"]:checked').val();
+            let notiType = $('input[name="notitype"]:checked').val();
+            let keyType = $('#keytype').val();
+            let keyWord = $('#keyword').val();
+
+            location.href = '@Url.Action("list")' + '?'
+                + 'datetype=' + dateType
+                + '&datepick1=' + datePick1
+                + '&datepick2=' + datePick2
+                + '&dateperiod=' + datePeriod
+                + '&viewtype=' + viewType
+                + '&notitype=' + notiType
+                + '&keytype=' + keyType
+                + '&keyword=' + keyWord
+                ;
+        }
+
+        function onReset() {
+            $('#datetype').val('1');
+            $('#dateperiodM').click();
+            $('#dateperiodA').click();
+            $('#viewtypeA').click();
+            $('#notitypeA').click();
+            $('#keytype').val('');
+            $('#keyword').val('');
+        }
+
+        $(document).ready(function () {
+            $('input[name="dateperiod"]').change(function () {
+                var period = $('input[name="dateperiod"]:checked').val();
+                if (period == "Y") {
+                    $('#datepick1').val('@DateTime.Today.AddYears(-1).ToString("yyyy-MM-dd")');
+                    $('#datepick2').val('@DateTime.Today.ToString("yyyy-MM-dd")');
+                }
+                else if (period == "Q") {
+                    $('#datepick1').val('@DateTime.Today.AddMonths(-3).ToString("yyyy-MM-dd")');
+                    $('#datepick2').val('@DateTime.Today.ToString("yyyy-MM-dd")');
+                }
+                else if (period == "M") {
+                    $('#datepick1').val('@DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd")');
+                    $('#datepick2').val('@DateTime.Today.ToString("yyyy-MM-dd")');
+                }
+            });
+        });
+    </script>
+
+}
+
+<div class="page-title">Press Releases</div>
+<div class="sh-option">
+    <dl>
+        <dt>기간조회</dt>
+        <dd>
+            @Html.DropDownList("datetype",
+                                new List<SelectListItem>()
+                                {
+                                    new SelectListItem() { Value = "1", Text = "등록일" },
+                                    new SelectListItem() { Value = "2", Text = "수정일" }
+                                },
+                                new { @class = "w69px" })
+            @Html.TextBox("datepick1", null, new { maxlength = "10", @class = "w100px datepicker" })
+            &nbsp;~&nbsp;
+            @Html.TextBox("datepick2", null, new { maxlength = "10", @class = "w100px datepicker" })
+        </dd>
+        <dd>
+            @Html.RadioButton("dateperiod", "A", new { id = "dateperiodA" }) <label for="dateperiodA">전체</label>&nbsp;&nbsp;
+            @Html.RadioButton("dateperiod", "Y", new { id = "dateperiodY" }) <label for="dateperiodY">1년</label>&nbsp;&nbsp;
+            @Html.RadioButton("dateperiod", "Q", new { id = "dateperiodQ" }) <label for="dateperiodQ">3개월</label>&nbsp;&nbsp;
+            @Html.RadioButton("dateperiod", "M", new { id = "dateperiodM" }) <label for="dateperiodM">1개월</label>&nbsp;&nbsp;&nbsp;&nbsp;
+        </dd>
+    </dl>
+    <dl style="clear:both;">
+        <dt>노출여부</dt>
+        <dd>
+            @Html.RadioButton("viewtype", "A", new { id = "viewtypeA" }) <label for="viewtypeA">전체</label>&nbsp;&nbsp;
+            @Html.RadioButton("viewtype", "Y", new { id = "viewtypeY" }) <label for="viewtypeY">YES</label>&nbsp;&nbsp;
+            @Html.RadioButton("viewtype", "N", new { id = "viewtypeN" }) <label for="viewtypeN">NO</label>&nbsp;&nbsp;&nbsp;&nbsp;
+        </dd>
+        <dt style="width:80px;">상단고정여부</dt>
+        <dd>
+            @Html.RadioButton("notitype", "A", new { id = "notitypeA" }) <label for="notitypeA">전체</label>&nbsp;&nbsp;
+            @Html.RadioButton("notitype", "Y", new { id = "notitypeY" }) <label for="notitypeY">YES</label>&nbsp;&nbsp;
+            @Html.RadioButton("notitype", "N", new { id = "notitypeN" }) <label for="notitypeN">NO</label>&nbsp;&nbsp;&nbsp;&nbsp;
+        </dd>
+    </dl>
+    <dl style="clear: both;">
+        <dt>검색구분</dt>
+        <dd>
+            @Html.DropDownList("keytype",
+                                new List<SelectListItem>()
+                                {
+                                    new SelectListItem() { Value = "", Text = "전체" },
+                                    new SelectListItem() { Value = "1", Text = "제목" },
+                                    new SelectListItem() { Value = "2", Text = "내용" }
+                                },
+                                new { @class = "w69px" })
+            @Html.TextBox("keyword", null, new { maxlength = "30", placeholder = "검색어" })
+            <button type="button" class="sh-btn" onclick="onSearch();">조회</button>
+            <button type="button" class="btn-refresh" onclick="onReset();">초기화</button>
+        </dd>
+    </dl>
+</div>
+<div class="list-box">
+    <!--search info-->
+    <div class="search-infomation">
+        <div class="search-count">
+            총 <strong>@Model.TotalItemCount</strong>건
+        </div>
+        <div class="paging-select">
+            <div>
+                <a href="@(Url.Action("view", new { id = 0 }))?@(Request.QueryString.ToString())" class="sh-btn">등록</a>
+            </div>
+        </div>
+    </div>
+    <!--// search info-->
+    <!-- table -->
+    <div class="list-table-box">
+        <table class="normal-list-table">
+            <colgroup>
+                <col style="width:5%;" />
+                <col style="width:8%;" />
+                <col />
+                <col style="width:5%;" />
+                <col style="width:5%;" />
+                <col style="width:5%;" />
+                <col style="width:5%;" />
+                <col style="width:8%;" />
+                <col style="width:8%;" />
+                <col style="width:8%;" />
+                <col style="width:8%;" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>대표이미지</th>
+                    <th>제목</th>
+                    <th>조회수</th>
+                    <th>노출여부</th>
+                    <th>노출순서</th>
+                    <th>상단고정</th>
+                    <th>등록자</th>
+                    <th>등록자아이디</th>
+                    <th>등록일자</th>
+                    <th>수정일자</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                <tr>
+                    <td>@item.IDX</td>
+                    <td><div class="upload-img-box mr0"><img src="@Functions.GetImageUrl(item.IMAGE1_SAVE_NAME)"></div></td>
+                    <td class="txt-l"><a href="@(Url.Action("view", new {id = item.IDX}))?@(Request.QueryString.ToString())" class="underline">@item.TITLE</a></td>
+                    <td>@item.VIEW_CNT</td>
+                    <td>@item.VIEW_YN</td>
+                    <td>@item.VIEW_ORDER</td>
+                    <td>@item.NOTI_YN</td>
+                    <td>@item.REGIST_NAME</td>
+                    <td>@item.REGIST_ID</td>
+                    <td>@item.REGIST_DATE.ToString("yyyy-MM-dd")</td>
+                    <td>@item.UPDATE_DATE.ToString("yyyy-MM-dd")</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <!--// table -->
+    <!-- paging -->
+    <div class="pg-btn">
+        <div class="paging_wrap">
+            <div class="paging">
+                @Html.PagingBoardPager(Model, page => Url.Action("list",
+                                                        new
+                                                        {
+                                                            page,
+                                                            datetype = ViewBag.datetype,
+                                                            datepick1 = ViewBag.datepick1,
+                                                            datepick2 = ViewBag.datepick2,
+                                                            dateperiod = ViewBag.dateperiod,
+                                                            viewtype = ViewBag.viewtype,
+                                                            notitype = ViewBag.notitype,
+                                                            keytype = ViewBag.keytype,
+                                                            keyword = ViewBag.keyword
+                                                        }
+                                                    ))
+            </div>
+        </div>
+    </div>
+    <!--// paging -->
+
+</div>

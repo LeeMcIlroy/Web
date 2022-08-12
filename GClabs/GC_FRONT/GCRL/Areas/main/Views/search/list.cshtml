@@ -1,0 +1,253 @@
+﻿@model GCRL.Areas.main.Models.searchResultModel
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "통합검색"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "검색 결과를 확인해 보세요"; }
+@{ var meta_page_url = "http://121.140.143.35:4060/main/search"; }
+@{ var meta_keywords = "통합검색"; }
+@{ var meta_twitter_site = ""; }
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+@section script {
+    <script type="text/javascript" src="~/assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="~/assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="~/assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="~/assets/js/app.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('.title', '.result-list').each(function() {
+                let sText = $(this).text();
+                $(this).html(sText.replace(/@ViewBag.searchkeyword/ig, '<span class="highlight">@ViewBag.searchkeyword</span>'));
+            });
+        });
+    </script>
+}
+
+    <div id="container" class="container search-result">
+        <div class="contents-wrap">
+            <div class="contents-inner">
+                <div class="breadcrumb">
+                    <span><a href="#">홈</a></span>
+                    <span class="current">통합검색</span>
+                </div>
+                <div class="page-title">
+                    <h2 class="title">통합검색</h2>
+                    <p class="text">검색 결과를 확인해 보세요</p>
+                </div>
+                <div class="search-result-wrap">
+                    <div class="search-wrap">
+                        <form action="">
+                            <div class="search-area">
+                                <span class="search-box">
+                                    @Html.TextBox("searchkeyword", null, new { @class = "inp-search", maxlength = "30", placeholder = "검색어를 입력하세요.", title = "검색어 입력" })
+                                </span>
+                                <span class="search-btn">
+                                    <button type="submit" class="search-go"><span class="hidden">검색</span></button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="search-result-text"><span class="keyword">“@ViewBag.searchkeyword”</span> 에 대해 총 <span class="search-count">@Model.totalCount.ToString("n0")건</span>이 <br class="mobile">검색 되었습니다.</div>
+                    <div class="tabs-wrap">
+                        <ul class="tabs  wide type2 ">
+                            <li class="tab active">
+                                <a href="#n"><span>전체 (@Model.totalCount.ToString("n0"))</span></a>
+                            </li>
+                            <li class="tab ">
+                                <a href="#n"><span>검사안내 (@Model.testCount.ToString("n0"))</span></a>
+                            </li>
+                            <li class="tab ">
+                                <a href="#n"><span>고객지원 (@Model.supportCount.ToString("n0"))</span></a>
+                            </li>
+                            <li class="tab ">
+                                <a href="#n"><span>재단홍보 (@Model.prCount.ToString("n0"))</span></a>
+                            </li>
+                            <li class="tab ">
+                                <a href="#n"><span>재단소개 (@Model.gclabsCount.ToString("n0"))</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-content search-result-content">
+                        <div class="section-tab result-all-wrap active">
+                            <div class="contents-section">
+                                <h3 class="title-h3">검사안내 <span class="number">(@Model.testCount.ToString("n0"))</span></h3>
+                                <div class="result-list-wrap">
+                                    <ul class="result-list">
+                                        @foreach (var item in Model.testList)
+                                        {
+                                            <li>
+                                                <a href="@item.LINK" class="item">
+                                                    <div class="location">@item.MENU</div>
+                                                    <div class="title">@item.TITLE</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <a href="#n" class="btn-more"><span>More</span></a>
+                                </div>
+                            </div>
+                            <div class="contents-section">
+                                <h3 class="title-h3">고객지원 <span class="number">(@Model.supportCount.ToString("n0"))</span></h3>
+                                <div class="result-list-wrap">
+                                    <ul class="result-list">
+                                        @foreach (var item in Model.supportList)
+                                        {
+                                            <li>
+                                                <a href="@item.LINK" class="item">
+                                                    <div class="location">@item.MENU</div>
+                                                    <div class="title">@item.TITLE</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <a href="#n" class="btn-more"><span>More</span></a>
+                                </div>
+                            </div>
+                            <div class="contents-section">
+                                <h3 class="title-h3">재단홍보 <span class="number">(@Model.prCount.ToString("n0"))</span></h3>
+                                <div class="result-list-wrap">
+                                    <ul class="result-list">
+                                        @foreach (var item in Model.prList)
+                                        {
+                                            <li>
+                                                <a href="@item.LINK" class="item">
+                                                    <div class="location">@item.MENU</div>
+                                                    <div class="title">@item.TITLE</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <a href="#n" class="btn-more"><span>More</span></a>
+                                </div>
+                            </div>
+                            <div class="contents-section">
+                                <h3 class="title-h3">재단소개 <span class="number">(@Model.gclabsCount.ToString("n0"))</span></h3>
+                                <div class="result-list-wrap">
+                                    <ul class="result-list">
+                                        @foreach (var item in Model.gclabsList)
+                                        {
+                                            <li>
+                                                <a href="@item.LINK" class="item">
+                                                    <div class="location">@item.MENU</div>
+                                                    <div class="title">@item.TITLE</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <a href="#n" class="btn-more"><span>More</span></a>
+                                </div>
+                            </div>
+
+                            <!-- 검색 결과 없을 경우 -->
+                            @if (Model.totalCount == 0)
+                            {
+                            <div class="no-data">
+                                <p class="text">검색 결과가 없습니다.</p>
+                            </div>
+                            }
+                        </div>
+                        <div class="section-tab result-test-wrap">
+                            <div class="contents-section">
+                                <h3 class="title-h3">검사안내 <span class="number">(@Model.testCount.ToString("n0"))</span></h3>
+                                <div class="result-list-wrap">
+                                    <ul class="result-list">
+                                        @foreach (var item in Model.testList)
+                                        {
+                                            <li>
+                                                <a href="@item.LINK" class="item">
+                                                    <div class="location">@item.MENU</div>
+                                                    <div class="title">@item.TITLE</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <a href="#n" class="btn-more"><span>More</span></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-tab result-support-wrap">
+                            <div class="contents-section">
+                                <h3 class="title-h3">고객지원 <span class="number">(@Model.supportCount.ToString("n0"))</span></h3>
+                                <div class="result-list-wrap">
+                                    <ul class="result-list">
+                                        @foreach (var item in Model.supportList)
+                                        {
+                                            <li>
+                                                <a href="@item.LINK" class="item">
+                                                    <div class="location">@item.MENU</div>
+                                                    <div class="title">@item.TITLE</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <a href="#n" class="btn-more"><span>More</span></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-tab result-pr-wrap">
+                            <div class="contents-section">
+                                <h3 class="title-h3">재단홍보 <span class="number">(@Model.prCount.ToString("n0"))</span></h3>
+                                <div class="result-list-wrap">
+                                    <ul class="result-list">
+                                        @foreach (var item in Model.prList)
+                                        {
+                                            <li>
+                                                <a href="@item.LINK" class="item">
+                                                    <div class="location">@item.MENU</div>
+                                                    <div class="title">@item.TITLE</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <a href="#n" class="btn-more"><span>More</span></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-tab result-gclabs-wrap">
+                            <div class="contents-section">
+                                <h3 class="title-h3">재단소개 <span class="number">(@Model.gclabsCount.ToString("n0"))</span></h3>
+                                <div class="result-list-wrap">
+                                    <ul class="result-list">
+                                        @foreach (var item in Model.gclabsList)
+                                        {
+                                            <li>
+                                                <a href="@item.LINK" class="item">
+                                                    <div class="location">@item.MENU</div>
+                                                    <div class="title">@item.TITLE</div>
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                    <a href="#n" class="btn-more"><span>More</span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

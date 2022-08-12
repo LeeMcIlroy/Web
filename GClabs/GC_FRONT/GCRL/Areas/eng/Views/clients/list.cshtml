@@ -1,0 +1,133 @@
+﻿
+@using GCRL.Modules;
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "Clients"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "GC Labs has a strong network with various clients domestically & internationally"; }
+@{ var meta_page_url = "http://121.140.143.35:4060/eng/clients"; }
+@{ var meta_keywords = " Clients"; }
+@{ var meta_twitter_site = ""; }
+
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+@section script {
+
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+    <script>
+        function enterkey() {
+            if (window.event.keyCode == 13) {
+
+                // 엔터키가 눌렸을 때 실행하는 반응
+                onSearch();
+            }
+        }
+        function onSearch() {
+
+            let keyWord = $('#keyword').val();
+
+            location.href = '@(Url.Action("list"))?keyword=' + keyWord;
+        }
+
+    </script>
+
+}
+
+<div id="container" class="container pr">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+
+            <div class="breadcrumb">
+                <span><a href="#">HOME</a></span>
+
+
+                <span><a href="#">ABOUT</a></span>
+
+
+                <span class="current">Clients</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">Clients</h2>
+                <p class="text">GC Labs has a strong network with various clients domestically &amp; internationally</p>
+            </div>
+
+            <div class="board-wrap">
+                <div class="board-list-head">
+                    <div class="search-wrap">
+                        
+                            <div class="search-area">
+                                <span class="search-box">
+                                    @Html.TextBox("keyword", null, new { @class = "inp-search", maxlength = "30", placeholder = "Enter your search keyword.", title = "Enter your search keyword." , onkeyup = "enterkey();" })
+                                </span>
+                                <span class="search-btn">
+                                    <button type="submit" class="search-go" onclick="onSearch();"></button>
+                                </span>
+                            </div>
+                        
+
+                    </div>
+                    <div class="total-count">Total <span>@ViewBag.TotalCnt</span></div>
+                </div>
+                <div class="board-list">
+                    <div class="list-wrap">
+                        <ul class="lists client">
+                            @foreach (var item in Model)
+                            {
+
+                                <li class="item ">
+                                    <a href="@item.LINK_URL" target="_blank">
+                                        <div class="box">
+                                            <div class="thumbnail">
+                                                <img src="@Functions.GetImageUrl(@item.IMAGE1_SAVE_NM)" alt="@item.TITLE">
+                                            </div>
+                                            <div class="contents">
+                                                <strong class="title">@item.TITLE</strong>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+
+                        </ul>
+                        @if (@ViewBag.TotalCnt == 0)
+                        {
+                            <!-- 검색결과 없음 -->
+                            <ul>
+                                <li class="no-data2">
+                                    Sorry, no results found.
+                                </li>
+                            </ul>
+                            <!-- 검색결과 없음 -->
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

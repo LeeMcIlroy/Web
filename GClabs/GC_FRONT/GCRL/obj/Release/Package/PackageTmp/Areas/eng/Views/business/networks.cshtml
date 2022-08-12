@@ -1,0 +1,112 @@
+﻿@using GCRL.Modules;
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "networks";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "Global Networks"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "GC Labs has a strong network with various clients internationally & domestically."; }
+@{ var meta_page_url = "http://121.140.143.35:4060/eng/business"; }
+@{ var meta_keywords = "BUSINESS, Global Networks"; }
+@{ var meta_twitter_site = ""; }
+
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+@section script {
+
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+
+
+}
+<div id="container" class="container gclabs">
+    <div class="contents-wrap">
+        <div class="contents-inner">
+
+            <div class="breadcrumb">
+                <span><a href="#">Home</a></span>
+
+
+                <span><a href="#">BUSINESS</a></span>
+                <!-- <span><a href="#">Business Areas</a></span> -->
+
+                <span class="current">Global Networks</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">Global Networks</h2>
+                <p class="text">GC Labs has a strong network with various clients internationally & domestically.</p>
+            </div>
+
+            <div class="gnetworks-wrap">
+
+                <div class="contents-section">
+                    <div class="sub-visual">
+
+                        <img src="../../../assets/images/visual-gnetworks-pc.png" class="sub-visual-pc" alt="">
+                        <img src="../../../assets/images/visual-gnetworks-mo.png" class="sub-visual-mo" alt="">
+
+
+                    </div>
+
+                    <div class="text-wrap">
+                        <p class="title"><strong>Hundreds of esoteric test items are being referred to GC Labs from the leading medical institutions around the world.</strong></p>
+                        <p class="text">
+                            We are operating dedicated teams to provide clinical diagnostic testing services for special tests that are difficult to perform not only for domestic but also major overseas hospitals and reference laboratories. We are establishing close cooperation with the overseas medical community, including exchanges of technology and testing services with leading medical institutions around the world. We are continuously focusing on discovering new technologies and promoting domestic introduction so that the latest clinical tests developed overseas can be easily introduced in domestic clinical sites.<br><br>
+                            In addition to clinical diagnostic testing services, we are seeking to expand into various areas such as laboratory operation, consulting, and academic exchange. In particular, we exchange clinical usefulness of special tests developed through research in cooperation with leading laboratories in global. In addition, local seminars are held to share opinions and communicate with medical personnel about the development direction of the local medical testing market.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="board-wrap">
+                <div class="board-list">
+                    <div class="list-wrap">
+                        <ul class="lists client list2">
+
+                            @foreach (var item in Model)
+                            {
+                                <li class="item ">
+                                    <a href="@item.LINK_URL" target="_blank">
+                                        <div class="box">
+                                            <div class="thumbnail">
+                                                <img src="@Functions.GetImageUrl(@item.IMAGE2_SAVE_NM)" alt="@item.IMAGE2_ORG_NM">
+                                            </div>
+                                            <div class="contents">
+                                                <strong class="title2">@item.COMPANY_NM</strong>
+                                                <span class="date2"><img src="@Functions.GetImageUrl(@item.IMAGE1_SAVE_NM)">@item.NATION_NM</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
+
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

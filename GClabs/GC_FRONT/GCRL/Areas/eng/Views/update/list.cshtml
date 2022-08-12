@@ -1,0 +1,195 @@
+﻿@model PagedList.IPagedList<GCRL.Areas.eng.Models.updateModel>
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "Test Updates"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "Check the news on new diagnostic services and updates on testing offered by the GC Labs."; }
+@{ var meta_page_url = "http://121.140.143.35:4060/eng/update"; }
+@{ var meta_keywords = " test, Test Updates"; }
+@{ var meta_twitter_site = ""; }
+
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+@section script {
+
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+
+    <script>
+        $(function () {
+            $(window).on('load resize', function () {
+                if ($(window).width() > 800) {
+                    $('.pg_pc').css('display', 'block');
+                    $('.pg_mb').css('display', 'none');
+                } else {
+                    $('.pg_pc').css('display', 'none');
+                    $('.pg_mb').css('display', 'block');
+                }
+            });
+        })
+        function onSearch(keytype, keyword) {
+            location.href = '@(Url.Action("list"))?keytype=' + keytype + '&keyword=' + keyword;
+        }
+
+        function onView(idx, keytype, keyword) {
+            location.href = '@(Url.Action("view"))?id=' + idx + '&keytype = ' + keytype + '&keyword=' + keyword;
+        }
+    </script>
+
+}
+<div id="container" class="container test-information">
+    <div class="contents-wrap test-index">
+        <div class="contents-inner">
+
+            <div class="breadcrumb">
+                <span><a href="#">Home</a></span>
+                <span><a href="#">test</a></span>
+                <span class="current">Test Updates</span>
+            </div>
+
+            <div class="page-title">
+                <h2 class="title">Test Updates</h2>
+                <p class="text">
+                    Check the news on new diagnostic services and updates on testing offered by the GC Labs.
+                </p>
+            </div>
+
+            <div class="board-wrap">
+                <div class="board-list-head">
+                    <div class="selectbox-wrap">
+                        <div class="selectbox" style="width: 150px;">
+                            <a href="#n" class="select"><span>All</span></a>
+                            <ul class="lists">
+                                <li data-code="@(ViewBag.keytype == "" ? "selected" : "Z")">All</li>
+                                <li data-code="@(ViewBag.keytype == "A" ? "selected" : "A")">GC Labs code</li>
+                                <li data-code="@(ViewBag.keytype == "B" ? "selected" : "B")">Test item</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="search-wrap">
+                        <form action="">
+                            <div class="search-area">
+                                <span class="search-box">
+                                    @Html.TextBox("keyword", null, new { @class = "inp-search", maxlength = "30", placeholder = "Enter your search keyword.", title = "Enter your search keyword." })
+                                </span>
+                                <span class="search-btn">
+                                    <button type="button" class="search-go" onclick="onSearch('@ViewBag.keytype','@ViewBag.keyword');"></button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="total-count">Total <span>@ViewBag.totalCount</span></div>
+
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <div class="table-inner">
+                    <table class="table tb-default grid-ty2">
+                        <colgroup>
+
+                            <col class="" width="7%">
+
+                            <col class="" width="15%">
+
+                            <col class="" width="15%">
+
+                            <col class="" width="*">
+
+                            <col class="" width="15%">
+
+                            <col class="" width="15%">
+
+                        </colgroup>
+
+                        <thead>
+                            <tr>
+                                <th class="">No</th>
+                                <th class="">Type</th>
+                                <th class="">GC Labs code</th>
+                                <th class="">Test item</th>
+                                <th class="">Post</th>
+                                <th class="">Effective</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr onclick="onView('@item.IDX','@ViewBag.keytype','@ViewBag.keyword');" style="cursor:pointer;">
+                                    <td class="sm-none">@item.ROW_NUM</td>
+                                    <td class="sm-inline">@item.DIV_NAME1</td>
+                                    <td class="sm-inline">@item.CONTENT_S</td>
+                                    <td class="sm-inline">@item.TITLE </td>
+                                    <td class="sm-block">@item.DIV_DATE1</td>
+                                    <td class="sm-none">@item.REGIST_DATE </td>
+                                </tr>
+                            }
+                            @if (@ViewBag.totalCount == 0)
+                            {
+                                <tr class="">
+                                    <td colspan="6">
+                                        Sorry, no results found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="paging-wrap">
+                <div class="paging">
+                    <div class="pg_pc">
+                        @Html.PagingBoardPager(Model, page => Url.Action("list"
+                                                                      , new
+                                                                      {
+                                                                          page,
+                                                                          keytype = ViewBag.keytype,
+                                                                          keyword = ViewBag.keyword
+                                                                      })
+                                                                      , new PagedList.Mvc.PagedListRenderOptions() { MaximumPageNumbersToDisplay = 10 })
+                    </div>
+                    <div class="pg_mb">
+                        @Html.PagingBoardPager_M(Model, page => Url.Action("list",
+                                                    new
+                                                    {
+                                                        page,
+                                                        keytype = ViewBag.keytype,
+                                                        keyword = ViewBag.keyword
+                                                    }
+                         ))
+                    </div>
+                </div>
+                
+                
+            </div>
+
+        </div>
+    </div>
+</div>

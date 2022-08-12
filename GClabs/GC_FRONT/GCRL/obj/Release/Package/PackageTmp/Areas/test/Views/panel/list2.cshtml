@@ -1,0 +1,267 @@
+﻿@model PagedList.IPagedList<GCRL.Areas.test.Models.panelModel_02>
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "list";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "검진 패널검사"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "맞춤 검사를 통해 보다 정확도 높은 검사 시행합니다."; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+
+    <script>
+        var onoff;
+
+        $(document).ready(function () {
+            onoff = '@Html.Raw(ViewBag.onoff)';
+            if (onoff == 'on') {
+                $($('.search-detail').find('button')).click();
+            }
+        });
+
+        function fnEnterEvent() {
+            if (event.keyCode == 13) {
+                onFieldSearch('@ViewBag.trbtyp');
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+
+        function onFieldSearch(trbtyp, initial, thisObj) {
+            location.href = '@Url.Action("list2")' + '?'
+                + 'keyword=' + $('#search').val()
+                + '&trbtyp=' + trbtyp
+                + '&initial=' + initial
+                + '&onoff=' + onoff;
+        }
+
+        function fnCssCheck() {
+            onoff = $('.search-detail').find('button')[0].className == 'btn btn-filter' ? 'on' : 'off';
+        }
+    </script>
+}
+
+<div id="container" class="container test-information">
+    <div class="contents-wrap allergen-index">
+        <div class="contents-inner">
+            <div class="breadcrumb">
+                <span><a href="#">홈</a></span>
+
+                <span><a href="#">검사안내</a></span>
+
+                <span><a href="#">검사항목</a></span>
+
+                <span class="current">종합검진 패널검사</span>
+            </div>
+            <div class="page-title">
+                <h2 class="title">종합검진 패널검사</h2>
+                <p class="text">맞춤 검사를 통해 보다 정확도 높은 검사를 시행합니다.</p>
+            </div>
+            <div class="board-wrap">
+                <div class="board-list-head">
+
+
+                    <div class="search-wrap">
+                        <div class="search-area">
+                            <span class="search-box">
+                                <input type="text" class="inp-search" id="search" title="검색어 입력" placeholder="검색어를 입력하세요." value="@ViewBag.KeyWord" onkeydown="fnEnterEvent();">
+                            </span>
+                            <span class="search-btn">
+                                <button type="submit" class="search-go"></button>
+                            </span>
+                        </div>
+
+                        <div class="search-detail">
+                            <button class="btn btn-filter" onclick="fnCssCheck();"><span>상세검색</span></button>
+                        </div>
+                    </div>
+                    <div class="total-count">Total <span>@ViewBag.totalCnt</span></div>
+                </div>
+
+                <div class="search-filter-box">
+                    <div class="search-detail">
+                        <p class="tit">질환명</p>
+                        <div class="btn-detail">
+                            @{
+                                if (ViewBag.trbtyp == "All")
+                                {
+                                    <input type="button" class="all" value="All" onclick="onFieldSearch('', null, this);" />
+                                }
+                                else
+                                {
+                                    <input type="button" class="" value="All" onclick="onFieldSearch('', null, this);" />
+                                }
+
+                                var commlist = Functions.GetCommList_V2("panel_test_cd", "02");
+
+                                for (int i = 0; i < commlist.Count; i++)
+                                {
+                                    if (ViewBag.trbtyp == commlist[i].CODE)
+                                    {
+                                        <input type="button" class="all" value="@commlist[i].NAME" onclick="onFieldSearch('@commlist[i].CODE', '@ViewBag.initial', this);">
+                                    }
+                                    else
+                                    {
+                                        <input type="button" class="" value="@commlist[i].NAME" onclick="onFieldSearch('@commlist[i].CODE', '@ViewBag.initial', this);">
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    @*<div class="search-detail">
+                        <p class="tit">초성</p>
+                        <div class="btn-detail type2">
+                            @{
+                                if (ViewBag.initial == "All")
+                                {
+                                    <input type="button" class="all" value="All" onclick="onFieldSearch('@ViewBag.trbtyp', '', this);">
+                                }
+                                else
+                                {
+                                    <input type="button" class="" value="All" onclick="onFieldSearch('@ViewBag.trbtyp', '', this);">
+                                }
+
+                                for (int i = 65; i <= 92; i++)
+                                {
+                                    var val = string.Concat((char)i);
+
+                                    if (i == 91)
+                                    {
+                                        val = "123";
+                                    }
+                                    if (i == 92)
+                                    {
+                                        val = "ETC";
+                                    }
+
+                                    if (ViewBag.initial == val)
+                                    {
+                                        <input type="button" class="all" value="@val" onclick="onFieldSearch('@ViewBag.trbtyp', '@val', this);">
+                                    }
+                                    else
+                                    {
+                                        <input type="button" class="" value="@val" onclick="onFieldSearch('@ViewBag.trbtyp', '@val', this);">
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>*@
+                </div>
+
+                <div class="accordion-wrap acc-tabletype">
+                    <div class="accordion-inner">
+                        <div class="accordion-header">
+                            <span class="tit tit-num">번호</span>
+                            <span class="tit tit-cont">질환명</span>
+                        </div>
+                        <ul class="accordion-list">
+
+                            @foreach (var item in Model)
+                            {
+                                <li class="acc-item">
+                                    <a href="#n" class="acc-tit">
+                                        <span class="num">@item.ROW_NUM</span>
+                                        <div>
+                                            <span class="tit-txt">@item.TRB_TYP_NM</span>
+                                        </div>
+                                    </a>
+                                    <div class="acc-cont">
+                                        <div class="cont-txt">
+
+                                            <div class="table-wrap">
+                                                <div class="table-inner">
+                                                    <table class="table tb-gray grid-ty1">
+                                                        <colgroup>
+                                                            <col style="width: 15%">
+                                                            <col style="width: 35%">
+                                                            <col style="width: 15%">
+                                                            <col style="width: 35%">
+                                                        </colgroup>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>검사코드</th>
+                                                                <th>검사항목</th>
+                                                                <th>검사코드</th>
+                                                                <th>검사항목</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @for (int i = 0; i < @item.panel.Count; i++)
+                                                            {
+                                                                if (item.TRB_TYP == @item.panel[i].TRB_TYP_SUB)
+                                                                {
+                                                                    <tr>
+                                                                        <td class="f-green"> @item.panel[i].PAN_CD</td>
+                                                                        <td>@item.panel[i].PAN_NM</td>
+                                                                     
+                                                                        @if (i + 1 < @item.panel.Count && item.TRB_TYP == @item.panel[i + 1].TRB_TYP_SUB)
+                                                                        {
+                                                                            <td class="f-green"> @item.panel[i + 1].PAN_CD</td>
+                                                                            <td>@item.panel[i + 1].PAN_NM</td>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <td class="f-green"></td>
+                                                                            <td></td>
+                                                                        }
+                                                                    </tr>
+                                                                    
+                                                                    i++;
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+
+                        @if (@ViewBag.totalCnt == 0)
+                        {
+                            <ul>
+                                <li class="no-data3">검색된 자료가 없습니다.</li>
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

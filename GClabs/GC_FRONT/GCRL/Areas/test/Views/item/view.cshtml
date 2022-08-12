@@ -1,0 +1,412 @@
+﻿
+@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "view";
+}
+
+@{ var meta_sitesec = "GCLabs"; }
+@{ var meta_sitename = "GC녹십자의료재단"; }
+@{ var meta_title = "검사항목"; }
+@{ var meta_Site_image = "http://121.140.143.35:4060/assets/images/gclabs-logo.png"; }
+@{ var meta_description = "최첨단 시스템으로 신속하고 정확한 검사를 수행합니다."; }
+@{ var meta_page_url = ""; }
+@{ var meta_keywords = ""; }
+@{ var meta_twitter_site = ""; }
+
+@section meta {
+    <title>@meta_title</title>
+    <meta name="description" content="@meta_description" />
+    <meta name="keywords" content="@meta_keywords" />
+    <meta property="og:title" content="@meta_title" />
+    <meta property="og:type" content="웹 사이트" />
+    <meta property="og:description" content="@meta_description" />
+    <meta property="og:image" content="@meta_Site_image" />
+    <meta property="og:url" content="@meta_page_url" />
+    <meta property="og:site_name" content="@meta_sitename" />
+    <meta name="twitter:card" content="요약" />
+    <meta name="twitter:site" content="@meta_twitter_site" />
+    <meta name="twitter:title" content="@meta_title" />
+    <meta name="twitter:description" content="@meta_description" />
+    <meta name="ms.sitename" content="@meta_sitename" />
+    <meta name="ms.sitesec" content="@meta_sitesec" />
+}
+
+@section script {
+    <script type="text/javascript" src="../../assets/lib/jquery-2.2.4.min.js"></script>
+    <!-- Live List Layout -->
+    <script type="text/javascript" src="../../assets/lib/masonry.pkgd.min.js"></script>
+    <script type="text/javascript" src="../../assets/lib/slick.min.js"></script>
+    <script type="text/javascript" src="../../assets/js/app.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            ViewBottle(0);
+        });
+
+        function list() {
+            history.back();
+            //location.href = '@Url.Action("list")';
+        }
+
+        function ViewBottle(idx) {
+            var maxCnt = @ViewBag.bottleCnt;
+
+            if (idx < 0) {
+                idx = maxCnt - 1;
+                //return false;
+            }
+
+            if (maxCnt <= idx) {
+                idx = 0;
+                //return false;
+            }
+
+            var prev = idx - 1;
+            var next = idx + 1;
+
+            $.getJSON('@Url.Action("view_bottle")' + '?' + 'code=' + '@ViewBag.Code' + '&' + 'idx=' + idx, function (data) {
+                if ($('.instrument-contents').length > 0) {
+                    $('.instrument-contents').remove();
+                }
+
+                if ($('.bottle').length > 0) {
+                    $('.bottle').remove();
+                }
+
+                if (data != false) {
+                    var html = "";
+                    html += '<div class="bottle">   ';
+                    html += '   <p class="tit2">    ';
+                    html += '       <span class="">검체용기</span>  ';
+                    if (maxCnt > 1) {
+                        html += '       <span class="" style=""><a onclick="ViewBottle(' + prev + ');"> ＜ </a></span> ';
+                        html += '       <span class="" style=""><a onclick="ViewBottle(' + next + ');"> ＞ </a></span> ';
+                    }
+                    html += '   </p>    ';
+                    html += '   <div class="img-area">  ';
+                    html += '       <a href="javascript:popupOpen();">  ';
+                    html += '           <img src=' + data.imagePath + ' alt=' + data.name + '>  ';
+                    html += '       </a>    ';
+                    html += '       <div class="txt"><span class="itembtn btn-detail"><a href="javascript:popupOpen();">' + data.name + '</a></span></div>';
+                    html += '    </div> ';
+                    html += '</div> ';
+
+                    var html2 = "";
+                    html2 += '<div class="instrument-contents">                          ';
+                    html2 += '    <strong class="title">' + data.name + '</strong>       ';
+                    html2 += '    <div class="contents">                                   ';
+                    html2 += '        <div class="thumbnail">                              ';
+                    html2 += '            <img src=' + data.imagePath + ' alt=' + data.name + '> ';
+                    html2 += '        </div>                                               ';
+                    html2 += '        <ul class="info">                                    ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>첨가제</dt>                          ';
+                    html2 += '                    <dd><pre>' + data.additive + '</pre></dd>         ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>검사항목</dt>                        ';
+                    html2 += '                    <dd>' + data.tests + '</dd>            ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>채취량</dt>                          ';
+                    html2 += '                    <dd>' + data.collection + '</dd>       ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>보관</dt>                            ';
+                    html2 += '                    <dd><pre>' + data.storage + '</pre></dd>          ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '            <li>                                             ';
+                    html2 += '                <dl>                                         ';
+                    html2 += '                    <dt>취급방법</dt>                        ';
+                    html2 += '                    <dd><pre>' + data.method + '</pre></dd>           ';
+                    html2 += '                </dl>                                        ';
+                    html2 += '            </li>                                            ';
+                    html2 += '        </ul>                                                ';
+                    html2 += '    </div>                                                   ';
+                    if (maxCnt > 1) {
+                        html2 += '    <div class="btn-group">                                               ';
+                        html2 += '        <!-- 맨 처음일 경우 first 클래스 추가 -->                         ';
+                        html2 += '        <a onclick="ViewBottle(' + prev + ');" class="btn-arrow prev first">  ';
+                        html2 += '            <span class="arrow"><em class="hidden">이전</em></span>       ';
+                        html2 += '        </a>                                                              ';
+                        html2 += '        <!-- 맨 마지막일 경우 last 클래스 추가 -->                        ';
+                        html2 += '        <a onclick="ViewBottle(' + next + ');" class="btn-arrow next">    ';
+                        html2 += '            <span class="arrow"><em class="hidden">다음</em></span>       ';
+                        html2 += '        </a>                                                              ';
+                        html2 += '    </div>                                                                ';
+                    }
+                    html2 += '</div>                                                       ';
+
+                    $('#bottle_area').append(html);
+                    $('.popup-body').append(html2);
+                }
+                //else {
+                //    next + 1;
+                //    ViewBottle(next);
+                //}
+            });
+        }
+
+        function popupOpen() {
+            $('body').append('<div class="dimmed-layer" aria-hidden="true"></div>');
+            $('#detailPopup').show();
+            //보이는 화면에 팝업창 표시
+            $('.popup-wrap').attr('style', 'top:' + (document.querySelector('html').scrollTop + ($('.popup-wrap').outerHeight() / 2) - 300) + 'px;');
+        }
+
+        function popupClose() {
+            $('#detailPopup').hide();
+        }
+    </script>
+    <script type="text/javascript">
+    //   *수정 20220613 -->
+        var initBody;
+        function beforePrint() {
+            initbody = document.body.innerHTML;
+            document.body.innerHTML = print_page.innerHTML;
+        }
+
+        function afterPrint() {
+            document.body.innerHTML = initBody;
+        }
+
+        function pageprint() {
+            window.onbeforeprint = beforePrint;
+            window.onafterprint = afterPrint;
+            window.print();
+            location.reload();// 다시 기존 화면을 뿌려줌
+        }
+    </script>
+
+}
+<div id="container" class="container test-information">
+    <div class="contents-wrap test-index-detail" id="print_page">
+        <!-- //   *수정 20220613 -->
+
+        <div class="board-wrap">
+            <!-- *수정 20220508 -->
+            <div class="board-view-head">
+                <div class="contents-inner">
+                    <div class="title-area">
+                        <div class="location">
+                            <span class="current">검사항목</span>
+                        </div>
+                        <strong class="title">@Model.itemName</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="board-view">
+                <div class="contents-inner">
+                    <div class="view-wrap">
+                        <!-- view-contents -->
+                        <div class="print_btn"><button onclick="pageprint();">Print</button></div><!-- //   *수정 20220613 -->
+                        <div class="table-wrap section">
+                            <div class="table-inner">
+                                <table class="table grid-ty4 border-b">
+
+                                    <colgroup>
+                                        <col class="" width="12%">
+                                        <col class="" width="38%">
+                                        <col class="" width="12%">
+                                        <col class="" width="*">
+                                    </colgroup>
+
+                                    <tbody>
+                                        <tr class="">
+                                            <th class="">검사코드</th>
+                                            <td class="left">@Model.itemCode</td>
+
+                                            <th class="">검사분야</th>
+                                            <td class="left">@Model.field</td>
+                                        </tr>
+                                        <tr>
+                                            <th class="">분류번호</th>
+                                            <td class="left">@Model.insNo</td>
+
+                                            <th class="">보험코드</th>
+                                            <td class="left">@Model.insCode</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="grid-flex section test-info">
+                            <div class="flex-cont">
+                                <p class="tit">기본정보</p>
+                                <div class="table-wrap">
+                                    <div class="table-inner">
+                                        <table class="table grid-ty4 tb-sm border-b">
+                                            <colgroup>
+                                                <col class="" width="15%">
+                                                <col class="" width="*">
+                                            </colgroup>
+
+                                            <tbody>
+                                                <tr class="">
+                                                    <th class="">검체(mL)</th>
+                                                    <td class="left">@Html.Raw(Model.Specimen)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class="">검체보관</th>
+                                                    <td class="left">@Html.Raw(@Model.Storage)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class="">검체안정성</th>
+                                                    <td class="left">@Html.Raw(@Model.Stability)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class="">검사방법</th>
+                                                    <td class="left">@Html.Raw(@Model.Method)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class="">검사일</th>
+                                                    <td class="left">@Html.Raw(@Model.Day)</td>
+                                                </tr>
+                                                <tr class="">
+                                                    <th class="">소요일</th>
+                                                    @if (Model.During == null || Model.During == "")
+                                                    {
+                                                        <td class="left">@Model.During </td>
+
+                                                    }
+                                                    else
+                                                    {
+                                                        <td class="left">@Model.During 일</td>
+                                                    }
+
+                                                </tr>
+                                                <tr class="">
+
+                                                    <th class="">검사수가</th>
+                                                    <td class="left">
+                                                        @Model.Price <span style="padding-left:30px"><font color="1c91c4">(* 질가산료를 포함하지 않습니다.)</font></span>
+                                                    </td>
+
+                                                </tr>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-cont flex-none" id="bottle_area">
+
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <div class="table-inner">
+                                <table class="table grid-ty4 tb-sm border-b">
+                                    <colgroup>
+
+                                        <col class="" width="13%">
+
+                                        <col class="" width="*">
+
+                                    </colgroup>
+
+                                    <tbody>
+                                        <tr class="">
+
+                                            <th class="left">참고치(단위)</th>
+                                            <td class="left">@Html.Raw(Model.Reference)</td>
+                                        </tr>
+                                        <tr class="">
+                                            <th class="left">임상적의의</th>
+                                            <td class="left">@Html.Raw(Model.Meaning)</td>
+                                        </tr>
+                                        <tr class="">
+                                            <th class="left">검사의뢰서</th>
+                                            <td class="left">@Model.Essential</td>
+                                        </tr>
+                                        <tr class="">
+                                            <th class="left">검체취급방법 및 주의사항</th>
+                                            <td class="left">@Html.Raw(Model.Caution) </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- // view-contents -->
+                        <div class="btn-area center">
+                            <button type="button" class="btn btn-list" onclick="list();"><span>목록</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<article id="detailPopup" class="popup-layer">
+    <div class="popup-wrap">
+        <div class="popup-container">
+            <div class="popup-head"><span class="text">검체 용기</span></div>
+            <div class="popup-body">
+                <!--<div class="instrument-contents">
+                    <strong class="title">@Model.name</strong>
+                    <div class="contents">
+                        <div class="thumbnail">
+                            <img src="@Model.imagePath" alt="@Model.name">
+                        </div>
+                        <ul class="info">
+                            <li>
+                                <dl>
+                                    <dt>첨가제</dt>
+                                    <dd>@Model.additive</dd>
+                                </dl>
+                            </li>
+                            <li>
+                                <dl>
+                                    <dt>검사항목</dt>
+                                    <dd>@Model.tests</dd>
+                                </dl>
+                            </li>
+                            <li>
+                                <dl>
+                                    <dt>채취량</dt>
+                                    <dd>@Model.collection</dd>
+                                </dl>
+                            </li>
+                            <li>
+                                <dl>
+                                    <dt>보관</dt>
+                                    <dd>@Model.storage</dd>
+                                </dl>
+                            </li>
+                            <li>
+                                <dl>
+                                    <dt>취급방법</dt>
+                                    <dd>@Model.method</dd>
+                                </dl>
+                            </li>
+                        </ul>
+                    </div>-->
+                @*<div class="btn-group">
+                        <!-- 맨 처음일 경우 first 클래스 추가 -->
+                        <a href="#" class="btn-arrow prev first">
+                            <span class="arrow"><em class="hidden">이전</em></span>
+                        </a>
+                        <!-- 맨 마지막일 경우 last 클래스 추가 -->
+                        <a href="#" class="btn-arrow next">
+                            <span class="arrow"><em class="hidden">다음</em></span>
+                        </a>
+                    </div>*@
+                <!--</div>-->
+            </div>
+        </div>
+        <button type="button" class="popup-close" onclick="popupClose();">
+            <span class="close"><em class="hidden">팝업 닫기</em></span>
+        </button>
+    </div>
+</article>
+
+@*<div class="dimmed-layer" aria-hidden="true"></div>*@

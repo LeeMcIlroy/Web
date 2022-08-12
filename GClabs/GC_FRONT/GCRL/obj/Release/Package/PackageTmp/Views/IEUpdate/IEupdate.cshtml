@@ -1,0 +1,140 @@
+﻿@using GCRL.Modules;
+
+@{
+    ViewBag.Title = "IEupdate";
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="Generator" content="EditPlus®">
+    <meta name="Author" content="">
+    <meta name="Keywords" content="">
+    <meta name="Description" content="">
+    <title>Document</title>
+</head>
+<body class="" _c_t_common="1">
+    <ui-view autoscroll="true">
+        <style>
+            html {
+                height: 100% !important;
+            }
+
+            body {
+                overflow: hidden;
+                margin: 0;
+                display: table;
+                width: 100%;
+                height: 90%;
+            }
+
+            .error_wrap {
+                display: table-cell;
+                font-family: NanumGothic, sans-serif;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            .error_svg {
+                line-height: 0;
+            }
+
+            .error_h1 {
+                margin: 28px 0 0;
+                font-size: 24px;
+                line-height: 32px;
+                font-weight: 700;
+                color: #000;
+            }
+
+            .error_p {
+                margin: 8px 0 0;
+                font-size: 15px;
+                line-height: 21px;
+                color: #000;
+            }
+
+            .area_btn {
+                margin-top: 44px;
+                font-size: 0;
+                line-height: 0;
+            }
+
+                .area_btn .link {
+                    display: inline-block;
+                    width: 280px;
+                    height: 35px;
+                    border-radius: 6px;
+                    background-color: #323232;
+                    font-size: 15px;
+                    line-height: 35px;
+                    color: #fff;
+                    font-weight: 600;
+                    text-align: center;
+                    text-decoration: none
+                }
+
+            ui-view {
+                display: table;
+                width: 100%;
+                height: 100% !important;
+            }
+        </style>
+        <div class="error_wrap">
+            <div class="error_svg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 52 52">
+                    <g fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                        <g stroke="#03C75A">
+                            <g transform="translate(-486 -223) translate(372 223) translate(114) translate(3 3) translate(.25 .25)">
+                                <path stroke-width="2.5" d="M22.75 9.208L22.75 27.865M22.75 33.763L22.75 36.292"></path>
+                                <circle cx="22.75" cy="22.75" r="22.75" stroke-width="2"></circle>
+                            </g>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+            <h1 class="error_h1" ng-bind-html="errorCtrl.title"><strong>인터넷 브라우저를 업데이트 해주세요.</strong></h1>
+            <p class="error_p" ng-bind="errorCtrl.message">사용하고 계신 브라우저가 "인터넷 익스플로러 10 이하 버전"이라면 서비스를 원할하게 이용할 수 없습니다. <br> 인터넷 익스플로러 브라우저를 업데이트하시거나 '크롬 브라우저'를 설치하여 이용해주세요.</p>
+            <div class="area_btn">
+                <a href="https://www.google.com/intl/ko_ALL/chrome/" class="link" style="margin-right:20px;" target="_blank">크롬브라우저 다운로드</a> &nbsp;&nbsp;&nbsp;<a href="https://support.microsoft.com/ko-kr/windows/internet-explorer-%EB%8B%A4%EC%9A%B4%EB%A1%9C%EB%93%9C%ED%95%98%EA%B8%B0-d49e1f0d-571c-9a7b-d97e-be248806ca70" target="_blank" class="link">MS 엣지 브라우저 다운로드</a>
+            </div>
+            <br><br><br>
+            <!-- <h3 class="error_h1" ng-bind-html="errorCtrl.title"><strong>검사결과조회</strong></h3> -->
+            <div class="input-area" style="width:100%; text-align:center;">
+                <div style="padding: 15px 40px 32px 40px; border: 1px solid #dadada; margin: 0 30%;">
+                    <div class="title-wrap">
+                        <h3 class="title-h3">검사결과조회</h3>
+                    </div>
+                    <form action="https://www.gcrl.co.kr/lab_new/newinterface.asp" method="post" target="_blank" onsubmit="return loginFormCheck(this)" "=" ">
+                        <div class="result-login-box">
+                            <div class="form-box">
+                                <!-- <label for="userid" class="title">
+                                    아이디
+                                </label> -->
+                                <div class="form-wrap">
+                                    <input type="text" id="userid" name="userid" class="inp" value="" placeholder="아이디" autocomplete="off" style="; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%;border: 1px solid #dadada;height: 25px;padding-left: 5px;">
+                                </div>
+                            </div>
+                            <div class="form-box" style="margin-top: 10px;">
+                                <!-- <label for="passwd" class="title">
+                                    비밀번호
+                                </label> -->
+                                <div class="form-wrap">
+                                    <input type="text" id="passwd" name="passwd" class="inp" value="" placeholder="비밀번호" autocomplete="off" style="; background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%; cursor: auto;border: 1px solid #dadada;height: 25px;padding-left: 5px;">
+                                </div>
+                            </div>
+                            <div style="margin-top: 20px;">
+                                <input type="hidden" id="info" name="info">
+                                <button type="submit" style="background: #44af2b;width: 180px;border: 0;border-radius: 6px; height: 35px; font-size: 15px; color:#fff;cursor: pointer;"><span style="font-weight:600;">로그인</span></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </ui-view>
+
+</body>
+</html>
