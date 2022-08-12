@@ -1,0 +1,255 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    TopFrame Top = Model;
+}
+
+@if ((Top.RegistStatus == Define.REGIST_STATUS.GetKey("미등록")) &&
+    (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("실적 담당자") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자2") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+    )
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right"></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <th scope="row">업로드</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>
+                        <div class="style_file" style="width:80%;">
+                            <label>
+                                <span id="docName"></span>
+                                <input type="file" name="ExcelFile" id="ExcelFile">
+                                <button type="button" class="btn full_gray">파일찾기</button>
+                            </label>
+                        </div>
+                        <button class="btn small full_gray" type="button" onclick="onUploadExcel();">엑셀 반영</button>
+                    </td>
+                    <td class="ta_right"><button class="btn small full_gray" type="button" onclick="onDownExcel();">공시양식다운</button>
+                    </td>
+
+                </tr>
+            </table>
+        </td>
+    </tr>
+}
+else if ((Top.RegistStatus == Define.REGIST_STATUS.GetKey("저장") ||
+    Top.RegistStatus == Define.REGIST_STATUS.GetKey("1차반려") ||
+    Top.RegistStatus == Define.REGIST_STATUS.GetKey("2차반려") ||
+    Top.RegistStatus == Define.REGIST_STATUS.GetKey("3차반려")) &&
+    (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("실적 담당자") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자2") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right">
+                        <button class="btn small full_green" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("승인대기"));">승인요청</button>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <th scope="row">공시계획 여부</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>
+                        <div class="style_radio">
+                            <label>
+                                <input type="radio" name="IsUse" value="Y" onchange="updatePlanYn('Y');"  @(Top.PlanYn == "Y" ? " checked" : "")><i></i>
+                                <strong>사용</strong>
+                            </label>
+                        </div>
+                        <div class="style_radio">
+                            <label>
+                                <input type="radio" name="IsUse" value="N" onchange="updatePlanYn('N');" @(Top.PlanYn == "Y" ? " " : " checked")><i></i>
+                                <strong>미사용</strong>
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        
+    </tr>
+    <tr>
+        <th scope="row">업로드</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>
+                        <div class="style_file" style="width:80%;">
+                            <label>
+                                <span></span>
+                                <input type="file" name="ExcelFile" id="ExcelFile">
+                                <button type="button" class="btn full_gray">파일찾기</button>
+                            </label>
+                        </div>
+                        <button class="btn small full_gray" type="button" onclick="onUploadExcel();">엑셀 반영</button>
+                    </td>
+                    <td class="ta_right"><button class="btn small full_gray" type="button" onclick="onDownExcel();">공시양식다운</button>
+                </tr>
+            </table>
+        </td>
+    </tr>
+}
+else if ((Top.RegistStatus == Define.REGIST_STATUS.GetKey("승인대기") ||
+    Top.RegistStatus == Define.REGIST_STATUS.GetKey("1차승인") ||
+    Top.RegistStatus == Define.REGIST_STATUS.GetKey("최종승인")) &&
+    (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("실적 담당자")))
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right">@Define.REGIST_STATUS.GetValue(Top.RegistStatus)</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+}
+else if ((
+    Top.RegistStatus == Define.REGIST_STATUS.GetKey("1차승인") ||
+    Top.RegistStatus == Define.REGIST_STATUS.GetKey("최종승인")) &&
+    (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자")))
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right">@Define.REGIST_STATUS.GetValue(Top.RegistStatus)</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+}
+else if ((Top.RegistStatus == Define.REGIST_STATUS.GetKey("2차승인") ||
+    Top.RegistStatus == Define.REGIST_STATUS.GetKey("최종승인")) &&
+    (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자2")))
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right">@Define.REGIST_STATUS.GetValue(Top.RegistStatus)</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+}
+else if ((Top.RegistStatus == Define.REGIST_STATUS.GetKey("승인대기")) &&
+    (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자2") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right">
+                        @if (Request.Url.ToString().IndexOf("/SiteMngHome/Performance/") > 0 && Request.Url.ToString().IndexOf("/SiteMngHome/Performance/BsEx") <= 0)
+                        {
+                            <button class="btn small full_green" type="button" onclick="onRegistReply();">댓글등록</button>
+                        }
+                        <button class="btn small full_green" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("1차승인"));">승인</button>
+                        <button class="btn small full_gray" type="button" onclick="onRegistStatusChangeReject(@Define.REGIST_STATUS.GetKey("1차반려"));">반려</button>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+}
+else if ((Top.RegistStatus == Define.REGIST_STATUS.GetKey("1차승인")) &&
+    (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자2") ||
+    SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right">
+                        @if (Request.Url.ToString().IndexOf("/SiteMngHome/Performance/") > 0 && Request.Url.ToString().IndexOf("/SiteMngHome/Performance/BsEx") <= 0)
+                        {
+                            <button class="btn small full_green" type="button" onclick="onRegistReply();">댓글등록</button>
+                        }
+                        <button class="btn small full_green" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("2차승인"));">승인</button>
+                        <button class="btn small full_gray" type="button" onclick="onRegistStatusChangeReject(@Define.REGIST_STATUS.GetKey("2차반려"));">반려</button>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+}
+else if ((Top.RegistStatus == Define.REGIST_STATUS.GetKey("최종승인")) &&
+            (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right">
+                        @if (Request.Url.ToString().IndexOf("/SiteMngHome/Performance/") > 0 && Request.Url.ToString().IndexOf("/SiteMngHome/Performance/BsEx") <= 0)
+                        {
+                            <button class="btn small full_green" type="button" onclick="onRegistReply();">댓글등록</button>
+                        }
+                        @Define.REGIST_STATUS.GetValue(Top.RegistStatus)
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+}
+else if ((Top.RegistStatus == Define.REGIST_STATUS.GetKey("2차승인")) &&
+    (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+{
+    <tr>
+        <th scope="row">회사</th>
+        <td>
+            <table class="tbl2">
+                <tr>
+                    <td>@Top.UnionName > @Top.CompanyName</td>
+                    <td class="ta_right">
+                        @if (Request.Url.ToString().IndexOf("/SiteMngHome/Performance/") > 0 && Request.Url.ToString().IndexOf("/SiteMngHome/Performance/BsEx") <= 0)
+                        {
+                            <button class="btn small full_green" type="button" onclick="onRegistReply();">댓글등록</button>
+                        }
+                        <button class="btn small full_green" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("최종승인"));">승인</button>
+                        <button class="btn small full_gray" type="button" onclick="onRegistStatusChangeReject(@Define.REGIST_STATUS.GetKey("3차반려"));">반려</button>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+}

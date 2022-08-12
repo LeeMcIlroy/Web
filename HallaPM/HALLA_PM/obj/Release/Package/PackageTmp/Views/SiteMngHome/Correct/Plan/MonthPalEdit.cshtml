@@ -1,0 +1,366 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PlanGroupdataYear planGroupdataYear = Model.PlanGroupdataYear;
+    List<PlanGroupdataPalMonth> palMonthList = Model.PalMonthList;
+    List<PlanGroupdataPalQuarter> palQuarterList = Model.PalQuarterList;
+    List<PlanGroupdataPalSummary> palSummaryList = Model.PalSummaryList;
+    List<PlanGroupdataPalMonthCr> palMonthListCr = Model.PalMonthListCr;
+    List<PlanGroupdataPalQuarterCr> palQuarterListCr = Model.PalQuarterListCr;
+    List<PlanGroupdataPalSummaryCr> palSummaryListCr = Model.PalSummaryListCr;
+
+    Search search = ViewBag.Search;
+    var PlanYear = Model.PlanYear;
+    //orgBusinessList
+}
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>그룹데이터 조정</span>
+        <strong>계획 조정</strong>
+    </div>
+    <form name="frmMain" id="frmMain" method="post" >
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchBusType" value="@(search.searchBusType)" />
+        <input type="hidden" name="GroupDataSeq" value="@planGroupdataYear.Seq" />
+        <input type="hidden" name="PlanYear" value="@PlanYear" />
+        <div class="con_box search">
+            <h3 class="mt0">계획 조정 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 전체 그룹데이터에 대한 배당 조정을 하실 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@(PlanYear)년</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">계획 구분</th>
+                        <td>손익</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            <h3>[@(PlanYear)]년 월손익 월별계획 그룹데이터 조정</h3>
+            <table class="tbl th_ver ta_right">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody id="table-month-item">
+                    <tr>
+                        <th scope="row" rowspan="2">구분</th>
+                        <th colspan="3">월별 손익 계획 조정</th>
+                        <th colspan="4">월별 손익 계획</th>
+                    </tr>
+                    <tr>
+                        <th>Sales</th>
+                        <th>EBIT</th> 
+                        <th>PBT</th>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>EBIT%</th>
+                        <th>PBT</th>
+                    </tr> 
+                    @if (palMonthList == null || palMonthList.Count() <= 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="nv-noData" >등록된 데이터가 없습니다.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in palMonthList)
+                        {
+                            var item2 = palMonthListCr.Find(x => x.GroupdataMonth == item.GroupdataMonth);
+                            var strTemp = (item.GroupdataMonth.Length < item.GroupdataYear.Length) ? item.GroupdataMonth + "월" : item.GroupdataMonth + "년";
+                            var objMonthCr = (item2 != null) ? item2 : new PlanGroupdataPalMonthCr { };
+                         <tr>
+                            <th scope="row">@((item.GroupdataMonth == "99") ? "합계" : item.GroupdataMonth + "월")
+                             <input type="hidden" name="PalMonthSeq" value="@item.Seq" />
+                                <input type="hidden" name="GROUPDATAYEAR" value="@item.GroupdataYear" />
+                                <input type="hidden" name="GROUPDATAMONTH" value="@item.GroupdataMonth" />
+                                <input type="hidden" name="DATATYPE" value="@item.DataType" />   
+                             </th>
+                            <td><input type="text" name="MonthSales" value="@WebUtil.NCommaRound(objMonthCr.SalesCr, 2)" /></td>
+                            <td><input type="text" name="MonthEbit" value="@WebUtil.NCommaRound(objMonthCr.EbitCr, 2)" /></td>
+                            <td><input type="text" name="MonthPbt" value="@WebUtil.NCommaRound(objMonthCr.PbtCr, 2)" /></td>
+                            <td>@item.Sales</td>
+                            <td>@item.Ebit</td>
+                             <td>@WebUtil.NCommaRound(item.EbitRate, 2)%</td>
+                            <td>@item.Pbt</td>
+                        </tr>
+                        }
+                    }                    
+                    
+                </tbody>
+            </table>
+
+            <h3>[@(PlanYear)]년 손익 분기별계획 그룹데이터 조정</h3>
+            <table class="tbl th_ver ta_right">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody id="table-quarter-item">
+                    <tr>
+                        <th scope="row" rowspan="2">구분</th>
+                        <th colspan="3">분기별 손익 계획 조정</th>
+                        <th colspan="4">분기별 손익 계획</th>
+                    </tr>
+                    <tr>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>PBT</th>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>EBIT%</th>
+                        <th>PBT</th>
+                    </tr>
+
+                    @if (palQuarterList == null || palQuarterList.Count() <= 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="nv-noData">등록된 데이터가 없습니다.</td>
+                        </tr>
+
+                    }
+                    else
+                    {
+                        foreach (var item in palQuarterList)
+                        {
+                            var item2 = palQuarterListCr.Find(x => x.GroupdataMonth == item.GroupdataMonth);
+                            var strTemp = (item.GroupdataMonth.Length < item.GroupdataYear.Length) ? item.GroupdataMonth + "월" : item.GroupdataMonth + "년";
+                            var objQuarterCr = (item2 != null) ? item2 : new PlanGroupdataPalQuarterCr { };
+                            <tr>
+                                <th scope="row">@((item.GroupdataMonth == "99") ? "합계" : item.GroupdataMonth + "분기")
+                                <input type="hidden" name="PalQuarterSeq" value="@item.Seq" />
+                                    <input type="hidden" name="GROUPDATAYEAR" value="@item.GroupdataYear" />
+                                    <input type="hidden" name="GROUPDATAMONTH" value="@item.GroupdataMonth" />
+                                    <input type="hidden" name="DATATYPE" value="@item.DataType" />   
+                                </th>
+                                <td><input type="text" name="QuarterSales" value="@WebUtil.NCommaRound(objQuarterCr.SalesCr, 2)" /></td>
+                                <td><input type="text" name="QuarterEbit" value="@WebUtil.NCommaRound(objQuarterCr.EbitCr, 2)" /></td>
+                                <td><input type="text" name="QuarterPbt" value="@WebUtil.NCommaRound(objQuarterCr.PbtCr, 2)" /></td>
+                                <td>@item.Sales</td>
+                                <td>@item.Ebit</td>
+                                <td>@WebUtil.NCommaRound(item.EbitRate, 2)%</td>
+                                <td>@item.Pbt</td>
+                            </tr>
+                        }
+                    }
+
+                </tbody>
+            </table>
+            <h3>[@(PlanYear)]년 손익 중기계획 그룹데이터 조정</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody id="table-summary-item">
+                    <tr>
+                        <th scope="row" rowspan="2">구분</th>
+                        <th colspan="3">손익중기계획 손익 계획 조정</th>
+                        <th colspan="4">@(PlanYear)년</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">Sales</th>
+                        <th scope="col">EBIT</th>
+                        <th scope="col">PBT</th>
+                        <th scope="col">Sales</th>
+                        <th scope="col">EBIT</th>
+                        <th scope="col">EBIT%</th>
+                        <th scope="col">PBT</th>
+                    </tr> 
+                    @if (palSummaryList == null || palSummaryList.Count() <= 0)
+                    {
+                        <tr>
+                            <td colspan="8" class="nv-noData">등록된 데이터가 없습니다.</td>
+                        </tr>
+
+                    }
+                    else
+                    {
+                        foreach (var item in palSummaryList)
+                        {
+                            var item2 = palSummaryListCr.Find(x => x.GroupdataMonth == item.GroupdataMonth);
+                            var strTemp = (item.GroupdataMonth.Length < item.GroupdataYear.Length) ? item.GroupdataMonth + "월" : item.GroupdataMonth + "년";
+                            var objSummaryCr = (item2 != null) ? item2 : new PlanGroupdataPalSummaryCr { };
+                            <tr>
+                                <th scope="row">@(item.GroupdataMonth + "년")
+                                <input type="hidden" name="PalSummarySeq" value="@item.Seq" />
+                                    <input type="hidden" name="GROUPDATAYEAR" value="@item.GroupdataYear" />
+                                    <input type="hidden" name="GROUPDATAMONTH" value="@item.GroupdataMonth" />
+                                    <input type="hidden" name="DATATYPE" value="@item.DataType" />   
+                                </th>
+                                <td><input type="text" name="SummarySales" value="@WebUtil.NCommaRound(objSummaryCr.SalesCr, 2)" /></td>
+                                <td><input type="text" name="SummaryEbit" value="@WebUtil.NCommaRound(objSummaryCr.EbitCr, 2)" /></td>
+                                <td><input type="text" name="SummaryPbt" value="@WebUtil.NCommaRound(objSummaryCr.PbtCr, 2)" /></td>
+                                <td>@item.Sales</td>
+                                <td>@item.Ebit</td>
+                                <td>@WebUtil.NCommaRound(item.EbitRate,2)%</td>
+                                <td>@item.Pbt</td>
+                            </tr>
+                        }
+                    }     
+                </tbody>
+            </table>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">Comment</th>
+                        <td colspan="7"><textarea class="w100" name="strComment" id="strComment">@planGroupdataYear.Comment</textarea></td>
+                    </tr>
+            </table>
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                <button class="btn full_green" type="button" onclick="onSave();">저장하기</button> 
+            </div><!--//btn_area-->
+        </div>
+        <div id="txtContents"></div>
+        <!--// con_box -->
+    </form>
+</div>
+<script>  
+    function onList() {
+        var f = document.frmMain;
+        f.action = "PlanList";
+        f.submit();
+    }
+
+    function onSave() {
+        var dcmValue = 0.00;
+        var JsonMonthData = "";
+        var JsonQuarterData = "";
+        var JsonSummaryData = "";
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("MonthSales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("MonthEbit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("MonthPbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("QuarterSales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("QuarterEbit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("QuarterPbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("SummarySales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummarySumEbit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummarySumPbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        $('#table-month-item tr').each(function (index) {
+            var GROUPDATAYEAR = $(this).find("input:hidden[name='GROUPDATAYEAR']").val();
+            var GROUPDATAMONTH = $(this).find("input:hidden[name='GROUPDATAMONTH']").val();
+            var DATATYPE = $(this).find("input:hidden[name='DATATYPE']").val();
+            var Sales = $(this).find("input:text[name='MonthSales']").val();
+            var Ebit = $(this).find("input:text[name='MonthEbit']").val();
+            var Pbt = $(this).find("input:text[name='MonthPbt']").val();
+            var Seq = $(this).find("input:hidden[name='PalMonthSeq']").val();
+
+            if (Seq != undefined) {
+                //if (Sales != dcmValue || Ebit != dcmValue || Pbt != dcmValue) {
+                    JsonMonthData += ',{"Seq":' + Seq + ',"GROUPDATAYEAR": "' + GROUPDATAYEAR
+                                    + '","GROUPDATAMONTH":"' + GROUPDATAMONTH
+                                    + '","DATATYPE":"' + DATATYPE + '","Sales":' + (($.isNumeric(Sales)) ? Sales : 0.00) + ',"Ebit":' + (($.isNumeric(Ebit)) ? Ebit : 0.00) + ',"Pbt":' + (($.isNumeric(Pbt)) ? Pbt : 0.00) + '}';
+                //}
+            }
+        });
+
+        $('#table-quarter-item tr').each(function (index) {
+            var GROUPDATAYEAR = $(this).find("input:hidden[name='GROUPDATAYEAR']").val();
+            var GROUPDATAMONTH = $(this).find("input:hidden[name='GROUPDATAMONTH']").val();
+            var DATATYPE = $(this).find("input:hidden[name='DATATYPE']").val();
+            var Sales = $(this).find("input:text[name='QuarterSales']").val();
+            var Ebit = $(this).find("input:text[name='QuarterEbit']").val();
+            var Pbt = $(this).find("input:text[name='QuarterPbt']").val();
+            var Seq = $(this).find("input:hidden[name='PalQuarterSeq']").val();
+
+            if (Seq != undefined) {
+                //if (Sales != dcmValue || Ebit != dcmValue || Pbt != dcmValue) {
+                    JsonQuarterData += ',{"Seq":' + Seq + ',"GROUPDATAYEAR": "' + GROUPDATAYEAR
+                                    + '","GROUPDATAMONTH":"' + GROUPDATAMONTH
+                                    + '","DATATYPE":"' + DATATYPE + '","Sales":' + (($.isNumeric(Sales)) ? Sales : 0.00) + ',"Ebit":' + (($.isNumeric(Ebit)) ? Ebit : 0.00) + ',"Pbt":' + (($.isNumeric(Pbt)) ? Pbt : 0.00) + '}';
+                //}
+            }
+        });
+
+        $('#table-summary-item tr').each(function (index) {
+            var GROUPDATAYEAR = $(this).find("input:hidden[name='GROUPDATAYEAR']").val();
+            var GROUPDATAMONTH = $(this).find("input:hidden[name='GROUPDATAMONTH']").val();
+            var DATATYPE = $(this).find("input:hidden[name='DATATYPE']").val();
+            var Sales = $(this).find("input:text[name='SummarySales']").val();
+            var Ebit = $(this).find("input:text[name='SummaryEbit']").val();
+            var Pbt = $(this).find("input:text[name='SummaryPbt']").val();
+            var Seq = $(this).find("input:hidden[name='PalSummarySeq']").val();
+
+            if (Seq != undefined) {
+               // if (Sales != dcmValue || Ebit != dcmValue || Pbt != dcmValue) {
+                    JsonSummaryData += ',{"Seq":' + Seq + ',"GROUPDATAYEAR": "' + GROUPDATAYEAR
+                                    + '","GROUPDATAMONTH":"' + GROUPDATAMONTH
+                                    + '","DATATYPE":"' + DATATYPE + '","Sales":' + (($.isNumeric(Sales)) ? Sales : 0.00) + ',"Ebit":' + (($.isNumeric(Ebit)) ? Ebit : 0.00) + ',"Pbt":' + (($.isNumeric(Pbt)) ? Pbt : 0.00) + '}';
+               // }
+            }
+        });
+        JsonMonthData = JsonMonthData.substring(1).replace("{}", "");
+        JsonQuarterData = JsonQuarterData.substring(1).replace("{}", "");
+        JsonSummaryData = JsonSummaryData.substring(1).replace("{}", "");
+       // $('#txtContents').html('{"MonthData":[' + JsonMonthData + '],"QuarterData":[' + JsonQuarterData + '],"SummaryData":[' + JsonSummaryData + ']}');
+        var strSendValues = '{"seq":@planGroupdataYear.Seq,"MonthData":[' + JsonMonthData + '],"QuarterData":[' + JsonQuarterData + '],"SummaryData":[' + JsonSummaryData + '],"strComment":"' + escape($("#strComment").val()) + '"}';
+       // $('#txtContents').html(strSendValues);
+        funCheckVal(strSendValues);
+    }
+
+    function funCheckVal(str) {
+        var strUrl = "../../ApiCorrect/PlanMonthPalUpdate";
+        var json_data = funJsonReplace(str);
+       // alert(json_data);
+        var request = $.ajax({
+            url: strUrl,
+            type: 'post',
+            data: json_data,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                alert("저장되었습니다.");
+                onReload();
+            },
+            error: function (request, status, error) {
+                alert("[에러][관리자에게 문의하세요]\n" + "error:" + request.responseText);
+            }
+        });
+    }
+    function funJsonReplace(objValue) {
+        return objValue.replace(/\r/g, '').replace(/\\/g, "").replace(/\n/g, '').replace('"[', '[').replace(']"', ']');
+    }
+
+    function onReload() {
+        var f = document.frmMain;
+        f.action = "PlanMonthPalEdit";
+        f.submit();
+    }
+</script>

@@ -1,0 +1,2006 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "View";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PmPal pmPal = Model.pmPal;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<OrgBusiness> orgBusinessList = Model.orgBusinessList;
+    List<PmPalBusiness> selectListLastYear = Model.selectListLastYear;
+    List<PmPalBusiness> selectListPlanThisYear = Model.selectListPlanThisYear;
+
+    //해당년도 계획
+    List<PmPalBusiness> selectListPlanMonthlyThisYear = Model.selectListPlanMonthlyThisYear;
+    //해당년도 누계
+    List<PmPalBusiness> selectListMonthlyThisYear = Model.selectListMonthlyThisYear;
+
+    //누계
+    List<PmPalBusiness> selectListMonthlyPlanThisYear = Model.selectListMonthlyPlanThisYear;
+    List<PmPalBusiness> selectListMonthlyCountThisYear = Model.selectListMonthlyCountThisYear;
+    //연간
+    List<PmPalBusiness> selectListExpectPlanThisYear = Model.selectListExpectPlanThisYear;
+    List<PmPalBusiness> selectListExpectThisYear = Model.selectListExpectThisYear;
+    //손익요약 - 전년도
+    List<PmPalSummary> selectListSummaryYear = Model.selectListSummaryYear;
+    //손익요약 - 당월계획
+    List<PmPalSummary> selectListPlanSummaryThisYear = Model.selectListPlanSummaryThisYear;
+    //손익요약 - 당월실적
+    List<PmPalSummary> selectListPmPalMonthlySummary = Model.selectListPmPalMonthlySummary;
+
+    //손익요약 - 누계계획
+    List<PmPalSummary> selectListSumSummaryThisYear = Model.selectListSumSummaryThisYear;
+    //손익요약 - 누계실적
+    List<PmPalSummary> selectListPmPalMonthlyResultSummary = Model.selectListPmPalMonthlyResultSummary;
+
+    //손익요약 - 연간계획
+    List<PmPalSummary> selectListExpectSummaryThisYear = Model.selectListExpectSummaryThisYear;
+    //손익요약 - 연간실적
+    List<PmPalSummary> selectListExpectResultSummary = Model.selectListExpectResultSummary;
+
+    //손익분석 - 매출차이
+    List<PmPalAnalysis> selectListAnalysisMonthlyContent = Model.selectListAnalysisMonthlyContent;
+    //손익분석 - 영업이익 차이
+    List<PmPalAnalysis> selectListAnalysisMonthlySalesContent = Model.selectListAnalysisMonthlySalesContent;
+    //손익분석 - 경상이익 차이
+    List<PmPalAnalysis> selectListAnalysisMonthlyCurrentContent = Model.selectListAnalysisMonthlyCurrentContent;
+    //손익분석 - 당기순이익 차이
+    List<PmPalAnalysis> selectListAnalysisMonthlyTermContent = Model.selectListAnalysisMonthlyTermContent;
+
+    //연간손익분석 - 매출차이
+    List<PmPalYealyAnalysis> selectListYearAnalysisMonthlyContent = Model.selectListYearAnalysisMonthlyContent;
+    //연간손익분석 - 영업이익 차이
+    List<PmPalYealyAnalysis> selectListYearAnalysisMonthlySalesContent = Model.selectListYearAnalysisMonthlySalesContent;
+    //연간손익분석 - 경상이익 차이
+    List<PmPalYealyAnalysis> selectListYearAnalysisMonthlyCurrentContent = Model.selectListYearAnalysisMonthlyCurrentContent;
+    //연간손익분석 - 당기순이익 차이
+    List<PmPalYealyAnalysis> selectListYearAnalysisMonthlyTermContent = Model.selectListYearAnalysisMonthlyTermContent;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>손익</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@pmPal.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@pmPal.OrgCompanySeq" />
+        <input type="hidden" name="PalYear" value="@pmPal.PalYear" />
+        <input type="hidden" name="Monthly" value="@pmPal.Monthly" />
+        <input type="hidden" name="RegistStatus" value="@pmPal.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="message" value="" />
+        <div class="con_box search">
+            <h3 class="mt0">손익 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(pmPal.PalYear)년 @(pmPal.Monthly)월</td>
+                    </tr>
+                    @if ((pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("미등록")) &&
+        (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("실적 담당자") ||
+        SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자") ||
+        SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+                    {
+                        <tr>
+                            <th scope="row">회사</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</td>
+                                        <td class="ta_right">
+                                            @*<button class="btn small full_green" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("승인대기"));">승인요청</button>*@
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">업로드</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>
+                                            <div class="style_file" style="width:80%;">
+                                                <label>
+                                                    <span></span>
+                                                    <input type="file" name="ExcelFile" id="ExcelFile">
+                                                    <button type="button" class="btn full_gray">파일찾기</button>
+                                                </label>
+                                            </div>
+                                            <button class="btn small full_gray" type="button" onclick="onUploadExcel();">엑셀 반영</button>
+                                        </td>
+                                        <td class="ta_right"><button class="btn small full_gray" type="button" onclick="onDownExcel();">양식 다운로드</button></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    }
+                    else if ((pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("저장") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("1차반려") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("2차반려")) &&
+                        (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("실적 담당자") ||
+                        SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자") ||
+                        SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+                    {
+                        <tr>
+                            <th scope="row">회사</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</td>
+                                        <td class="ta_right">
+                                            <button class="btn small full_green" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("승인대기"));">승인요청</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">업로드</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>
+                                            <div class="style_file" style="width:80%;">
+                                                <label>
+                                                    <span></span>
+                                                    <input type="file" name="ExcelFile" id="ExcelFile">
+                                                    <button type="button" class="btn full_gray">파일찾기</button>
+                                                </label>
+                                            </div>
+                                            <button class="btn small full_gray" type="button" onclick="onUploadExcel();">엑셀 반영</button>
+                                        </td>
+                                        <td class="ta_right"><button class="btn small full_gray" type="button" onclick="onDownExcel();">양식 다운로드</button></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    }
+                    else if ((pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("승인대기") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("1차승인") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("최종승인")) &&
+                        (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("실적 담당자")))
+                    {
+                        <tr>
+                            <th scope="row">회사</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</td>
+                                        <td class="ta_right">@Define.REGIST_STATUS.GetValue(pmPal.RegistStatus)</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    }
+                    else if ((pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("미등록") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("저장") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("1차반려") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("2차반려") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("1차승인") ||
+                        pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("최종승인")) &&
+                        (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자")))
+                    {
+                        <tr>
+                            <th scope="row">회사</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</td>
+                                        <td class="ta_right">@Define.REGIST_STATUS.GetValue(pmPal.RegistStatus)</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    }
+                    else if ((pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("승인대기")) &&
+                        (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자") ||
+                        SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+                    {
+                        <tr>
+                            <th scope="row">회사</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</td>
+                                        <td class="ta_right">
+                                            <button class="btn small full_green" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("1차승인"));">승인</button>
+                                            <button class="btn small full_gray" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("1차반려"));">반려</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    }
+                    else if ((pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("최종승인")) &&
+                                (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+                    {
+                        <tr>
+                            <th scope="row">회사</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</td>
+                                        <td class="ta_right">@Define.REGIST_STATUS.GetValue(pmPal.RegistStatus)</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    }
+                    else if ((pmPal.RegistStatus == Define.REGIST_STATUS.GetKey("1차승인")) &&
+                        (SessionManager.GetAdminSession().adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자")))
+                    {
+                        <tr>
+                            <th scope="row">회사</th>
+                            <td>
+                                <table class="tbl2">
+                                    <tr>
+                                        <td>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</td>
+                                        <td class="ta_right">
+                                            <button class="btn small full_green" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("최종승인"));">승인</button>
+                                            <button class="btn small full_gray" type="button" onclick="onRegistStatusChange(@Define.REGIST_STATUS.GetKey("2차반려"));">반려</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    }
+                    @*<tr>
+                            <th scope="row">업로드</th>
+                            <td class="align_left_right mt0">
+                                <div class="style_file" style="width:60%;">
+                                    <label>
+                                        <span></span>
+                                        <input type="file" name="uploadMms">
+                                        <button type="button" class="btn full_gray">파일찾기</button>
+                                    </label>
+                                </div>
+                                <button class="btn small full_gray">엑셀 반영</button>
+                                <button class="btn small full_gray right">양식다운로드</button>
+                            </td>
+                        </tr>*@
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+            @foreach (var item in orgBusinessList)
+            {
+                //전년도
+                var query = from p in selectListLastYear
+                            where p.OrgBusinessSeq == item.Seq
+                            select new { p };
+
+                //해당년도 계획,실적
+                var monthlyList = from p in selectListMonthlyThisYear
+                                  where p.OrgBusinessSeq == item.Seq
+                                  select new { p };
+                //해당년도 누적계획
+                var monthlyCountPlanList = from p in selectListMonthlyPlanThisYear
+                                           where p.OrgBusinessSeq == item.Seq
+                                           select new { p };
+                //해당년도 누계실적
+                var monthlyCountList = from p in selectListMonthlyCountThisYear
+                                       where p.OrgBusinessSeq == item.Seq
+                                       select new { p };
+
+                //해당년도 연간계획
+                var expectPlanList = from p in selectListExpectPlanThisYear
+                                     where p.OrgBusinessSeq == item.Seq
+                                     select new { p };
+                //해당년도 연간실적
+                var expectList = from p in selectListExpectThisYear
+                                 where p.OrgBusinessSeq == item.Seq
+                                 select new { p };
+
+                //연간
+                decimal yearSales = 0;
+                decimal yearEbit = 0;
+                decimal yearEbitRate = 0;
+                decimal yearPbt = 0;
+
+                //당월
+                decimal monthlySales = 0;
+                decimal monthlyEbit = 0;
+                decimal monthlyEbitRate = 0;
+                decimal monthlyPbt = 0;
+
+                //누계
+                decimal monthlySumSales = 0;
+                decimal monthlySumEbit = 0;
+                decimal monthlySumEbitRate = 0;
+                decimal monthlySumPbt = 0;
+
+                <h3>@item.BusinessName</h3>
+                <p class="caption"><span>(단위 : 억원, %)</span></p>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="8%" />
+                        <col width="8%" />
+                        <col width="8%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="3">구분</th>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (selectListLastYear == null || selectListLastYear.Count() <= 1)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="3">@(Convert.ToInt32(pmPal.PalYear) - 1)년</th>
+                                <th scope="row" colspan="2">연간</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" rowspan="2">[@(pmPal.Monthly)]월</th>
+                                <th scope="row">당월</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">누계</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item1 in query)
+                            {
+                                <tr style="display:none">
+                                    <td>
+                                        @if (item1.p.kind == 1)
+                                        {
+                                            @(yearSales = item1.p.Sales);
+                                            @(yearEbit = item1.p.Ebit);
+                                            @(yearEbitRate = WebUtil.NumberRound(yearEbit, yearSales, 100, 2));
+                                            @(yearPbt = item1.p.Pbt);
+                                        }
+                                        else if (item1.p.kind == 2)
+                                        {
+                                            @(monthlySales = item1.p.Sales);
+                                            @(monthlyEbit = item1.p.Ebit);
+                                            @(monthlyEbitRate = WebUtil.NumberRound(monthlyEbit, monthlySales, 100, 2));
+                                            @(monthlyPbt = item1.p.Pbt);
+                                        }
+                                        else if (item1.p.kind == 3)
+                                        {
+                                            @(monthlySumSales = item1.p.Sales);
+                                            @(monthlySumEbit = item1.p.Ebit);
+                                            @(monthlySumEbitRate = WebUtil.NumberRound(monthlySumEbit, monthlySumSales, 100, 2));
+                                            @(monthlySumPbt = item1.p.Pbt);
+                                        }
+                                    </td>
+                                </tr>
+                                if (item1.p.kind == 1)
+                                {
+                                    <tr>
+                                        <th scope="row" rowspan="3">@(Convert.ToInt32(pmPal.PalYear))년</th>
+                                        <th scope="row" colspan="2">연간</th>
+                                        <td>@(item1.p.Sales)</td>
+                                        <td>@(item1.p.Ebit)</td>
+                                        <td>@WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2)%</td>
+                                        <td>@(item1.p.Pbt)</td>
+                                    </tr>
+                                }
+                                else if (item1.p.kind == 2)
+                                {
+                                    <tr>
+                                        <th scope="row" rowspan="2">[@(pmPal.Monthly)]월</th>
+                                        <th scope="row">당월</th>
+                                        <td>@(item1.p.Sales)</td>
+                                        <td>@(item1.p.Ebit)</td>
+                                        <td>@WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2)%</td>
+                                        <td>@(item1.p.Pbt)</td>
+                                    </tr>
+                                }
+                                else if (item1.p.kind == 3)
+                                {
+                                    <tr>
+                                        <th scope="row">누계</th>
+                                        <td>@(item1.p.Sales)</td>
+                                        <td>@(item1.p.Ebit)</td>
+                                        <td>@WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2)%</td>
+                                        <td>@(item1.p.Pbt)</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        @if (monthlyList == null || monthlyList.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="12">@(Convert.ToInt32(pmPal.PalYear))년</th>
+                                <th scope="row" rowspan="4">[@(pmPal.Monthly)]월</th>
+                                <th scope="row">계획</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    실적
+                                    <input type="hidden" name="monthlyType" value="10" />
+                                </th>
+                                <td><input type="text" name="Sales" value="0" /></td>
+                                <td><input type="text" name="Ebit" value="0" /></td>
+                                <td class="bg_blue" name="EbitRate">0</td>
+                                <td><input type="text" name="pbt" value="0" /></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">계획대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">전년대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item1 in monthlyList)
+                            {
+                                //var planBussiness = selectListPlanThisYear.Where(w => w.OrgBusinessSeq == item.Seq)
+                                var planBussiness = selectListPlanMonthlyThisYear.Where(w => w.OrgBusinessSeq == item.Seq)
+                                            .Select(pb => new PmPalBusiness
+                                            {
+                                                Sales = pb.Sales,
+                                                Ebit = pb.Ebit,
+                                                EbitRate = pb.EbitRate,
+                                                Pbt = pb.Pbt,
+                                                MonthlyType = pb.MonthlyType
+                                            }).FirstOrDefault();
+
+                                //계획대비
+                                decimal planContrastSales = 0;
+                                decimal planContrastEbit = 0;
+                                decimal planContrastEbitRate = 0;
+                                decimal planContrastPbt = 0;
+
+                                planContrastSales = planBussiness == null ? 0 : planBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item1.p.Sales, planBussiness.Sales);
+                                planContrastEbit = planBussiness == null ? 0 : planBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item1.p.Ebit, planBussiness.Ebit);
+                                planContrastEbitRate = planBussiness == null ? 0 : planBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item1.p.EbitRate, planBussiness.EbitRate);
+                                planContrastPbt = planBussiness == null ? 0 : planBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item1.p.Pbt, planBussiness.Pbt);
+
+                                //전년대비
+                                decimal preYearContrastSales = 0;
+                                decimal preYearContrastEbit = 0;
+                                decimal preYearContrastEbitRate = 0;
+                                decimal preYearContrastPbt = 0;
+
+                                preYearContrastSales = monthlySales == 0 ? 0 : WebUtil.NumberRound(item1.p.Sales, monthlySales);
+                                preYearContrastEbit = monthlyEbit == 0 ? 0 : WebUtil.NumberRound(item1.p.Ebit, monthlyEbit);
+                                preYearContrastEbitRate = monthlyEbitRate == 0 ? 0 : WebUtil.NumberRound(item1.p.planEbitRate, monthlyEbitRate);
+                                preYearContrastPbt = monthlyPbt == 0 ? 0 : WebUtil.NumberRound(item1.p.Pbt, monthlyPbt);
+
+                                <tr>
+                                    <th scope="row" rowspan="12">
+                                        @(Convert.ToInt32(pmPal.PalYear))년
+                                    </th>
+                                    <th scope="row" rowspan="4">[@(pmPal.Monthly)]월</th>
+                                    <th scope="row">계획 </th>
+                                    <td>@(planBussiness == null ? 0 : planBussiness.Sales)</td>
+                                    <td>@(planBussiness == null ? 0 : planBussiness.Ebit)</td>
+                                    <td>@(planBussiness == null ? 0 : WebUtil.NumberRound(planBussiness.Ebit, planBussiness.Sales, 100, 2))%</td>
+                                    <td>@(planBussiness == null ? 0 : planBussiness.Pbt)</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">
+                                        실적
+                                        <input type="hidden" name="monthlyType" value="10" />
+                                        <input type="hidden" name="PmPalBusinessSeq" value="@item1.p.PmPalBussinessSeq" />
+                                    </th>
+                                    <td>@(item1.p.Sales)</td>
+                                    <td>@(item1.p.Ebit)</td>
+                                    <td class="bg_blue" name="EbitRate">@WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2)%</td>
+                                    <td>@(item1.p.Pbt)</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">@(planContrastSales)</td>
+                                    <td class="bg_blue">@(planContrastEbit)</td>
+                                    <td class="bg_blue">@WebUtil.NumberRound(planContrastEbit, planContrastSales, 100, 2)%</td>
+                                    <td class="bg_blue">@(planContrastPbt)</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">@(preYearContrastSales)</td>
+                                    <td class="bg_blue">@(preYearContrastEbit)</td>
+                                    <td class="bg_blue">@WebUtil.NumberRound(preYearContrastEbit, preYearContrastSales, 100, 2)</td>
+                                    <td class="bg_blue">@(preYearContrastPbt)</td>
+                                </tr>
+
+                            }
+                            if (monthlyCountPlanList == null || monthlyCountPlanList.Count() == 0)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="4">누계</th>
+                                    <th scope="row">계획</th>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>0%</td>
+                                    <td>0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item2 in monthlyCountPlanList)
+                                {
+                                    <tr>
+                                        <th scope="row" rowspan="4">누계</th>
+                                        <th scope="row">계획</th>
+                                        <td>@(item2.p.Sales)</td>
+                                        <td>@(item2.p.Ebit)</td>
+                                        <td>@WebUtil.NumberRound(item2.p.Ebit, item2.p.Sales, 100, 2)%</td>
+                                        <td>@(item2.p.Pbt)</td>
+                                    </tr>
+                                }
+                            }
+
+                            if (monthlyCountList == null || monthlyCountList.Count() == 0)
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        실적
+                                        <input type="hidden" name="monthlyType" value="20" />
+                                    </th>
+                                    <td><input type="text" name="Sales" value="0" /></td>
+                                    <td><input type="text" name="Ebit" value="0" /></td>
+                                    <td class="bg_blue" name="EbitRate">0</td>
+                                    <td><input type="text" name="Pbt" value="0" /></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item3 in monthlyCountList)
+                                {
+                                    var planSumBussiness = selectListPlanThisYear.Where(w => w.OrgBusinessSeq == item.Seq)
+                                        .OrderBy(g => g.YearlyYear)
+                                        .Select(pb => new PmPalBusiness
+                                        {
+                                            Sales = pb.Sales,
+                                            Ebit = pb.Ebit,
+                                            EbitRate = pb.EbitRate,
+                                            Pbt = pb.Pbt,
+                                            MonthlyType = pb.MonthlyType
+                                        }).FirstOrDefault();
+
+                                    <tr>
+                                        <th scope="row">
+                                            실적
+                                            <input type="hidden" name="monthlyType" value="20" />
+                                            <input type="hidden" name="PmPalBusinessSeq" value="@item3.p.PmPalBussinessSeq" />
+                                        </th>
+                                        <td>@(item3.p.Sales)</td>
+                                        <td>@(item3.p.Ebit)</td>
+                                        <td class="bg_blue" name="EbitRate">@WebUtil.NumberRound(item3.p.Ebit, item3.p.Sales, 100, 2)</td>
+                                        <td>@(item3.p.Pbt)</td>
+                                    </tr>
+
+                                    //계획대비
+                                    decimal planContrastSumSales = 0;
+                                    decimal planContrastSumEbit = 0;
+                                    decimal planContrastSumEbitRate = 0;
+                                    decimal planContrastSumPbt = 0;
+
+                                    planContrastSumSales = planSumBussiness == null ? 0 : planSumBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item3.p.Sales, planSumBussiness.Sales);
+                                    planContrastSumEbit = planSumBussiness == null ? 0 : planSumBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item3.p.Ebit, planSumBussiness.Ebit);
+                                    planContrastSumEbitRate = planSumBussiness == null ? 0 : planSumBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item3.p.EbitRate, planSumBussiness.EbitRate);
+                                    planContrastSumPbt = planSumBussiness == null ? 0 : planSumBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item3.p.Pbt, planSumBussiness.Pbt);
+
+                                    //전년대비
+                                    decimal preYearContrastSumSales = 0;
+                                    decimal preYearContrastSumEbit = 0;
+                                    decimal preYearContrastSumEbitRate = 0;
+                                    decimal preYearContrastSumPbt = 0;
+
+                                    preYearContrastSumSales = monthlySales == 0 ? 0 : WebUtil.NumberRound(item3.p.Sales, monthlySumSales);
+                                    preYearContrastSumEbit = monthlyEbit == 0 ? 0 : WebUtil.NumberRound(item3.p.Ebit, monthlySumEbit);
+                                    preYearContrastSumEbitRate = monthlyEbitRate == 0 ? 0 : WebUtil.NumberRound(item3.p.planEbitRate, monthlySumEbitRate);
+                                    preYearContrastSumPbt = monthlyPbt == 0 ? 0 : WebUtil.NumberRound(item3.p.Pbt, monthlySumPbt);
+
+                                    <tr>
+                                        <th scope="row">계획대비</th>
+                                        <td class="bg_blue">@(planContrastSumSales)</td>
+                                        <td class="bg_blue">@(planContrastSumEbit)</td>
+                                        <td class="bg_blue">@WebUtil.NumberRound(planContrastSumEbit, planContrastSumSales, 100, 2)%</td>
+                                        <td class="bg_blue">@(planContrastSumPbt)</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">전년대비</th>
+                                        <td class="bg_blue">@(preYearContrastSumSales)</td>
+                                        <td class="bg_blue">@(preYearContrastSumEbit)</td>
+                                        <td class="bg_blue">@WebUtil.NumberRound(preYearContrastSumEbit, preYearContrastSumSales, 100, 2)%</td>
+                                        <td class="bg_blue">@(preYearContrastSumPbt)</td>
+                                    </tr>
+                                }
+                            }
+
+                            if (expectPlanList == null || expectPlanList.Count() == 0)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="4">연간</th>
+                                    <th scope="row">계획</th>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>0%</td>
+                                    <td>0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item4 in expectPlanList)
+                                {
+                                    <tr>
+                                        <th scope="row" rowspan="4">연간</th>
+                                        <th scope="row">계획</th>
+                                        <td>@(item4.p.Sales)</td>
+                                        <td>@(item4.p.Ebit)</td>
+                                        <td>@WebUtil.NumberRound(item4.p.Ebit, item4.p.Sales, 100, 2)%</td>
+                                        <td>@(item4.p.Pbt)</td>
+                                    </tr>
+                                }
+                            }
+
+                            if (expectList == null || expectList.Count() == 0)
+                            {
+                                <tr>
+                                    <th scope="row">예상</th>
+                                    <td><input type="text" name="Sales" value="0" /></td>
+                                    <td><input type="text" name="Ebit" value="0" /></td>
+                                    <td class="bg_blue" name="EbitRate">0</td>
+                                    <td><input type="text" name="Pbt" value="0" /></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item5 in expectList)
+                                {
+                                    var planYearBussiness = selectListExpectThisYear.Where(w => w.OrgBusinessSeq == item.Seq)
+                                    .OrderBy(g => g.YearlyYear)
+                                    .Select(pb => new PmPalBusiness
+                                    {
+                                        Sales = pb.Sales,
+                                        Ebit = pb.Ebit,
+                                        EbitRate = pb.EbitRate,
+                                        Pbt = pb.Pbt,
+                                        MonthlyType = pb.MonthlyType
+                                    }).FirstOrDefault();
+
+                                    //계획대비
+                                    decimal planContrastYearSales = 0;
+                                    decimal planContrastYearEbit = 0;
+                                    decimal planContrastYearEbitRate = 0;
+                                    decimal planContrastYearPbt = 0;
+
+                                    planContrastYearSales = planYearBussiness == null ? 0 : planYearBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item5.p.Sales, planYearBussiness.Sales);
+                                    planContrastYearEbit = planYearBussiness == null ? 0 : planYearBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item5.p.Ebit, planYearBussiness.Ebit);
+                                    planContrastYearEbitRate = planYearBussiness == null ? 0 : planYearBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item5.p.EbitRate, planYearBussiness.EbitRate);
+                                    planContrastYearPbt = planYearBussiness == null ? 0 : planYearBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item5.p.Pbt, planYearBussiness.Pbt);
+
+                                    //전년대비
+                                    decimal preYearContrastYearSales = 0;
+                                    decimal preYearContrastYearEbit = 0;
+                                    decimal preYearContrastYearEbitRate = 0;
+                                    decimal preYearContrastYearPbt = 0;
+
+                                    preYearContrastYearSales = monthlySales == 0 ? 0 : WebUtil.NumberRound(item5.p.Sales, yearSales);
+                                    preYearContrastYearEbit = monthlyEbit == 0 ? 0 : WebUtil.NumberRound(item5.p.Ebit, yearEbit);
+                                    preYearContrastYearEbitRate = monthlyEbitRate == 0 ? 0 : WebUtil.NumberRound(item5.p.planEbitRate, yearEbitRate);
+                                    preYearContrastYearPbt = monthlyPbt == 0 ? 0 : WebUtil.NumberRound(item5.p.Pbt, yearPbt);
+
+                                    <tr>
+                                        <th scope="row">
+                                            예상
+                                            <input type="hidden" name="monthlyType" value="30" />
+                                            <input type="hidden" name="PmPalBusinessSeq" value="@item5.p.PmPalBussinessSeq" />
+                                        </th>
+                                        <td>@(item5.p.Sales)</td>
+                                        <td>@(item5.p.Ebit)</td>
+                                        <td class="bg_blue" name="EbitRate">@WebUtil.NumberRound(item5.p.Ebit, item5.p.Sales, 100, 2)%</td>
+                                        <td>@(item5.p.Pbt)</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">계획대비</th>
+                                        <td class="bg_blue">@(planContrastYearSales)</td>
+                                        <td class="bg_blue">@(planContrastYearEbit)</td>
+                                        <td class="bg_blue">@WebUtil.NumberRound(planContrastYearEbit, planContrastYearSales, 100, 2)%</td>
+                                        <td class="bg_blue">@(planContrastYearPbt)</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">전년대비</th>
+                                        <td class="bg_blue">@(preYearContrastYearSales)</td>
+                                        <td class="bg_blue">@(preYearContrastYearEbit)</td>
+                                        <td class="bg_blue">@WebUtil.NumberRound(preYearContrastYearEbit, preYearContrastYearSales, 100, 2)%</td>
+                                        <td class="bg_blue">@(preYearContrastYearPbt)</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @*<div class="btn_area bd_btm">
+                    <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                    <button class="btn full_green" type="button" onclick="onReset();">초기화</button>
+                    <button class="btn full_green" type="button" onclick="onCalculationAction();">계산하기</button>
+                </div>*@<!--//btn_area-->
+
+            <h3>[@(pmPal.Monthly)]월 손익 요약</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="8%" />
+                    <col width="8%" />
+                    <col width="8%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="3">구분</th>
+                        <th scope="col">Sales</th>
+                        <th scope="col">EBIT</th>
+                        <th scope="col">EBIT%</th>
+                        <th scope="col">PBT</th>
+                        <th scope="col">당기순이익</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        //연간
+                        decimal yearSummarySales = 0;
+                        decimal yearSummaryEbit = 0;
+                        decimal yearSummaryEbitRate = 0;
+                        decimal yearSummaryPbt = 0;
+
+                        //당월
+                        decimal monthlySummarySales = 0;
+                        decimal monthlySummaryEbit = 0;
+                        decimal monthlySummaryEbitRate = 0;
+                        decimal monthlySummaryPbt = 0;
+
+                        //누계
+                        decimal monthlySummarySumSales = 0;
+                        decimal monthlySummarySumEbit = 0;
+                        decimal monthlySummarySumEbitRate = 0;
+                        decimal monthlySummarySumPbt = 0;
+
+                        if (selectListSummaryYear == null || selectListSummaryYear.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="3">@(Convert.ToInt32(pmPal.PalYear) - 1)년</th>
+                                <th scope="row" colspan="2">연간</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th scope="row" rowspan="2">[@(pmPal.Monthly)]월</th>
+                                <th scope="row">당월</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">누계</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                                <td></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in selectListSummaryYear)
+                            {
+                                if (item.kind == 1)
+                                {
+                                    @(yearSummarySales = item.Sales);
+                                    @(yearSummaryEbit = item.Ebit);
+                                    @(yearSummaryEbitRate = item.EbitRate);
+                                    @(yearSummaryPbt = item.Pbt);
+
+                                    <tr>
+                                        <th scope="row" rowspan="3">@(Convert.ToInt32(pmPal.PalYear) - 1)년</th>
+                                        <th scope="row" colspan="2">연간</th>
+                                        <td>@(item.Sales)</td>
+                                        <td>@(item.Ebit)</td>
+                                        <td>@(WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2))%</td>
+                                        <td>@(item.Pbt)</td>
+                                        <td></td>
+                                    </tr>
+                                }
+                                else if (item.kind == 2)
+                                {
+                                    @(monthlySummarySales = item.Sales);
+                                    @(monthlySummaryEbit = item.Ebit);
+                                    @(monthlySummaryEbitRate = item.EbitRate);
+                                    @(monthlySummaryPbt = item.Pbt);
+
+                                    <tr>
+                                        <th scope="row" rowspan="2">[@(pmPal.Monthly)]월</th>
+                                        <th scope="row">당월</th>
+                                        <td>@(item.Sales)</td>
+                                        <td>@(item.Ebit)</td>
+                                        <td>@WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2)%</td>
+                                        <td>@(item.Pbt)</td>
+                                        <td></td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @(monthlySummarySumSales = item.Sales);
+                                    @(monthlySummarySumEbit = item.Ebit);
+                                    @(monthlySummarySumEbitRate = item.EbitRate);
+                                    @(monthlySummarySumPbt = item.Pbt);
+
+                                    <tr>
+                                        <th scope="row">누계</th>
+                                        <td>@(item.Sales)</td>
+                                        <td>@(item.Ebit)</td>
+                                        <td>@WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2)%</td>
+                                        <td>@(item.Pbt)</td>
+                                        <td></td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        if (selectListPlanSummaryThisYear == null || selectListPlanSummaryThisYear.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="13">@(pmPal.PalYear)년</th>
+                                <th scope="row" rowspan="4">[@(pmPal.Monthly)]월</th>
+                                <th scope="row">계획</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                                <td></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in selectListPlanSummaryThisYear)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="13">@(pmPal.PalYear)년</th>
+                                    <th scope="row" rowspan="4">[@(pmPal.Monthly)]월</th>
+                                    <th scope="row">계획</th>
+                                    <td>@(item.Sales)</td>
+                                    <td>@(item.Ebit)</td>
+                                    <td>@WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2)%</td>
+                                    <td>@(item.Pbt)</td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+
+                        if (selectListPmPalMonthlySummary == null || selectListPmPalMonthlySummary.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row">실적</th>
+                                <td><input type="text" name="SalesSummary" value="0" /></td>
+                                <td><input type="text" name="EbitSummary" value="0" /></td>
+                                <td class="bg_blue" name="EbitRateSummary">0</td>
+                                <td><input type="text" name="pbtSummary" value="0" /></td>
+                                <td><input type="text" name="NetProfitTermSummary" value="0" /></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">계획대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">전년대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in selectListPmPalMonthlySummary)
+                            {
+                                var planBussiness = selectListPlanSummaryThisYear
+                                            .Select(pb => new PmPalBusiness
+                                            {
+                                                Sales = pb.Sales,
+                                                Ebit = pb.Ebit,
+                                                EbitRate = pb.EbitRate,
+                                                Pbt = pb.Pbt,
+                                                MonthlyType = pb.MonthlyType
+                                            }).FirstOrDefault();
+
+                                //계획대비
+                                decimal planSummaryContrastSales = 0;
+                                decimal planSummaryContrastEbit = 0;
+                                decimal planSummaryContrastEbitRate = 0;
+                                decimal planSummaryContrastPbt = 0;
+
+                                planSummaryContrastSales = planBussiness == null ? 0 : planBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item.Sales, planBussiness.Sales);
+                                planSummaryContrastEbit = planBussiness == null ? 0 : planBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item.Ebit, planBussiness.Ebit);
+                                planSummaryContrastEbitRate = planBussiness == null ? 0 : planBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item.EbitRate, planBussiness.EbitRate);
+                                planSummaryContrastPbt = planBussiness == null ? 0 : planBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item.Pbt, planBussiness.Pbt);
+
+                                //전년대비
+                                decimal preYearSummaryContrastYearSales = 0;
+                                decimal preYearSummaryContrastYearEbit = 0;
+                                decimal preYearSummaryContrastYearEbitRate = 0;
+                                decimal preYearSummaryContrastYearPbt = 0;
+
+                                preYearSummaryContrastYearSales = monthlySummarySales == 0 ? 0 : WebUtil.NumberRound(item.Sales, monthlySummarySales);
+                                preYearSummaryContrastYearEbit = monthlySummaryEbit == 0 ? 0 : WebUtil.NumberRound(item.Ebit, monthlySummaryEbit);
+                                preYearSummaryContrastYearEbitRate = monthlySummaryEbitRate == 0 ? 0 : WebUtil.NumberRound(item.EbitRate, monthlySummaryEbitRate);
+                                preYearSummaryContrastYearPbt = monthlySummaryPbt == 0 ? 0 : WebUtil.NumberRound(item.Pbt, monthlySummaryPbt);
+
+                                <tr>
+                                    <th scope="row">
+                                        실적
+                                        <input type="hidden" name="PmPalSummarySeq" value="@item.PmPalSummarySeq" />
+                                    </th>
+                                    <td>@(item.Sales)</td>
+                                    <td>@(item.Ebit)</td>
+                                    <td class="bg_blue" name="EbitRateSummary">@WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2)%</td>
+                                    <td>@(item.Pbt)</td>
+                                    <td>@(item.NetProfitTerm)</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">@(planSummaryContrastSales)</td>
+                                    <td class="bg_blue">@(planSummaryContrastEbit)</td>
+                                    <td class="bg_blue">@WebUtil.NumberRound(planSummaryContrastEbit, planSummaryContrastSales, 100, 2)%</td>
+                                    <td class="bg_blue">@(planSummaryContrastPbt)</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearSales)</td>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearEbit)</td>
+                                    <td class="bg_blue">@WebUtil.NumberRound(preYearSummaryContrastYearEbit, preYearSummaryContrastYearSales, 100, 2)%</td>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearPbt)</td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+
+                        if (selectListSumSummaryThisYear == null || selectListSumSummaryThisYear.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="4">누계</th>
+                                <th scope="row">계획</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                                <td></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in selectListSumSummaryThisYear)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="4">누계</th>
+                                    <th scope="row">계획</th>
+                                    <td>@(item.Sales)</td>
+                                    <td>@(item.Ebit)</td>
+                                    <td>@WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2)%</td>
+                                    <td>@(item.Pbt)</td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+
+                        if (selectListPmPalMonthlyResultSummary == null || selectListPmPalMonthlyResultSummary.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row">실적</th>
+                                <td><input type="text" name="SalesSummary" value="0" /></td>
+                                <td><input type="text" name="EbitSummary" value="0" /></td>
+                                <td class="bg_blue" name="EbitRateSummary">0</td>
+                                <td><input type="text" name="PbtSummary" value="0" /></td>
+                                <td><input type="text" name="netProfitTermSummary" value="0" /></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">계획대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">전년대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue"></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in selectListPmPalMonthlyResultSummary)
+                            {
+                                var planSumBussiness = selectListSumSummaryThisYear
+                                            .Select(pb => new PmPalBusiness
+                                            {
+                                                Sales = pb.Sales,
+                                                Ebit = pb.Ebit,
+                                                EbitRate = pb.EbitRate,
+                                                Pbt = pb.Pbt,
+                                                MonthlyType = pb.MonthlyType
+                                            }).FirstOrDefault();
+
+                                //계획대비
+                                decimal planSummaryContrastSumSales = 0;
+                                decimal planSummaryContrastSumEbit = 0;
+                                decimal planSummaryContrastSumEbitRate = 0;
+                                decimal planSummaryContrastSumPbt = 0;
+
+                                planSummaryContrastSumSales = planSumBussiness == null ? 0 : planSumBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item.Sales, planSumBussiness.Sales);
+                                planSummaryContrastSumEbit = planSumBussiness == null ? 0 : planSumBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item.Ebit, planSumBussiness.Ebit);
+                                planSummaryContrastSumEbitRate = planSumBussiness == null ? 0 : planSumBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item.EbitRate, planSumBussiness.EbitRate);
+                                planSummaryContrastSumPbt = planSumBussiness == null ? 0 : planSumBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item.Pbt, planSumBussiness.Pbt);
+
+                                //전년대비
+                                decimal preYearSummaryContrastYearSumSales = 0;
+                                decimal preYearSummaryContrastYearSumEbit = 0;
+                                decimal preYearSummaryContrastYearSumEbitRate = 0;
+                                decimal preYearSummaryContrastYearSumPbt = 0;
+
+                                preYearSummaryContrastYearSumSales = monthlySummarySumSales == 0 ? 0 : WebUtil.NumberRound(item.Sales, monthlySummarySales);
+                                preYearSummaryContrastYearSumEbit = monthlySummarySumEbit == 0 ? 0 : WebUtil.NumberRound(item.Ebit, monthlySummaryEbit);
+                                preYearSummaryContrastYearSumEbitRate = monthlySummarySumEbitRate == 0 ? 0 : WebUtil.NumberRound(item.EbitRate, monthlySummaryEbitRate);
+                                preYearSummaryContrastYearSumPbt = monthlySummarySumPbt == 0 ? 0 : WebUtil.NumberRound(item.Pbt, monthlySummaryPbt);
+
+                                <tr>
+                                    <th scope="row">
+                                        실적
+                                        <input type="hidden" name="PmPalSummarySeq" value="@item.PmPalSummarySeq" />
+                                    </th>
+                                    <td>@(item.Sales)</td>
+                                    <td>@(item.Ebit)</td>
+                                    <td class="bg_blue" name="EbitRateSummary">@WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2)%</td>
+                                    <td>@(item.Pbt)</td>
+                                    <td>@(item.NetProfitTerm)</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">@(planSummaryContrastSumSales)</td>
+                                    <td class="bg_blue">@(planSummaryContrastSumEbit)</td>
+                                    <td class="bg_blue">@WebUtil.NumberRound(planSummaryContrastSumEbit, planSummaryContrastSumSales, 100, 2)%</td>
+                                    <td class="bg_blue">@(planSummaryContrastSumPbt)</td>
+                                    <td class="bg_blue"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearSumSales)</td>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearSumEbit)</td>
+                                    <td class="bg_blue">@WebUtil.NumberRound(preYearSummaryContrastYearSumEbit, preYearSummaryContrastYearSumSales, 100, 2)%</td>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearSumPbt)</td>
+                                    <td class="bg_blue"></td>
+                                </tr>
+                            }
+                        }
+                        //연간계획
+                        if (selectListExpectSummaryThisYear == null || selectListExpectSummaryThisYear.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="4">연간</th>
+                                <th scope="row">계획</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                                <td></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in selectListExpectSummaryThisYear)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="4">연간</th>
+                                    <th scope="row">계획</th>
+                                    <td>@(item.Sales)</td>
+                                    <td>@(item.Ebit)</td>
+                                    <td>@WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2)%</td>
+                                    <td>@(item.Pbt)</td>
+                                    <td></td>
+                                </tr>
+                            }
+                        }
+
+                        if (selectListExpectResultSummary == null || selectListExpectResultSummary.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row">예상</th>
+                                <td><input type="text" name="SalesSummary" value="0" /></td>
+                                <td><input type="text" name="EbitSummary" value="0" /></td>
+                                <td class="bg_blue" name="EbitRateSummary">0</td>
+                                <td><input type="text" name="PbtSummary" value="0" /></td>
+                                <td><input type="text" name="NetProfitTermSummary" value="0" /></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">계획대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">전년대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">부채비율</th>
+                                <th scope="row">[@(pmPal.Monthly)]월실적</th>
+                                <td colspan="4"><textarea class="w100" readonly></textarea></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in selectListExpectResultSummary)
+                            {
+                                var planSumBussiness = selectListExpectSummaryThisYear
+                                            .Select(pb => new PmPalBusiness
+                                            {
+                                                Sales = pb.Sales,
+                                                Ebit = pb.Ebit,
+                                                EbitRate = pb.EbitRate,
+                                                Pbt = pb.Pbt,
+                                                MonthlyType = pb.MonthlyType
+                                            }).FirstOrDefault();
+
+                                //계획대비
+                                decimal planSummaryContrastYearSales = 0;
+                                decimal planSummaryContrastYearEbit = 0;
+                                decimal planSummaryContrastYearEbitRate = 0;
+                                decimal planSummaryContrastYearPbt = 0;
+
+                                planSummaryContrastYearSales = planSumBussiness == null ? 0 : planSumBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item.Sales, planSumBussiness.Sales);
+                                planSummaryContrastYearEbit = planSumBussiness == null ? 0 : planSumBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item.Ebit, planSumBussiness.Ebit);
+                                planSummaryContrastYearEbitRate = planSumBussiness == null ? 0 : planSumBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item.EbitRate, planSumBussiness.EbitRate);
+                                planSummaryContrastYearPbt = planSumBussiness == null ? 0 : planSumBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item.Pbt, planSumBussiness.Pbt);
+
+                                //전년대비
+                                decimal preYearSummaryContrastYearSales = 0;
+                                decimal preYearSummaryContrastYearEbit = 0;
+                                decimal preYearSummaryContrastYearEbitRate = 0;
+                                decimal preYearSummaryContrastYearPbt = 0;
+
+                                preYearSummaryContrastYearSales = monthlySummarySumSales == 0 ? 0 : WebUtil.NumberRound(item.Sales, yearSummarySales);
+                                preYearSummaryContrastYearEbit = monthlySummarySumEbit == 0 ? 0 : WebUtil.NumberRound(item.Ebit, yearSummaryEbit);
+                                preYearSummaryContrastYearEbitRate = monthlySummarySumEbitRate == 0 ? 0 : WebUtil.NumberRound(item.EbitRate, yearSummaryEbitRate);
+                                preYearSummaryContrastYearPbt = monthlySummarySumPbt == 0 ? 0 : WebUtil.NumberRound(item.Pbt, yearSummaryPbt);
+
+                                <tr>
+                                    <th scope="row">
+                                        예상
+                                        <input type="hidden" name="PmPalSummarySeq" value="@item.PmPalSummarySeq" />
+                                    </th>
+                                    <td>@(item.Sales)</td>
+                                    <td>@(item.Ebit)</td>
+                                    <td class="bg_blue" name="EbitRateSummary">@WebUtil.NumberRound(item.Ebit, item.Sales, 100, 2)%</td>
+                                    <td>@(item.Pbt)</td>
+                                    <td>@(item.NetProfitTerm)</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">@(planSummaryContrastYearSales)</td>
+                                    <td class="bg_blue">@(planSummaryContrastYearEbit)</td>
+                                    <td class="bg_blue">@WebUtil.NumberRound(planSummaryContrastYearEbit, planSummaryContrastYearSales, 100, 2)%</td>
+                                    <td class="bg_blue">@(planSummaryContrastYearPbt)</td>
+                                    <td class="bg_blue"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearSales)</td>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearEbit)</td>
+                                    <td class="bg_blue">@WebUtil.NumberRound(preYearSummaryContrastYearEbit, preYearSummaryContrastYearSales, 100, 2)%</td>
+                                    <td class="bg_blue">@(preYearSummaryContrastYearPbt)</td>
+                                    <td class="bg_blue"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">부채비율</th>
+                                    <th scope="row">[@(pmPal.Monthly)]월실적</th>
+                                    <td colspan="5"><textarea class="w100" readonly>@item.LiabilitiesRateComment</textarea></td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+            <!--손익분석 테이블 시작-->
+            <h3>손익 분석</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">구분</th>
+                        <th scope="col">내용 입력</th>
+                        <th scope="col">당월</th>
+                        <th scope="col">내용입력</th>
+                        <th scope="col">누계</th>
+                    </tr>
+                </thead>
+                <tbody id="salesTbody">
+                    @if (selectListAnalysisMonthlyContent == null || selectListAnalysisMonthlyContent.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row" rowspan="4">매출차이</th>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var count = 1;
+                        decimal monthlyValueTotal = 0;
+                        decimal CumulativeValue = 0;
+                        foreach (var item in selectListAnalysisMonthlyContent)
+                        {
+                            if (count == 1)
+                            {
+                                <tr name="analysisMonthly_@(count)">
+                                    <th scope="row" rowspan="@(selectListAnalysisMonthlyContent.Count() + 1)">
+                                        매출차이
+                                    </th>
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.CumulativeContent)</td>
+                                    <td>@(item.CumulativeValue)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr name="analysisMonthly_@(count)">
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.CumulativeContent)</td>
+                                    <td>@(item.CumulativeValue)</td>
+                                </tr>
+                            }
+                            count++;
+                            monthlyValueTotal += item.MonthlyValue;
+                            CumulativeValue += CumulativeValue;
+                        }
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">@(monthlyValueTotal)</td>
+                            <td>-</td>
+                            <td class="bg_blue">@(CumulativeValue)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table><!--//매출차이-->
+
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead style="display:none;">
+                    <tr>
+                        <th scope="col">구분</th>
+                        <th scope="col">내용 입력</th>
+                        <th scope="col">당월</th>
+                        <th scope="col">내용입력</th>
+                        <th scope="col">누계</th>
+                        <th scope="col">필드 추가/삭제</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (selectListAnalysisMonthlySalesContent == null || selectListAnalysisMonthlySalesContent.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row" rowspan="4">영업이익<br />차이</th>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var count = 1;
+                        decimal monthlyValueTotal = 0;
+                        decimal CumulativeValue = 0;
+                        foreach (var item in selectListAnalysisMonthlySalesContent)
+                        {
+                            if (count == 1)
+                            {
+                                <tr name="analysisMonthlySales_@(count)">
+                                    <th scope="row" rowspan="@(selectListAnalysisMonthlySalesContent.Count() + 1)">
+                                        영업이익<br />차이
+                                    </th>
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.CumulativeContent)</td>
+                                    <td>@(item.CumulativeValue)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr name="analysisMonthlySales_@(count)">
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.CumulativeContent)</td>
+                                    <td>@(item.CumulativeValue)</td>
+                                </tr>
+                            }
+                            monthlyValueTotal += item.MonthlyValue;
+                            CumulativeValue += CumulativeValue;
+                            count++;
+                        }
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">@(monthlyValueTotal)</td>
+                            <td>-</td>
+                            <td class="bg_blue">@(CumulativeValue)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table><!--//영업이익차이-->
+
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead style="display:none;">
+                    <tr>
+                        <th scope="col">구분</th>
+                        <th scope="col">내용 입력</th>
+                        <th scope="col">당월</th>
+                        <th scope="col">내용입력</th>
+                        <th scope="col">누계</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (selectListAnalysisMonthlyCurrentContent == null || selectListAnalysisMonthlyCurrentContent.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row" rowspan="4">경상이익 <br />차이</th>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var count = 1;
+                        decimal monthlyValueTotal = 0;
+                        decimal CumulativeValue = 0;
+                        foreach (var item in selectListAnalysisMonthlyCurrentContent)
+                        {
+                            if (count == 1)
+                            {
+                                <tr name="analysisMonthlyCurrent_@(count)">
+                                    <th scope="row" rowspan="@(selectListAnalysisMonthlyCurrentContent.Count() + 1)">경상이익 <br />차이</th>
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.CumulativeContent)</td>
+                                    <td>@(item.CumulativeValue)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr name="analysisMonthlyCurrent_@(count)">
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.CumulativeContent)</td>
+                                    <td>@(item.CumulativeValue)</td>
+                                </tr>
+                            }
+                            monthlyValueTotal += item.MonthlyValue;
+                            CumulativeValue += CumulativeValue;
+                            count++;
+                        }
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">@(monthlyValueTotal)</td>
+                            <td>-</td>
+                            <td class="bg_blue">@(CumulativeValue)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table><!--//경상이익차이-->
+
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead style="display:none;">
+                    <tr>
+                        <th scope="col">구분</th>
+                        <th scope="col">내용 입력</th>
+                        <th scope="col">당월</th>
+                        <th scope="col">내용입력</th>
+                        <th scope="col">누계</th>
+                        <th scope="col">필드 추가/삭제</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (selectListAnalysisMonthlyTermContent == null || selectListAnalysisMonthlyTermContent.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row" rowspan="4">당기순이익 <br />차이</th>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var count = 1;
+                        decimal monthlyValueTotal = 0;
+                        decimal CumulativeValue = 0;
+                        foreach (var item in selectListAnalysisMonthlyTermContent)
+                        {
+                            if (count == 1)
+                            {
+                                <tr name="analysisMonthlyTerm_@(count)">
+                                    <th scope="row" rowspan="@(selectListAnalysisMonthlyTermContent.Count() + 1)">당기순이익 <br />차이</th>
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.CumulativeContent)</td>
+                                    <td>@(item.CumulativeValue)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr name="analysisMonthlyTerm_@(count)">
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.CumulativeContent)</td>
+                                    <td>@(item.CumulativeValue)</td>
+                                </tr>
+                            }
+                            count++;
+                            monthlyValueTotal += item.MonthlyValue;
+                            CumulativeValue += CumulativeValue;
+                        }
+
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">@(monthlyValueTotal)</td>
+                            <td>-</td>
+                            <td class="bg_blue">@(CumulativeValue)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table><!--//당기순이익차이-->
+            <!--손익분석 테이블 끝-->
+            <!--연간예상분석 테이블 시작-->
+            <h3>연간예상분석</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">구분</th>
+                        <th scope="col">내용 입력</th>
+                        <th scope="col">잔여월</th>
+                        <th scope="col">내용입력</th>
+                        <th scope="col">연간</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (selectListYearAnalysisMonthlyContent == null || selectListYearAnalysisMonthlyContent.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row" rowspan="4">매출차이</th>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var count = 1;
+                        decimal monthlyValueTotal = 0;
+                        decimal yealyValueTotal = 0;
+                        foreach (var item in selectListYearAnalysisMonthlyContent)
+                        {
+                            if (count == 1)
+                            {
+                                <tr name="YearAnalysisMonthlyCount_@(count)">
+                                    <th scope="row" rowspan="@(selectListYearAnalysisMonthlyContent.Count() + 1)">매출차이</th>
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.YealyContent)</td>
+                                    <td>@(item.YealyValue)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr name="YearAnalysisMonthlyCount_@(count)">
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.YealyContent)</td>
+                                    <td>@(item.YealyValue)</td>
+                                </tr>
+                            }
+
+                            count++;
+                            monthlyValueTotal += item.MonthlyValue;
+                            yealyValueTotal += item.YealyValue;
+                        }
+
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">@(monthlyValueTotal)</td>
+                            <td>-</td>
+                            <td class="bg_blue">@(yealyValueTotal)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table><!--//매출차이-->
+
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead style="display:none;">
+                    <tr>
+                        <th scope="col">구분</th>
+                        <th scope="col">내용 입력</th>
+                        <th scope="col">잔여월</th>
+                        <th scope="col">내용입력</th>
+                        <th scope="col">연간</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (selectListYearAnalysisMonthlySalesContent == null || selectListYearAnalysisMonthlySalesContent.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row" rowspan="4">영업이익<br />차이</th>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var count = 1;
+                        decimal monthlyValueTotal = 0;
+                        decimal yealyValueTotal = 0;
+                        foreach (var item in selectListYearAnalysisMonthlySalesContent)
+                        {
+                            if (count == 1)
+                            {
+                                <tr name="YearAnalysisMonthlySales_@(count)">
+                                    <th scope="row" rowspan="@(selectListYearAnalysisMonthlySalesContent.Count() + 1)">영업이익<br />차이</th>
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.YealyContent)</td>
+                                    <td>@(item.YealyValue)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr name="YearAnalysisMonthlySales_@(count)">
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.YealyContent)</td>
+                                    <td>@(item.YealyValue)</td>
+                                </tr>
+                            }
+                            count++;
+                            monthlyValueTotal += item.MonthlyValue;
+                            yealyValueTotal += item.YealyValue;
+                        }
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">@(monthlyValueTotal)</td>
+                            <td>-</td>
+                            <td class="bg_blue">@(yealyValueTotal)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table><!--//영업이익차이-->
+
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead style="display:none;">
+                    <tr>
+                        <th scope="col">구분</th>
+                        <th scope="col">내용 입력</th>
+                        <th scope="col">잔여월</th>
+                        <th scope="col">내용입력</th>
+                        <th scope="col">연간</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (selectListYearAnalysisMonthlyCurrentContent == null || selectListYearAnalysisMonthlyCurrentContent.Count() == 0)
+                    {
+                        <tr name="YearAnalysisMonthlyCurrent_1">
+                            <th scope="row" rowspan="4">경상이익 <br />차이</th>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr name="YearAnalysisMonthlyCurrent_2">
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr name="YearAnalysisMonthlyCurrent_3">
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var count = 1;
+                        decimal monthlyValueTotal = 0;
+                        decimal yealyValueTotal = 0;
+                        foreach (var item in selectListYearAnalysisMonthlyCurrentContent)
+                        {
+                            if (count == 1)
+                            {
+                                <tr name="YearAnalysisMonthlyCurrent_@(count)">
+                                    <th scope="row" rowspan="@(selectListYearAnalysisMonthlyCurrentContent.Count() + 1)">경상이익 <br />차이</th>
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.YealyContent)</td>
+                                    <td>@(item.YealyValue)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr name="YearAnalysisMonthlyCurrent_@(count)">
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.YealyContent)</td>
+                                    <td>@(item.YealyValue)</td>
+                                </tr>
+                            }
+                            count++;
+                            monthlyValueTotal += item.MonthlyValue;
+                            yealyValueTotal += item.YealyValue;
+                        }
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">@(monthlyValueTotal)</td>
+                            <td>-</td>
+                            <td class="bg_blue">@(yealyValueTotal)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table><!--//경상이익차이-->
+
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead style="display:none;">
+                    <tr>
+                        <th scope="col">구분</th>
+                        <th scope="col">내용 입력</th>
+                        <th scope="col">잔여월</th>
+                        <th scope="col">내용입력</th>
+                        <th scope="col">연간</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (selectListYearAnalysisMonthlyTermContent == null || selectListYearAnalysisMonthlyTermContent.Count() == 0)
+                    {
+                        <tr name="YearAnalysisMonthlyTerm_1">
+                            <th scope="row" rowspan="4">당기순이익 <br />차이</th>
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr name="YearAnalysisMonthlyTerm_2">
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr name="YearAnalysisMonthlyTerm_3">
+                            <td></td>
+                            <td>0</td>
+                            <td></td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                            <td>-</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var count = 1;
+                        decimal monthlyValueTotal = 0;
+                        decimal yealyValueTotal = 0;
+                        foreach (var item in selectListYearAnalysisMonthlyTermContent)
+                        {
+                            if (count == 1)
+                            {
+                                <tr name="YearAnalysisMonthlyTerm_@(count)">
+                                    <th scope="row" rowspan="@(selectListYearAnalysisMonthlyTermContent.Count() + 1)">당기순이익 <br />차이</th>
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.YealyContent)</td>
+                                    <td>@(item.YealyValue)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr name="YearAnalysisMonthlyTerm_@(count)">
+                                    <td>@(item.MonthlyContent)</td>
+                                    <td>@(item.MonthlyValue)</td>
+                                    <td>@(item.YealyContent)</td>
+                                    <td>@(item.YealyValue)</td>
+                                </tr>
+                            }
+                            count++;
+                            monthlyValueTotal += item.MonthlyValue;
+                            yealyValueTotal += item.YealyValue;
+                        }
+                        <tr class="total">
+                            <!--당월, 누계 합계-->
+                            <td>-</td>
+                            <td class="bg_blue">@(monthlyValueTotal)</td>
+                            <td>-</td>
+                            <td class="bg_blue">@(yealyValueTotal)</td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table><!--//당기순이익차이-->
+            <!--손익분석 테이블 끝-->
+
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+</div><!--//container-->
+

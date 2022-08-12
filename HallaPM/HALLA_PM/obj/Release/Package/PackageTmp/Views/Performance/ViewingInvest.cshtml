@@ -1,0 +1,369 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+    List<PmInvestBusiness> pmLastBusYear = Model.pmLastYearBuYear;
+    List<PmInvestBusiness> pmLastBusMon = Model.pmLastYearBuMon;
+    List<PmInvestBusiness> pmLastBusCum = Model.pmLastYearBuCum;
+
+    List<PmInvestSum> pmLastComYear = Model.pmLastYearComYear;
+    List<PmInvestSum> pmLastComMon = Model.pmLastYearComMon;
+    List<PmInvestSum> pmLastComCum = Model.pmLastYearComCum;
+
+    List<PlanYearInvestBusiness> pnThisBusYear = Model.pnThisYearBuYear;
+    List<PlanMonthlyInvestBusinessExp> pnThisBusMon = Model.pnThisYearBuMon;
+    List<PlanMonthlyInvestBusinessExp> pnThisBusCum = Model.pnThisYearBuCum;
+
+    List<PlanYearInvestSummary> pnThisComYear = Model.pnThisYearComYear;
+    List<PlanMonthlyInvestSummaryExp> pnThisComMon = Model.pnThisYearComMon;
+    List<PlanMonthlyInvestSummaryExp> pnThisComCum = Model.pnThisYearComCum;
+
+    List<PmInvestBusiness> pmThisBusMon = Model.pmThisYearBuMon;
+    List<PmInvestBusiness> pmThisBusCum = Model.pmThisYearBuCum;
+
+    List<PmInvestSum> pmThisComMon = Model.pmThisYearComMon;
+    List<PmInvestSum> pmThisComCum = Model.pmThisYearComCum;
+
+
+    string companyName = "ExcelDownBs";
+    string year = "";
+    string mm = "";
+    if (pmThisComMon.Count() > 0)
+    {
+        companyName = pmThisComMon.First().CompanyName;
+        year = pmThisComMon.First().investYear;
+        mm = pmThisComMon.First().Monthly;
+    }
+
+    var groupUnion = pmThisComMon.GroupBy(g => g.OrgUnionSeq)
+        .Select(cl => new PmPalSummaryExp { OrgUnionSeq = cl.First().OrgUnionSeq, UnionName = cl.First().UnionName }).ToList();
+
+    var groupCompany = pmThisComMon.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PmQuarterPalBusinessExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        });
+    bool isFirst = false;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ViewingInvest</title>
+    <style>
+        .mytable {
+            table-layout: fixed;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+            .mytable th, .mytable td {
+                padding: 5px 20px;
+                border: 1px solid black;
+                white-space: nowrap;
+                text-align: center;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+        .buLevel th, .buLevel td {
+            background-color: #f2f2f2;
+        }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+        .ComLevel th, .ComLevel td {
+            background-color: #fff2cc;
+        }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+        .UniLevel th, .UniLevel td {
+            background-color: #d0cece;
+        }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+        .GrpLevel th, .GrpLevel td {
+            background-color: #bdd7ee;
+        }
+    </style>
+</head>
+<body>
+    <h3>@(year)년 @(mm)월 투자, 인원 요약</h3>
+    <br />
+    <br />
+    <table>
+        <tr>
+            <th style="text-align:right" colspan="16">(단위 : 억원)</th>
+        </tr>
+    </table>
+    <table class="mytable">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="3" colspan="4">구분</th>
+                <th colspan="3">@(Convert.ToInt32(year) - 1)년 실적</th>
+                <th colspan="9">@(year)년</th>
+            </tr>
+            <tr class="buLevel">
+                <th rowspan="2">연간</th>
+                <th colspan="2">@(mm)월</th>
+
+                <th>연간</th>
+                <th colspan="4">@(mm)월</th>
+
+                <th colspan="4">누계</th>
+            </tr>
+            <tr class="buLevel">
+                <th>당월</th>
+                <th>누계</th>
+
+                <th>계획</th>
+
+                <th>계획</th>
+                <th>실적</th>
+                <th>계획대비</th>
+                <th>전년대비</th>
+
+                <th>계획</th>
+                <th>실적</th>
+                <th>계획대비</th>
+                <th>전년대비</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item3 in groupUnion)
+            {
+                foreach (var item in groupCompany.Where(w => w.OrgUnionSeq == item3.OrgUnionSeq).ToList())
+                {
+                    var buCount = pmThisBusMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).GroupBy(g => new { g.OrgBusinessSeq }).Count();
+                    var groupBusiness = pmThisBusMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).GroupBy(g => g.OrgBusinessSeq)
+                        .Select(cl => new PmInvestBusiness
+                        {
+                            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+                            BusinessName = cl.First().BusinessName
+                        });
+
+                    foreach (var item2 in groupBusiness)
+                    {
+                        // 전년실적
+                        var pmLastBusYearRow = pmLastBusYear.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                        var pmLastBusMonRow = pmLastBusMon.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                        var pmLastBusCumRow = pmLastBusCum.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                        // 당해계획
+                        var pnThisBusYearRow = pnThisBusYear.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                        var pnThisBusMonRow = pnThisBusMon.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                        var pnThisBusCumRow = pnThisBusCum.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                        // 당해실적
+                        var pmThisBusMonRow = pmThisBusMon.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                        var pmThisBusCumRow = pmThisBusCum.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+
+                        if (pmLastBusYearRow == null) { pmLastBusYearRow = new PmInvestBusiness(); }
+                        if (pmLastBusMonRow == null) { pmLastBusMonRow = new PmInvestBusiness(); }
+                        if (pmLastBusCumRow == null) { pmLastBusCumRow = new PmInvestBusiness(); }
+
+                        if (pnThisBusYearRow == null) { pnThisBusYearRow = new PlanYearInvestBusiness(); }
+                        if (pnThisBusMonRow == null) { pnThisBusMonRow = new PlanMonthlyInvestBusinessExp(); }
+                        if (pnThisBusCumRow == null) { pnThisBusCumRow = new PlanMonthlyInvestBusinessExp(); }
+
+                        if (pmThisBusMonRow == null) { pmThisBusMonRow = new PmInvestBusiness(); }
+                        if (pmThisBusCumRow== null) { pmThisBusCumRow = new PmInvestBusiness(); }
+
+                        <tr>
+                            @if (!isFirst)
+                            {
+                                <th class="buLevel" rowspan="@(buCount * 4)">@item.UnionName</th>
+                                <th class="buLevel" rowspan="@(buCount * 4)">@item.CompanyName</th>
+                                <th class="buLevel" rowspan="4">@item2.BusinessName</th>
+                                isFirst = true;
+                            }
+                            else
+                            {
+                                <th class="buLevel" rowspan="4">@item2.BusinessName</th>
+                            }
+                            <th class="buLevel">투자</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusYearRow.Investment, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusMonRow.Investment, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusCumRow.Investment, 0))</th>
+
+                            <th>@(WebUtil.NCommaRound(pnThisBusYearRow.Investment, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pnThisBusMonRow.Investment, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmThisBusMonRow.Investment, 0))</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusMonRow.Investment, pnThisBusMonRow.Investment, 100, 1), 1))%</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusMonRow.Investment, pmLastBusMonRow.Investment, 100, 1), 1))%</th>
+
+                            <th>@(WebUtil.NCommaRound(pnThisBusCumRow.Investment, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmThisBusCumRow.Investment, 0))</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusCumRow.Investment, pnThisBusCumRow.Investment, 100, 1), 1))%</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusCumRow.Investment, pmLastBusCumRow.Investment, 100, 1), 1))%</th>
+                        </tr>
+
+                        <tr>
+                            <th class="buLevel">인원</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusYearRow.Personnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusMonRow.Personnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusCumRow.Personnel, 0))</th>
+
+                            <th>@(WebUtil.NCommaRound(pnThisBusYearRow.Personnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pnThisBusMonRow.Personnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmThisBusMonRow.Personnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusMonRow.Personnel, pnThisBusMonRow.Personnel, 100, 1), 1))%</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusMonRow.Personnel, pmLastBusMonRow.Personnel, 100, 1), 1))%</th>
+
+                            <th>@(WebUtil.NCommaRound(pnThisBusCumRow.Personnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmThisBusCumRow.Personnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusCumRow.Personnel, pnThisBusCumRow.Personnel, 100, 1), 1))%</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusCumRow.Personnel, pmLastBusCumRow.Personnel, 100, 1), 1))%</th>
+                        </tr>
+                        <tr>
+                            <th class="buLevel">국내인원</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusYearRow.DomesticPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusMonRow.DomesticPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusCumRow.DomesticPersonnel, 0))</th>
+
+                            <th>@(WebUtil.NCommaRound(pnThisBusYearRow.DomesticPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pnThisBusMonRow.DomesticPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmThisBusMonRow.DomesticPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusMonRow.DomesticPersonnel, pnThisBusMonRow.DomesticPersonnel, 100, 1), 1))%</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusMonRow.DomesticPersonnel, pmLastBusMonRow.DomesticPersonnel, 100, 1), 1))%</th>
+
+                            <th>@(WebUtil.NCommaRound(pnThisBusCumRow.DomesticPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmThisBusCumRow.DomesticPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusCumRow.DomesticPersonnel, pnThisBusCumRow.DomesticPersonnel, 100, 1), 1))%</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusCumRow.DomesticPersonnel, pmLastBusCumRow.DomesticPersonnel, 100, 1), 1))%</th>
+                        </tr>
+                        <tr>
+                            <th class="buLevel">해외인원</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusYearRow.OverseasPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusMonRow.OverseasPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmLastBusCumRow.OverseasPersonnel, 0))</th>
+
+                            <th>@(WebUtil.NCommaRound(pnThisBusYearRow.OverseasPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pnThisBusMonRow.OverseasPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmThisBusMonRow.OverseasPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusMonRow.OverseasPersonnel, pnThisBusMonRow.OverseasPersonnel, 100, 1), 1))%</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusMonRow.OverseasPersonnel, pmLastBusMonRow.OverseasPersonnel, 100, 1), 1))%</th>
+
+                            <th>@(WebUtil.NCommaRound(pnThisBusCumRow.OverseasPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(pmThisBusCumRow.OverseasPersonnel, 0))</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusCumRow.OverseasPersonnel, pnThisBusCumRow.OverseasPersonnel, 100, 1), 1))%</th>
+                            <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisBusCumRow.OverseasPersonnel, pmLastBusCumRow.OverseasPersonnel, 100, 1), 1))%</th>
+                        </tr>
+                    }
+                    isFirst = false;
+
+                    // ------------ 회사
+                    // 전년실적
+                    var pmLastComYearRow = pmLastComYear.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                    var pmLastComMonRow = pmLastComMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                    var pmLastComCumRow = pmLastComCum.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                    // 당해계획
+                    var pnThisComYearRow = pnThisComYear.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                    var pnThisComMonRow = pnThisComMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                    var pnThisComCumRow = pnThisComCum.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                    // 당해실적
+                    var pmThisComMonRow = pmThisComMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                    var pmThisComCumRow = pmThisComCum.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+
+                    if (pmLastComYearRow == null) { pmLastComYearRow = new PmInvestSum(); }
+                    if (pmLastComMonRow == null) { pmLastComMonRow = new PmInvestSum(); }
+                    if (pmLastComCumRow == null) { pmLastComCumRow = new PmInvestSum(); }
+
+                    if (pnThisComYearRow == null) { pnThisComYearRow = new PlanYearInvestSummary(); }
+                    if (pnThisComMonRow == null) { pnThisComMonRow = new PlanMonthlyInvestSummaryExp(); }
+                    if (pnThisComCumRow == null) { pnThisComCumRow = new PlanMonthlyInvestSummaryExp(); }
+
+                    if (pmThisComMonRow == null) { pmThisComMonRow = new PmInvestSum(); }
+                    if (pmThisComCumRow == null) { pmThisComCumRow = new PmInvestSum(); }
+                    <tr class="ComLevel">
+                        <th rowspan="4" colspan="3">@item.CompanyName</th>
+                        <th>투자</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComYearRow.Investment, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComMonRow.Investment, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComCumRow.Investment, 0))</th>
+
+                        <th>@(WebUtil.NCommaRound(pnThisComYearRow.Investment, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pnThisComMonRow.Investment, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.Investment, 0))</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.Investment, pnThisComMonRow.Investment, 100, 1), 1))%</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.Investment, pmLastComMonRow.Investment, 100, 1), 1))%</th>
+
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.Investment, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.Investment, 0))</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.Investment, pnThisComCumRow.Investment, 100, 1), 1))%</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.Investment, pmLastComCumRow.Investment, 100, 1), 1))%</th>
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>인원</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComYearRow.Personnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComMonRow.Personnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComCumRow.Personnel, 0))</th>
+
+                        <th>@(WebUtil.NCommaRound(pnThisComYearRow.Personnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pnThisComMonRow.Personnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.Personnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.Personnel, pnThisComMonRow.Personnel, 100, 1), 1))%</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.Personnel, pmLastComMonRow.Personnel, 100, 1), 1))%</th>
+
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.Personnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.Personnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.Personnel, pnThisComCumRow.Personnel, 100, 1), 1))%</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.Personnel, pmLastComCumRow.Personnel, 100, 1), 1))%</th>
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>국내인원</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComYearRow.DomesticPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComMonRow.DomesticPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComCumRow.DomesticPersonnel, 0))</th>
+
+                        <th>@(WebUtil.NCommaRound(pnThisComYearRow.DomesticPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pnThisComMonRow.DomesticPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.DomesticPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.DomesticPersonnel, pnThisComMonRow.DomesticPersonnel, 100, 1), 1))%</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.DomesticPersonnel, pmLastComMonRow.DomesticPersonnel, 100, 1), 1))%</th>
+
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.DomesticPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.DomesticPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.DomesticPersonnel, pnThisComCumRow.DomesticPersonnel, 100, 1), 1))%</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.DomesticPersonnel, pmLastComCumRow.DomesticPersonnel, 100, 1), 1))%</th>
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>해외인원</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComYearRow.OverseasPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComMonRow.OverseasPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmLastComCumRow.OverseasPersonnel, 0))</th>
+
+                        <th>@(WebUtil.NCommaRound(pnThisComYearRow.OverseasPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pnThisComMonRow.OverseasPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.OverseasPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.OverseasPersonnel, pnThisComMonRow.OverseasPersonnel, 100, 1), 1))%</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.OverseasPersonnel, pmLastComMonRow.OverseasPersonnel, 100, 1), 1))%</th>
+
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.OverseasPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(pmThisComMonRow.OverseasPersonnel, 0))</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.OverseasPersonnel, pnThisComCumRow.OverseasPersonnel, 100, 1), 1))%</th>
+                        <th>@(WebUtil.NCommaRound(WebUtil.NumberRound(pmThisComMonRow.OverseasPersonnel, pmLastComCumRow.OverseasPersonnel, 100, 1), 1))%</th>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+    <div class="btn_area align_left_right">
+        <button class="btn full_green left" type="button" onclick="javascript: window.close();">닫기</button>
+    </div>
+</body>
+</html>

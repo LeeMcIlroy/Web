@@ -1,0 +1,531 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+    PlanGroup chk = Model.chk;
+
+    List<PmCashFlowCumulativeExp> lastPmC= Model.lastPmC;
+    List<PmCashFlowCumulative> lastPmC2 = Model.lastPmC2;
+    List<PlanYearCfSummaryExp> thisPnC = Model.thisPnC;
+
+    List<PlanYearCfSummaryExp> UList = thisPnC.GroupBy(g => new { g.OrgUnionSeq })
+        .Select(cl => new PlanYearCfSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName
+        }).ToList();
+
+    List<PmCashFlowCumulativeExp> lastPmU = lastPmC.GroupBy(g => new { g.OrgUnionSeq, g.CashFlowYear })
+        .Select(cl => new PmCashFlowCumulativeExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            CashFlowYear = cl.First().CashFlowYear,
+            CfSales = cl.Sum(c => c.CfSales),
+            CfInvestment = cl.Sum(c => c.CfInvestment),
+            CfFinancial = cl.Sum(c => c.CfFinancial),
+            CfSum = cl.Sum(c => c.CfSum),
+            CfEndingCash = cl.Sum(c => c.CfEndingCash),
+            CfAvailableCash = cl.Sum(c => c.CfAvailableCash),
+            Fcf1 = cl.Sum(c => c.Fcf1),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            Fcf3 = cl.Sum(c => c.Fcf3)
+        }).ToList();
+
+    List<PmCashFlowCumulative> lastPmU2 = lastPmC2.GroupBy(g => new { g.OrgUnionSeq, g.CashFlowYear })
+        .Select(cl => new PmCashFlowCumulative
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            CashFlowYear = cl.First().CashFlowYear,
+            FinancialSum = cl.Sum(c => c.FinancialSum),
+            EndingCash = cl.Sum(c => c.EndingCash),
+            AvailableCash = cl.Sum(c => c.AvailableCash),
+            Fcf2 = cl.Sum(c => c.Fcf2)
+        }).ToList();
+
+    List<PlanYearCfSummaryExp> thisPnU = thisPnC.GroupBy(g => new { g.OrgUnionSeq, g.YearlyYear })
+        .Select(cl => new PlanYearCfSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            CfSales = cl.Sum(c => c.CfSales),
+            CfInvestment = cl.Sum(c => c.CfInvestment),
+            CfFinancial = cl.Sum(c => c.CfFinancial),
+            CfSum = cl.Sum(c => c.CfSum),
+            CfEndingCash = cl.Sum(c => c.CfEndingCash),
+            CfAvailableCash = cl.Sum(c => c.CfAvailableCash),
+            Fcf1 = cl.Sum(c => c.Fcf1),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            Fcf3 = cl.Sum(c => c.Fcf3)
+        }).ToList();
+
+    List<PmCashFlowCumulativeExp> lastPmG = lastPmC.GroupBy(g=>new { g.CashFlowYear})
+        .Select(cl => new PmCashFlowCumulativeExp
+        {
+            CashFlowYear = cl.First().CashFlowYear,
+            CfSales = cl.Sum(c => c.CfSales),
+            CfInvestment = cl.Sum(c => c.CfInvestment),
+            CfFinancial = cl.Sum(c => c.CfFinancial),
+            CfSum = cl.Sum(c => c.CfSum),
+            CfEndingCash = cl.Sum(c => c.CfEndingCash),
+            CfAvailableCash = cl.Sum(c => c.CfAvailableCash),
+            Fcf1 = cl.Sum(c => c.Fcf1),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            Fcf3 = cl.Sum(c => c.Fcf3)
+        }).ToList();
+
+    List<PmCashFlowCumulative> lastPmG2 = lastPmC2.GroupBy(g => new { g.CashFlowYear })
+        .Select(cl => new PmCashFlowCumulative
+        {
+            CashFlowYear = cl.First().CashFlowYear,
+            FinancialSum = cl.Sum(c => c.FinancialSum),
+            EndingCash = cl.Sum(c => c.EndingCash),
+            AvailableCash = cl.Sum(c => c.AvailableCash),
+            Fcf2 = cl.Sum(c => c.Fcf2)
+        }).ToList();
+
+    List<PlanYearCfSummaryExp> thisPnG = thisPnC.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearCfSummaryExp
+        {
+            YearlyYear = cl.First().YearlyYear,
+            CfSales = cl.Sum(c => c.CfSales),
+            CfInvestment = cl.Sum(c => c.CfInvestment),
+            CfFinancial = cl.Sum(c => c.CfFinancial),
+            CfSum = cl.Sum(c => c.CfSum),
+            CfEndingCash = cl.Sum(c => c.CfEndingCash),
+            CfAvailableCash = cl.Sum(c => c.CfAvailableCash),
+            Fcf1 = cl.Sum(c => c.Fcf1),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            Fcf3 = cl.Sum(c => c.Fcf3)
+        }).ToList();
+
+    // 작년도 계획이 없거나 회사와 Bu의 데이터가 없어 짤릴 경우를 대비
+    int lastStartYear = Convert.ToInt32(chk.PlanYear) - 1;
+    int thisStartYear = Convert.ToInt32(chk.PlanYear);
+
+    string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DownExcelPlanYearCf</title>
+    <style>
+        .mytable {
+            border-collapse: collapse;
+        }
+
+            .mytable th, .mytable td {
+                border: 1px solid black;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format: \#\,\#\#0\
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\
+        }
+
+        .MsoNOne {
+            mso-number-format: \#\,\#\#0\.0
+        }
+
+        .MsoNOnePer {
+            mso-number-format: \#\,\#\#0\.0%
+        }
+    </style>
+</head>
+<body>
+    <h3>@(chk.PlanYear)년 중기 C/F</h3>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="14" style="text-align:right">(단위: 억원,%)</td>
+            </tr>
+        </tbody>
+    </table>
+    <table border="1">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="2" colspan="3">구분</th>
+                <th colspan="6">@(chk.PlanYear)년 중기계획</th>
+                <th colspan="5">전년대비</th>
+            </tr>
+            <tr class="buLevel">
+                @for (int i = lastStartYear; i < lastStartYear + 6; i++)
+                {
+                    <th>@(i)년</th>
+                }
+                @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                {
+                    <th>@(i)년</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in UList)
+            {
+                var CList = thisPnC.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).GroupBy(g => new { g.OrgCompanySeq })
+                        .Select(cl => new PlanYearCfSummaryExp
+                        {
+                            UnionName = cl.First().UnionName,
+                            OrgCompanySeq = cl.First().OrgCompanySeq,
+                            CompanyName = cl.First().CompanyName
+                        }).ToList();
+                foreach (var item2 in CList)
+                {
+                    var comPm = lastPmC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).FirstOrDefault();
+                    if (comPm == null) { comPm = new PmCashFlowCumulativeExp(); }
+                    var comPm2 = lastPmC2.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).FirstOrDefault();
+                    if (comPm2 == null) { comPm2 = new PmCashFlowCumulative(); }
+                    var comPn = thisPnC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).ToList();
+                    var pn_0 = comPn.Where(w => w.YearlyYear == thisStartYear.ToString()).FirstOrDefault();
+                    var pn_1 = comPn.Where(w => w.YearlyYear == (thisStartYear + 1).ToString()).FirstOrDefault();
+                    var pn_2 = comPn.Where(w => w.YearlyYear == (thisStartYear + 2).ToString()).FirstOrDefault();
+                    var pn_3 = comPn.Where(w => w.YearlyYear == (thisStartYear + 3).ToString()).FirstOrDefault();
+                    var pn_4 = comPn.Where(w => w.YearlyYear == (thisStartYear + 4).ToString()).FirstOrDefault();
+                    if (pn_0 == null) { pn_0 = new PlanYearCfSummaryExp(); }
+                    if (pn_1 == null) { pn_1 = new PlanYearCfSummaryExp(); }
+                    if (pn_2 == null) { pn_2 = new PlanYearCfSummaryExp(); }
+                    if (pn_3 == null) { pn_3 = new PlanYearCfSummaryExp(); }
+                    if (pn_4 == null) { pn_4 = new PlanYearCfSummaryExp(); }
+                    <tr>
+                        <th class="ComLevel" rowspan="9">@(item2.UnionName)</th>
+                        <th class="ComLevel" rowspan="9">@(item2.CompanyName)</th>
+                        <th class="ComLevel">영업활동</th>
+                        <td class="MsoNTwo">@(comPm.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_0.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_1.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_2.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_3.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_4.CfSales)</td>
+
+                        <td class="MsoNTwo">@(pn_0.CfSales - comPm.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_1.CfSales - pn_0.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_2.CfSales - pn_1.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_3.CfSales - pn_2.CfSales)</td>
+                        <td class="MsoNTwo">@(pn_4.CfSales - pn_3.CfSales)</td>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">투자활동</th>
+                        <td class="MsoNTwo">@(comPm.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_0.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_1.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_2.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_3.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_4.CfInvestment)</td>
+
+                        <td class="MsoNTwo">@(pn_0.CfInvestment - comPm.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_1.CfInvestment - pn_0.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_2.CfInvestment - pn_1.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_3.CfInvestment - pn_2.CfInvestment)</td>
+                        <td class="MsoNTwo">@(pn_4.CfInvestment - pn_3.CfInvestment)</td>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">재무활동</th>
+                        <td class="MsoNTwo">@(comPm2.FinancialSum)</td>
+                        <td class="MsoNTwo">@(pn_0.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_1.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_2.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_3.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_4.CfFinancial)</td>
+
+                        <td class="MsoNTwo">@(pn_0.CfFinancial - comPm2.FinancialSum)</td>
+                        <td class="MsoNTwo">@(pn_1.CfFinancial - pn_0.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_2.CfFinancial - pn_1.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_3.CfFinancial - pn_2.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_4.CfFinancial - pn_3.CfFinancial)</td>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">계</th>
+                        <td class="MsoNTwo">@(comPm.CfSum = comPm.CfSales + comPm.CfInvestment + comPm.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_0.CfSum = pn_0.CfSales + pn_0.CfInvestment + pn_0.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_1.CfSum = pn_1.CfSales + pn_1.CfInvestment + pn_1.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_2.CfSum = pn_2.CfSales + pn_2.CfInvestment + pn_2.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_3.CfSum = pn_3.CfSales + pn_3.CfInvestment + pn_3.CfFinancial)</td>
+                        <td class="MsoNTwo">@(pn_4.CfSum = pn_4.CfSales + pn_4.CfInvestment + pn_4.CfFinancial)</td>
+
+                        <td class="MsoNTwo">@(pn_0.CfSum - comPm.CfSum)</td>
+                        <td class="MsoNTwo">@(pn_1.CfSum - pn_0.CfSum)</td>
+                        <td class="MsoNTwo">@(pn_2.CfSum - pn_1.CfSum)</td>
+                        <td class="MsoNTwo">@(pn_3.CfSum - pn_2.CfSum)</td>
+                        <td class="MsoNTwo">@(pn_4.CfSum - pn_3.CfSum)</td>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">Ending Cash</th>
+                        <td class="MsoNTwo">@(comPm2.EndingCash)</td>
+                        <td class="MsoNTwo">@(pn_0.CfEndingCash)</td>
+                        <td class="MsoNTwo">@(pn_1.CfEndingCash)</td>
+                        <td class="MsoNTwo">@(pn_2.CfEndingCash)</td>
+                        <td class="MsoNTwo">@(pn_3.CfEndingCash)</td>
+                        <td class="MsoNTwo">@(pn_4.CfEndingCash)</td>
+
+                        <td class="MsoNTwo">@(pn_0.CfEndingCash - comPm2.EndingCash)</td>
+                        <td class="MsoNTwo">@(pn_1.CfEndingCash - pn_0.CfEndingCash)</td>
+                        <td class="MsoNTwo">@(pn_2.CfEndingCash - pn_1.CfEndingCash)</td>
+                        <td class="MsoNTwo">@(pn_3.CfEndingCash - pn_2.CfEndingCash)</td>
+                        <td class="MsoNTwo">@(pn_4.CfEndingCash - pn_3.CfEndingCash)</td>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">가용현금</th>
+                        <td class="MsoNTwo">@(comPm2.AvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_0.CfAvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_1.CfAvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_2.CfAvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_3.CfAvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_4.CfAvailableCash)</td>
+
+                        <td class="MsoNTwo">@(pn_0.CfAvailableCash - comPm2.AvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_1.CfAvailableCash - pn_0.CfAvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_2.CfAvailableCash - pn_1.CfAvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_3.CfAvailableCash - pn_2.CfAvailableCash)</td>
+                        <td class="MsoNTwo">@(pn_4.CfAvailableCash - pn_3.CfAvailableCash)</td>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">FCF1</th>
+                        <td class="MsoNTwo">@(comPm.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_0.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_1.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_2.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_3.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_4.Fcf1)</td>
+
+                        <td class="MsoNTwo">@(pn_0.Fcf1 - comPm.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_1.Fcf1 - pn_0.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_2.Fcf1 - pn_1.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_3.Fcf1 - pn_2.Fcf1)</td>
+                        <td class="MsoNTwo">@(pn_4.Fcf1 - pn_3.Fcf1)</td>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">FCF2</th>
+                        <td class="MsoNTwo">@(comPm2.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_0.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_1.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_2.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_3.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_4.Fcf2)</td>
+
+                        <td class="MsoNTwo">@(pn_0.Fcf2 - comPm2.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_1.Fcf2 - pn_0.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_2.Fcf2 - pn_1.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_3.Fcf2 - pn_2.Fcf2)</td>
+                        <td class="MsoNTwo">@(pn_4.Fcf2 - pn_3.Fcf2)</td>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">FCF3</th>
+                        <td class="MsoNTwo">@(comPm.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_0.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_1.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_2.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_3.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_4.Fcf3)</td>
+
+                        <td class="MsoNTwo">@(pn_0.Fcf3 - comPm.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_1.Fcf3 - pn_0.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_2.Fcf3 - pn_1.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_3.Fcf3 - pn_2.Fcf3)</td>
+                        <td class="MsoNTwo">@(pn_4.Fcf3 - pn_3.Fcf3)</td>
+                    </tr>
+                }
+            }
+            <!--그룹-->
+            @{
+
+                var grpPm = lastPmG.FirstOrDefault();
+                if (grpPm == null) { grpPm = new PmCashFlowCumulativeExp(); }
+                var grpPm2 = lastPmG2.FirstOrDefault();
+                if (grpPm2 == null) { grpPm2 = new PmCashFlowCumulative(); }
+                var grpPn = thisPnG.ToList();
+                var grpPn_0 = grpPn.Where(w => w.YearlyYear == thisStartYear.ToString()).FirstOrDefault();
+                var grpPn_1 = grpPn.Where(w => w.YearlyYear == (thisStartYear + 1).ToString()).FirstOrDefault();
+                var grpPn_2 = grpPn.Where(w => w.YearlyYear == (thisStartYear + 2).ToString()).FirstOrDefault();
+                var grpPn_3 = grpPn.Where(w => w.YearlyYear == (thisStartYear + 3).ToString()).FirstOrDefault();
+                var grpPn_4 = grpPn.Where(w => w.YearlyYear == (thisStartYear + 4).ToString()).FirstOrDefault();
+                if (grpPn_0 == null) { grpPn_0 = new PlanYearCfSummaryExp(); }
+                if (grpPn_1 == null) { grpPn_1 = new PlanYearCfSummaryExp(); }
+                if (grpPn_2 == null) { grpPn_2 = new PlanYearCfSummaryExp(); }
+                if (grpPn_3 == null) { grpPn_3 = new PlanYearCfSummaryExp(); }
+                if (grpPn_4 == null) { grpPn_4 = new PlanYearCfSummaryExp(); }
+
+                <tr class="GrpLevel">
+                    <th rowspan="9" colspan="2">그룹</th>
+                    <th>영업활동</th>
+                    <td class="MsoNTwo">@(grpPm.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_0.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfSales)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.CfSales - grpPm.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfSales - grpPn_0.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfSales - grpPn_1.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfSales - grpPn_2.CfSales)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfSales - grpPn_3.CfSales)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>투자활동</th>
+                    <td class="MsoNTwo">@(grpPm.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_0.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfInvestment)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.CfInvestment - grpPm.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfInvestment - grpPn_0.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfInvestment - grpPn_1.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfInvestment - grpPn_2.CfInvestment)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfInvestment - grpPn_3.CfInvestment)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>재무활동</th>
+                    <td class="MsoNTwo">@(grpPm2.FinancialSum)</td>
+                    <td class="MsoNTwo">@(grpPn_0.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfFinancial)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.CfFinancial - grpPm2.FinancialSum)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfFinancial - grpPn_0.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfFinancial - grpPn_1.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfFinancial - grpPn_2.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfFinancial - grpPn_3.CfFinancial)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>계</th>
+                    <td class="MsoNTwo">@(grpPm.CfSum = grpPm.CfSales + grpPm.CfInvestment + grpPm.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_0.CfSum = grpPn_0.CfSales + grpPn_0.CfInvestment + grpPn_0.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfSum = grpPn_1.CfSales + grpPn_1.CfInvestment + grpPn_1.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfSum = grpPn_2.CfSales + grpPn_2.CfInvestment + grpPn_2.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfSum = grpPn_3.CfSales + grpPn_3.CfInvestment + grpPn_3.CfFinancial)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfSum = grpPn_4.CfSales + grpPn_4.CfInvestment + grpPn_4.CfFinancial)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.CfSum - grpPm.CfSum)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfSum - grpPn_0.CfSum)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfSum - grpPn_1.CfSum)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfSum - grpPn_2.CfSum)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfSum - grpPn_3.CfSum)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>Ending Cash</th>
+                    <td class="MsoNTwo">@(grpPm2.EndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_0.CfEndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfEndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfEndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfEndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfEndingCash)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.CfEndingCash - grpPm2.EndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfEndingCash - grpPn_0.CfEndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfEndingCash - grpPn_1.CfEndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfEndingCash - grpPn_2.CfEndingCash)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfEndingCash - grpPn_3.CfEndingCash)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>가용현금</th>
+                    <td class="MsoNTwo">@(grpPm2.AvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_0.CfAvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfAvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfAvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfAvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfAvailableCash)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.CfAvailableCash - grpPm2.AvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_1.CfAvailableCash - grpPn_0.CfAvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_2.CfAvailableCash - grpPn_1.CfAvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_3.CfAvailableCash - grpPn_2.CfAvailableCash)</td>
+                    <td class="MsoNTwo">@(grpPn_4.CfAvailableCash - grpPn_3.CfAvailableCash)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>FCF1</th>
+                    <td class="MsoNTwo">@(grpPm.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_0.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Fcf1)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.Fcf1 - grpPm.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Fcf1 - grpPn_0.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Fcf1 - grpPn_1.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Fcf1 - grpPn_2.Fcf1)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Fcf1 - grpPn_3.Fcf1)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>FCF2</th>
+                    <td class="MsoNTwo">@(grpPm2.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_0.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Fcf2)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.Fcf2 - grpPm2.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Fcf2 - grpPn_0.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Fcf2 - grpPn_1.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Fcf2 - grpPn_2.Fcf2)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Fcf2 - grpPn_3.Fcf2)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>FCF3</th>
+                    <td class="MsoNTwo">@(grpPm.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_0.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Fcf3)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.Fcf3 - grpPm.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Fcf3 - grpPn_0.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Fcf3 - grpPn_1.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Fcf3 - grpPn_2.Fcf3)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Fcf3 - grpPn_3.Fcf3)</td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+</body>
+</html>

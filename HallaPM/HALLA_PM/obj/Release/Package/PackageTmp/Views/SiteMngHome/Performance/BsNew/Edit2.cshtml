@@ -1,0 +1,322 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit2";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PmBs pmBs = Model.pmBs;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+
+    PmBsSummary lastPmSummary = Model.lastPmSummary;
+    PlanYearBsSummary thisPnSummary = Model.thisPnSummary;
+    PmBsSummary thisPmSummary = Model.thisPmSummary;
+
+    if (lastPmSummary == null) { lastPmSummary = new PmBsSummary(); }
+    if (thisPnSummary == null) { thisPnSummary = new PlanYearBsSummary(); }
+
+    // 관리자 댓글 등록
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = pmBs.BsYear;
+    commentList.CommentMonth = pmBs.Monthly;
+    commentList.AttachTableName = "COMPANY";
+    commentList.AttachTableSeq = pmBs.OrgCompanySeq;
+    commentList.UserKey = SessionManager.GetAdminSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetAdminSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetAdminSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetAdminSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetAdminSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetAdminSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetAdminSession().insaDeptV.Deptkorname;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>BS</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@pmBs.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@pmBs.OrgCompanySeq" />
+        <input type="hidden" name="RegistStatus" value="@pmBs.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        @*// 2018.01.03 반려사유 추가*@
+        <input type="hidden" name="RejectReson" value="" />
+        <input type="hidden" name="message" value="" />
+        <div class="con_box search">
+            <h3 class="mt0">BS 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(pmBs.BsYear)년 @(pmBs.Monthly)월</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = pmBs.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <h3>[@pmBs.Monthly 월] BS 관리지표 (누계)</h3>
+            <p class="caption"><span>(단위 : 억원,%)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2" rowspan="3">구분</th>
+                        <th scope="col">@(Convert.ToInt32(pmBs.BsYear) - 1)년</th>
+                        <th scope="col" colspan="4">@pmBs.BsYear 년</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">기말</th>
+                        <th scope="col" colspan="4">@pmBs.Monthly 월 누계</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">실적</th>
+                        <th scope="col">계획</th>
+                        <th scope="col">실적</th>
+                        <th scope="col">계획대비</th>
+                        <th scope="col">전년대비</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row" rowspan="6">B/S</th>
+                        <th scope="row">
+                            총자산
+                        </th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.Assets, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.Assets, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.Assets, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Assets - thisPnSummary.Assets, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Assets - lastPmSummary.Assets, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">총부채</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.Liabilities, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.Liabilities, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.Liabilities, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Liabilities - thisPnSummary.Liabilities, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Liabilities - lastPmSummary.Liabilities, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">총자본</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.Capital, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.Capital, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.Capital, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Capital - thisPnSummary.Capital, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Capital - lastPmSummary.Capital, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">현금</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.Cash, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.Cash, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.Cash, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Cash - thisPnSummary.Cash, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Cash - lastPmSummary.Cash, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">차입금</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.Loan, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.Loan, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.Loan, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Loan - thisPnSummary.Loan, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Loan - lastPmSummary.Loan, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">부채비율</th>
+                        <td>@(WebUtil.NCommaRound(lastPmSummary.LiabilitiesRate = WebUtil.NumberRound(lastPmSummary.Liabilities, lastPmSummary.Capital, 100, 1), 1))%</td>
+                        <td>@(WebUtil.NCommaRound(thisPnSummary.LiabilitiesRate = WebUtil.NumberRound(thisPnSummary.Liabilities, thisPnSummary.Capital, 100, 1), 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.LiabilitiesRate = WebUtil.NumberRound(thisPmSummary.Liabilities, thisPmSummary.Capital, 100, 1), 1))%</td>
+                        @*<td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(thisPmSummary.Liabilities - thisPnSummary.Liabilities, thisPmSummary.Capital - thisPnSummary.Capital, 100, 1), 1))%</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(thisPmSummary.Liabilities - lastPmSummary.Liabilities, thisPmSummary.Capital - lastPmSummary.Capital, 100, 1), 1))%</td>*@
+                        <td class="bg_blue">@(thisPmSummary.LiabilitiesRate - thisPnSummary.LiabilitiesRate)%</td>
+                        <td class="bg_blue">@(thisPmSummary.LiabilitiesRate - lastPmSummary.LiabilitiesRate)%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">ROIC</th>
+                        <th scope="row">세후 영업이익</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.AfterTaxOperationProfit, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.AfterTaxOperationProfit, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.AfterTaxOperationProfit, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.AfterTaxOperationProfit - thisPnSummary.AfterTaxOperationProfit, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.AfterTaxOperationProfit - lastPmSummary.AfterTaxOperationProfit, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">투하자본</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.PainInCapital, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.PainInCapital, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.PainInCapital, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.PainInCapital - thisPnSummary.PainInCapital, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.PainInCapital - lastPmSummary.PainInCapital, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">ROIC</th>
+                        <td>@(WebUtil.NCommaRound(lastPmSummary.Roic = WebUtil.NumberRound(lastPmSummary.AfterTaxOperationProfit, lastPmSummary.PainInCapital, 100, 2), 1))%</td>
+                        <td>@(WebUtil.NCommaRound(thisPnSummary.Roic = WebUtil.NumberRound(thisPnSummary.AfterTaxOperationProfit, thisPnSummary.PainInCapital, 100, 2), 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Roic = WebUtil.NumberRound(thisPmSummary.AfterTaxOperationProfit, thisPmSummary.PainInCapital, 100, 2), 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Roic - thisPnSummary.Roic, 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Roic - lastPmSummary.Roic, 1))%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">ROIC 연환산</th>
+                        <td>@(WebUtil.NCommaRound(lastPmSummary.RoicYear = WebUtil.NumberRound(lastPmSummary.AfterTaxOperationProfit, lastPmSummary.PainInCapital, 100, 2), 1))%</td>
+                        <td>@(WebUtil.NCommaRound(thisPnSummary.RoicYear = WebUtil.NewRoic(WebUtil.NumberRound(thisPnSummary.AfterTaxOperationProfit, thisPnSummary.PainInCapital, 100, 8), Convert.ToDecimal(pmBs.Monthly)), 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.RoicYear = WebUtil.NewRoic(WebUtil.NumberRound(thisPmSummary.AfterTaxOperationProfit, thisPmSummary.PainInCapital, 100, 8), Convert.ToDecimal(pmBs.Monthly)), 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.RoicYear - thisPnSummary.RoicYear, 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.RoicYear - lastPmSummary.RoicYear, 1))%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="6">W/C</th>
+                        <th scope="row">A/R</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.Ar, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.Ar, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.Ar, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Ar - thisPnSummary.Ar, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Ar - lastPmSummary.Ar, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">T/O days</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.ArToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.ArToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.ArToDays, 1)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.ArToDays - thisPnSummary.ArToDays, 1))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.ArToDays - lastPmSummary.ArToDays, 1))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A/P</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.Ap, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.Ap, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.Ap, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Ap - thisPnSummary.Ap, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Ap - lastPmSummary.Ap, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">T/O days</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.ApToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.ApToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.ApToDays, 1)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.ApToDays - thisPnSummary.ApToDays, 1))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.ApToDays - lastPmSummary.ApToDays, 1))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Inventory</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.Inventory, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.Inventory, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.Inventory, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Inventory - thisPnSummary.Inventory, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.Inventory - lastPmSummary.Inventory, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">T/O days</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummary.InventoryToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummary.InventoryToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummary.InventoryToDays, 1)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.InventoryToDays - thisPnSummary.InventoryToDays, 1))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummary.InventoryToDays - lastPmSummary.InventoryToDays, 1))</td>
+                    </tr>
+                </tbody>
+            </table>
+
+    <div class="btn_area align_left_right">
+        <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+    </div>
+</div>
+<!--// con_box -->
+
+</form>
+
+</div><!--//container-->
+<script>
+    function onRegistStatusChange(afterRegistStatus) {
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            var f2 = document.frmRejectReply;
+            f.RejectReson.value = $("#Rejectcomment").val();
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.RejectReson.value = $("#Rejectcomment").val();
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.RejectReson.value = $("#Rejectcomment").val();
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+        MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onRegistReply() {
+        MYAPP.layerControl.layerShow($('#layerComment'));
+        onAdminLoad();
+    }
+</script>
+
+@Html.Partial("~/Views/Shared/AdminReply.cshtml", commentList)
+@*// 2018.01.03 반려사유 추가*@
+@Html.Partial("~/Views/Shared/RejectReply.cshtml")

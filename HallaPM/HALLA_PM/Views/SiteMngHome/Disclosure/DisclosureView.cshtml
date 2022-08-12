@@ -1,0 +1,388 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "DisclosureView";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    Disclosure disclosure = Model.disclosure;
+    List<DisclosureData> list = Model.list;
+
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    // 관리자 댓글 등록
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = disclosure.Year;
+    commentList.CommentMonth = disclosure.Month;
+    commentList.AttachTableName = "COMPANY";
+    commentList.AttachTableSeq = disclosure.CompanySeq;
+    commentList.UserKey = SessionManager.GetAdminSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetAdminSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetAdminSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetAdminSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetAdminSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetAdminSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetAdminSession().insaDeptV.Deptkorname;
+    //List<OrgBusiness> orgBusinessList = Model.orgBusinessList;
+
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>공시관리</span>
+        <strong>공시 계획 및 실적 등록</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@disclosure.Seq" />
+        <input type="hidden" name="CompanySeq" value="@disclosure.CompanySeq" />
+        <input type="hidden" name="Year" value="@disclosure.Year" />
+        <input type="hidden" name="Month" value="@disclosure.Month" />
+        <input type="hidden" name="Seq" value="@disclosure.Seq" />
+        <input type="hidden" name="RegistStatus" value="@disclosure.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PlanYn" value="" />
+
+        @*<input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchMonth" value="@(search.searchMonth)" />*@
+
+
+        @*// 2018.01.03 반려사유 추가*@
+        <input type="hidden" name="RejectReson" value="" />
+        <input type="hidden" name="message" value="" />
+
+        <div class="con_box search">
+            <h3 class="mt0">공시 계획 및 실적 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 엑셀업로드시 양식이 맞지 않은 데이터가 등록될 경우 제외하고 데이터가 등록되므로 반드시 양식을 확인하고 등록 바랍니다.
+
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(disclosure.Year)년 @(disclosure.Month)월</td>
+                    </tr>
+                    @*상단 공통*@
+                    @*/* disclosure.RegistStatus;*/*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = disclosure.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                        Top.PlanYn = disclosure.PlanYn;
+
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngDisTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">순번</th>
+                        <th scope="col">L1 공시항목</th>
+                        <th scope="col">L2 세부항목</th>
+                        <th scope="col">L3 공시제목</th>
+                        <th scope="col">공시대상</th>
+                        <th scope="col">거래금액(백만원)</th>
+                        <th scope="col">거래상대방</th>
+                        <th scope="col">거래일시</th>
+                        <th scope="col">세부내용</th>
+                        <th scope="col">비고</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (list == null || list.Count <= 0)
+                    {
+                        <tr>
+                            <td colspan="10" class="nodata">등록된 데이타가 없습니다.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in list)
+                        {
+                            <tr>
+                                <td>@item.rowNum</td>
+                                <td>@item.DisName</td>
+                                <td>@item.DetailName</td>
+                                <td>@item.Title</td>
+                                <td>@item.PlanYn</td>
+                                <td>@string.Format("{0:n0}", item.TransAmt)</td>
+                                <td>@item.TransCpn</td>
+                                <td>@Convert.ToDateTime(item.TransDate).ToString("yyyy-MM-dd")</td>
+                                <td>@item.Content</td>
+                                <td>@item.Remark</td>
+
+                            </tr>
+
+                        }
+                    }
+                </tbody>
+            </table>
+
+
+
+
+
+            <div class="btn_area bd_btm">
+
+                <div class="btn_area align_left_right">
+                    <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                    @if (disclosure.RegistStatus == (Define.REGIST_STATUS.GetKey("저장")))
+                    {
+
+                        <button class="btn full_green" type="button" onclick="onReset();">초기화</button>
+                    }
+
+                    @*<button class="btn full_green" type="button" onclick="onSave();">저장하기</button>*@
+                </div><!--//btn_area-->
+            </div>
+            <!--// con_box -->
+        </div>
+
+    </form>
+</div><!--//container-->
+<script>
+    //$(function () {
+    //    MYAPP.tblControl.init();
+    //});
+
+    function onCalculationAction() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Sales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ebit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Pbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Action";
+            f.submit();
+        }
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        var formData = new FormData($("#frmMain")[0]);
+
+        if (confirm("@Message.MSG_003_W")) {
+
+            $.ajax({
+                type: "post",
+                url: "DisclosureDelete",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.success) {
+                        alert('삭제되었습니다.');
+                        f.Seq.value;
+                        f.CompanySeq.value;
+                        f.action = "DisclosureView2";
+                        f.submit();
+                    }
+                    
+                },
+                error: function (request, status, error) {
+                    alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+                }
+            });
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "DisclosureList";
+        f.submit();
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down";
+        f.submit();
+    }
+    function updatePlanYn(status) {
+
+        var f = document.frmMain;
+        f.PlanYn.value = status;
+
+        var formData = new FormData($("#frmMain")[0]);
+        console.log(formData)
+
+        $.ajax({
+            type: "post",
+            url: "PlanYnUpdate",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('공시계획여부 변경되었습니다.');
+                    f.Seq.value;
+                    f.OrgCompanySeq.value;
+                    f.action = "DisclosureView2";
+                    f.submit();
+                }
+                else {
+                    
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+        
+        
+    }
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+        MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+        console.log(f);
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+        var orgCpyName = "@(orgCompanyName.CompanyName)";
+        var excelFileName = excelFilePath.substring(excelFilePath.lastIndexOf('\\') + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+        if (excelFileName.indexOf('공시양식') < 0 || excelFileName.indexOf(orgCpyName.toLowerCase()) < 0) {
+            alert('' + orgCpyName + ' - [공시양식] 파일이 아닙니다. \n파일을 확인해주세요');
+            return;
+        }
+        var formData = new FormData($("#frmMain")[0]);
+        console.log(formData)
+
+        $.ajax({
+            type: "post",
+           // url: "Excel_Upload",
+            url: "Excel_Upload3",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.Seq.value;
+                    f.CompanySeq.value;
+                    f.action = "DisclosureView2";
+                    //window.location.reload();
+
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    $('')
+                    alert(res.resultMsg);
+                    
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+
+    }
+
+    function onSave() {
+        var f = document.frmMain;
+
+        @*if (!onCheckMultipleNameDoubleValues("Sales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ebit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Pbt", "Pbt" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("NetProfitTerm", "당기순이익" + "@Message.MSG_001")) return false;*@
+
+        f.action = "REGIST_COMPLETE";
+        f.submit();
+    }
+
+    function onRegistReply() {
+        MYAPP.layerControl.layerShow($('#layerComment'));
+        onAdminLoad();
+    }
+</script>
+@*@Html.Partial("~/Views/Shared/AdminReply.cshtml", commentList)*@
+@*// 2018.01.03 반려사유 추가*@
+@Html.Partial("~/Views/Shared/RejectReply.cshtml")
+
+
+

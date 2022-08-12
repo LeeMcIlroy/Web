@@ -1,0 +1,251 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    BusinessPerformanceExp info = Model.businessPerformance;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>안내센터</span>
+        <strong>경영실적 관리</strong>
+    </div>
+
+    <form name="editForm" id="editForm" enctype="multipart/form-data">
+        <input type="hidden" name="seq" id="seq" value="@info.seq" />
+        <input type="hidden" id="inputName" name="inputName" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+
+        <div class="con_box search">
+            <h3 class="mt0">경영실적 관리</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 실적보고 시스템의 경영실적 PDF파일을 업로드 할 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 그룹데이터만 등록 가능합니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+
+            <table class="tbl th_ver ta_left" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">날짜</th>
+                        <td>
+                            <div class="style_select" style="width:20%;">
+                                <label>
+                                    <span></span>
+                                    <select name="year">
+                                        @for (int i = 2000; i < 2030; i++)
+                                        {
+                                            <option value="@i" @(info.year == i.ToString() ? "selected" : "")>@i</option>
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="style_select" style="width:20%;">
+                                <label>
+                                    <span></span>
+                                    <select name="month">
+                                        @{
+                                            string mon = "";
+                                        }
+                                        @for (int i = 1; i < 13; i++)
+                                        {
+                                            if (i < 10)
+                                            {
+                                                mon = "0" + i;
+                                            }
+                                            else
+                                            {
+                                                mon = i.ToString();
+                                            }
+                                            <option value="@mon" @(info.month == mon ? "selected" : "")>@mon</option>
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">구분</th>
+                        <td>
+                            <div class="style_select" style="width:20%;">
+                                <label>
+                                    <span></span>
+                                    <select name="businessType">
+                                        @foreach (var item in Define.BUSINESS_PERFORMANCE_TYPE)
+                                        {
+                                            <option value="@item.Key" @(info.businessType == item.Key ? "selected" : "")>@item.Value</option>
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">제목</th>
+                        <td><input type="text" name="title" value="@info.title" /></td>
+                    </tr>
+                    <tr>
+
+                        <th>첨부파일 </th>
+
+                        @if (info.fileInfoList.Count == 0 || info.fileInfoList.Where(x => x.fileInputName == "uploadFile1").Count() == 0)
+                        {
+                            <td class="filebox">
+                                <input class="upload-name" id="fileName1" name="fileName[]" style="width:400px;" value="파일선택" disabled="disabled" />
+                                <label for="uploadFile1">업로드</label>
+                                <input type="file" id="uploadFile1" name="uploadFile1" class="upload-hidden">
+                            </td>
+
+                        }
+                        else
+                        {
+                            <td class="filebox">
+                                <input class="upload-name fileName1" id="fileName1" style="width:400px;" value="@info.fileInfoList.Where(x => x.fileInputName == "uploadFile1").First().fileOrgName" disabled="disabled">
+                                <label for="uploadFile1">업로드</label>
+                                <input type="file" id="uploadFile1" name="uploadFile1" class="upload-hidden">
+                                <label class="uploadFile del1" for="ex_filename" onclick="onDeleteFile(document.editForm, 1); return false;">삭제</label>
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>사용여부</th>
+                        <td>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="isUse" value="Y" @(info.isUse.Equals("Y") ? "checked" : "")><i></i>
+                                    <strong>사용</strong>
+                                </label>
+                            </div>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="isUse" value="N" @(info.isUse.Equals("N") ? "checked" : "")><i></i>
+                                    <strong>미사용</strong>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="btn_area align_left_right">
+                <a href="javascript:;" onclick="onSearch(document.editForm)" class="btn full_green left">목록</a>
+                <a href="#" onclick="onEdit(document.editForm); return false;" class="btn full_green">저장</a>
+                <a href="#" onclick="onDelete(document.editForm);" class="btn full_green">삭제</a>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+
+
+
+<script type="text/javascript" src="/Contents/SiteMngHome/Common/se/js/HuskyEZCreator.js" charset="utf-8"></script>
+<script>
+
+    $(function () {
+        MYAPP.fileStyle.init();
+    });
+
+
+    function onEdit(form) {
+
+        if (form.title.value == "" || form.title.value == null) {
+            alert("제목은 필수입니다.");
+            return false;
+        }
+
+        var ext = getExtensionOfFilename($("#fileName1").val());
+        if (ext.indexOf("pdf") > -1) {
+        } else {
+            alert("PDF파일만 등록 가능합니다.");
+            return false;
+        }
+
+        // 정보 체크 후, 해당 폼 SUBMIT;
+        form.method = "POST";
+        form.action = "editAction";
+        form.submit();
+
+    }
+
+    function onCancel() {
+        if (confirm("작성 된 내용을 취소하시겠습니까?")) {
+            location.reload();
+        }
+    }
+
+    function getExtensionOfFilename(filename) {
+        var _fileLen = filename.length;
+        var _lastDot = filename.lastIndexOf('.');
+        var _fileExt = filename.substring(_lastDot, _fileLen).toLowerCase();
+        return _fileExt;
+    }
+
+
+    function onSearch(form) {
+        form.action = "List";
+        form.method = "POST";
+        form.submit();
+    }
+
+    function onDeleteFile(form, type) {
+        if (type == 1) { inputName = "uploadFile1"; inputId = "fileName1"; }
+        $("#inputName").val(inputName);
+        // ajax 분기 처리 할 것
+
+        var param = $("#editForm").serialize();
+        $.ajax({
+            url: "/SiteMngHome/MngInfo/Performance/deleteFileAction",
+            type: "post",
+            dataType: "json",
+            data: param,
+            success: function (res) {
+                if (res.success) {
+                    alert("파일이 삭제되었습니다.");
+                    $("." + inputName).css({ "display": "none" });
+                    $("." + inputId).val("");
+                    $(".del" + type).css({ "display": "none" });
+                } else {
+                    alert("파일 삭제가 실패되었습니다.");
+                }
+            },
+            error: function (request, status, error) {
+                alert("파일 삭제가 실패되었습니다.");
+            }
+        });
+    }
+
+    function onDelete(form) {
+        if (confirm("삭제하시겠습니까?")) {
+            form.method = "POST";
+            form.action = "deleteAction";
+            form.submit();
+        }
+    }
+
+
+    // history back observed
+    window.onload = function () {
+        if (typeof history.pushState === "function") {
+            history.pushState("halla", null, null);
+            window.onpopstate = function () {
+                location.href = "list";
+            };
+        }
+    };
+</script>
+

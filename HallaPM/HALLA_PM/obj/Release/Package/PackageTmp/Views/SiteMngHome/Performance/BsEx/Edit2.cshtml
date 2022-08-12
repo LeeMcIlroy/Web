@@ -1,0 +1,474 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit2";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PmBsEx pmBs = Model.pmBs;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+
+    PmBsSummaryEx lastPmSummaryEx = Model.lastPmSummaryEx;
+    PlanYearBsSummaryEx thisPnSummaryEx = Model.thisPnSummaryEx;
+    PmBsSummaryEx thisPmSummaryEx = Model.thisPmSummaryEx;
+
+    if (lastPmSummaryEx == null) { lastPmSummaryEx = new PmBsSummaryEx(); }
+    if (thisPnSummaryEx == null) { thisPnSummaryEx = new PlanYearBsSummaryEx(); }
+    Search search = ViewBag.Search;
+    decimal dMonth = Convert.ToDecimal(pmBs.Monthly);
+}
+@* 2019.01.08 중간관리자용 화면*@
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>중기BS - (주)한라 별도</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@pmBs.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@pmBs.OrgCompanySeq" />
+        <input type="hidden" name="RegistStatus" value="@pmBs.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        @*// 2018.01.03 반려사유 추가*@
+        <input type="hidden" name="RejectReson" value="" />
+        <input type="hidden" name="message" value="" />
+        <div class="con_box search">
+            <h3 class="mt0">BS 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(pmBs.BsYear)년 @(pmBs.Monthly)월</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = pmBs.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <h3>[@pmBs.Monthly 월] BS 관리지표 (누계)</h3>
+            <p class="caption"><span>(단위 : 억원,%)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2" rowspan="3">구분</th>
+                        <th scope="col">@(Convert.ToInt32(pmBs.BsYear) - 1)년</th>
+                        <th scope="col" colspan="4">@pmBs.BsYear 년</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">기말</th>
+                        <th scope="col" colspan="4">@pmBs.Monthly 월 누계</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">실적</th>
+                        <th scope="col">계획</th>
+                        <th scope="col">실적</th>
+                        <th scope="col">계획대비</th>
+                        <th scope="col">전년대비</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row" rowspan="6">B/S</th>
+                        <th scope="row">
+                            총자산
+                        </th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.Assets, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.Assets, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.Assets, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Assets - thisPnSummaryEx.Assets, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Assets - lastPmSummaryEx.Assets, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">총부채</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.Liabilities, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.Liabilities, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.Liabilities, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Liabilities - thisPnSummaryEx.Liabilities, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Liabilities - lastPmSummaryEx.Liabilities, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">총자본</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.Capital, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.Capital, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.Capital, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Capital - thisPnSummaryEx.Capital, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Capital - lastPmSummaryEx.Capital, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">현금</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.Cash, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.Cash, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.Cash, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Cash - thisPnSummaryEx.Cash, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Cash - lastPmSummaryEx.Cash, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">차입금</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.Loan, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.Loan, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.Loan, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Loan - thisPnSummaryEx.Loan, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Loan - lastPmSummaryEx.Loan, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">부채비율</th>
+                        <td>@(WebUtil.NCommaRound(lastPmSummaryEx.LiabilitiesRate = WebUtil.NumberRound(lastPmSummaryEx.Liabilities, lastPmSummaryEx.Capital, 100, 1), 1))%</td>
+                        <td>@(WebUtil.NCommaRound(thisPnSummaryEx.LiabilitiesRate = WebUtil.NumberRound(thisPnSummaryEx.Liabilities, thisPnSummaryEx.Capital, 100, 1), 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.LiabilitiesRate = WebUtil.NumberRound(thisPmSummaryEx.Liabilities, thisPmSummaryEx.Capital, 100, 1), 1))%</td>
+                        @*<td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(thisPmSummaryEx.Liabilities - thisPnSummaryEx.Liabilities, thisPmSummaryEx.Capital - thisPnSummaryEx.Capital, 100, 1), 1))%</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(thisPmSummaryEx.Liabilities - lastPmSummaryEx.Liabilities, thisPmSummaryEx.Capital - lastPmSummaryEx.Capital, 100, 1), 1))%</td>*@
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.LiabilitiesRate - thisPnSummaryEx.LiabilitiesRate, 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.LiabilitiesRate - lastPmSummaryEx.LiabilitiesRate, 1))%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">ROIC</th>
+                        <th scope="row">세후 영업이익</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.AfterTaxOperationProfit, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.AfterTaxOperationProfit, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.AfterTaxOperationProfit, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.AfterTaxOperationProfit - thisPnSummaryEx.AfterTaxOperationProfit, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.AfterTaxOperationProfit - lastPmSummaryEx.AfterTaxOperationProfit, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">투하자본</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.PainInCapital, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.PainInCapital, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.PainInCapital, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.PainInCapital - thisPnSummaryEx.PainInCapital, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.PainInCapital - lastPmSummaryEx.PainInCapital, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">ROIC</th>
+                        <td>@(WebUtil.NCommaRound(lastPmSummaryEx.Roic = WebUtil.NumberRound(lastPmSummaryEx.AfterTaxOperationProfit, lastPmSummaryEx.PainInCapital, 100, 2), 1))%</td>
+                        <td>@(WebUtil.NCommaRound(thisPnSummaryEx.Roic = WebUtil.NumberRound(thisPnSummaryEx.AfterTaxOperationProfit, thisPnSummaryEx.PainInCapital, 100, 2), 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Roic = WebUtil.NumberRound(thisPmSummaryEx.AfterTaxOperationProfit, thisPmSummaryEx.PainInCapital, 100, 2), 1))%</td>
+                        @*<td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(thisPmSummaryEx.AfterTaxOperationProfit - thisPnSummaryEx.AfterTaxOperationProfit, thisPmSummaryEx.PainInCapital - thisPnSummaryEx.PainInCapital, 100, 2), 1))</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(thisPmSummaryEx.AfterTaxOperationProfit - lastPmSummaryEx.AfterTaxOperationProfit, thisPmSummaryEx.PainInCapital - lastPmSummaryEx.PainInCapital, 100, 2), 1))</td>*@
+                        <td class="bg_blue">@(thisPmSummaryEx.Roic - thisPnSummaryEx.Roic)%</td>
+                        <td class="bg_blue">@(thisPmSummaryEx.Roic - lastPmSummaryEx.Roic)%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">ROIC 연환산</th>
+                        <td>@(WebUtil.NCommaRound(lastPmSummaryEx.RoicYear = WebUtil.NumberRound(lastPmSummaryEx.AfterTaxOperationProfit, lastPmSummaryEx.PainInCapital, 100, 2), 1))%</td>
+                        <td>@(WebUtil.NCommaRound(thisPnSummaryEx.RoicYear = WebUtil.NewRoic(WebUtil.NumberRound(thisPnSummaryEx.AfterTaxOperationProfit, thisPnSummaryEx.PainInCapital, 100, 8), dMonth), 1))%</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.RoicYear = WebUtil.NewRoic(WebUtil.NumberRound(thisPmSummaryEx.AfterTaxOperationProfit, thisPmSummaryEx.PainInCapital, 100, 8), dMonth), 1))%</td>
+                        <td class="bg_blue">@(thisPmSummaryEx.RoicYear - thisPnSummaryEx.RoicYear)%</td>
+                        <td class="bg_blue">@(thisPmSummaryEx.RoicYear - lastPmSummaryEx.RoicYear)%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="6">W/C</th>
+                        <th scope="row">A/R</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.Ar, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.Ar, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.Ar, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Ar - thisPnSummaryEx.Ar, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Ar - lastPmSummaryEx.Ar, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">T/O days</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.ArToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.ArToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.ArToDays, 1)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.ArToDays - thisPnSummaryEx.ArToDays, 1))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.ArToDays - lastPmSummaryEx.ArToDays, 1))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A/P</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.Ap, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.Ap, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.Ap, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Ap - thisPnSummaryEx.Ap, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Ap - lastPmSummaryEx.Ap, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">T/O days</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.ApToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.ApToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.ApToDays, 1)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.ApToDays - thisPnSummaryEx.ApToDays, 1))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.ApToDays - lastPmSummaryEx.ApToDays, 1))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Inventory</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.Inventory, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.Inventory, 0)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.Inventory, 0)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Inventory - thisPnSummaryEx.Inventory, 0))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.Inventory - lastPmSummaryEx.Inventory, 0))</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">T/O days</th>
+                        <td>@WebUtil.NCommaRound(lastPmSummaryEx.InventoryToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPnSummaryEx.InventoryToDays, 1)</td>
+                        <td>@WebUtil.NCommaRound(thisPmSummaryEx.InventoryToDays, 1)</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.InventoryToDays - thisPnSummaryEx.InventoryToDays, 1))</td>
+                        <td class="bg_blue">@(WebUtil.NCommaRound(thisPmSummaryEx.InventoryToDays - lastPmSummaryEx.InventoryToDays, 1))</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+            </div>
+        </div>
+        <!--// con_box -->
+    </form>
+</div><!--//container-->
+<script>
+    function onCalculationAction() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Assets", "총자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentAssets", "유동자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Liabilities", "총부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentLiabilities", "유동부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Capital", "총자본" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Cash", "현금" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Loan", "차입금" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("AfterTaxOperationProfit", "세후 영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentAssets", "투하자본" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("AnnualSales", "연간 매출액" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AnnualSalesCost", "연간매출원가(AP)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InventoryCost", "연간매출원가(Inv)" + "@Message.MSG_001")) return false;
+
+
+        if (!onCheckMultipleNameDoubleValues("Ar", "Ar" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ap", "Ap" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Inventory", "Inventory" + "@Message.MSG_001")) return false;
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Action";
+            f.submit();
+        }
+    }
+
+    function onSalesAccountAction() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Assets", "총자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentAssets", "유동자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Liabilities", "총부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentLiabilities", "유동부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Capital", "총자본" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Cash", "현금" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Loan", "차입금" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("AfterTaxOperationProfit", "세후 영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentAssets", "투하자본" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("AnnualSales", "연간 매출액" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AnnualSalesCost", "연간매출원가(AP)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InventoryCost", "연간매출원가(Inv)" + "@Message.MSG_001")) return false;
+
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "SalesAccount_Action";
+            f.submit();
+        }
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Write";
+            f.submit();
+        }
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down";
+        f.submit();
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            url: "Excel_Upload",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.action = "Edit";
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+    }
+
+    // 2019.01.08 승인프로세스 추가
+    function onRegistStatusChange(afterRegistStatus) {
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+        MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onSave() {
+        var f = document.frmMain;
+
+        // B/Sheet
+        if (!onCheckMultipleNameDoubleValues("Assets", "총자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentAssets", "유동자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Liabilities", "총부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentLiabilities", "유동부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Capital", "총자본" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Cash", "현금" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Loan", "차입금" + "@Message.MSG_001")) return false;
+
+        // ROIC
+        if (!onCheckMultipleNameDoubleValues("AfterTaxOperationProfit", "세후 영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("PainInCapital", "투하자본" + "@Message.MSG_001")) return false;
+
+        // W/Capital
+        if (!onCheckMultipleNameDoubleValues("AnnualSales", "연간 매출액" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AnnualSalesCost", "연간매출원가(AP)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InventoryCost", "연간매출원가(Inv)" + "@Message.MSG_001")) return false;
+
+        //W/Capital 등록
+        if (!onCheckMultipleNameDoubleValues("Ar", "A/R" + "@Message.MSG_001")) return false;
+        //if (!onCheckMultipleNameDoubleValues("ArToDays", "AR T/O Days" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ap", "A/P" + "@Message.MSG_001")) return false;
+        //if (!onCheckMultipleNameDoubleValues("ApToDays", "AP T/O Days" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Inventory", "Inventory" + "@Message.MSG_001")) return false;
+        //if (!onCheckMultipleNameDoubleValues("InventoryToDays", "Inventory T/O Days" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("SummaryAssets", "(요약)총자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryLiabilities", "(요약)총부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryCapital", "(요약)총자본" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryCash", "(요약)현금" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryLoan", "(요약)차입금" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryLiabilitiesRate", "(요약)부채비율" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryAfterTaxOperationProfit", "(요약)세후영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryPainInCapital", "(요약)투자하본" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryRoic", "(요약)ROIC" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryAr", "(요약)A/R" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryArToDays", "(요약)AR T/O Days" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryAp", "(요약)A/P" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryApToDays", "(요약)AP T/O Days" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryInventory", "(요약)Inventory" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryInventoryToDays", "(요약)Inventory T/O Days" + "@Message.MSG_001")) return false;
+
+        //중기재무등록 추가해야함
+
+        f.action = "Edit_Action";
+        f.submit();
+    }
+</script>
+@*// 2018.01.03 반려사유 추가*@
+@Html.Partial("~/Views/Shared/RejectReply.cshtml")
+

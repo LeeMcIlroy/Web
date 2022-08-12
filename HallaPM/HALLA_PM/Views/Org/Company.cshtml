@@ -1,0 +1,2649 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+
+@{
+    ViewBag.Title = "company";
+    GroupCompany selectCompanyName = Model.selectCompanyName;
+    GroupCompany companyFCF = Model.companyFCF;
+    List<GroupCompany> companySalesList = Model.companySalesList;
+    List<GroupCompany> companyEbitList = Model.companyEbitList;
+    GroupCompany companyRoic = Model.companyRoic;
+
+    //CashFlow
+    List<GroupCompany> cashFlowList = Model.cashFlowList;
+    List<GroupCompany> sumCashFlowList = Model.sumCashFlowList;
+
+    //당월/누계 손익
+    List<GroupCompany> salesCalcList = Model.salesCalcList;
+    List<GroupCompany> preYearSalesCalcList = Model.preYearSalesCalcList;
+    List<GroupCompany> ebitCalcList = Model.ebitCalcList;
+    List<GroupCompany> preYearEbitCalcList = Model.preYearEbitCalcList;
+
+    List<GroupCompany> profitTable = Model.profitTable;
+    List<GroupCompany> profitTotalTable = Model.profitTotalTable;
+
+    List<GroupCompany> salesCalcTotalList = Model.salesCalcTotalList;
+    List<GroupCompany> preYearSalesCalcTotalList = Model.preYearSalesCalcTotalList;
+    List<GroupCompany> ebitCalcTotalList = Model.ebitCalcTotalList;
+    List<GroupCompany> preYearEbitCalcTotalList = Model.preYearEbitCalcTotalList;
+
+    //연간예상손익
+
+    List<PmPalSummaryExp> companyPalThisPm = Model.companyPalThisPm;
+    List<PmPalSummaryExp> companyPalLastPm = Model.companyPalLastPm;
+    List<PmPalSummaryExp> companyPalLastPm12 = Model.companyPalLastPm12;
+    List<PmPalSummaryExp> companyPalThisPn = Model.companyPalThisPn;
+
+
+
+    //누계실적 - Sales, Ebit
+    List <GroupCompany> companyExpectList = Model.companyExpectList;
+    List<GroupCompany> companyPreYearExpectList = Model.companyPreYearExpectList;
+
+    //잔여월
+    List<GroupCompany> expectRestList = Model.expectRestList;
+    //잔여월-전년
+    List<GroupCompany> preYearExpectRestList = Model.preYearExpectRestList;
+
+    //연간예상
+    List<GroupCompany> companyExpectYearList = Model.companyExpectYearList;
+    List<GroupCompany> companyPreYearExpectYearList = Model.companyPreYearExpectYearList;
+
+    //Table
+    List<GroupCompany> companyExpectHeaderTable = Model.companyExpectHeaderTable;
+
+    //재무비율 및 B/S
+    List<GroupCompany> companyPlanRoic = Model.companyPlanRoic;
+    List<GroupCompany> companyResultRoic = Model.companyResultRoic;
+
+    // 부채비율
+    List<GroupCompany> companyPlanL = Model.companyPlanL;
+    List<GroupCompany> companyResultL = Model.companyResultL;
+
+    //Table
+    List<GroupCompany> pmThisYearCom = Model.pmThisYearCom;
+    List<GroupCompany> pmLastYearCom = Model.pmLastYearCom;
+    List<GroupCompany> pnThisYearCom = Model.pnThisYearCom;
+
+    List<GroupCompany> pmThisYearComEx = Model.pmThisYearComEx;
+    List<GroupCompany> pmLastYearComEx = Model.pmLastYearComEx;
+    List<GroupCompany> pnThisYearComEx = Model.pnThisYearComEx;
+
+    // 실적비중
+    List<PmPalBusinessExp> monPalRate = Model.monPalRate;
+    List<PmPalBusinessExp> cumPalRate = Model.cumPalRate;
+
+    //투자, 인원
+    //누계
+    GroupCompany investPlanPieChart = Model.investPlanPieChart;
+    GroupCompany investResultPieChart = Model.investResultPieChart;
+    //연간
+    GroupCompany investYearPlanPieChart = Model.investYearPlanPieChart;
+    GroupCompany investYearResultPieChart = Model.investYearResultPieChart;
+    //인원
+    List<GroupCompany> personnelResultChart = Model.personnelResultChart;
+
+    Search search = ViewBag.search;
+
+    List<RegistYearList> registYearPm = Model.registYearPm;
+
+    var y = registYearPm
+        .GroupBy(g => g.RegistYear)
+        .Select(cl => new RegistYearList
+        {
+            RegistYear = cl.First().RegistYear
+        })
+        .ToList();
+
+    if (string.IsNullOrWhiteSpace(search.year))
+    {
+        search.year = y.Last().RegistYear;
+    }
+
+    var m = registYearPm.Where(w => w.RegistYear == search.year).ToList();
+
+    if (string.IsNullOrWhiteSpace(search.mm))
+    {
+        search.mm = m.Last().RegistMonth;
+    }
+
+    decimal month = Convert.ToDecimal(search.mm);
+
+    //var year = SessionManager.GetMemberSession().planYear.First().RegistYear;
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = search.year;
+    commentList.CommentMonth = search.mm;
+    commentList.AttachTableName = "COMPANY";
+    commentList.AttachTableSeq = search.OrgCompanySeq;
+    commentList.UserKey = SessionManager.GetMemberSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetMemberSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetMemberSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Deptkorname;
+    commentList.CompanyName = selectCompanyName.companyName;
+
+    //DashBoard - Sales
+    decimal dashBoardCashSales = 0;
+    decimal dashBoardPlanSales = 0;
+    decimal dashBoardRateSales = 0;
+    decimal dashBoardSumCashSales = 0;
+    decimal dashBoardSumPlanSales = 0;
+    decimal dashBoardSumRateSales = 0;
+
+    if (companySalesList != null && companySalesList.Count() > 0)
+    {
+        dashBoardCashSales = companySalesList[0].dashBoardCashSales;
+        dashBoardPlanSales = companySalesList[0].DashBoardPlanSales;
+        dashBoardRateSales = companySalesList[0].dashBoardRateSales;
+        dashBoardSumCashSales = companySalesList[1].dashBoardCashSales;
+        dashBoardSumPlanSales = companySalesList[1].DashBoardPlanSales;
+        dashBoardSumRateSales = companySalesList[1].dashBoardRateSales;
+    }
+
+    //DashBoard - Ebit
+    decimal dashBoardCashEbit = 0;
+    decimal dashBoardCashPlanEbit = 0;
+    decimal dashBoardRateEbit = 0;
+    decimal dashBoardSumCashEbit = 0;
+    decimal dashBoardSumCashPlanEbit = 0;
+    decimal dashBoardSumRateEbit = 0;
+
+    if (companyEbitList != null && companyEbitList.Count() > 0)
+    {
+        dashBoardCashEbit = companyEbitList[0].dashBoardCashEbit;
+        dashBoardCashPlanEbit = companyEbitList[0].DashBoardCashPlanEbit;
+        dashBoardRateEbit = companyEbitList[0].dashBoardRateEbit;
+        dashBoardSumCashEbit = companyEbitList[1].dashBoardCashEbit;
+        dashBoardSumCashPlanEbit = companyEbitList[1].DashBoardCashPlanEbit;
+        dashBoardSumRateEbit = companyEbitList[1].dashBoardRateEbit;
+    }
+}
+
+<section class="group_wrap company">
+    <div class="top_wrap">
+        <!--h2회사명-->
+        <h2>@selectCompanyName.companyName</h2>
+    </div><!--//top_wrap-->
+    <form name="frmForm" method="post">
+        <div class="top_wrap">
+            <div class="style_select">
+                <label class="">
+                    <span>@(search.year)년</span>
+                    <select name="year" id="year" onchange="onChangeDate();">
+                        @foreach (var item in y)
+                        {
+                            <option value="@item.RegistYear" @(search.year == item.RegistYear ? " selected" : "")>@(item.RegistYear)년</option>
+                        }
+                    </select>
+                </label>
+            </div>
+
+            <div class="style_select">
+                <label class="">
+                    <span>@(Convert.ToInt32(search.mm))월</span>
+                    <select name="mm" id="mm" onchange="onChangeDate();">
+                        @foreach (var item in m)
+                        {
+                            <option value="@item.RegistMonth" @(search.mm == item.RegistMonth ? " selected" : "")>@(Convert.ToInt32(item.RegistMonth))월</option>
+                        }
+                    </select>
+                </label>
+            </div>
+        </div><!--//top_wrap-->
+
+        <div class="monthly_total_box">
+
+            <div class="monthly_total col mtotal01">
+                <h3>FCF</h3>
+                <div class="monthly_info">
+                    <dl>
+                        <dt>누계</dt>
+                        <dd class="total_info"><span class="total">@WebUtil.NCommaRound(companyFCF.dashBoardCashFcf, 0)</span>억</dd>
+                        <dd class="rate_info">달성률  <span class="rate">@(companyFCF.DashBoardPlanFcf == 0 ? "N/A" : Convert.ToString(Math.Round(companyFCF.dashBoardRateFcf, 0, MidpointRounding.AwayFromZero)) + "%")</span></dd>
+                    </dl>
+                </div>
+            </div><!--//monthly_total-->
+
+            <div class="monthly_total col2 mtotal02">
+                <h3>SALES</h3>
+                <div class="monthly_info">
+                    <dl>
+                        <dt>당월</dt>
+                        <dd class="total_info"><span class="total">@WebUtil.NCommaRound(dashBoardCashSales, 0)</span>억</dd>
+                        <dd class="rate_info">달성률  <span class="rate">@(dashBoardPlanSales == 0 ? "N/A" : Convert.ToString(Math.Round(dashBoardRateSales, 0, MidpointRounding.AwayFromZero)) + "%")</span></dd>
+                    </dl>
+                    <dl>
+                        <dt>누계</dt>
+                        <dd class="total_info"><span class="total">@WebUtil.NCommaRound(dashBoardSumCashSales, 0)</span>억</dd>
+                        <dd class="rate_info">달성률  <span class="rate">@(dashBoardSumPlanSales == 0 ? "N/A" : Convert.ToString(Math.Round(dashBoardSumRateSales, 0, MidpointRounding.AwayFromZero)) + "%")</span></dd>
+                    </dl>
+                </div>
+            </div><!--//monthly_total-->
+
+            <div class="monthly_total col2 mtotal03">
+                <h3>EBIT</h3>
+                <div class="monthly_info">
+                    @{
+                        decimal dashBoardPlanEbit = 0;
+                        decimal dashBoardResultEbit = 0;
+                        decimal dashBoardEbitRate = 0;
+
+                        decimal dashBoardPlanEbitTotal = 0;
+                        decimal dashBoardResultEbitTotal = 0;
+                        decimal dashBoardEbitRateTotal = 0;
+
+
+                        //dashBoardEbitRate = dashBoardCashEbit == 0 ? 0 : dashBoardCashEbit / dashBoardCashSales * 100;
+                        //dashBoardEbitRateTotal = dashBoardSumCashEbit == 0 ? 0 : dashBoardSumCashEbit / dashBoardSumCashSales * 100;
+
+
+                        dashBoardEbitRate = dashBoardCashSales == 0 ? 0 : dashBoardCashEbit / dashBoardCashSales * 100;
+                        dashBoardEbitRateTotal = dashBoardSumCashSales == 0 ? 0 : dashBoardSumCashEbit / dashBoardSumCashSales * 100;
+                    }
+                    <dl>
+                        <dt>당월</dt>
+                        <dd class="total_info"><span class="total">@WebUtil.NCommaRound(dashBoardCashEbit, 0)</span>억 (@Math.Round(dashBoardEbitRate, 1, MidpointRounding.AwayFromZero)%)</dd>
+                        <dd class="rate_info">달성률  <span class="rate">@(dashBoardCashPlanEbit == 0 ? "N/A" : Convert.ToString(Math.Round(dashBoardRateEbit, 0, MidpointRounding.AwayFromZero)) + "%")</span></dd>
+                    </dl>
+                    <dl>
+                        <dt>누계</dt>
+                        <dd class="total_info"><span class="total">@WebUtil.NCommaRound(dashBoardSumCashEbit, 0)</span>억 (@Math.Round(dashBoardEbitRateTotal, 1, MidpointRounding.AwayFromZero)%)</dd>
+                        <dd class="rate_info">달성률  <span class="rate">@(dashBoardSumCashPlanEbit == 0 ? "N/A" : Convert.ToString(Math.Round(dashBoardSumRateEbit, 0, MidpointRounding.AwayFromZero)) + "%")</span></dd>
+                    </dl>
+                </div>
+            </div><!--//monthly_total-->
+@*2019.02.19 2019년 1월에는 손익 예상과 roic 안 보이게 변경 : 2019.02.20 다시 보이게 변경*@
+@if (search.year + search.mm != "201901ㅁ")
+{
+            <div class="monthly_total col mtotal04">
+                <h3>ROIC</h3>
+                <div class="monthly_info">
+                    <dl>
+                        <dt>누계</dt>
+                        <dd class="total_info"><span class="total">@WebUtil.NCommaRound(companyRoic.dashBoardRoic, 1)</span>%</dd>
+                        <dd class="rate_info">달성률  <span class="rate">@(companyRoic.dashBoardplanRoic == 0 ? "N/A" : Convert.ToString(Math.Round(companyRoic.dashBoardRateRoic, 0, MidpointRounding.AwayFromZero)) + "%")</span></dd>
+                    </dl>
+                </div>
+            </div><!--//monthly_total-->
+}
+        </div><!--//monthly_total_box-->
+        <!--S: Cash Flow-->
+        <div class="graph_box_wrap" id="clsCashFlow">
+            <h2><a href="#">Cash Flow</a></h2>
+            <div class="graph_box">
+
+                <div class="box">
+                    <div class="chart_box chart_box1">
+                        <span class="p_unit">(단위: 억원)</span>
+                        <div class="chart chart_type1" id="chart2"></div>
+                        @{
+                            var planCashFlowText = string.Empty;
+                            var resultCashFlowText = string.Empty;
+                            var changeText = string.Empty;
+
+                            foreach (var item in cashFlowList)
+                            {
+                                if (item.companyCashFlowName == "세후EBITDA")
+                                {
+                                    changeText = "세후,EBITDA";
+                                }
+                                else if (item.companyCashFlowName == "WC변동")
+                                {
+                                    changeText = "W/C,변동";
+                                }
+                                else if (item.companyCashFlowName == "영업기타")
+                                {
+                                    changeText = "영업,기타";
+                                }
+                                else if (item.companyCashFlowName == "NetCAPEX")
+                                {
+                                    changeText = "Net,CAPEX";
+                                }
+                                else if (item.companyCashFlowName == "순금융비용")
+                                {
+                                    changeText = "순금융,비용";
+                                }
+                                else if (item.companyCashFlowName == "월말현금")
+                                {
+                                    changeText = search.mm + "월, 월말현금";
+                                }
+                                else
+                                {
+                                    changeText = item.companyCashFlowName;
+                                }
+
+                                planCashFlowText += "{";
+                                planCashFlowText += "name : '" + changeText + "' ,";
+                                planCashFlowText += "value :" + item.companyCashFlowValue + "},";
+                            }
+
+                            resultCashFlowText = planCashFlowText.Substring(0, planCashFlowText.Length - 1);
+
+                            var planSumCashFlowText = "";
+                            var resultSumCashFlowText = "";
+
+                            foreach (var item in sumCashFlowList)
+                            {
+                                if (item.companyCashFlowName == "세후EBITDA")
+                                {
+                                    changeText = "세후,EBITDA";
+                                }
+                                else if (item.companyCashFlowName == "WC변동")
+                                {
+                                    changeText = "W/C,변동";
+                                }
+                                else if (item.companyCashFlowName == "영업기타")
+                                {
+                                    changeText = "영업,기타";
+                                }
+                                else if (item.companyCashFlowName == "NetCAPEX")
+                                {
+                                    changeText = "Net,CAPEX";
+                                }
+                                else if (item.companyCashFlowName == "순금융비용")
+                                {
+                                    changeText = "순금융,비용";
+                                }
+                                else if (item.companyCashFlowName == "월말현금")
+                                {
+                                    changeText = search.mm + "월, 월말현금";
+                                }
+                                else
+                                {
+                                    changeText = item.companyCashFlowName;
+                                }
+
+                                planSumCashFlowText += "{";
+                                planSumCashFlowText += "name : '" + changeText + "' ,";
+                                planSumCashFlowText += "value :" + item.companyCashFlowValue + "},";
+                            }
+
+                            resultSumCashFlowText = planSumCashFlowText.Substring(0, planSumCashFlowText.Length - 1);
+                        }
+                        <script>
+                            (function () {
+                                var data = {
+                                    plan: [
+                                        @Html.Raw(resultCashFlowText)
+                                    ],
+                                    result: [
+                                        @Html.Raw(resultSumCashFlowText)
+                                    ]
+                                };
+                                data = (function (data) {
+                                    var calc = function (arr) {
+                                        var cumulative = 0;
+                                        var classArr = ['start', 'c0', 'c0', 'c0', 'c1', 'c2', 'c3 noline', 'end noline', 'etc noline'];
+                                        for (var i = 0; i < arr.length; i++) {
+                                            arr[i].name0 = arr[i].name.split(',')[0];
+                                            arr[i].name1 = arr[i].name.split(',')[1];
+
+                                            arr[i].start = i < 7 ? cumulative : 0;
+                                            cumulative += arr[i].value;
+                                            arr[i].end = i < 7 ? cumulative : arr[i].value;
+
+                                            arr[i].class = classArr[i] + ((arr[i].value >= 0) ? ' positive' : ' negative');
+                                        }
+                                        var arrClone = arr.slice();
+                                        arrClone.pop();
+                                        arrClone.sort(function (a, b) { return a.end - b.end });
+                                        arr[8].end = arrClone[7].end / 2;
+
+                                        return arr;
+                                    };
+                                    var calcFcf = function (arr) {
+                                        var fcf = 0;
+                                        for (var i = 1; i < 6; i++) {
+                                            fcf += arr[i].value;
+                                        }
+                                        return fcf;
+                                    };
+
+                                    var plan = calc(data.plan);
+                                    var result = calc(data.result);
+
+                                    var gap = plan.map(function (obj, i) {
+                                        return { name: obj.name, value: result[i].value - obj.value }
+                                    });
+
+                                    var fcfPlan = calcFcf(plan);
+                                    var fcfResult = calcFcf(result);
+
+                                    return { plan: plan, result: result, gap: gap, fcfPlan: fcfPlan, fcfResult: fcfResult };
+                                })(data);
+
+                                MYAPP.graph.type1(data, '#chart2');
+                            })();
+                        </script>
+                    </div>
+                    <!-- chart_box -->
+                </div><!--//box-->
+
+            </div><!--//graph_box-->
+        </div><!--//graph_box_wrap-->
+        <!--S: 손익 (당월/누계)-->
+        <div class="graph_box_wrap" id="profitAndlossLayer">
+            <h2><a href="#">손익 (당월/누계)</a></h2>
+
+            <div class="graph_box">
+
+                <div class="box">
+                    <h3>@search.mm 월</h3>
+                    <div class="box_col_wrap">
+                        <div class="col2 fl graph">
+                            <div class="chart_box chart_box2" id="chart3">
+                                <p class="p_title">Sales</p>
+                                <span class="p_unit">(단위: 억원)</span>
+                                <div class="chart chart_type2"></div>
+                                <a class="bt_percentage" href="#"></a>
+                                <div class="percentage">
+                                    <img class="bg" src="~/Contents/user/Common/img/percentage_bg.png" alt="">
+                                    <p>실적 비중</p>
+                                    <div class="chart chart_type12"></div>
+                                </div>
+                                @{
+                                    var resultSalesText = "";
+                                    var salesCount = 0;
+                                    decimal totalPreYearPlanSalesText = 0;
+                                    decimal totalPlanSalesText = 0;
+                                    decimal totalResultSalesText = 0;
+
+                                    //전년도 합계
+                                    PmPalSummaryExp palLastPmMon = companyPalLastPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault();
+                                    if (palLastPmMon == null) { palLastPmMon = new PmPalSummaryExp(); }
+                                    totalPreYearPlanSalesText = palLastPmMon.Sales;
+                                    //foreach (var item in salesCalcList.OrderBy(e => e.businessSeq))
+                                    //{
+                                    //    decimal preYearSale = 0;
+
+                                    //    var resultSales = preYearSalesCalcList.Where(w => w.businessSeq == item.businessSeq)
+                                    //        .Select(s => new GroupCompany
+                                    //        {
+                                    //            companyResultSales = s.companyResultSales
+                                    //        }).FirstOrDefault();
+
+                                    //    if (resultSales == null)
+                                    //    {
+                                    //        preYearSale = 0;
+                                    //    }
+                                    //    else
+                                    //    {
+                                    //        preYearSale = resultSales.companyResultSales;
+                                    //    }
+
+                                    //    totalPreYearPlanSalesText += preYearSale;
+                                    //}
+
+                                    //현재년 합계
+                                    PmPalSummaryExp palThisPmMon = companyPalThisPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault();
+                                    if (palThisPmMon == null) { palThisPmMon = new PmPalSummaryExp(); }
+                                    PmPalSummaryExp palThisPnMon = companyPalThisPn.Where(w => w.Monthly == search.mm).FirstOrDefault();
+                                    if (palThisPnMon == null) { palThisPnMon = new PmPalSummaryExp(); }
+
+                                    totalPlanSalesText = palThisPnMon.Sales;
+                                    totalResultSalesText = palThisPmMon.Sales;
+                                    //foreach (var item in salesCalcList.OrderBy(e => e.businessSeq))
+                                    //{
+                                    //    totalPlanSalesText += item.companyPlanSales;
+                                    //    totalResultSalesText += item.companyResultSales;
+                                    //}
+
+
+                                    foreach (var item in salesCalcList)
+                                    {
+                                        decimal preYearSale = 0;
+
+                                        var resultSales = preYearSalesCalcList.Where(w => w.businessSeq == item.businessSeq)
+                                            .Select(s => new GroupCompany
+                                            {
+                                                companyResultSales = s.companyResultSales
+                                            }).FirstOrDefault();
+
+                                        if (resultSales == null)
+                                        {
+                                            preYearSale = 0;
+                                        }
+                                        else
+                                        {
+                                            preYearSale = resultSales.companyResultSales;
+                                        }
+
+
+                                        resultSalesText += "{ key :'" + item.businessName + "'," +
+                                                                "values : [ { x: '전년', y :" + preYearSale + ", total : { y : " + totalPreYearPlanSalesText + " }}, " +
+                                                                //"values : [ { x: '전년', y :" + preYearSale + ", total : { y : " + totalPreYearPlanSalesText + " }}, " +
+                                                                "{ x: '계획', y : " + item.companyPlanSales + ", total : { y : " + totalPlanSalesText + " }}, " +
+                                                                "{ x: '실적', y : " + item.companyResultSales + ", total : { y : " + totalResultSalesText + " }} ] },";
+
+                                        salesCount++;
+                                    }
+                                    string text = "";
+                                    if (monPalRate != null)
+                                    {
+                                        foreach (var item in monPalRate)
+                                        {
+                                            text += "{ key: \"" + item.BusinessName + "\", y: " + item.SalesRate + " },";
+                                        }
+                                    }
+                                }
+
+                                <script>
+                                    (function () {
+                                        var data0 = [
+                                              @Html.Raw(resultSalesText)
+                                        ];
+
+                                        var data1 = [
+                                            @Html.Raw(text)
+                                            //{ key: "지주", y: 50.5 },
+                                            //{ key: "건설", y: 30 },
+                                            //{ key: "자동차", y: 20 }
+                                        ];
+
+                                        MYAPP.graph.type3(data0, data1, '#chart3');
+                                    })();
+                                </script>
+                            </div>
+                            <!-- chart_box -->
+                        </div>
+                        <div class="col2 fr graph">
+                            <div class="chart_box chart_box2" id="chart4">
+                                <p class="p_title">EBIT</p>
+                                <span class="p_unit">(단위 : 억원, %)</span>
+                                <div class="chart chart_type2"></div>
+                                <!-- <a class="bt_percentage" href="#"></a> -->
+                                <div class="percentage">
+                                    <img class="bg" src="~/Contents/user/Common/img/percentage_bg.png" alt="">
+                                    <p>실적 비중</p>
+                                    <div class="chart chart_type12"></div>
+                                </div>
+                                @{
+                                    var resultEbitText = string.Empty;
+                                    var ebitCount = 0;
+                                    decimal totalPreYearPlanEbitText = 0;
+                                    decimal totalPlanEbitText = 0;
+                                    decimal totalResultEbitText = 0;
+
+                                    decimal totalPreYearPlanEbitTextRate = 0;
+                                    decimal totalPlanEbitTextRate = 0;
+                                    decimal totalResultEbitTextRate = 0;
+
+                                    //전년도 합계
+                                    totalPreYearPlanEbitText = palLastPmMon.Ebit;
+                                    // Ebit%(합계)
+                                    totalPreYearPlanEbitTextRate = palLastPmMon.Sales == 0 ? 0 : Math.Round(palLastPmMon.Ebit / palLastPmMon.Sales * 100, 1, MidpointRounding.AwayFromZero);
+
+
+                                    //foreach (var item in ebitCalcList.OrderBy(e => e.businessSeq))
+                                    //{
+                                    //    decimal preYearEbit = 0;
+                                    //    var resultSales = preYearEbitCalcList.Where(w => w.businessSeq == item.businessSeq)
+                                    //        .Select(s => new GroupCompany
+                                    //        {
+                                    //            companyResultEbit = s.companyResultEbit
+                                    //        }).FirstOrDefault();
+
+                                    //    if (resultSales == null)
+                                    //    {
+                                    //        preYearEbit = 0;
+                                    //    }
+                                    //    else
+                                    //    {
+                                    //        preYearEbit = resultSales.companyResultEbit;
+                                    //    }
+
+                                    //    totalPreYearPlanEbitText += preYearEbit;
+                                    //}
+
+                                    //현재년 합계
+                                    totalPlanEbitText = palThisPnMon.Ebit;
+                                    totalResultEbitText = palThisPmMon.Ebit;
+                                    totalPlanEbitTextRate = palThisPnMon.Sales == 0 ? 0 : Math.Round(palThisPnMon.Ebit / palThisPnMon.Sales * 100, 1, MidpointRounding.AwayFromZero);
+                                    totalResultEbitTextRate = palThisPmMon.Sales == 0 ? 0 : Math.Round(palThisPmMon.Ebit / palThisPmMon.Sales * 100, 1, MidpointRounding.AwayFromZero);
+                                    //foreach (var item in ebitCalcList.OrderBy(e => e.businessSeq))
+                                    //{
+                                    //    totalPlanEbitText += item.companyPlanEbit;
+                                    //    totalResultEbitText += item.companyResultEbit;
+                                    //}
+
+                                    bool bTotal = false;
+                                    foreach (var item in ebitCalcList)
+                                    {
+                                        //decimal p = 0;
+                                        GroupCompany gSalesThisPm = salesCalcList.Where(w => w.businessSeq == item.businessSeq).FirstOrDefault();
+                                        if (gSalesThisPm == null) { gSalesThisPm = new GroupCompany(); }
+                                        GroupCompany gSalesLastPm = preYearSalesCalcList.Where(w => w.businessSeq == item.businessSeq).FirstOrDefault();
+                                        if (gSalesLastPm == null) { gSalesLastPm = new GroupCompany(); }
+                                        //GroupCompany gSalesThisPn =
+
+                                        decimal preYearEbit = 0;
+                                        decimal preYearSales = 0;
+
+
+
+                                        var resultSales = preYearEbitCalcList.Where(w => w.businessSeq == item.businessSeq)
+                                            .Select(s => new GroupCompany
+                                            {
+                                                companyResultEbit = s.companyResultEbit,
+                                                companyResultSales = s.companyResultSales
+                                            }).FirstOrDefault();
+
+                                        if (resultSales == null)
+                                        {
+                                            preYearEbit = 0;
+                                            preYearSales = 0;
+                                        }
+                                        else
+                                        {
+                                            preYearEbit = resultSales.companyResultEbit;
+                                            preYearSales = resultSales.companyResultSales;
+                                        }
+
+                                        // 값이 아예 없을때 처리 해줘야 합니다. 우선은 0으로 나누기면 처리
+                                        //decimal p = preYearSales == 0 ? 0 : WebUtil.NumberRound(preYearEbit, preYearSales, 100, 1);
+                                        //decimal p1 = item.companyPlanSales == 0 ? 0 : WebUtil.NumberRound(item.companyPlanEbit, item.companyPlanSales, 100, 1);
+                                        //decimal p2 = item.companyResultSales == 0 ? 0 : WebUtil.NumberRound(item.companyResultEbit, item.companyResultSales, 100, 1);
+                                        decimal p = gSalesLastPm.companyResultSales == 0 ? 0 : WebUtil.NumberRound(preYearEbit, gSalesLastPm.companyResultSales, 100, 1);
+                                        decimal p1 = gSalesThisPm.companyPlanSales == 0 ? 0 : WebUtil.NumberRound(item.companyPlanEbit, gSalesThisPm.companyPlanSales, 100, 1);
+                                        decimal p2 = gSalesThisPm.companyResultSales == 0 ? 0 : WebUtil.NumberRound(item.companyResultEbit, gSalesThisPm.companyResultSales, 100, 1);
+
+                                        resultEbitText += "{ key :'" + item.businessName + "'," +
+                                            "values : [ { x: '전년', y :" + preYearEbit + ",p : " + p + ", total : { y : " + totalPreYearPlanEbitText + ", p : " + totalPreYearPlanEbitTextRate + " }}," +
+                                                        "{ x: '계획', y : " + item.companyPlanEbit + ",p : " + p1 + ", total : { y : " + totalPlanEbitText + ", p : " + totalPlanEbitTextRate + " }}," +
+                                                        "{ x: '실적', y : " + item.companyResultEbit + ", p : " + p2 + ", total : { y : " + totalResultEbitText + ", p : " + totalResultEbitTextRate + " }} ] },";
+                                        ebitCount++;
+                                    }
+                                    // 2018.10.13 실적비중 추가
+                                    string textEbit = "";
+
+                                    if (monPalRate != null)
+                                    {
+                                        foreach (var item in monPalRate)
+                                        {
+                                            textEbit += "{ key: \"" + item.BusinessName + "\", y: " + item.EbitRate + " },";
+                                        }
+                                    }
+                                }
+                                <script>
+                                    (function () {
+                                        var data0 = [
+                                              @Html.Raw(resultEbitText)
+                                        ];
+
+                                        var data1 = [
+                                            @Html.Raw(textEbit)
+                                            //{ key: "지주", y: 40 },
+                                            //{ key: "건설", y: 30 },
+                                            //{ key: "자동차", y: 30 }
+                                        ];
+
+                                        MYAPP.graph.type3(data0, data1, '#chart4');
+                                    })();
+                                </script>
+                            </div>
+                            <!-- chart_box -->
+                        </div>
+                    </div><!--//box_col2_wrap-->
+                </div><!--//box-->
+
+                <div class="box">
+                    <!--부문일 경우-->
+                    <!--S: 유동 테이블-->
+                    <div class="graph">
+                        <div class="tbl_scroll_wrap">
+                            <div class="tbl_box">
+                                <table class="tbl tbl_type01 tblfix">
+                                    <thead>
+                                        <tr>
+                                            <th class="lbd0">구분</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th class="lbd0">SALES</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="lbd0">EBIT</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="lbd0">%</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div><!--//tbl_box-->
+
+                            <div class="tbl_scroll">
+                                <div class="tbl_add">
+                                    <!--테이블 추가 되는 영역-->
+                                    @{
+                                        foreach (var item in profitTable)
+                                        {
+                                            decimal planSales = item.companyPlanSales;
+                                            decimal resultSales = item.companyResultSales;
+                                            decimal planEbit = item.companyPlanEbit;
+                                            decimal resultEbit = item.companyResultEbit;
+                                            decimal salesCalc = 0;
+                                            decimal ebitCalc = 0;
+                                            decimal planPerEbit = 0;
+                                            decimal resultPerEbit = 0;
+                                            decimal planPer = 0;
+
+                                            string salesClass = string.Empty;
+                                            string ebitClass = string.Empty;
+                                            string perClass = string.Empty;
+
+                                            salesCalc = planSales == 0 ? 0 : (resultSales / planSales) * 100;
+                                            ebitCalc = planEbit == 0 ? 0 : (resultEbit / planEbit) * 100;
+
+                                            //계획 EBIT%
+                                            planPerEbit = planSales == 0 ? 0 : (planEbit / planSales) * 100;
+                                            //실적 EBIT%
+                                            resultPerEbit = resultSales == 0 ? 0 : (resultEbit / resultSales) * 100;
+                                            //계획대비 EBIT%
+                                            //planPer = (resultPerEbit / planPerEbit) * 100;
+                                            planPer = resultPerEbit - planPerEbit;
+
+                                            if (Math.Round(salesCalc, 1, MidpointRounding.AwayFromZero) < 100)
+                                            {
+                                                salesClass = "class=minus";
+                                            }
+
+                                            if (Math.Round(ebitCalc, 1, MidpointRounding.AwayFromZero) < 100)
+                                            {
+                                                ebitClass = "class=minus";
+                                            }
+
+                                            if (Math.Round(planPer, 1, MidpointRounding.AwayFromZero) < 0)
+                                            {
+                                                perClass = "class=minus";
+                                            }
+
+                                          <div class="tbl_wrap">
+                                            <table class="tbl tbl_type01">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="3">@item.businessName</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>계획</th>
+                                                        <th>실적</th>
+                                                        <th>계획대비</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>@WebUtil.NCommaRound(item.companyPlanSales)</td>
+                                                        <td>@WebUtil.NCommaRound(item.companyResultSales)</td>
+                                                        <td @salesClass>@WebUtil.NCommaRound(salesCalc, 1)%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>@WebUtil.NCommaRound(item.companyPlanEbit)</td>
+                                                        <td>@WebUtil.NCommaRound(item.companyResultEbit)</td>
+                                                        <td @ebitClass>@WebUtil.NCommaRound(ebitCalc, 1)%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>@Math.Round(planPerEbit, 1, MidpointRounding.AwayFromZero)%</td>
+                                                        <td>@Math.Round(resultPerEbit, 1, MidpointRounding.AwayFromZero)%</td>
+                                                        <td @perClass>@Math.Round(planPer, 1, MidpointRounding.AwayFromZero)%</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                          </div>
+                                        }
+                                    }
+                                </div>
+                            </div><!--//tbl_scroll-->
+
+                        </div><!--//tbl_scroll_wrap-->
+                        <!--E: 유동 테이블-->
+                    </div><!--//graph-->
+                </div><!--//box-->
+
+
+                <div class="box">
+                    <h3>@search.mm 월 누계</h3>
+                    <div class="box_col_wrap">
+                        <div class="col2 fl graph">
+                            <div class="chart_box chart_box2" id="chart5">
+                                <p class="p_title">Sales</p>
+                                <span class="p_unit">(단위: 억원)</span>
+                                <div class="chart chart_type2"></div>
+                                <a class="bt_percentage" href="#"></a>
+                                <div class="percentage">
+                                    <img class="bg" src="~/Contents/user/Common/img/percentage_bg.png" alt="">
+                                    <p>실적 비중</p>
+                                    <div class="chart chart_type12"></div>
+                                </div>
+                                @{
+                                    var resultSalesTotalText = "";
+                                    decimal totalPreYearPlanSumSalesText = 0;
+                                    decimal totalPlanSumSalesText = 0;
+                                    decimal totalResultSumSalesText = 0;
+
+                                    //전년도 합계
+                                    PmPalSummaryExp palLastPmCum = companyPalLastPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault();
+                                    if (palLastPmCum == null) { palLastPmCum = new PmPalSummaryExp(); }
+                                    totalPreYearPlanSumSalesText += palLastPmCum.Sales;
+
+
+                                    //현재년 합계
+                                    PmPalSummaryExp palThisPmCum = companyPalThisPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault();
+                                    if (palThisPmCum == null) { palThisPmCum = new PmPalSummaryExp(); }
+                                    PmPalSummaryExp palThisPnCum = companyPalThisPn.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(search.mm))
+                                        .GroupBy(g => g.PalYear)
+                                        .Select(cl => new PmPalSummaryExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit)
+                                        }).FirstOrDefault();
+                                    if (palThisPnCum == null) { palThisPnCum = new PmPalSummaryExp(); }
+
+                                    totalPlanSumSalesText += palThisPnCum.Sales;
+                                    totalResultSumSalesText += palThisPmCum.Sales;
+
+                                    foreach (var item in salesCalcTotalList)
+                                    {
+                                        //전년
+                                        decimal preYearSales = 0;
+                                        var resultSales = preYearSalesCalcTotalList.Where(w => w.businessSeq == item.businessSeq)
+                                            .Select(s => new GroupCompany
+                                            {
+                                                companyResultSales = s.companyResultSales
+                                            }).FirstOrDefault();
+
+                                        if (resultSales == null)
+                                        {
+                                            preYearSales = 0;
+                                        }
+                                        else
+                                        {
+                                            preYearSales = resultSales.companyResultSales;
+                                        }
+
+                                        resultSalesTotalText += "{ key :'" + item.businessName + "'," +
+                                                                "values : [ { x: '전년', y :" + preYearSales + ", total : { y : " + totalPreYearPlanSumSalesText + " }}," +
+                                                                "{ x: '계획', y : " + item.companyPlanSales + ", total : { y : " + totalPlanSumSalesText + " }}," +
+                                                                "{ x: '실적', y : " + item.companyResultSales + ", total : { y : " + totalResultSumSalesText + " }} ] },";
+                                    }
+                                    string textCumSales = "";
+                                    foreach (var item in cumPalRate)
+                                    {
+                                        textCumSales += "{ key: \"" + item.BusinessName + "\", y: " + item.SalesRate + " },";
+                                    }
+                                }
+                                <script>
+                                    (function () {
+                                        var data0 = [
+                                            @Html.Raw(resultSalesTotalText)
+                                        ];
+
+                                        var data1 = [
+                                            @Html.Raw(textCumSales)
+                                        ];
+
+                                        MYAPP.graph.type3(data0, data1, '#chart5');
+                                    })();
+                                </script>
+                            </div>
+                            <!-- chart_box -->
+                        </div>
+                        <div class="col2 fr graph">
+                            <div class="chart_box chart_box2" id="chart6">
+                                <p class="p_title">EBIT</p>
+                                <span class="p_unit">(단위 : 억원, %)</span>
+                                <div class="chart chart_type2"></div>
+                                <!-- <a class="bt_percentage" href="#"></a> -->
+                                <div class="percentage">
+                                    <img class="bg" src="~/Contents/user/Common/img/percentage_bg.png" alt="">
+                                    <p>실적 비중</p>
+                                    <div class="chart chart_type12"></div>
+                                </div>
+                                @{
+                                    var resultEbitTotalText = string.Empty;
+                                    var ebitTotalCount = 0;
+                                    decimal totalPreYearPlanSumEbitText = 0;
+                                    decimal totalPlanSumEbitText = 0;
+                                    decimal totalResultSumEbitText = 0;
+
+                                    decimal totalPreYearPlanSumEbitTextRate = 0;
+                                    decimal totalPlanSumEbitTextRate = 0;
+                                    decimal totalResultSumEbitTextRate = 0;
+
+                                    //전년도 합계
+                                    totalPreYearPlanSumEbitText = palLastPmCum.Ebit;
+                                    // Ebit%(합계)
+                                    totalPreYearPlanSumEbitTextRate = palLastPmCum.Sales == 0 ? 0 : Math.Round(palLastPmCum.Ebit / palLastPmCum.Sales * 100, 1, MidpointRounding.AwayFromZero);
+
+                                    //현재년 합계
+                                    totalPlanSumEbitText = palThisPnCum.Ebit;
+                                    totalResultSumEbitText = palThisPmCum.Ebit;
+                                    totalPlanSumEbitTextRate = palThisPnCum.Sales == 0 ? 0 : Math.Round(palThisPnCum.Ebit / palThisPnCum.Sales * 100, 1, MidpointRounding.AwayFromZero);
+                                    totalResultSumEbitTextRate = palThisPmCum.Sales == 0 ? 0 : Math.Round(palThisPmCum.Ebit / palThisPmCum.Sales * 100, 1, MidpointRounding.AwayFromZero);
+
+                                    foreach (var item in ebitCalcTotalList)
+                                    {
+
+                                        GroupCompany gSalesThisPm = salesCalcTotalList.Where(w => w.businessSeq == item.businessSeq).FirstOrDefault();
+                                        if (gSalesThisPm == null) { gSalesThisPm = new GroupCompany(); }
+                                        GroupCompany gSalesLastPm = preYearSalesCalcTotalList.Where(w => w.businessSeq == item.businessSeq).FirstOrDefault();
+                                        if (gSalesLastPm == null) { gSalesLastPm = new GroupCompany(); }
+
+                                        //전년
+                                        decimal preYearSales = 0;
+                                        decimal preYearEbit = 0;
+                                        var resultSales = preYearEbitCalcTotalList.Where(w => w.businessSeq == item.businessSeq)
+                                            .Select(s => new GroupCompany
+                                            {
+                                                companyResultEbit = s.companyResultEbit,
+                                                companyResultSales = s.companyResultSales
+                                            }).FirstOrDefault();
+
+                                        if (resultSales == null)
+                                        {
+                                            preYearEbit = 0;
+                                            preYearSales = 0;
+                                        }
+                                        else
+                                        {
+                                            preYearEbit = resultSales.companyResultEbit;
+                                            preYearSales = resultSales.companyResultSales;
+                                        }
+
+                                        // 값이 아예 없을때 처리 해줘야 합니다. 우선은 0으로 나누기면 처리
+                                        //decimal p = preYearSales == 0 ? 0 : WebUtil.NumberRound(preYearEbit, preYearSales, 100, 1);
+                                        //decimal p1 = item.companyPlanSales == 0 ? 0 : WebUtil.NumberRound(item.companyPlanEbit, item.companyPlanSales, 100, 1);
+                                        //decimal p2 = item.companyResultSales == 0 ? 0 : WebUtil.NumberRound(item.companyResultEbit, item.companyResultSales, 100, 1);
+                                        decimal p = gSalesLastPm.companyResultSales == 0 ? 0 : WebUtil.NumberRound(preYearEbit, gSalesLastPm.companyResultSales, 100, 1);
+                                        decimal p1 = gSalesThisPm.companyPlanSales == 0 ? 0 : WebUtil.NumberRound(item.companyPlanEbit, gSalesThisPm.companyPlanSales, 100, 1);
+                                        decimal p2 = gSalesThisPm.companyResultSales == 0 ? 0 : WebUtil.NumberRound(item.companyResultEbit, gSalesThisPm.companyResultSales, 100, 1);
+
+                                        resultEbitTotalText += "{ key :'" + item.businessName + "'," +
+                                                //"values : [ { x: '전년', y :" + preYearEbitCalcTotalList[ebitTotalCount].companyResultEbit + ", p : " + WebUtil.NumberRound(preYearEbitCalcTotalList[ebitTotalCount].companyResultEbit , preYearSalesCalcTotalList[ebitTotalCount].companyResultSales , 100, 1) + ", total : { y : " + totalPreYearPlanSumEbitText + " }}," +
+                                                "values : [ { x: '전년', y :" + preYearEbit + ", p : " + p + ", total : { y : " + totalPreYearPlanSumEbitText + ", p : " + totalPreYearPlanSumEbitTextRate + " }}," +
+                                                "{ x: '계획', y : " + item.companyPlanEbit + ", p : "+ p1 + ",total : { y : " + totalPlanSumEbitText + ", p : " + totalPlanSumEbitTextRate + " }}," +
+                                                "{ x: '실적', y : " + item.companyResultEbit + ", p : "+ p2 + ", total : { y : " + totalResultSumEbitText + ", p : " + totalResultSumEbitTextRate + " }} ] },";
+                                        ebitTotalCount++;
+                                    }
+                                    string textCumEbit = "";
+                                    foreach (var item in cumPalRate)
+                                    {
+                                        textCumEbit += "{ key: \"" + item.BusinessName + "\", y: " + item.EbitRate + " },";
+                                    }
+                                }
+                                <script>
+                                    (function () {
+                                        var data0 = [
+                                            @Html.Raw(resultEbitTotalText)
+                                        ];
+                                        var data1 = [
+                                            @Html.Raw(textCumEbit)
+                                            //{ key: "지주", y: 40 },
+                                            //{ key: "건설", y: 30 },
+                                            //{ key: "자동차", y: 30 }
+                                        ];
+
+                                        MYAPP.graph.type3(data0, data1, '#chart6');
+                                    })();
+                                </script>
+                            </div>
+                            <!-- chart_box -->
+                        </div>
+                    </div><!--//box_col2_wrap-->
+                </div><!--//box-->
+
+                <div class="box">
+                    <!--부문일 경우-->
+                    <!--S: 유동 테이블-->
+                    <div class="graph">
+                        <div class="tbl_scroll_wrap">
+                            <div class="tbl_box">
+                                <table class="tbl tbl_type01 tblfix">
+                                    <thead>
+                                        <tr>
+                                            <th class="lbd0">구분</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th class="lbd0">SALES</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="lbd0">EBIT</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="lbd0">%</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div><!--//tbl_box-->
+
+                            <div class="tbl_scroll">
+                                <div class="tbl_add">
+                                    <!--테이블 추가 되는 영역-->
+                                    @{
+                                        foreach (var item in profitTotalTable)
+                                        {
+                                            //decimal planSales = item.companyPlanSales;
+                                            //decimal resultSales = item.companyResultSales;
+                                            //decimal planEbit = item.companyPlanEbit;
+                                            //decimal resultEbit = item.companyResultEbit;
+                                            decimal planSales = (decimal?)item.companyPlanSales ?? 0;
+                                            decimal resultSales = (decimal?)item.companyResultSales ?? 0;
+                                            decimal planEbit = (decimal?)item.companyPlanEbit ?? 0;
+                                            decimal resultEbit = (decimal?)item.companyResultEbit ?? 0;
+                                            decimal salesCalc = 0;
+                                            decimal ebitCalc = 0;
+                                            decimal planPerEbit = 0;
+                                            decimal resultPerEbit = 0;
+                                            decimal planPer = 0;
+
+                                            var salesClass = string.Empty;
+                                            var ebitClass = string.Empty;
+                                            var perClass = string.Empty;
+
+                                            salesCalc = planSales == 0 ? 0 : resultSales / planSales * 100;
+                                            ebitCalc = planEbit == 0 ? 0 : resultEbit / planEbit * 100;
+
+                                            //계획 EBIT%
+                                            planPerEbit = planSales == 0 ? 0 : (planEbit / planSales) * 100;
+                                            //실적 EBIT%
+                                            resultPerEbit = resultSales == 0 ? 0 : (resultEbit / resultSales) * 100;
+                                            //계획대비 EBIT%
+                                            //planPer = (resultPerEbit / planPerEbit) * 100;
+                                            planPer = resultPerEbit - planPerEbit;
+
+                                            // 2018.12.12 수식변경
+                                            if (item.companyPlanSales < 0)
+                                            {
+                                                salesCalc = 200 - salesCalc;
+                                            }
+                                            if (item.companyPlanEbit < 0)
+                                            {
+                                                ebitCalc = 200 - ebitCalc;
+                                            }
+
+                                            if (Math.Round(salesCalc, 1, MidpointRounding.AwayFromZero) < 100)
+                                            {
+                                                salesClass = "class=minus";
+                                            }
+
+                                            if (Math.Round(ebitCalc, 1, MidpointRounding.AwayFromZero) < 100)
+                                            {
+                                                ebitClass = "class=minus";
+                                            }
+
+                                            if (Math.Round(planPer, 1, MidpointRounding.AwayFromZero) < 0)
+                                            {
+                                                perClass = "class=minus";
+                                            }
+
+                                          <div class="tbl_wrap">
+                                            <table class="tbl tbl_type01">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="3">@item.businessName</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>계획</th>
+                                                        <th>실적</th>
+                                                        <th>계획대비</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>@WebUtil.NCommaRound(item.companyPlanSales)</td>
+                                                        <td>@WebUtil.NCommaRound(item.companyResultSales)</td>
+                                                        @if (item.companyPlanSales == 0)
+                                                        {
+                                                            <td>N/A</td>
+                                                        }
+                                                        else
+                                                        {
+                                                        <td @salesClass>@WebUtil.NCommaRound(salesCalc, 1)%</td>
+                                                        }
+                                                    </tr>
+                                                    <tr>
+                                                        <td>@WebUtil.NCommaRound(item.companyPlanEbit)</td>
+                                                        <td>@WebUtil.NCommaRound(item.companyResultEbit)</td>
+                                                        @if (item.companyPlanEbit == 0)
+                                                        {
+                                                            <td>N/A</td>
+                                                        }
+                                                        else
+                                                        {
+                                                        <td @ebitClass>@WebUtil.NCommaRound(ebitCalc, 1)%</td>
+                                                        }
+                                                    </tr>
+                                                    <tr>
+                                                        <td>@Math.Round(planPerEbit, 1, MidpointRounding.AwayFromZero)%</td>
+                                                        <td>@Math.Round(resultPerEbit, 1, MidpointRounding.AwayFromZero)%</td>
+                                                        <td @perClass>@Math.Round(planPer, 1, MidpointRounding.AwayFromZero)%</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                          </div>
+                                        }
+                                    }
+                                    @*<table class="tbl tbl_type01">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="3">자동차</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>계획</th>
+                                                    <th>실적</th>
+                                                    <th>계획대비</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>80</td>
+                                                    <td>150</td>
+                                                    <td>53%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>60</td>
+                                                    <td>120</td>
+                                                    <td>50%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>5%</td>
+                                                    <td>2%</td>
+                                                    <td>-3.0%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>*@
+                                </div><!--//tbl_add-->
+                            </div><!--//tbl_scroll-->
+
+                        </div><!--//tbl_scroll_wrap-->
+                        <!--E: 유동 테이블-->
+                    </div><!--//graph-->
+                </div><!--//box-->
+
+            </div><!--//graph_box-->
+        </div><!--//graph_box_wrap-->
+        <!--S: 손익 (연간예상)-->
+@*2019.02.19 2019년 1월에는 손익 예상과 roic 안 보이게 변경 : 2019.02.20 다시 보이게 변경*@
+@if (search.year + search.mm != "201901")
+{
+    @*다시보이게 변경 2019.04.24*@
+    if (search.year + search.mm != "201903")
+    {
+        <div class="graph_box_wrap" id="clsEbit">
+            <h2><a href="#">손익 (연간예상)</a></h2>
+
+            <div class="graph_box">
+
+                <div class="box">
+                    <h3>Sales</h3>
+                    <div class="chart_box chart_box3">
+                        <span class="p_unit">(단위 : 억원)</span>
+                        <ul class="p_box">
+                            @{
+                                //----> 연간예상
+                                var salesExpectYearText = string.Empty;
+                                decimal totalPreYearExpectYearPlanSalesText = 0;
+                                decimal totalExpectYearPlanSalesText = 0;
+                                decimal totalExpectYearResultSalesText = 0;
+                                var expectYearSalesCount = 0;
+
+                                //전년도 합계
+                                PmPalSummaryExp palLastPmCumTotal = companyPalLastPm12.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault();
+                                if (palLastPmCumTotal == null) { palLastPmCumTotal = new PmPalSummaryExp(); }
+                                totalPreYearExpectYearPlanSalesText = palLastPmCumTotal.Sales;
+
+                                //현재년 합계
+                                PmPalSummaryExp palThisPmCumTotal = companyPalThisPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("연간")).FirstOrDefault();
+                                if (palThisPmCumTotal == null) { palThisPmCumTotal = new PmPalSummaryExp(); }
+                                PmPalSummaryExp palThisPnCumTotal = companyPalThisPn.Where(w => w.Monthly == "99")
+                                    .GroupBy(g => g.PalYear)
+                                    .Select(cl => new PmPalSummaryExp
+                                    {
+                                        PalYear = cl.First().PalYear,
+                                        Sales = cl.Sum(c => c.Sales),
+                                        Ebit = cl.Sum(c => c.Ebit)
+                                    }).FirstOrDefault();
+                                if (palThisPnCumTotal == null) { palThisPnCumTotal = new PmPalSummaryExp(); }
+
+                                totalExpectYearPlanSalesText = palThisPnCumTotal.Sales;
+                                totalExpectYearResultSalesText = palThisPmCumTotal.Sales;
+
+                                //----> 연간예상
+                                foreach (var item in companyExpectYearList)
+                                {
+                                    //전년
+                                    decimal preYearSales = 0;
+                                    var resultSales = companyPreYearExpectYearList.Where(w => w.businessSeq == item.businessSeq)
+                                        .Select(s => new GroupCompany
+                                        {
+                                            companyExpectResultSales = s.companyExpectResultSales
+                                        }).FirstOrDefault();
+
+                                    if (resultSales == null)
+                                    {
+                                        preYearSales = 0;
+                                    }
+                                    else
+                                    {
+                                        preYearSales = resultSales.companyExpectResultSales;
+                                    }
+
+                                    salesExpectYearText += "{ key :'" + item.businessName + "'," +
+                                                                               "values : [ { x: '전년', y :" + preYearSales + ", total : { y : " + totalPreYearExpectYearPlanSalesText + "}}," +
+                                                                                          //"values : [ { x: '전년', y :" + companyPreYearExpectYearList[expectYearSalesCount].companyExpectResultSales + ", total : { y : " + totalPreYearExpectYearPlanSalesText + "}}," +
+                                                                                          "{ x: '계획', y : " + item.companyExpectPlanSales + ", total : { y : " + totalExpectYearPlanSalesText + "}}," +
+                                                                                          "{ x: '예상', y : " + item.companyExpectResultSales + ", total : { y : " + totalExpectYearResultSalesText + "}} ] },";
+                                    expectYearSalesCount++;
+                                }
+
+
+                                //----> 당월 누계 항목
+                                var salesExpectText = string.Empty;
+                                decimal totalPreYearExpectPlanSalesText = 0;
+                                decimal totalExpectPlanSalesText = 0;
+                                decimal totalExpectResultSalesText = 0;
+                                var expectSalesCount = 0;
+
+                                //전년도 합계
+                                PmPalSummaryExp palLastPmCumSum = companyPalLastPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault();
+                                if (palLastPmCumSum == null) { palLastPmCumSum = new PmPalSummaryExp(); }
+                                totalPreYearExpectPlanSalesText = palLastPmCumSum.Sales;
+
+                                //현재년 합계
+                                PmPalSummaryExp palThisPmCumSum = companyPalThisPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault();
+                                if (palThisPmCum == null) { palThisPmCum = new PmPalSummaryExp(); }
+                                PmPalSummaryExp palThisPnCumSum = companyPalThisPn.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(search.mm))
+                                    .GroupBy(g => g.PalYear)
+                                    .Select(cl => new PmPalSummaryExp
+                                    {
+                                        PalYear = cl.First().PalYear,
+                                        Sales = cl.Sum(c => c.Sales),
+                                        Ebit = cl.Sum(c => c.Ebit)
+                                    }).FirstOrDefault();
+                                if (palThisPnCum == null) { palThisPnCum = new PmPalSummaryExp(); }
+
+                                totalExpectPlanSalesText = palThisPnCumSum.Sales;
+                                totalExpectResultSalesText = palThisPmCumSum.Sales;
+
+                                //----> 당월누계실적
+                                foreach (var item in companyExpectList)
+                                {
+                                    //전년
+                                    decimal preYearSales = 0;
+                                    var resultSales = companyPreYearExpectList.Where(w => w.businessSeq == item.businessSeq)
+                                        .Select(s => new GroupCompany
+                                        {
+                                            companyExpectResultSales = s.companyExpectResultSales
+                                        }).FirstOrDefault();
+
+                                    if (resultSales == null)
+                                    {
+                                        preYearSales = 0;
+                                    }
+                                    else
+                                    {
+                                        preYearSales = resultSales.companyExpectResultSales;
+                                    }
+
+                                    salesExpectText += "{ key :'" + item.businessName + "'," +
+                                                                           "values : [ { x: '전년', y :" + preYearSales + ", total : { y : " + totalPreYearExpectPlanSalesText + " }}," +
+                                                                                      "{ x: '계획', y : " + item.companyExpectPlanSales + ", total : { y : " + totalExpectPlanSalesText + " }}," +
+                                                                                      "{ x: '실적', y : " + item.companyExpectResultSales + ", total : { y : " + totalExpectResultSalesText + " }} ] },";
+                                    expectSalesCount++;
+                                }
+
+
+                                //----> 잔여월
+                                var resultExpectRestSalesText = string.Empty;
+                                decimal totalPreYearExpectResultRestSalesText = 0;
+                                decimal totalExpectPlanRestSalesText = 0;
+                                decimal totalExpectResultRestSalesText = 0;
+
+                                //전년도 합계
+
+
+                                totalPreYearExpectResultRestSalesText = palLastPmCumTotal.Sales - palLastPmCumSum.Sales;
+
+                                //현재년 합계
+
+                                totalExpectPlanRestSalesText = palThisPnCumTotal.Sales - palThisPnCumSum.Sales;
+                                // 2019.03.05 연간예상의 예상값이 0이면 0
+                                totalExpectResultRestSalesText = palThisPmCumTotal.Sales == 0 ? 0 : palThisPmCumTotal.Sales - palThisPmCumSum.Sales;
+
+                                foreach (var item in expectRestList)
+                                {
+                                    //companyPreYearExpectList
+                                    //전년
+                                    decimal preYearSales = 0;
+                                    var resultSales = preYearExpectRestList.Where(w => w.businessSeq == item.businessSeq)
+                                        .Select(s => new GroupCompany
+                                        {
+                                            companyExpectResultSales = s.companyExpectResultSales
+                                        }).FirstOrDefault();
+
+                                    var year_from = companyPreYearExpectList.Where(w => w.businessSeq == item.businessSeq).FirstOrDefault();
+
+                                    var year_to = companyPreYearExpectYearList.Where(w => w.businessSeq == item.businessSeq).FirstOrDefault();
+
+                                    if (year_from == null) { year_from = new GroupCompany(); }
+                                    if (year_to == null) { year_to = new GroupCompany(); }
+
+                                    //var resultSales = companyPreYearExpectList.Where(w => w.businessSeq == item.businessSeq)
+                                    //                                            .Select(s => new GroupCompany
+                                    //                                            {
+                                    //                                                companyExpectResultSales = s.companyExpectResultSales
+                                    //                                            }).FirstOrDefault();
+
+                                    //// 연간예상 전년 값
+                                    //var resultSales = companyPreYearExpectYearList.Where(w => w.businessSeq == item.businessSeq)
+                                    //                                            .Select(s => new GroupCompany
+                                    //                                            {
+                                    //                                                companyExpectResultSales = s.companyExpectResultSales
+                                    //                                            }).FirstOrDefault();
+
+                                    //if (resultSales == null)
+                                    //{
+                                    //    preYearSales = 0;
+                                    //}
+                                    //else
+                                    //{
+                                    //    preYearSales = resultSales.companyExpectResultSales;
+                                    //}
+                                    preYearSales = year_to.companyExpectResultSales - year_from.companyExpectResultSales;
+
+                                    resultExpectRestSalesText += "{ key :'" + item.businessName + "'," +
+                                                                                                    //"values : [ { x: '전년', y :" + preYearExpectRestList[expectRestSalesCount].companyExpectRestResultSales + ", total : { y : " + totalPreYearExpectResultRestSalesText + " }}," +
+                                                                                                    "values : [ { x: '전년', y :" + preYearSales + ", total : { y : " + totalPreYearExpectResultRestSalesText + " }}," +
+                                                                                                    "{ x: '계획', y : " + item.companyExpectRestPlanSales + ", total : { y : " + totalExpectPlanRestSalesText + " }}, " +
+                                                                                                    "{ x: '예상', y : " + item.companyExpectRestResultSales + ", total : { y : " + totalExpectResultRestSalesText + " }} ] },";
+
+                                }
+                                        }
+                            <li>
+                                <p class="p_title">@search.mm 월 누계</p>
+                                <div class="chart chart_type2" id="chart7"></div>
+                            </li>
+                            <li>
+                                <p class="p_title">잔여월@(search.mm == "12" ? "" : "(" + (Convert.ToInt32(search.mm) + 1) + "월 ~ 12월)")</p>
+                                <div class="chart chart_type2" id="chart8"></div>
+                            </li>
+
+                            <li>
+                                <p class="p_title">연간예상 </p>
+                                <div class="chart chart_type2" id="chart9"></div>
+                            </li>
+                        </ul>
+                        <div class="legend">
+                            <ul id="chart17">
+                                <li><span class="rect"></span> <sapn class="txt"></sapn></li>
+                            </ul>
+                        </div>
+                        <script>
+                            (function () {
+                                            var data0 = [
+                                              @Html.Raw(salesExpectText)
+                                            ];
+                                            var data1 = [
+                                              @Html.Raw(resultExpectRestSalesText)
+                                            ];
+                                            var data2 = [
+                                              @Html.Raw(salesExpectYearText)
+                                            ];
+
+                                            MYAPP.graph.type2(data0, '#chart7');
+                                            MYAPP.graph.type2(data1, '#chart8');
+                                            MYAPP.graph.type2(data2, '#chart9');
+                                            MYAPP.graph.type15(data0, '#chart17');
+                                        })();
+                        </script>
+                    </div>
+                    <!-- chart_box -->
+                </div><!--//box-->
+
+                <div class="box">
+                    <h3>EBIT</h3>
+                    <div class="chart_box chart_box3">
+                        <span class="p_unit">(단위 : 억원, %)</span>
+                        <ul class="p_box">
+                            @{
+                                //연간예상
+                                var ebitExpectYearText = string.Empty;
+                                decimal totalPreYearExpectYearPlanEbitText = 0;
+                                decimal totalExpectYearPlanEbitText = 0;
+                                decimal totalExpectYearResultEbitText = 0;
+
+                                decimal totalPreYearExpectYearPlanEbitTextRate = 0;
+                                decimal totalExpectYearPlanEbitTextRate = 0;
+                                decimal totalExpectYearResultEbitTextRate = 0;
+
+                                //전년도 합계
+                                totalPreYearExpectYearPlanEbitText = palLastPmCumTotal.Ebit;
+                                // Ebit%(합계)
+                                totalPreYearExpectYearPlanEbitTextRate = palLastPmCumTotal.Sales == 0 ? 0 : Math.Round(palLastPmCumTotal.Ebit / palLastPmCumTotal.Sales * 100, 1, MidpointRounding.AwayFromZero);
+
+                                //현재년 합계
+                                totalExpectYearPlanEbitText = palThisPnCumTotal.Ebit;
+                                totalExpectYearResultEbitText = palThisPmCumTotal.Ebit;
+                                totalExpectYearPlanEbitTextRate = palThisPnCumTotal.Sales == 0 ? 0 : Math.Round(palThisPnCumTotal.Ebit / palThisPnCumTotal.Sales * 100, 1, MidpointRounding.AwayFromZero);
+                                totalExpectYearResultEbitTextRate = palThisPmCumTotal.Sales == 0 ? 0 : Math.Round(palThisPmCumTotal.Ebit / palThisPmCumTotal.Sales * 100, 1, MidpointRounding.AwayFromZero);
+
+                                foreach (var item in companyExpectYearList)
+                                {
+                                    //전년
+                                    decimal preYearResultSales = 0;
+                                    decimal preYearResultEbit = 0;
+                                    var resultSales = companyPreYearExpectYearList.Where(w => w.businessSeq == item.businessSeq)
+                                        .Select(s => new GroupCompany
+                                        {
+                                            companyExpectResultEbit = s.companyExpectResultEbit,
+                                            companyExpectResultSales = s.companyExpectResultSales
+                                        }).FirstOrDefault();
+
+                                    if (resultSales == null)
+                                    {
+                                        preYearResultSales = 0;
+                                        preYearResultEbit = 0;
+                                    }
+                                    else
+                                    {
+                                        preYearResultSales = resultSales.companyExpectResultSales;
+                                        preYearResultEbit = resultSales.companyExpectResultEbit;
+                                    }
+
+                                    // 값이 아예 없을때 처리 해줘야 합니다. 우선은 0으로 나누기면 처리
+                                    decimal p = preYearResultEbit == 0 ? 0 : WebUtil.NumberRound(preYearResultEbit, preYearResultSales, 100, 1);
+                                    decimal p1 = item.companyExpectPlanSales == 0 ? 0 : WebUtil.NumberRound(item.companyExpectPlanEbit, item.companyExpectPlanSales, 100, 1);
+                                    decimal p2 = item.companyExpectResultSales == 0 ? 0 : WebUtil.NumberRound(item.companyExpectResultEbit, item.companyExpectResultSales, 100, 1);
+
+                                    ebitExpectYearText += "{ key :'" + item.businessName + "'," +
+                                                        //"values : [ { x: '전년', y :" + companyPreYearExpectYearList[expectYearEbitCount].companyExpectResultEbit + ", "+
+                                                        "values : [ { x: '전년', y :" + preYearResultEbit + ", " + "p : " + p + ", total : { y : " + totalPreYearExpectYearPlanEbitText + ", p : " + totalPreYearExpectYearPlanEbitTextRate + " }}," +
+                                                            "{ x: '계획', y : " + item.companyExpectPlanEbit + ", p : " + p1 + ", total : { y : " + totalExpectYearPlanEbitText + ", p : " + totalExpectYearPlanEbitTextRate + " }}," +
+                                                            "{ x: '예상', y : " + item.companyExpectResultEbit + ",p : " + p2 + ", total : { y : " + totalExpectYearResultEbitText + ", p : " + totalExpectYearResultEbitTextRate + " }} ] },";
+                                }
+
+
+                                //누계실적
+                                var ebitExpectText = string.Empty;
+                                decimal totalPreYearExpectPlanEbitText = 0;
+                                decimal totalExpectPlanEbitText = 0;
+                                decimal totalExpectResultEbitText = 0;
+
+                                decimal totalPreYearExpectPlanEbitTextRate = 0;
+                                decimal totalExpectPlanEbitTextRate = 0;
+                                decimal totalExpectResultEbitTextRate = 0;
+
+                                var expectEbitCount = 0;
+
+                                //전년도 합계
+                                totalPreYearExpectPlanEbitText = palLastPmCumSum.Ebit;
+                                // Ebit%(합계)
+                                totalPreYearExpectPlanEbitTextRate = palLastPmCumSum.Sales == 0 ? 0 : Math.Round(palLastPmCumSum.Ebit / palLastPmCumSum.Sales * 100, 1, MidpointRounding.AwayFromZero);
+
+                                //현재년 합계
+
+                                totalExpectPlanEbitText = palThisPnCumSum.Ebit;
+                                totalExpectResultEbitText = palThisPmCumSum.Ebit;
+                                totalExpectPlanEbitTextRate = palThisPnCumSum.Sales == 0 ? 0 : Math.Round(palThisPnCumSum.Ebit / palThisPnCumSum.Sales * 100, 1, MidpointRounding.AwayFromZero);
+                                totalExpectResultEbitTextRate = palThisPmCumSum.Sales == 0 ? 0 : Math.Round(palThisPmCumSum.Ebit / palThisPmCumSum.Sales * 100, 1, MidpointRounding.AwayFromZero);
+
+                                //foreach (var item in companyExpectList)
+                                //{
+                                //    totalExpectPlanEbitText += item.companyExpectPlanEbit;
+                                //    totalExpectResultEbitText += item.companyExpectResultEbit;
+                                //}
+
+                                foreach (var item in companyExpectList)
+                                {
+                                    //전년
+                                    decimal preYearResultSales = 0;
+                                    decimal preYearResultEbit = 0;
+
+                                    var resultSales = companyPreYearExpectList.Where(w => w.businessSeq == item.businessSeq)
+                                                            .Select(s => new GroupCompany
+                                                            {
+                                                                companyExpectResultEbit = s.companyExpectResultEbit,
+                                                                companyExpectResultSales = s.companyExpectResultSales
+                                                            }).FirstOrDefault();
+
+                                    if (resultSales == null)
+                                    {
+                                        preYearResultSales = 0;
+                                        preYearResultEbit = 0;
+                                    }
+                                    else
+                                    {
+                                        preYearResultSales = resultSales.companyExpectResultSales;
+                                        preYearResultEbit = resultSales.companyExpectResultEbit;
+                                    }
+
+                                    // 값이 아예 없을때 처리 해줘야 합니다. 우선은 0으로 나누기면 처리
+                                    decimal p = preYearResultEbit == 0 ? 0 : WebUtil.NumberRound(preYearResultEbit, preYearResultSales, 100, 1);
+                                    decimal p1 = item.companyExpectPlanSales == 0 ? 0 : WebUtil.NumberRound(item.companyExpectPlanEbit, item.companyExpectPlanSales, 100, 1);
+                                    decimal p2 = item.companyExpectResultSales == 0 ? 0 : WebUtil.NumberRound(item.companyExpectResultEbit, item.companyExpectResultSales, 100, 1);
+
+                                    ebitExpectText += "{ key :'" + item.businessName + "'," +
+                                                            "values : [ { x: '전년', y :" + preYearResultEbit + "," +
+                                                                        "p : " + p + ", total : { y : " + totalPreYearExpectPlanEbitText + ", p : " + totalPreYearExpectPlanEbitTextRate + " }}," +
+                                                            "{ x: '계획', y : " + item.companyExpectPlanEbit + ", p : " + p1 + ", total : { y : " + totalExpectPlanEbitText + ", p : " + totalExpectPlanEbitTextRate + " }}," +
+                                                            "{ x: '실적', y : " + item.companyExpectResultEbit + ", p :" + p2 + ", total : { y : " + totalExpectResultEbitText + ", p : " + totalExpectResultEbitTextRate + " }} ] },";
+
+                                    expectEbitCount++;
+                                }
+
+                                //잔여월
+                                var resultExpectRestEbitText = string.Empty;
+                                decimal totalPreYearExpectResultRestEbitText = 0;
+                                decimal totalExpectPlanRestEbitText = 0;
+                                decimal totalExpectResultRestEbitText = 0;
+
+                                decimal totalPreYearExpectResultRestEbitTextRate = 0;
+                                decimal totalExpectPlanRestEbitTextRate = 0;
+                                decimal totalExpectResultRestEbitTextRate = 0;
+
+                                var expectRestEbitCount = 0;
+
+                                //전년도 합계
+
+                                totalPreYearExpectResultRestEbitText = palLastPmCumTotal.Ebit - palLastPmCumSum.Ebit;
+                                // Ebit%(합계)
+                                totalPreYearExpectResultRestEbitTextRate = (palLastPmCumTotal.Sales - palLastPmCumSum.Sales) == 0 ? 0 : Math.Round((palLastPmCumTotal.Ebit - palLastPmCumSum.Ebit) / (palLastPmCumTotal.Sales - palLastPmCumSum.Sales) * 100, 1, MidpointRounding.AwayFromZero);
+
+                                //foreach (var item in expectRestList)
+                                //{
+                                //    //전년
+                                //    decimal preYearResultEbit = 0;
+
+                                //    var resultSales = preYearExpectRestList.Where(w => w.businessSeq == item.businessSeq)
+                                //                        .Select(s => new GroupCompany
+                                //                        {
+                                //                            companyExpectRestResultEbit = s.companyExpectRestResultEbit
+                                //                        }).FirstOrDefault();
+
+                                //    if (resultSales == null)
+                                //    {
+                                //        preYearResultEbit = 0;
+                                //    }
+                                //    else
+                                //    {
+                                //        preYearResultEbit = resultSales.companyExpectRestResultEbit;
+                                //    }
+
+                                //    totalPreYearExpectResultRestEbitText += preYearResultEbit;
+                                //}
+
+                                //현재년 합계
+
+                                totalExpectPlanRestEbitText = palThisPnCumTotal.Ebit - palThisPnCumSum.Ebit;
+                                // 2019.03.05 연간예상의 예상값이 0이면 0
+                                totalExpectResultRestEbitText = palThisPmCumTotal.Ebit == 0 ? 0 : palThisPmCumTotal.Ebit - palThisPmCumSum.Ebit;
+                                totalExpectPlanRestEbitTextRate = (palThisPnCumTotal.Sales - palThisPnCumSum.Sales) == 0 ? 0 : Math.Round((palThisPnCumTotal.Ebit - palThisPnCumSum.Ebit) / (palThisPnCumTotal.Sales - palThisPnCumSum.Sales) * 100, 1, MidpointRounding.AwayFromZero);
+                                // 
+                                totalExpectResultRestEbitTextRate = (palThisPmCumTotal.Sales - palThisPmCumSum.Sales) == 0 ? 0 : Math.Round((palThisPmCumTotal.Ebit - palThisPmCumSum.Ebit) / (palThisPmCumTotal.Sales - palThisPmCumSum.Sales) * 100, 1, MidpointRounding.AwayFromZero);
+                                if (palThisPmCumTotal.Ebit == 0) { totalExpectResultRestEbitTextRate = 0; }
+
+                                //foreach (var item in expectRestList)
+                                //{
+                                //    totalExpectPlanRestEbitText += item.companyExpectRestPlanEbit;
+                                //    totalExpectResultRestEbitText += item.companyExpectRestResultEbit;
+                                //}
+
+                                foreach (var item in expectRestList)
+                                {
+                                    //전년
+                                    decimal preYearResultSales = 0;
+                                    decimal preYearResultEbit = 0;
+
+                                    //var resultSales = preYearExpectRestList.Where(w => w.businessSeq == item.businessSeq)
+                                    //                    .Select(s => new GroupCompany
+                                    //                    {
+                                    //                        companyExpectRestResultEbit = s.companyExpectRestResultEbit,
+                                    //                        companyExpectRestResultSales = s.companyExpectRestResultSales
+                                    //                    }).FirstOrDefault();
+
+                                    var year_to = companyPreYearExpectYearList.Where(w => w.businessSeq == item.businessSeq)
+                                        .Select(s => new GroupCompany
+                                        {
+                                            companyExpectResultEbit = s.companyExpectResultEbit,
+                                            companyExpectResultSales = s.companyExpectResultSales
+                                        }).FirstOrDefault();
+
+
+                                    var year_from = companyPreYearExpectList.Where(w => w.businessSeq == item.businessSeq)
+                                                            .Select(s => new GroupCompany
+                                                            {
+                                                                companyExpectResultEbit = s.companyExpectResultEbit,
+                                                                companyExpectResultSales = s.companyExpectResultSales
+                                                            }).FirstOrDefault();
+
+                                    if (year_to == null) { year_to = new GroupCompany(); }
+                                    if (year_from == null) { year_from = new GroupCompany(); }
+
+                                    //if (resultSales == null)
+                                    //{
+                                    //    preYearResultSales = 0;
+                                    //    preYearResultEbit = 0;
+                                    //}
+                                    //else
+                                    //{
+                                    //    preYearResultSales = resultSales.companyExpectRestResultSales;
+                                    //    preYearResultEbit = resultSales.companyExpectRestResultEbit;
+                                    //}
+
+                                    preYearResultSales = year_to.companyExpectResultSales - year_from.companyExpectResultSales;
+                                    preYearResultEbit = year_to.companyExpectResultEbit - year_from.companyExpectResultEbit;
+
+                                    // 값이 아예 없을때 처리 해줘야 합니다. 우선은 0으로 나누기면 처리
+                                    decimal p = preYearResultSales == 0 ? 0 : WebUtil.NumberRound(preYearResultEbit, preYearResultSales, 100, 1);
+                                    decimal p1 = item.companyExpectRestPlanSales == 0 ? 0 : WebUtil.NumberRound(item.companyExpectRestPlanEbit, item.companyExpectRestPlanSales, 100, 1);
+                                    decimal p2 = item.companyExpectRestResultSales == 0 ? 0 : WebUtil.NumberRound(item.companyExpectRestResultEbit, item.companyExpectRestResultSales, 100, 1);
+
+                                    resultExpectRestEbitText += "{ key :'" + item.businessName + "'," +
+                                                                    "values : [ { x: '전년', y :" + preYearResultEbit + "," +
+                                                                                    "p : " + p + ",total : { y : " + totalPreYearExpectResultRestEbitText + ", p : " + totalPreYearExpectResultRestEbitTextRate + " }}," +
+                                                                    " { x: '계획', y : " + item.companyExpectRestPlanEbit + ", p : " + p1 + ",total : { y : " + totalExpectPlanRestEbitText + ", p : " + totalExpectPlanRestEbitTextRate + " }}," +
+                                                                    " { x: '예상', y : " + item.companyExpectRestResultEbit + ", p : " + p2 + " ,total : { y : " + totalExpectResultRestEbitText + ", p : " + totalExpectResultRestEbitTextRate + " }} ] },";
+
+                                    expectRestEbitCount++;
+                                }
+                            }
+                            <li>
+                                <p class="p_title">@search.mm 월 누계</p>
+                                <div class="chart chart_type2" id="chart10"></div>
+                            </li>
+                            <li>
+                                <p class="p_title">잔여월@(search.mm == "12" ? "" : "(" + (Convert.ToInt32(search.mm) + 1) + "월 ~ 12월)")</p>
+                                <div class="chart chart_type2" id="chart11"></div>
+                            </li>
+                            <li>
+                                <p class="p_title">연간예상</p>
+                                <div class="chart chart_type2" id="chart12"></div>
+                            </li>
+                        </ul>
+                        <div class="legend">
+                            <ul id="chart18">
+                                <li><span class="rect"></span> <sapn class="txt"></sapn></li>
+                            </ul>
+                        </div>
+                        <script>
+                            (function () {
+                                    var data0 = [
+                                      @Html.Raw(ebitExpectText)
+                                    ];
+                                    var data1 = [
+                                      @Html.Raw(resultExpectRestEbitText)
+                                    //{ key: "지주", total: { y: 45158, p: 60 }, values: [ { x: '전년', y: 31233, p: 60 }, { x: '계획', y: 30963, p: 60 }, { x: '실적', y: 31002, p: 60 } ] },
+                                    //{ key: "건설", total: { y: 43399, p: 60 }, values: [ { x: '전년', y: 9457, p: 60 }, { x: '계획', y: 7780, p: 60 }, { x: '실적', y: 7703, p: 60 } ] },
+                                    //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                    ];
+                                    var data2 = [
+                                      @Html.Raw(ebitExpectYearText)
+                                    //{ key: "지주", total: { y: 45158, p: 60 }, values: [ { x: '전년', y: 31233, p: 60 }, { x: '계획', y: 30963, p: 60 }, { x: '실적', y: 31002, p: 60 } ] },
+                                    //{ key: "건설", total: { y: 43399, p: 60 }, values: [ { x: '전년', y: 9457, p: 60 }, { x: '계획', y: 7780, p: 60 }, { x: '실적', y: 7703, p: 60 } ] },
+                                    //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                    ];
+
+                                    MYAPP.graph.type2(data0, '#chart10');
+                                    MYAPP.graph.type2(data1, '#chart11');
+                                    MYAPP.graph.type2(data2, '#chart12');
+                                    MYAPP.graph.type15(data0, '#chart18');
+                                })();
+                        </script>
+                    </div>
+                    <!-- chart_box -->
+                </div><!--//box-->
+
+                <div class="box">
+                    <!--그룹일 경우-->
+                    <!--S: 유동 테이블-->
+                    <div class="graph">
+                        <div class="tbl_scroll_wrap">
+                            <div class="tbl_box">
+                                <table class="tbl tbl_type01 tblfix">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2" class="lbd0">구분</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th rowspan="3" class="lbd0">잔<br />여<br />월</th>
+                                            <th>SALES</th>
+                                        </tr>
+                                        <tr>
+                                            <th>EBIT</th>
+                                        </tr>
+                                        <tr>
+                                            <th>%</th>
+                                        </tr>
+                                        <tr>
+                                            <th rowspan="3" class="lbd0">연<br />간<br />예<br />상</th>
+                                            <th>SALES</th>
+                                        </tr>
+                                        <tr>
+                                            <th>EBIT</th>
+                                        </tr>
+                                        <tr>
+                                            <th>%</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div><!--//tbl_box-->
+
+                            <div class="tbl_scroll">
+                                <div class="tbl_add">
+                                    @{
+                                        foreach (var item in companyExpectHeaderTable)
+                                        {
+                                          <div class="tbl_wrap">
+                                            <table class="tbl tbl_type01">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="3">@item.businessName</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>계획</th>
+                                                        <th>예상</th>
+                                                        <th>계획대비</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        //잔여월
+                                                        foreach (var restBody in expectRestList)
+                                                        {
+                                                            if (item.businessName == restBody.businessName)
+                                                            {
+                                                                decimal expectRestSales = 0;
+                                                                decimal expectRestEbit = 0;
+                                                                decimal expectRestPlanPer = 0;
+                                                                decimal expectRestResultPer = 0;
+                                                                decimal expectRestPer = 0;
+                                                                var expectRestSalesClass = string.Empty;
+                                                                var expectRestEbitClass = string.Empty;
+                                                                var expectRestPerClass = string.Empty;
+
+                                                                expectRestSales = restBody.companyExpectRestPlanSales == 0 ? 0 : restBody.companyExpectRestResultSales / restBody.companyExpectRestPlanSales * 100;
+                                                                expectRestEbit = restBody.companyExpectRestPlanEbit == 0 ? 0 : restBody.companyExpectRestResultEbit / restBody.companyExpectRestPlanEbit * 100;
+
+                                                                expectRestPlanPer = restBody.companyExpectRestPlanSales == 0 ? 0 : (restBody.companyExpectRestPlanEbit / restBody.companyExpectRestPlanSales * 100);
+                                                                expectRestResultPer = restBody.companyExpectRestResultSales == 0 ? 0 : (restBody.companyExpectRestResultEbit / restBody.companyExpectRestResultSales * 100);
+                                                                expectRestPer = expectRestSales == 0 ? 0 : expectRestResultPer - expectRestPlanPer;
+
+                                                                // 음수는 200에서 빼기 2018.12.12
+                                                                if (restBody.companyExpectRestPlanSales < 0)
+                                                                {
+                                                                    expectRestSales = 200 - expectRestSales;
+                                                                }
+                                                                if (restBody.companyExpectRestPlanEbit < 0)
+                                                                {
+                                                                    expectRestEbit = 200 - expectRestEbit;
+                                                                }
+
+                                                                if (Math.Round(expectRestSales, 1, MidpointRounding.AwayFromZero) < 100)
+                                                                {
+                                                                    expectRestSalesClass = "class=minus";
+                                                                }
+
+                                                                if (Math.Round(expectRestEbit, 1, MidpointRounding.AwayFromZero) < 100)
+                                                                {
+                                                                    expectRestEbitClass = "class=minus";
+                                                                }
+
+                                                                if (Math.Round(expectRestPer, 1, MidpointRounding.AwayFromZero) < 0)
+                                                                {
+                                                                    expectRestPerClass = "class=minus";
+                                                                }
+
+                                                                <tr>
+                                                                    <td>@WebUtil.NCommaRound(restBody.companyExpectRestPlanSales, 0)</td>
+                                                                    <td>@WebUtil.NCommaRound(restBody.companyExpectRestResultSales, 0)</td>
+                                                                    @if (restBody.companyExpectRestPlanSales == 0)
+                                                                    {
+                                                                        <td>N/A</td>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                    <td @expectRestSalesClass>@Math.Round(expectRestSales, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                    }
+                                                                </tr>
+                                                                <tr>
+                                                                    @*<td>@Math.Round(restBody.companyExpectPlanEbit, 0)</td>
+                                                                    <td>@Math.Round(restBody.companyExpectResultEbit, 0)</td>*@
+                                                                    <td>@Math.Round(restBody.companyExpectRestPlanEbit, 0, MidpointRounding.AwayFromZero)</td>
+                                                                    <td>@Math.Round(restBody.companyExpectRestResultEbit, 0, MidpointRounding.AwayFromZero)</td>
+                                                                    @if (restBody.companyExpectRestPlanEbit == 0)
+                                                                    {
+                                                                        <td>N/A</td>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                    <td @expectRestEbitClass>@Math.Round(expectRestEbit, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                    }
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>@Math.Round(expectRestPlanPer, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                    <td>@Math.Round(expectRestResultPer, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                    <td @expectRestPerClass>@Math.Round(expectRestPer, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                    }
+                                                    @{
+                                                        //연간예상
+                                                        foreach (var expectBody in companyExpectYearList)
+                                                        {
+                                                            if (item.businessName == expectBody.businessName)
+                                                            {
+                                                                decimal expectYearRestSales = 0;
+                                                                decimal expectYearRestEbit = 0;
+                                                                decimal expectYearRestPlanPer = 0;
+                                                                decimal expectYearRestResultPer = 0;
+                                                                decimal expectYearRestPer = 0;
+                                                                var expectSalesClass = string.Empty;
+                                                                var expectEbitClass = string.Empty;
+                                                                var expectPerClass = string.Empty;
+
+                                                                expectYearRestSales = expectBody.companyExpectPlanSales == 0 ? 0 : expectBody.companyExpectResultSales / expectBody.companyExpectPlanSales * 100;
+                                                                expectYearRestEbit = expectBody.companyExpectPlanEbit == 0 ? 0 : expectBody.companyExpectResultEbit / expectBody.companyExpectPlanEbit * 100;
+
+                                                                expectYearRestPlanPer = expectBody.companyExpectPlanSales == 0 ? 0 : (expectBody.companyExpectPlanEbit / expectBody.companyExpectPlanSales * 100);
+                                                                expectYearRestResultPer = expectBody.companyExpectResultSales == 0 ? 0 : (expectBody.companyExpectResultEbit / expectBody.companyExpectResultSales * 100);
+                                                                expectYearRestPer = expectYearRestSales == 0 ? 0 : expectYearRestResultPer - expectYearRestPlanPer;
+
+                                                                // 2018.12.12 계획이 음수이면 200에서 빼준다
+                                                                if (expectBody.companyExpectPlanSales < 0)
+                                                                {
+                                                                    expectYearRestSales = 200 - expectYearRestSales;
+                                                                }
+                                                                if (expectBody.companyExpectPlanEbit < 0)
+                                                                {
+                                                                    expectYearRestEbit = 200 - expectYearRestEbit;
+                                                                }
+
+                                                                if (Math.Round(expectYearRestSales, 1, MidpointRounding.AwayFromZero) < 100)
+                                                                {
+                                                                    expectSalesClass = "class=minus";
+                                                                }
+
+                                                                if (Math.Round(expectYearRestEbit, 1, MidpointRounding.AwayFromZero) < 100)
+                                                                {
+                                                                    expectEbitClass = "class=minus";
+                                                                }
+
+                                                                if (Math.Round(expectYearRestPer, 1, MidpointRounding.AwayFromZero) < 0)
+                                                                {
+                                                                    expectPerClass = "class=minus";
+                                                                }
+
+                                                                <tr>
+                                                                    <td>@Math.Round(expectBody.companyExpectPlanSales, 0, MidpointRounding.AwayFromZero)</td>
+                                                                    <td>@Math.Round(expectBody.companyExpectResultSales, 0, MidpointRounding.AwayFromZero)</td>
+                                                                    @if (expectBody.companyExpectPlanSales == 0)
+                                                                    {
+                                                                        <td>N/A</td>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <td @expectSalesClass>@Math.Round(expectYearRestSales, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                    }
+                                                                </tr>
+                                                                <tr>
+                                                                    @*<td>@Math.Round(expectBody.companyExpectYearPlanEbit, 0)</td>
+                                                                    <td>@Math.Round(expectBody.companyExpectResultEbit, 0)</td>*@
+                                                                    <td>@Math.Round(expectBody.companyExpectPlanEbit, 0, MidpointRounding.AwayFromZero)</td>
+                                                                    <td>@Math.Round(expectBody.companyExpectResultEbit, 0, MidpointRounding.AwayFromZero)</td>
+                                                                    @if (expectBody.companyExpectPlanEbit == 0)
+                                                                    {
+                                                                        <td>N/A</td>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                    <td @expectEbitClass>@Math.Round(expectYearRestEbit, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                    }
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>@Math.Round(expectYearRestPlanPer, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                    <td>@Math.Round(expectYearRestResultPer, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                    <td @expectPerClass>@Math.Round(expectYearRestPer, 1, MidpointRounding.AwayFromZero)%</td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                    }
+                                                </tbody>
+                                            </table>
+                                          </div>
+                                                        }
+                                    }
+                                </div><!--//tbl_add-->
+                            </div><!--//tbl_scroll-->
+                        </div><!--//tbl_scroll_wrap-->
+                        <!--E: 유동 테이블-->
+                    </div><!--//graph-->
+                </div><!--/box-->
+            </div><!--//graph_box-->
+        </div><!--//graph_box_wrap-->
+                                                            }
+                                                        }
+        <!--S: 재무비율 및 B/S-->
+        <div class="graph_box_wrap" id="fibs">
+            <h2><a href="#">재무비율 및 B/S</a></h2>
+            <div class="graph_box">
+@*2019.02.19 2019년 1월에는 손익 예상과 roic 안 보이게 변경 : 2019.02.20 다시 보이게 변경*@
+@if (search.year + search.mm != "201901ㅁ")
+{
+                <div class="box">
+                    <div class="chart_box chart_box4">
+                        <p class="p_title">ROIC</p>
+                        <span class="p_unit">(단위 : %)</span>
+                        <div class="chart chart_type7" id="chart13"></div>
+                        @{
+                            //계획
+                            var planRoicText = string.Empty;
+                            var planRoic = string.Empty;
+                            decimal planRoicConut = 0;
+
+                            for (int i = 0; i <= 12; i++)
+                            {
+                                if (i >= companyPlanRoic.Count())
+                                {
+                                    planRoicConut = 0;
+                                }
+                                else
+                                {
+                                    planRoicConut = WebUtil.NewRoic(companyPlanRoic[i].companyRoic, companyPlanL[i].companyMonthlyRoic);
+                                }
+
+                                planRoicText += "{x : " + i + ", y : " + planRoicConut + "},";
+                            }
+
+                            //실적
+                            var resultRoicText = string.Empty;
+                            var resultRoic = string.Empty;
+                            decimal resultRoicConut = 0;
+
+                            for (int i = 0; i <= 12; i++)
+                            {
+                                if (i >= companyResultRoic.Count())
+                                {
+                                    resultRoicConut = 0;
+                                }
+                                else
+                                {
+                                    resultRoicConut = WebUtil.NewRoic(companyResultRoic[i].companyRoic, companyResultRoic[i].companyMonthlyRoic);
+                                }
+
+                                resultRoicText += "{x : " + i + ", y : " + resultRoicConut + "},";
+                            }
+
+                            if (planRoicText.Length == 0)
+                            {
+                                planRoic = "{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }";
+                            }
+                            else
+                            {
+                                planRoic = planRoicText.Substring(0, planRoicText.Length - 1);
+                            }
+
+                            if (resultRoicText.Length == 0)
+                            {
+                                resultRoic = "{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }";
+                            }
+                            else
+                            {
+                                resultRoic = resultRoicText.Substring(0, resultRoicText.Length - 1);
+                            }
+                        }
+                        <script>
+                            (function () {
+                                var data = [
+                                    { key: '계획', values: [ @Html.Raw(planRoic)] },
+                                    { key: '실적', values: [ @Html.Raw(resultRoic) ] }
+                                  //{ key: '계획', values: [{ x: 0, y: 12 }, { x: 1, y: 10 }, { x: 2, y: 8 }, { x: 3, y: 9 }, { x: 4, y: 5 }, { x: 5, y: 12 }, { x: 6, y: 10 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }] },
+                                  //{ key: '실적', values: [{ x: 0, y: 8 }, { x: 1, y: 5 }, { x: 2, y: 7 }, { x: 3, y: 8 }, { x: 4, y: 6 }, { x: 5, y: 10 }, { x: 6, y: 10 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }] }
+
+                                ];
+                                data.map(function (obj, i) {
+                                    obj.color = ['#009de4', '#ff520d'][i];
+                                    obj.pointShape = ['circle', 'circle'][i];
+                                    obj.strokeWidth = 1;
+                                    return obj;
+                                });
+
+                                MYAPP.graph.type7(data, '#chart13');
+                            })();
+                        </script>
+                    </div>
+                    <!-- chart_box -->
+                </div><!--//box-->
+
+                <div class="box">
+                    <div class="chart_box chart_box4">
+                        <p class="p_title">부채비율</p>
+                        <span class="p_unit">(단위 : %)</span>
+                        <div class="chart chart_type7" id="chart14"></div>
+                        @{
+                            //계획
+                            var planLRText = string.Empty;
+                            var planLR = string.Empty;
+                            decimal planLRConut = 0;
+
+                            for (int i = 0; i <= 12; i++)
+                            {
+                                if (i >= companyPlanL.Count())
+                                {
+                                    planLRConut = 0;
+                                }
+                                else
+                                {
+                                    planLRConut = companyPlanL[i].companyRoic;
+                                }
+
+                                planLRText += "{x : " + i + ", y : " + planLRConut + "},";
+                            }
+
+                            //실적
+                            var resultLRText = string.Empty;
+                            var resultLR = string.Empty;
+                            decimal resultLRConut = 0;
+
+                            for (int i = 0; i <= 12; i++)
+                            {
+                                if (i >= companyResultL.Count())
+                                {
+                                    resultLRConut = 0;
+                                }
+                                else
+                                {
+                                    resultLRConut = companyResultL[i].companyRoic;
+                                }
+
+                                resultLRText += "{x : " + i + ", y : " + resultLRConut + "},";
+                            }
+
+                            if (planRoicText.Length == 0)
+                            {
+                                planLR = "{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }";
+                            }
+                            else
+                            {
+                                planLR = planLRText.Substring(0, planLRText.Length - 1);
+                            }
+
+                            if (resultRoicText.Length == 0)
+                            {
+                                resultLR = "{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }";
+                            }
+                            else
+                            {
+                                resultLR = resultLRText.Substring(0, resultLRText.Length - 1);
+                            }
+                        }
+                        <script>
+                            (function () {
+                                var data = [
+                                    { key: '계획', values: [ @Html.Raw(planLR)] },
+                                    { key: '실적', values: [ @Html.Raw(resultLR) ] }
+                                  //{ key: '계획', values: [{ x: 0, y: 12 }, { x: 1, y: 10 }, { x: 2, y: 8 }, { x: 3, y: 9 }, { x: 4, y: 5 }, { x: 5, y: 12 }, { x: 6, y: 10 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }] },
+                                  //  { key: '실적', values: [{ x: 0, y: 8 }, { x: 1, y: 5 }, { x: 2, y: 7 }, { x: 3, y: 8 }, { x: 4, y: 6 }, { x: 5, y: 10 }, { x: 6, y: 10 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }] }
+
+                                    //{ key: '계획', values: [{ x: 0, y: 12 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }] },
+                                    //{ key: '실적', values: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }] }
+                                ];
+                                data.map(function (obj, i) {
+                                    obj.color = ['#009de4', '#ff520d'][i];
+                                    obj.pointShape = ['circle', 'circle'][i];
+                                    obj.strokeWidth = 1;
+                                    return obj;
+                                });
+
+                                MYAPP.graph.type7(data, '#chart14', ',.0f');
+                            })();
+                        </script>
+                    </div>
+                    <!-- chart_box -->
+                </div><!--//box-->
+}
+                <div class="box">
+                    <!--부문/회사 레벨에서 추가됨 고정 테이블 년도/월/안에 수치만 변경됨-->
+
+                    <div class="graph">
+                        <h3 id="exBs2">BS 8개사 연결</h3>
+                        <table class="tbl tbl_type01">
+                            <colgroup>
+                                <col width="7%" />
+                                <col width="9%" />
+                                <col width="/" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th scope="col" rowspan="3" colspan="2" class="rbd lbd0">구분</th>
+                                    <th scope="col">@(Convert.ToInt32(search.year) - 1)년</th>
+                                    <th scope="col" colspan="4">@(search.year)년</th>
+                                </tr>
+                                <tr>
+                                    <th scope="col">기말</th>
+                                    <th scope="col" colspan="4">@(search.mm)월 누계</th>
+                                </tr>
+                                <tr>
+                                    <th scope="col">실적</th>
+                                    <th scope="col">계획</th>
+                                    <th scope="col">실적</th>
+                                    <th scope="col">계획대비</th>
+                                    <th scope="col">전년대비</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    foreach (var item in pmThisYearCom)
+                                    {
+                                        GroupCompany comThisYearPm = pmLastYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                                        GroupCompany comThisYearPn = pnThisYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                                        <tr>
+                                            <th scope="row" rowspan="6" class="lbd0">재무비율 및 B/S</th>
+                                            <th scope="row">자산</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Assets, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Assets, 0))</td>
+                                            <td>@(WebUtil.NCommaRound(item.Assets, 0))</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Assets, 0) : WebUtil.NCommaRound(item.Assets - comThisYearPn.Assets, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Assets, 0) : WebUtil.NCommaRound(item.Assets - comThisYearPm.Assets, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">부채</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Liabilities, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Liabilities, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Liabilities, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Liabilities, 0) : WebUtil.NCommaRound(item.Liabilities - comThisYearPn.Liabilities, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Liabilities, 0) : WebUtil.NCommaRound(item.Liabilities - comThisYearPm.Liabilities, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">자본</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Capital, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Capital, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Capital, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Capital, 0) : WebUtil.NCommaRound(item.Capital - comThisYearPn.Capital, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Capital, 0) : WebUtil.NCommaRound(item.Capital - comThisYearPm.Capital, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">현금</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Cash, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Cash, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Cash, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Cash, 0) : WebUtil.NCommaRound(item.Cash - comThisYearPn.Cash, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Cash, 0) : WebUtil.NCommaRound(item.Cash - comThisYearPm.Cash, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">차임금</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Loan, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Loan, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Loan, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Loan, 0) : WebUtil.NCommaRound(item.Loan - comThisYearPn.Loan, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Loan, 0) : WebUtil.NCommaRound(item.Loan - comThisYearPm.Loan, 0))</td>
+                                        </tr>
+                                        decimal lastCapital = comThisYearPm == null ? 0 : Math.Round(comThisYearPm.Capital, 0, MidpointRounding.AwayFromZero);
+                                        decimal thisCapital = comThisYearPn == null ? 0 : Math.Round(comThisYearPn.Capital, 0, MidpointRounding.AwayFromZero);
+                                        decimal lastPmLR = lastCapital == 0 ? 0 : Math.Round((comThisYearPm.Liabilities / lastCapital * 100), 0, MidpointRounding.AwayFromZero);
+                                        decimal thisPnLR = thisCapital == 0 ? 0 : Math.Round((comThisYearPn.Liabilities / thisCapital * 100), 0, MidpointRounding.AwayFromZero);
+                                        decimal thisPmLR = item.Capital == 0 ? 0 : Math.Round((item.Liabilities / item.Capital * 100), 0, MidpointRounding.AwayFromZero);
+                                        <tr>
+                                            <th scope="row">부채비율</th>
+                                            <td>@(WebUtil.NCommaRound(lastPmLR, 0))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPnLR, 0))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmLR, 0))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmLR - thisPnLR, 0))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmLR - lastPmLR, 0))%</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" rowspan="3" class="lbd0">ROIC</th>
+                                            <th scope="row">세후 영업이익</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.AfterTaxOperationProfit, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.AfterTaxOperationProfit, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0) : WebUtil.NCommaRound(item.AfterTaxOperationProfit - comThisYearPn.AfterTaxOperationProfit, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0) : WebUtil.NCommaRound(item.AfterTaxOperationProfit - comThisYearPm.AfterTaxOperationProfit, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">투하자본</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.PainInCapital, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.PainInCapital, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.PainInCapital, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.PainInCapital, 0) : WebUtil.NCommaRound(item.PainInCapital - comThisYearPn.PainInCapital, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.PainInCapital, 0) : WebUtil.NCommaRound(item.PainInCapital - comThisYearPm.PainInCapital, 0))</td>
+                                        </tr>
+                                        decimal lastPainInCapital = comThisYearPm == null ? 0 : comThisYearPm.PainInCapital;
+                                        decimal thisPainInCapital = comThisYearPn == null ? 0 : comThisYearPn.PainInCapital;
+                                        decimal lastPmROIC = lastPainInCapital == 0 ? 0 : Math.Round(comThisYearPm.AfterTaxOperationProfit / lastPainInCapital * 100, 1, MidpointRounding.AwayFromZero);
+                                        decimal thisPnROIC = thisPainInCapital == 0 ? 0 : Math.Round(WebUtil.NewRoic((comThisYearPn.AfterTaxOperationProfit / thisPainInCapital * 100), month), 1, MidpointRounding.AwayFromZero);
+                                        decimal thisPmROIC = item.PainInCapital == 0 ? 0 : Math.Round(WebUtil.NewRoic((item.AfterTaxOperationProfit / item.PainInCapital * 100), month), 1, MidpointRounding.AwayFromZero);
+                                        <tr>
+                                            <th scope="row">ROIC</th>
+                                            <td>@(WebUtil.NCommaRound(lastPmROIC, 1))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPnROIC, 1))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmROIC, 1))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmROIC - thisPnROIC, 1))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmROIC - lastPmROIC, 1))%</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row" rowspan="6" class="lbd0">W/C</th>
+                                            <th scope="row">A/R</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Ar, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Ar, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Ar, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Ar, 0) : WebUtil.NCommaRound(item.Ar - comThisYearPn.Ar, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Ar, 0) : WebUtil.NCommaRound(item.Ar - comThisYearPm.Ar, 0))</td>
+                                        </tr>
+                                        <tr class="n2">@*2018.12.26 ToDay 소수점 1자리**@
+                                            <th scope="row">T/O days</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.ArToDays, 1))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.ArToDays, 1))</td>
+                                            <td>@WebUtil.NCommaRound(item.ArToDays, 1)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.ArToDays, 1) : WebUtil.NCommaRound(item.ArToDays - comThisYearPn.ArToDays, 1))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.ArToDays, 1) : WebUtil.NCommaRound(item.ArToDays - comThisYearPm.ArToDays, 1))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">A/P</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Ap, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Ap, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Ap, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Ap, 0) : WebUtil.NCommaRound(item.Ap - comThisYearPn.Ap, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Ap, 0) : WebUtil.NCommaRound(item.Ap - comThisYearPm.Ap, 0))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">T/O days</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.ApToDays, 1))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.ApToDays, 1))</td>
+                                            <td>@WebUtil.NCommaRound(item.ApToDays, 1)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.ApToDays, 1) : WebUtil.NCommaRound(item.ApToDays - comThisYearPn.ApToDays, 1))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.ApToDays, 1) : WebUtil.NCommaRound(item.ApToDays - comThisYearPm.ApToDays, 1))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">Inventory</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Inventory, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Inventory, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Inventory, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Inventory, 0) : WebUtil.NCommaRound(item.Inventory - comThisYearPn.Inventory, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Inventory, 0) : WebUtil.NCommaRound(item.Inventory - comThisYearPm.Inventory, 0))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">T/O days</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.InventoryToDays, 1))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.InventoryToDays, 1))</td>
+                                            <td>@WebUtil.NCommaRound(item.InventoryToDays, 1)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.InventoryToDays, 1) : WebUtil.NCommaRound(item.InventoryToDays - comThisYearPn.InventoryToDays, 1))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.InventoryToDays, 1) : WebUtil.NCommaRound(item.InventoryToDays - comThisYearPm.InventoryToDays, 1))</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <br />
+                    @*// (주)한라 예외처리*@
+
+                    <div class="graph" id="exBs">
+                        <h3>BS 별도</h3>
+                        <table class="tbl tbl_type01">
+                            <colgroup>
+                                <col width="7%" />
+                                <col width="9%" />
+                                <col width="/" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th scope="col" rowspan="3" colspan="2" class="rbd lbd0">구분</th>
+                                    <th scope="col">@(Convert.ToInt32(search.year) - 1)년</th>
+                                    <th scope="col" colspan="4">@(search.year)년</th>
+                                </tr>
+                                <tr>
+                                    <th scope="col">기말</th>
+                                    <th scope="col" colspan="4">@(search.mm)월 누계</th>
+                                </tr>
+                                <tr>
+                                    <th scope="col">실적</th>
+                                    <th scope="col">계획</th>
+                                    <th scope="col">실적</th>
+                                    <th scope="col">계획대비</th>
+                                    <th scope="col">전년대비</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (pmThisYearComEx.Count() <= 0)
+                                {
+                                    <tr>
+                                        <th colspan="7">등록된 실적이 없습니다.</th>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var item in pmThisYearComEx)
+                                    {
+                                        GroupCompany comThisYearPm = pmLastYearComEx.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                                        GroupCompany comThisYearPn = pnThisYearComEx.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                                        <tr>
+                                            <th scope="row" rowspan="6" class="lbd0">재무비율 및 B/S</th>
+                                            <th scope="row">자산</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Assets, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Assets, 0))</td>
+                                            <td>@(WebUtil.NCommaRound(item.Assets, 0))</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Assets, 0) : WebUtil.NCommaRound(item.Assets - comThisYearPn.Assets, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Assets, 0) : WebUtil.NCommaRound(item.Assets - comThisYearPm.Assets, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">부채</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Liabilities, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Liabilities, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Liabilities, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Liabilities, 0) : WebUtil.NCommaRound(item.Liabilities - comThisYearPn.Liabilities, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Liabilities, 0) : WebUtil.NCommaRound(item.Liabilities - comThisYearPm.Liabilities, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">자본</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Capital, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Capital, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Capital, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Capital, 0) : WebUtil.NCommaRound(item.Capital - comThisYearPn.Capital, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Capital, 0) : WebUtil.NCommaRound(item.Capital - comThisYearPm.Capital, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">현금</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Cash, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Cash, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Cash, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Cash, 0) : WebUtil.NCommaRound(item.Cash - comThisYearPn.Cash, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Cash, 0) : WebUtil.NCommaRound(item.Cash - comThisYearPm.Cash, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">차임금</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Loan, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Loan, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Loan, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Loan, 0) : WebUtil.NCommaRound(item.Loan - comThisYearPn.Loan, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Loan, 0) : WebUtil.NCommaRound(item.Loan - comThisYearPm.Loan, 0))</td>
+                                        </tr>
+                                        decimal lastCapital = comThisYearPm == null ? 0 : Math.Round(comThisYearPm.Capital, 0, MidpointRounding.AwayFromZero);
+                                        decimal thisCapital = comThisYearPn == null ? 0 : Math.Round(comThisYearPn.Capital, 0, MidpointRounding.AwayFromZero);
+                                        decimal lastPmLR = lastCapital == 0 ? 0 : Math.Round((comThisYearPm.Liabilities / lastCapital * 100), 0, MidpointRounding.AwayFromZero);
+                                        decimal thisPnLR = thisCapital == 0 ? 0 : Math.Round((comThisYearPn.Liabilities / thisCapital * 100), 0, MidpointRounding.AwayFromZero);
+                                        decimal thisPmLR = item.Capital == 0 ? 0 : Math.Round((item.Liabilities / item.Capital * 100), 0, MidpointRounding.AwayFromZero);
+                                        <tr>
+                                            <th scope="row">부채비율</th>
+                                            <td>@(WebUtil.NCommaRound(lastPmLR, 0))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPnLR, 0))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmLR, 0))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmLR - thisPnLR, 0))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmLR - lastPmLR, 0))%</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" rowspan="3" class="lbd0">ROIC</th>
+                                            <th scope="row">세후 영업이익</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.AfterTaxOperationProfit, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.AfterTaxOperationProfit, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0) : WebUtil.NCommaRound(item.AfterTaxOperationProfit - comThisYearPn.AfterTaxOperationProfit, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0) : WebUtil.NCommaRound(item.AfterTaxOperationProfit - comThisYearPm.AfterTaxOperationProfit, 0))</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">투하자본</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.PainInCapital, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.PainInCapital, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.PainInCapital, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.PainInCapital, 0) : WebUtil.NCommaRound(item.PainInCapital - comThisYearPn.PainInCapital, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.PainInCapital, 0) : WebUtil.NCommaRound(item.PainInCapital - comThisYearPm.PainInCapital, 0))</td>
+                                        </tr>
+                                        decimal lastPainInCapital = comThisYearPm == null ? 0 : comThisYearPm.PainInCapital;
+                                        decimal thisPainInCapital = comThisYearPn == null ? 0 : comThisYearPn.PainInCapital;
+                                        decimal lastPmROIC = lastPainInCapital == 0 ? 0 : Math.Round(comThisYearPm.AfterTaxOperationProfit / lastPainInCapital * 100, 1, MidpointRounding.AwayFromZero);
+                                        decimal thisPnROIC = thisPainInCapital == 0 ? 0 : Math.Round(WebUtil.NewRoic((comThisYearPn.AfterTaxOperationProfit / thisPainInCapital * 100), month), 1, MidpointRounding.AwayFromZero);
+                                        decimal thisPmROIC = item.PainInCapital == 0 ? 0 : Math.Round(WebUtil.NewRoic((item.AfterTaxOperationProfit / item.PainInCapital * 100), month), 1, MidpointRounding.AwayFromZero);
+                                        <tr>
+                                            <th scope="row">ROIC</th>
+                                            <td>@(WebUtil.NCommaRound(lastPmROIC, 1))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPnROIC, 1))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmROIC, 1))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmROIC - thisPnROIC, 1))%</td>
+                                            <td>@(WebUtil.NCommaRound(thisPmROIC - lastPmROIC, 1))%</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row" rowspan="6" class="lbd0">W/C</th>
+                                            <th scope="row">A/R</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Ar, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Ar, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Ar, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Ar, 0) : WebUtil.NCommaRound(item.Ar - comThisYearPn.Ar, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Ar, 0) : WebUtil.NCommaRound(item.Ar - comThisYearPm.Ar, 0))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">T/O days</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.ArToDays, 1))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.ArToDays, 1))</td>
+                                            <td>@WebUtil.NCommaRound(item.ArToDays, 1)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.ArToDays, 1) : WebUtil.NCommaRound(item.ArToDays - comThisYearPn.ArToDays, 1))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.ArToDays, 1) : WebUtil.NCommaRound(item.ArToDays - comThisYearPm.ArToDays, 1))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">A/P</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Ap, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Ap, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Ap, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Ap, 0) : WebUtil.NCommaRound(item.Ap - comThisYearPn.Ap, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Ap, 0) : WebUtil.NCommaRound(item.Ap - comThisYearPm.Ap, 0))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">T/O days</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.ApToDays, 1))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.ApToDays, 1))</td>
+                                            <td>@WebUtil.NCommaRound(item.ApToDays, 1)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.ApToDays, 1) : WebUtil.NCommaRound(item.ApToDays - comThisYearPn.ApToDays, 1))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.ApToDays, 1) : WebUtil.NCommaRound(item.ApToDays - comThisYearPm.ApToDays, 1))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">Inventory</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.Inventory, 0))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.Inventory, 0))</td>
+                                            <td>@WebUtil.NCommaRound(item.Inventory, 0)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.Inventory, 0) : WebUtil.NCommaRound(item.Inventory - comThisYearPn.Inventory, 0))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.Inventory, 0) : WebUtil.NCommaRound(item.Inventory - comThisYearPm.Inventory, 0))</td>
+                                        </tr>
+                                        <tr class="n2">
+                                            <th scope="row">T/O days</th>
+                                            <td>@(comThisYearPm == null ? "0" : WebUtil.NCommaRound(comThisYearPm.InventoryToDays, 1))</td>
+                                            <td>@(comThisYearPn == null ? "0" : WebUtil.NCommaRound(comThisYearPn.InventoryToDays, 1))</td>
+                                            <td>@WebUtil.NCommaRound(item.InventoryToDays, 1)</td>
+                                            <td>@(comThisYearPn == null ? WebUtil.NCommaRound(item.InventoryToDays, 1) : WebUtil.NCommaRound(item.InventoryToDays - comThisYearPn.InventoryToDays, 1))</td>
+                                            <td>@(comThisYearPm == null ? WebUtil.NCommaRound(item.InventoryToDays, 1) : WebUtil.NCommaRound(item.InventoryToDays - comThisYearPm.InventoryToDays, 1))</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div><!--//box-->
+
+            </div><!--//graph_box-->
+        </div><!--//graph_box_wrap-->
+        <!--S: 투자, 인원-->
+        <div class="graph_box_wrap" id="clsHumanCount">
+            <h2><a href="#">투자, 인원</a></h2>
+            <div class="graph_box">
+                <div class="box">
+                    <div class="chart_box chart_box5">
+                        <p class="p_title">투자</p>
+                        <span class="p_unit">(단위 : 억원, %)</span>
+                        <ul class="p_box">
+                            <li>
+                                <div class="chart chart_type7" id="chart15"></div>
+                                <p><span>@(search.mm)월 누계 달성률</span></p>
+                            </li>
+                            <li>
+                                <div class="chart chart_type7" id="chart16"></div>
+                                <p><span>연간 진척도</span></p>
+                            </li>
+                        </ul>
+                        @{
+                            decimal planInvestPieChart = 0;
+                            decimal resultInvestPieChart = 0;
+                            decimal planInvestYearPieChart = 0;
+                            decimal resultInvestYearPieChart = 0;
+
+                            //누계 - 계획
+                            planInvestPieChart = investPlanPieChart == null ? 0 : investPlanPieChart.planInvest;
+                            //누계 - 실적
+                            resultInvestPieChart = investResultPieChart == null ? 0 : investResultPieChart.resultInvest;
+
+                            //연간 - 계획
+                            planInvestYearPieChart = investYearPlanPieChart == null ? 0 : investYearPlanPieChart.planInvest;
+                            //연간 - 실적
+                            resultInvestYearPieChart = investYearResultPieChart == null ? 0 : investYearResultPieChart.resultInvest;
+
+                            var pieChart1Text = "{ objective: [{ key: '계획', y :" + planInvestPieChart + "} ], sum : [ { key : '실적', y: " + resultInvestPieChart + "}], title : '달성률'}";
+                            var pieChart2Text = "{ objective: [{ key: '계획', y :" + planInvestYearPieChart + "} ], sum : [ { key : '실적', y: " + resultInvestYearPieChart + "}], title : '진척도'}";
+
+                            //인원
+                            var personnelText = string.Empty;
+                            var resultPersonnel = string.Empty;
+                            var resultPersonnelConut = 0;
+
+                            for (int i = 0; i <= 12; i++)
+                            {
+                                if (i >= personnelResultChart.Count())
+                                {
+                                    resultPersonnelConut = 0;
+                                }
+                                else
+                                {
+                                    resultPersonnelConut = personnelResultChart[i].personnel;
+                                }
+
+                                personnelText += "{x : " + i + ", y : " + resultPersonnelConut + "},";
+                            }
+
+                            if (personnelText.Length == 0 || personnelText == string.Empty)
+                            {
+                                resultPersonnel = "{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 5, y: 0 }, { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }";
+                            }
+                            else
+                            {
+                                resultPersonnel = personnelText.Substring(0, personnelText.Length - 1);
+                            }
+                        }
+                        <script>
+                            (function () {
+                                //var data0 = { objective: [{ key: "계획", y: 200 }], sum: [{ key: "실적", y: 120.6 }], title: "달성률" };
+                                //var data1 = { objective: [{ key: "계획", y: 200 }], sum: [{ key: "실적", y: 100 }], title: "진척도" };
+                                var data0 = @Html.Raw(pieChart1Text)
+                                var data1 = @Html.Raw(pieChart2Text)
+
+                                MYAPP.graph.type8(data0, '#chart15', '#1f7dc3');
+                                MYAPP.graph.type8(data1, '#chart16', '#014099');
+                            })();
+                        </script>
+                    </div>
+                    <!-- chart_box -->
+                </div><!--//box-->
+
+                <div class="box">
+                    <div class="chart_box chart_box4">
+                        <p class="p_title">인원</p>
+                        <span class="p_unit">(단위 : 명)</span>
+                        <div class="chart chart_type14" id="chart24"></div>
+                        <script>
+                            (function () {
+                                var data = [
+                                  //{ key: '인원', values: [{ x: 0, y: 8 }, { x: 1, y: 5 }, { x: 2, y: 7 }, { x: 3, y: 8 }, { x: 4, y: 6 }, { x: 5, y: 10 }, { x: 6, y: 10 }, { x: 7, y: 0 }, { x: 8, y: 0 }, { x: 9, y: 0 }, { x: 10, y: 0 }, { x: 11, y: 0 }, { x: 12, y: 0 }] }
+                                    { key: '인원', values: [@Html.Raw(resultPersonnel)] }
+                                ];
+                                data.map(function (obj, i) {
+                                    obj.color = ['#009de4'][i];
+                                    obj.pointShape = ['square'][i];
+                                    obj.strokeWidth = 1;
+                                    return obj;
+                                });
+
+                                MYAPP.graph.type14(data, '#chart24');
+                            })();
+                        </script>
+                    </div>
+                    <!-- chart_box -->
+                </div><!--//box-->
+            </div><!--//graph_box-->
+        </div><!--//graph_box_wrap-->
+    </form>
+</section><!--//group_wrap-->
+<script>
+    $(function () {
+
+        /*셀렉트박스 스타일*/
+        MYAPP.form.styleSelect($(".style_select select"));
+        /*테이블 스크롤 세팅*/
+        MYAPP.table.setScroll($("#container .tbl_scroll"));
+
+        displayControll();
+    })
+
+    function onChangeDate() {
+        var f = document.frmForm;
+        var p = getQuerystring('Seq');
+
+        f.action = "/Org/Company?Seq=" + p;
+        f.submit();
+    }
+
+    function displayControll(){
+        var p = getQuerystring('Seq');
+        var ItemNum = getItemstring();
+        //var a = getQuerystring('ShowItem');
+        //alert(ItemNum);
+        //$('#clsCashFlow').attr('class','graph_box_wrap close');
+        if (p === "2") {
+            // $('.graph_box_wrap.open').css('display', 'none');
+            $('#clsCashFlow').css('display', 'none');
+            $('#profitAndlossLayer').attr('class','graph_box_wrap open');
+            $('#fibs').css('display', 'none');
+        }
+
+        if (p == "6") {
+            $("#exBs").css('display', '');
+            $("#exBs2").css('display', '');
+            //$('#clsCashFlow').attr('class','graph_box_wrap open');
+
+        }
+        else {
+            $("#exBs").css('display', 'none');
+            $("#exBs2").css('display', 'none');
+        }
+        if(ItemNum == "1" || ItemNum == "0") {
+            $('#clsCashFlow').attr('class','graph_box_wrap open');
+        }
+        else if ( ItemNum == "2" || ItemNum == "3" || ItemNum == "4"){ 
+            $('#profitAndlossLayer').attr('class','graph_box_wrap open'); 
+        }
+        else if ( ItemNum == "5"){ 
+            $('#fibs').attr('class','graph_box_wrap open'); 
+        }
+    }
+
+    function getQuerystring(paramName){
+        var tempUrl = window.location.search.substring(1);
+        var tempArray = tempUrl.split('&');
+        for (var i = 0; tempArray.length; i++) {
+            var keyValuePair = tempArray[i].split('=');
+            if (keyValuePair[0] == paramName) {
+                return keyValuePair[1];
+            }
+        }
+    }
+
+    function getItemstring(){
+        var tempUrl = window.location.href
+        var tempArray = tempUrl.split('#');
+        if(tempArray.length > 1){
+            return tempArray[1];
+        } 
+        return 0;
+    }
+</script>
+@Html.Partial("~/Views/Shared/PartialReply.cshtml", commentList)

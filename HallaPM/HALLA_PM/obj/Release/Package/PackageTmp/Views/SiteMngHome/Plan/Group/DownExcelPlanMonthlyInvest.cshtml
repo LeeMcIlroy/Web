@@ -1,0 +1,471 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+    PlanGroup chk = Model.chk;
+
+    List<PlanMonthlyInvestBusinessExp> thisPnB = Model.thisPnB;
+    List<PlanMonthlyInvestSummaryExp> thisPnC = Model.thisPnC;
+
+    List<PlanMonthlyInvestSummaryExp> UList = thisPnC.GroupBy(g => new { g.OrgUnionSeq })
+        .Select(cl => new PlanMonthlyInvestSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName
+        }).ToList();
+
+    List<PlanMonthlyInvestSummaryExp> thisPnU = thisPnC.GroupBy(g => new { g.OrgUnionSeq, g.MonthlyInvestYear, g.Monthly })
+        .Select(cl => new PlanMonthlyInvestSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            MonthlyInvestYear = cl.First().MonthlyInvestYear,
+            Monthly = cl.First().Monthly,
+            Investment = cl.Sum(c => c.Investment),
+            Personnel = cl.Sum(c => c.Personnel),
+            DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+            OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+        }).ToList();
+
+    List<PlanMonthlyInvestSummaryExp> thisPnG = thisPnC.GroupBy(g => new { g.MonthlyInvestYear, g.Monthly })
+        .Select(cl => new PlanMonthlyInvestSummaryExp
+        {
+            MonthlyInvestYear = cl.First().MonthlyInvestYear,
+            Monthly = cl.First().Monthly,
+            Investment = cl.Sum(c => c.Investment),
+            Personnel = cl.Sum(c => c.Personnel),
+            DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+            OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+        }).ToList();
+
+    bool isBFirst = false;
+    bool isCfirst = false;
+
+    string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DownExcelPlanMonthlyInvest</title>
+    <style>
+        .mytable {
+            border-collapse: collapse;
+        }
+
+            .mytable th, .mytable td {
+                border: 1px solid black;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format: \#\,\#\#0\
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\.0%
+        }
+    </style>
+</head>
+<body>
+    <h3>@(chk.PlanYear)년 월별투자인원계획</h3>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="17" style="text-align:right">(단위: 억원,%)</td>
+            </tr>
+        </tbody>
+    </table>
+    <table border="1">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="2" colspan="4">구분</th>
+                <th colspan="13">@(chk.PlanYear)년</th>
+            </tr>
+            <tr>
+                @for (int i = 1; i <= 13; i++)
+                {
+                    if (i == 13)
+                    {
+                        <th>계</th>
+                    }
+                    else
+                    {
+                        <th>@(i)월</th>
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in UList)
+            {
+                var CList = thisPnC.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).GroupBy(g => new { g.OrgCompanySeq })
+                        .Select(cl => new PlanMonthlyInvestSummaryExp
+                        {
+                            UnionName = cl.First().UnionName,
+                            OrgCompanySeq = cl.First().OrgCompanySeq,
+                            CompanyName = cl.First().CompanyName
+                        }).ToList();
+                foreach (var item2 in CList)
+                {
+                    var BList = thisPnB.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).GroupBy(g => new { g.OrgBusinessSeq })
+                        .Select(cl => new PlanMonthlyInvestBusinessExp
+                        {
+                            UnionName = cl.First().UnionName,
+                            CompanyName = cl.First().CompanyName,
+                            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+                            BusinessName = cl.First().BusinessName
+                        }).ToList();
+                    foreach (var item3 in BList)
+                    {
+                        var buPn = thisPnB.Where(w => w.OrgBusinessSeq == item3.OrgBusinessSeq).ToList();
+                        <tr>
+                            @if (!isCfirst)
+                            {
+                                <th class="buLevel" rowspan="@(BList.Count() * 2)">@(item3.UnionName)</th>
+                                <th class="buLevel" rowspan="@(BList.Count() * 2)">@(item3.CompanyName)</th>
+                                isCfirst = true;
+                            }
+                            @if (!isBFirst)
+                            {
+                                <th class="buLevel" rowspan="2">@(item3.BusinessName)</th>
+                                isBFirst = true;
+                            }
+                            <th class="buLevel">투자</th>
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    // 투자는 합계, 인원은 12월 것을 가져온다.
+                                    PlanMonthlyInvestBusinessExp pn = buPn.GroupBy(g => new { g.MonthlyInvestYear })
+                                        .Select(cl => new PlanMonthlyInvestBusinessExp
+                                        {
+                                            MonthlyInvestYear = cl.First().MonthlyInvestYear,
+                                            Investment = cl.Sum(c => c.Investment)
+                                        }).FirstOrDefault();
+                                    if (pn == null) { pn = new PlanMonthlyInvestBusinessExp(); }
+                                    <td class="MsoNTwo">@(pn.Investment)</td>
+                                }
+                                else
+                                {
+                                    PlanMonthlyInvestBusinessExp pn = buPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    if (pn == null) { pn = new PlanMonthlyInvestBusinessExp(); }
+                                    <td class="MsoNTwo">@(pn.Investment)</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="buLevel">인원</th>
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    // 투자는 합계, 인원은 12월 것을 가져온다.
+                                    PlanMonthlyInvestBusinessExp pn = buPn.Where(w => w.Monthly == "12").FirstOrDefault();
+                                    if (pn == null) { pn = new PlanMonthlyInvestBusinessExp(); }
+                                    <td class="MsoNTwo">@(pn.Personnel)</td>
+                                }
+                                else
+                                {
+                                    PlanMonthlyInvestBusinessExp pn = buPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    if (pn == null) { pn = new PlanMonthlyInvestBusinessExp(); }
+                                    <td class="MsoNTwo">@(pn.Personnel)</td>
+                                }
+                            }
+                        </tr>
+                        isBFirst = false;
+                    }
+                    isCfirst = false;
+                    var comPn = thisPnC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).ToList();
+                    <tr class="ComLevel">
+                        <th rowspan="4" colspan="3">@(item2.CompanyName)</th>
+                        <th>투자</th>
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                // 투자는 합계, 인원은 12월 것을 가져온다.
+                                PlanMonthlyInvestSummaryExp pn = comPn.GroupBy(g => new { g.MonthlyInvestYear })
+                                        .Select(cl => new PlanMonthlyInvestSummaryExp
+                                        {
+                                            MonthlyInvestYear = cl.First().MonthlyInvestYear,
+                                            Investment = cl.Sum(c => c.Investment)
+                                        }).FirstOrDefault();
+                                if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                                <td class="MsoNTwo">@(pn.Investment)</td>
+                            }
+                            else
+                            {
+                                PlanMonthlyInvestSummaryExp pn = comPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                                <td class="MsoNTwo">@(pn.Investment)</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>인원</th>
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                // 투자는 합계, 인원은 12월 것을 가져온다.
+                                PlanMonthlyInvestSummaryExp pn = comPn.Where(w => w.Monthly == "12").FirstOrDefault();
+                                if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                                <td class="MsoNTwo">@(pn.Personnel)</td>
+                            }
+                            else
+                            {
+                                PlanMonthlyInvestSummaryExp pn = comPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                                <td class="MsoNTwo">@(pn.Personnel)</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>국내인원</th>
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                // 투자는 합계, 인원은 12월 것을 가져온다.
+                                PlanMonthlyInvestSummaryExp pn = comPn.Where(w => w.Monthly == "12").FirstOrDefault();
+                                if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                                <td class="MsoNTwo">@(pn.DomesticPersonnel)</td>
+                            }
+                            else
+                            {
+                                PlanMonthlyInvestSummaryExp pn = comPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                                <td class="MsoNTwo">@(pn.DomesticPersonnel)</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>해외인원</th>
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                // 투자는 합계, 인원은 12월 것을 가져온다.
+                                PlanMonthlyInvestSummaryExp pn = comPn.Where(w => w.Monthly == "12").FirstOrDefault();
+                                if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                                <td class="MsoNTwo">@(pn.OverseasPersonnel)</td>
+                            }
+                            else
+                            {
+                                PlanMonthlyInvestSummaryExp pn = comPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                                <td class="MsoNTwo">@(pn.OverseasPersonnel)</td>
+                            }
+                        }
+                    </tr>
+                }
+                var uniPn = thisPnU.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).ToList();
+                <tr class="UniLevel">
+                    <th rowspan="4" colspan="3">@(item.UnionName)</th>
+                    <th>투자</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            // 투자는 합계, 인원은 12월 것을 가져온다.
+                            PlanMonthlyInvestSummaryExp pn = uniPn.GroupBy(g => new { g.MonthlyInvestYear })
+                                    .Select(cl => new PlanMonthlyInvestSummaryExp
+                                    {
+                                        MonthlyInvestYear = cl.First().MonthlyInvestYear,
+                                        Investment = cl.Sum(c => c.Investment)
+                                    }).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.Investment)</td>
+                        }
+                        else
+                        {
+                            PlanMonthlyInvestSummaryExp pn = uniPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.Investment)</td>
+                        }
+                    }
+                </tr>
+                <tr class="UniLevel">
+                    <th>인원</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            // 투자는 합계, 인원은 12월 것을 가져온다.
+                            PlanMonthlyInvestSummaryExp pn = uniPn.Where(w => w.Monthly == "12").FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.Personnel)</td>
+                        }
+                        else
+                        {
+                            PlanMonthlyInvestSummaryExp pn = uniPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.Personnel)</td>
+                        }
+                    }
+                </tr>
+                <tr class="UniLevel">
+                    <th>국내인원</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            // 투자는 합계, 인원은 12월 것을 가져온다.
+                            PlanMonthlyInvestSummaryExp pn = uniPn.Where(w => w.Monthly == "12").FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.DomesticPersonnel)</td>
+                        }
+                        else
+                        {
+                            PlanMonthlyInvestSummaryExp pn = uniPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.DomesticPersonnel)</td>
+                        }
+                    }
+                </tr>
+                <tr class="UniLevel">
+                    <th>해외인원</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            // 투자는 합계, 인원은 12월 것을 가져온다.
+                            PlanMonthlyInvestSummaryExp pn = uniPn.Where(w => w.Monthly == "12").FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.OverseasPersonnel)</td>
+                        }
+                        else
+                        {
+                            PlanMonthlyInvestSummaryExp pn = uniPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.OverseasPersonnel)</td>
+                        }
+                    }
+                </tr>
+            }
+            <!--그룹-->
+            @{ 
+                <tr class="GrpLevel">
+                    <th rowspan="4" colspan="3">그룹</th>
+                    <th>투자</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            // 투자는 합계, 인원은 12월 것을 가져온다.
+                            PlanMonthlyInvestSummaryExp pn = thisPnG.GroupBy(g => new { g.MonthlyInvestYear })
+                                    .Select(cl => new PlanMonthlyInvestSummaryExp
+                                    {
+                                        MonthlyInvestYear = cl.First().MonthlyInvestYear,
+                                        Investment = cl.Sum(c => c.Investment)
+                                    }).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.Investment)</td>
+                        }
+                        else
+                        {
+                            PlanMonthlyInvestSummaryExp pn = thisPnG.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.Investment)</td>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>인원</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            // 투자는 합계, 인원은 12월 것을 가져온다.
+                            PlanMonthlyInvestSummaryExp pn = thisPnG.Where(w => w.Monthly == "12").FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.Personnel)</td>
+                        }
+                        else
+                        {
+                            PlanMonthlyInvestSummaryExp pn = thisPnG.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.Personnel)</td>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>국내인원</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            // 투자는 합계, 인원은 12월 것을 가져온다.
+                            PlanMonthlyInvestSummaryExp pn = thisPnG.Where(w => w.Monthly == "12").FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.DomesticPersonnel)</td>
+                        }
+                        else
+                        {
+                            PlanMonthlyInvestSummaryExp pn = thisPnG.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.DomesticPersonnel)</td>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>해외인원</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            // 투자는 합계, 인원은 12월 것을 가져온다.
+                            PlanMonthlyInvestSummaryExp pn = thisPnG.Where(w => w.Monthly == "12").FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.OverseasPersonnel)</td>
+                        }
+                        else
+                        {
+                            PlanMonthlyInvestSummaryExp pn = thisPnG.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pn == null) { pn = new PlanMonthlyInvestSummaryExp(); }
+                            <td class="MsoNTwo">@(pn.OverseasPersonnel)</td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

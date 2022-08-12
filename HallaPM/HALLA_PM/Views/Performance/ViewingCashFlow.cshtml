@@ -1,0 +1,199 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+
+    List<PmCashFlowCumulativeExcel> excelCom = Model.excelCom;
+
+    string companyName = "ExcelDownCashFlow";
+    string year = "";
+    string mm = "";
+    if (excelCom.Count() > 0)
+    {
+        companyName = excelCom.First().CompanyName;
+        year = excelCom.First().CashFlowYear;
+        mm = excelCom.First().Monthly;
+    }
+    var gp = excelCom.GroupBy(g => g.OrgCompanySeq).Select(cl => new PmCashFlowCumulativeExcel { OrgCompanySeq = cl.First().OrgCompanySeq, CompanyName = cl.First().CompanyName }).ToList();
+    var pn = excelCom.Where(w => w.Diff == Define.DIFF.GetKey("계획")).ToList();
+    var pm = excelCom.Where(w => w.Diff == Define.DIFF.GetKey("실적")).ToList();
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ViewingCashFlow</title>
+    <style>
+        .mytable {
+            table-layout: fixed;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+            .mytable th, .mytable td {
+                padding: 5px 20px;
+                border: 1px solid black;
+                white-space: nowrap;
+                text-align: center;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format: \#\,\#\#0\;
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\.00;
+        }
+
+        .MsoNOne {
+            mso-number-format: \#\,\#\#0\.00;
+        }
+
+        .MsoNOnePer {
+            mso-number-format: \#\,\#\#0\.00%;
+        }
+    </style>
+</head>
+<body>
+    <h3>@(year)년 Cash Flow 관리지표(@(mm)월 누계)</h3>
+    <br />
+    <table>
+        <tr>
+            <th style="text-align:right" colspan="@(1 + (gp.Count() * 3))">(단위 : 억원)</th>
+        </tr>
+    </table>
+    <table class="mytable">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="2">구분</th>
+                @foreach (var item in gp)
+            {
+                    <th colspan="3">@(item.CompanyName)</th>
+                }
+            </tr>
+            <tr class="buLevel">
+                @foreach (var item in gp)
+                {
+                    <th>계획</th>
+                    <th>실적</th>
+                    <th>차이</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in gp)
+            {
+                var pnFirst = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                var pmFirst = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+
+                if (pnFirst == null) { pnFirst = new PmCashFlowCumulativeExcel(); }
+                if (pmFirst == null) { pmFirst = new PmCashFlowCumulativeExcel(); }
+                <tr>
+                    <th class="ComLevel">세후EBITDA</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.Ebitda, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.Ebitda, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.Ebitda - pnFirst.Ebitda, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">W/C 변동</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.WcSum, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.WcSum, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.WcSum - pnFirst.WcSum, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">영업활동 기타</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.Etc, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.Etc, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.Etc - pnFirst.Etc, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">Net CAPEX</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.NetCapexSum, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.NetCapexSum, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.NetCapexSum - pnFirst.NetCapexSum, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">순금융비용</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.FinancialCost, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.FinancialCost, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.FinancialCost - pnFirst.FinancialCost, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">FCF</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.Fcf2, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.Fcf2, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.Fcf2 - pnFirst.Fcf2, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">재무활동</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.FinancialSum, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.FinancialSum, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.FinancialSum - pnFirst.FinancialSum, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">현금흐름 계</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.CashSum, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.CashSum, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.CashSum - pnFirst.CashSum, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">기말현금</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.EndingCash, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.EndingCash, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.EndingCash - pnFirst.EndingCash, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">Credit Line</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.CreditLine, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.CreditLine, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.CreditLine - pnFirst.CreditLine, 0))</td>
+                </tr>
+                <tr>
+                    <th class="ComLevel">가용현금</th>
+                    <td>@(WebUtil.NCommaRound(pnFirst.AvailableCash, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.AvailableCash, 0))</td>
+                    <td>@(WebUtil.NCommaRound(pmFirst.AvailableCash - pnFirst.AvailableCash, 0))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="btn_area align_left_right">
+        <button class="btn full_green left" type="button" onclick="javascript: window.close();">닫기</button>
+    </div>
+</body>
+</html>

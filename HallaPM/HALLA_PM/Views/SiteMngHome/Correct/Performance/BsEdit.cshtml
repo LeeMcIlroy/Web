@@ -1,0 +1,301 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PmGroupdataMonth pmGroupdataMonth = Model.PmGroupdataMonth;
+    List<PmGroupdataBsMonth> BsMonthList = Model.PmBsMonthList;
+    List<PmGroupdataBsMonthCr> BsMonthListCr = Model.PmBsMonthListCr;
+
+    Search search = ViewBag.Search;
+    var PmYear = Model.PmYear;
+    var PmMonth = Model.PmMonth;
+    int intMonth = Int32.Parse(PmMonth);
+    //orgBusinessList
+}
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>그룹데이터 조정</span>
+        <strong>실적 조정</strong>
+    </div>
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchMonth" value="@(search.searchMonth)" />
+        <input type="hidden" name="searchBusType" value="@(search.searchBusType)" />
+        <input type="hidden" name="GroupDataSeq" value="@pmGroupdataMonth.Seq" />
+        <input type="hidden" name="PmYear" value="@PmYear" />
+        <input type="hidden" name="PmMonth" value="@PmMonth" />
+        <div class="con_box search">
+            <h3 class="mt0">실적 조정 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 전체 그룹데이터에 대한 배당 조정을 하실 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(PmYear)년@(PmMonth)월</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">실적 구분</th>
+                        <td>BS</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>[@(PmMonth)]월 그룹데이터 BS 조정</h3>
+            <table class="tbl th_ver ta_right">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:10%" />
+                    <col style="width:10%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody id="table-month-item">
+    <tr>
+        <th scope="row" colspan="2">구분</th>
+        <th scope="row">BS 그룹데이터 실적 조정</th>
+        <th scope="row">BS 그룹데이터 실적</th>
+    </tr>
+    @if (BsMonthList == null || BsMonthList.Count() <= 0)
+            {
+        <tr>
+            <td colspan="4" class="nv-noData">등록된 데이터가 없습니다.</td>
+        </tr>
+    }
+    else
+    {
+        foreach (var item in BsMonthList)
+        {
+            var item2 = BsMonthListCr.Find(x => x.GroupdataYear == item.GroupdataYear && x.GroupdataMonth == item.GroupdataMonth);
+            var strTemp = (item.GroupdataMonth.Length < item.GroupdataYear.Length) ? item.GroupdataMonth + "월" : item.GroupdataMonth + "년";
+            var objMonthCr = (item2 != null) ? item2 : new PmGroupdataBsMonthCr { };
+            <tr>
+                <th scope="row" rowspan="6">B/S</th>
+                <th scope="row">총자산</th>
+                <td><input type="text" name="Assets"  value="@WebUtil.NCommaRound(objMonthCr.AssetsCr, 0)" />
+                <input type="hidden" name="BsMonthSeq" value="@item.Seq" />
+                <input type="hidden" name="GROUPDATAYEAR" value="@item.GroupdataYear" />
+                <input type="hidden" name="GROUPDATAMONTH" value="@item.GroupdataMonth" />
+                <input type="hidden" name="DATATYPE" value="@item.DataType" />  
+                </td>
+                <td>@WebUtil.NCommaRound(item.Assets, 0)</td>
+            </tr>
+                    <tr>
+                        <th scope="row">총부채</th>
+                        <td><input type="text" name="Liabilities"  value="@WebUtil.NCommaRound(objMonthCr.LiabilitiesCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Liabilities, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">총자본</th>
+                        <td><input type="text" name="Capital"  value="@WebUtil.NCommaRound(objMonthCr.CapitalCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Capital, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">현금</th>
+                        <td><input type="text" name="Cash"  value="@WebUtil.NCommaRound(objMonthCr.CashCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Cash, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">차입금</th>
+                        <td><input type="text" name="Loan"  value="@WebUtil.NCommaRound(objMonthCr.LoanCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Loan, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">부채비율</th>
+                        <td>&nbsp;</td>
+                        <td>@WebUtil.NCommaRound((item.Liabilities / item.Capital) * 100, 2) %</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">ROIC</th>
+                        <th scope="row">세후 영업이익</th>
+                        <td><input type="text" name="AfterTaxOperationProfit"  value="@WebUtil.NCommaRound(objMonthCr.AfterTaxOperationProfitCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">투하자본</th>
+                        <td><input type="text" name="PainInCapital"  value="@WebUtil.NCommaRound(objMonthCr.PainInCapitalCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.PainInCapital, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">ROIC</th>
+                        <td>&nbsp;</td>
+                        <td>@WebUtil.NCommaRound((item.AfterTaxOperationProfit / item.PainInCapital) * 100, 2) %</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">ROIC 연환산</th>
+                        <td>&nbsp;</td>
+                        <td>@WebUtil.NCommaRound((item.AfterTaxOperationProfit / item.PainInCapital / intMonth * 12) * 100, 2)%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="6">W/C</th>
+                        <th scope="row">A/R</th>
+                        <td><input type="text" name="Ar"  value="@WebUtil.NCommaRound(objMonthCr.ArCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Ar, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A/R T/O days</th>
+                        <td><input type="text" name="ArToDays"  value="@WebUtil.NCommaRound(objMonthCr.ArToDaysCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.ArToDays, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A/P</th>
+                        <td><input type="text" name="Ap"  value="@WebUtil.NCommaRound(objMonthCr.ApCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Ap, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">A/P T/O days</th>
+                        <td><input type="text" name="ApToDays"  value="@WebUtil.NCommaRound(objMonthCr.ArToDaysCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.ApToDays, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Inventory</th>
+                        <td><input type="text" name="Inventory"  value="@WebUtil.NCommaRound(objMonthCr.InventoryCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Inventory, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Inventory T/O days</th>
+                        <td><input type="text" name="inventoryToDays" value="@WebUtil.NCommaRound(objMonthCr.inventoryToDaysCr, 0)"/></td>
+                        <td>@WebUtil.NCommaRound(item.inventoryToDays, 0)</td>
+                    </tr> 
+                }
+            }
+                </tbody>
+            </table>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:20%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tr>
+                    <th scope="row">Comment</th>
+                    <td colspan="3"><textarea class="w100" name="BeCashComment" id="strComment">@pmGroupdataMonth.Comment</textarea></td>
+                </tr>
+            </table>
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                <button class="btn full_green" type="button" onclick="onSave();">저장하기</button>
+            </div><!--//btn_area-->
+        </div>
+        <div id="txtContents"></div>
+        <!--// con_box -->
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "PerformanceList";
+        f.submit();
+    }
+
+    function onSave() {
+        var dcmValue = 0;
+        var JsonMonthData = "";
+        var JsonSummaryData = "";
+        if (!onCheckInputTextValues("@Message.MSG_001_INT")) return false;
+
+        var GROUPDATAYEAR = $("input:hidden[name='GROUPDATAYEAR']").val();
+        var GROUPDATAMONTH = $("input:hidden[name='GROUPDATAMONTH']").val();
+        var DATATYPE = $("input:hidden[name='DATATYPE']").val();
+        var Assets =              $("input:text[name='Assets']").val();
+        var Liabilities =                $("input:text[name='Liabilities']").val();
+        var Capital =                    $("input:text[name='Capital']").val();
+        var Cash =                       $("input:text[name='Cash']").val();
+        var Loan =                       $("input:text[name='Loan']").val();
+        var AfterTaxOperationProfit =    $("input:text[name='AfterTaxOperationProfit']").val();
+        var PainInCapital =              $("input:text[name='PainInCapital']").val();
+        var Ar =                         $("input:text[name='Ar']").val();
+        var ArToDays =                   $("input:text[name='ArToDays']").val();
+        var Ap =                         $("input:text[name='Ap']").val();
+        var ApToDays =                   $("input:text[name='ApToDays']").val();
+        var Inventory =                  $("input:text[name='Inventory']").val();
+        var inventoryToDays =            $("input:text[name='inventoryToDays']").val();
+        var Seq =                        $("input:hidden[name='BsMonthSeq']").val();
+        
+        if (Seq != undefined) {
+            //if (CurrentAssets != dcmValue
+            //    || Liabilities != dcmValue
+            //    || Capital != dcmValue
+            //    || Cash != dcmValue
+            //    || Loan != dcmValue
+            //    || AfterTaxOperationProfit != dcmValue
+            //    || PainInCapital != dcmValue
+            //    || Ar != dcmValue
+            //    || ArToDays != dcmValue
+            //    || Ap != dcmValue
+            //    || ApToDays != dcmValue
+            //    || Inventory != dcmValue
+            //    || inventoryToDays != dcmValue) {
+                JsonMonthData += ',{"Seq":' + Seq
+                                  + ',"GROUPDATAYEAR": "' + GROUPDATAYEAR
+                                + '","GROUPDATAMONTH":"' + GROUPDATAMONTH
+                                + '","DATATYPE":"' + DATATYPE
+                                + '","Assets":' + (($.isNumeric(Assets)) ? Assets : 0)
+                                + ',"Liabilities":' + (($.isNumeric(Liabilities)) ? Liabilities : 0)
+                                + ',"Capital":' + (($.isNumeric(Capital)) ? Capital : 0)
+                                + ',"Cash":' + (($.isNumeric(Cash)) ? Cash : 0)
+                                + ',"Loan":' + (($.isNumeric(Loan)) ? Loan : 0)
+                                + ',"AfterTaxOperationProfit":' + (($.isNumeric(AfterTaxOperationProfit)) ? AfterTaxOperationProfit : 0)
+                                + ',"PainInCapital":' + (($.isNumeric(PainInCapital)) ? PainInCapital : 0)
+                                + ',"Ar":' + (($.isNumeric(Ar)) ? Ar : 0)
+                                + ',"ArToDays":' + (($.isNumeric(ArToDays)) ? ArToDays : 0)
+                                + ',"Ap":' + (($.isNumeric(Ap)) ? Ap : 0)
+                                + ',"ApToDays":' + (($.isNumeric(ApToDays)) ? ApToDays : 0)
+                                + ',"Inventory":' + (($.isNumeric(Inventory)) ? Inventory : 0)
+                                + ',"inventoryToDays":' + (($.isNumeric(inventoryToDays)) ? inventoryToDays : 0)
+                                + '}';
+           // }
+        }
+
+        JsonMonthData = JsonMonthData.substring(1).replace("{}", "");
+        JsonSummaryData = JsonSummaryData.substring(1).replace("{}", "");
+        // $('#txtContents').html('{"seq":@pmGroupdataMonth.Seq,"MonthData":[' + JsonMonthData + '],"SummaryData":[' + JsonSummaryData + '],"strComment":"' + escape($("#strComment").val()) + '"}');
+        var strSendValues = '{"seq":@pmGroupdataMonth.Seq,"MonthData":[' + JsonMonthData + '],"SummaryData":[' + JsonSummaryData + '],"strComment":"' + escape($("#strComment").val()) + '"}';
+       funCheckVal(strSendValues);
+    }
+
+    function funCheckVal(str) {
+        var strUrl = "../../ApiCorrect/PmGroupDataBsUpdate";
+        var json_data = funJsonReplace(str);
+       // alert(json_data);
+        var request = $.ajax({
+            url: strUrl,
+            type: 'post',
+            data: json_data,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                alert("저장되었습니다.");
+                onReload();
+            },
+            error: function (request, status, error) {
+                alert("[에러][관리자에게 문의하세요]\n" + "error:" + request.responseText);
+            }
+        });
+    }
+    function funJsonReplace(objValue) {
+        return objValue.replace(/\r/g, '').replace(/\\/g, "").replace(/\n/g, '').replace('"[', '[').replace(']"', ']');
+    }
+
+    function onReload() {
+        var f = document.frmMain;
+        f.action = "PerformanceBsEdit";
+        f.submit();
+    }
+
+</script>

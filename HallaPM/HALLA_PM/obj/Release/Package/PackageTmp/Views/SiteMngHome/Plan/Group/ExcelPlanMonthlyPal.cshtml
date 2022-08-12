@@ -1,0 +1,265 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+
+    PlanGroup chk = Model.chk;
+    List<PlanMonthlyPalBusinessExp> pnBu = Model.pnBu;
+    List<PlanMonthlyPalBusinessMonthlySumExp> pnCom = Model.pnCom;
+
+    var groupTable = pnCom.GroupBy(g => new { g.MonthlyPalYear, g.Monthly })
+        .Select(cl => new PlanMonthlyPalBusinessMonthlySumExp
+        {
+            MonthlyPalYear = cl.First().MonthlyPalYear,
+            Monthly = cl.First().Monthly,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    // 그룹으로 묶음 :" 회사에서 합계는 제외 : 99
+    var groupGraph = groupTable.Where(w => w.Monthly != "99").ToList();
+
+    var businessList = pnBu.GroupBy(g => new { g.OrgCompanySeq, g.OrgBusinessSeq })
+        .Select(cl => new PlanMonthlyPalBusinessExp
+        {
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName,
+            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+            BusinessName = cl.First().BusinessName
+        }).ToList();
+
+    var companyList = pnCom.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PlanMonthlyPalBusinessMonthlySumExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        }).ToList();
+
+    string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>@(chk.PlanYear)년 @(chk.MenuName)</h2>
+    </div><!--//top_wrap-->
+
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+            <div class="box">
+                <div class="graph">
+                    <table class="tbl tbl_type01" border="1">
+                        <colgroup>
+                            <col width="7%" />
+                            <col width="/" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="15" class="rbd lbd0" style="text-align:right;">
+                                    (단위 : 억원)
+                                </th>
+                            </tr>
+                            <tr>
+                                <th scope="col" colspan="2" class="rbd lbd0">
+                                    구분
+                                </th>
+                                <th scope="col">1월</th>
+                                <th scope="col">2월</th>
+                                <th scope="col">3월</th>
+                                <th scope="col">4월</th>
+                                <th scope="col">5월</th>
+                                <th scope="col">6월</th>
+                                <th scope="col">7월</th>
+                                <th scope="col">8월</th>
+                                <th scope="col">9월</th>
+                                <th scope="col">10월</th>
+                                <th scope="col">11월</th>
+                                <th scope="col">12월</th>
+                                <th scope="col">계</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row" colspan="2">Sales</th>
+                                @foreach (var summary in groupTable)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" colspan="2" class="lbd0">EBIT</th>
+                                @foreach (var summary in groupTable)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" colspan="2" class="lbd0">%</th>
+                                @foreach (var summary in groupTable)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00%">@(summary.Sales == 0 ? 0 : Math.Round(summary.Ebit / summary.Sales, 4, MidpointRounding.AwayFromZero))</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" colspan="2" class="lbd0">PBT</th>
+                                @foreach (var summary in groupTable)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Pbt, 2, MidpointRounding.AwayFromZero)</td>
+                                }
+                            </tr>
+
+                        </tbody>
+                    </table><!--// tbl-->
+                </div><!--//graph-->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+
+    </div><!--//con_wrap-->
+
+    @foreach (var company in companyList.OrderBy(o => o.OrgUnionSeq).ThenBy(t => t.OrgCompanySeq))
+    {
+        List<PlanMonthlyPalBusinessMonthlySumExp> pnComRow = pnCom.Where(w => w.OrgCompanySeq == company.OrgCompanySeq).ToList();
+        List<PlanMonthlyPalBusinessExp> pnCompanyBuList = businessList.Where(w => w.OrgCompanySeq == company.OrgCompanySeq).ToList();
+        <div class="type_tab_con" id="yearpal_@company.OrgCompanySeq">
+            <div class="con_wrap">
+
+                <div class="graph_box">
+
+                    <h3>@company.CompanyName</h3>
+                    <div class="box">
+                        <div class="graph">
+                            <table class="tbl tbl_type01" border="1">
+                                <colgroup>
+                                    <col width="7%" />
+                                    <col width="7%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="15" class="rbd lbd0" style="text-align:right;">
+                                            (단위 : 억원)
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col">1월</th>
+                                        <th scope="col">2월</th>
+                                        <th scope="col">3월</th>
+                                        <th scope="col">4월</th>
+                                        <th scope="col">5월</th>
+                                        <th scope="col">6월</th>
+                                        <th scope="col">7월</th>
+                                        <th scope="col">8월</th>
+                                        <th scope="col">9월</th>
+                                        <th scope="col">10월</th>
+                                        <th scope="col">11월</th>
+                                        <th scope="col">12월</th>
+                                        <th scope="col">계</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (pnCompanyBuList != null)
+                                    {
+                                        foreach (var business in pnCompanyBuList)
+                                        {
+                                            var bu = pnBu.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).ToList();
+                                            <tr>
+                                                <th scope="row" rowspan="4" class="lbd0">
+                                                    @business.BusinessName
+                                                </th>
+                                                <th scope="row">Sales</th>
+                                                @foreach (var data in bu)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(data.Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="lbd0">EBIT</th>
+                                                @foreach (var data in bu)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(data.Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">%</th>
+                                                @foreach (var data in bu)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\.00%">@(data.Sales == 0 ? 0 : Math.Round(data.Ebit / data.Sales, 4, MidpointRounding.AwayFromZero))</td>
+                                                }
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="lbd0">PBT</th>
+                                                @foreach (var data in bu)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(data.Pbt, 2, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            </tr>
+                                        }
+                                    }
+                                    <tr class="total">
+                                        <th scope="row" rowspan="4" class="lbd0">
+                                            합계
+                                        </th>
+                                        <th scope="row">Sales</th>
+                                        @if (pnComRow != null)
+                                        {
+                                            foreach (var total in pnComRow)
+                                            {
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(total.Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">EBIT</th>
+                                        @if (pnComRow != null)
+                                        {
+                                            foreach (var total in pnComRow)
+                                            {
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(total.Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">%</th>
+                                        @if (pnComRow != null)
+                                        {
+                                            foreach (var total in pnComRow)
+                                            {
+                                                <td style="mso-number-format:\#\,\#\#0\.00%">@(total.Sales == 0 ? 0 : Math.Round(total.Ebit / total.Sales, 4, MidpointRounding.AwayFromZero))</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">PBT</th>
+                                        @if (pnComRow != null)
+                                        {
+                                            foreach (var total in pnComRow)
+                                            {
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(total.Pbt, 2, MidpointRounding.AwayFromZero)</td>
+                                            }
+                                        }
+                                    </tr>
+
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div><!--//graph-->
+                    </div><!--//box-->
+                </div><!--//graph_box-->
+            </div><!--//con_wrap-->
+        </div><!--//type_tab_con-->
+
+    }
+
+</div><!--//plan_wrap-->
+<script>
+    $(function () {
+        /*탭*/
+        MYAPP.tab.init($(".type_tab2"));
+    })
+</script>

@@ -1,0 +1,606 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "View";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PmInvest pmInvest = Model.pmInvest;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<OrgBusiness> orgBusinessList = Model.orgBusinessList;
+    List<PmInvestBusiness> lastYearPm = Model.lastYearPm;
+    List<PlanYearInvestBusiness> thisYearPn = Model.thisYearPn;
+    List<PlanMonthlyInvestBusinessExp> thisYearMonPn = Model.thisYearMonPn;
+    List<PmInvestBusiness> thisYearPm = Model.thisYearPm;
+
+    List<PmInvestSum> lastYearPmSum = Model.lastYearPmSum;
+    List<PlanYearInvestSummary> thisYearPnSum = Model.thisYearPnSum;
+    List<PlanMonthlyInvestSummary> thisYearMonPnSum = Model.thisYearMonPnSum;
+    List<PmInvestSum> thisYearPmSum = Model.thisYearPmSum;
+    Search search = ViewBag.Search;
+}
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>투자 &middot; 인원</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@pmInvest.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@pmInvest.OrgCompanySeq" />
+        <input type="hidden" name="InvestYear" value="@pmInvest.InvestYear" />
+        <input type="hidden" name="Monthly" value="@pmInvest.Monthly" />
+        <input type="hidden" name="Seq" value="@pmInvest.Seq" />
+        <input type="hidden" name="RegistStatus" value="@pmInvest.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchMonth" value="@(search.searchMonth)" />
+        <div class="con_box search">
+            <h3 class="mt0">투자 &middot; 인원 작성</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(pmInvest.InvestYear)년 @(pmInvest.Monthly)월</td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">회사</th>
+                        <td>
+                            <table class="tbl2">
+                                <tr>
+                                    <td>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</td>
+                                    <td class="ta_right">@Define.REGIST_STATUS.GetValue(pmInvest.RegistStatus)</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+            <!--// tbl th_ver -->
+
+            @foreach (var item in orgBusinessList)
+            {
+                // 전년도 연간실적
+                PmInvestBusiness lastYearPmYear = lastYearPm.Where(w => w.Monthly == "12").Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+                    .Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+                // 전년도 당월실적
+                PmInvestBusiness lastYearPmMon = lastYearPm.Where(w => w.Monthly == pmInvest.Monthly).Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월"))
+                    .Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+                // 전년도 누계실적
+                PmInvestBusiness lastYearPmCum = lastYearPm.Where(w => w.Monthly == pmInvest.Monthly).Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+                    .Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+                // 당해년도 연간계획
+                PlanYearInvestBusiness thisYearPnYear = thisYearPn.Where(w => w.YearlyYear == pmInvest.InvestYear)
+                    .Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+                // 당해년도 월간계획
+                PlanMonthlyInvestBusinessExp thisYearPnMon = thisYearMonPn.Where(w => w.Monthly == pmInvest.Monthly)
+                    .Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+                // 당해년도 누계계획
+                PlanMonthlyInvestBusinessExp thisYearPnCum = thisYearMonPn.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(pmInvest.Monthly))
+                    .Where(w => w.OrgBusinessSeq == item.Seq)
+                    .GroupBy(g => g.MonthlyInvestYear)
+                    .Select(cl => new PlanMonthlyInvestBusinessExp
+                    {
+                        MonthlyInvestYear = cl.First().MonthlyInvestYear,
+                        Investment = cl.Sum(c => c.Investment),
+                        Personnel = cl.Sum(c => c.Personnel),
+                        DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+                        OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+                    }).FirstOrDefault();
+                // 당해년도 월간실적
+                PmInvestBusiness thisYearPmMon = thisYearPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월"))
+                    .Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+                // 당해년도 누계실적
+                PmInvestBusiness thisYearPmCum = thisYearPm.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+                    .Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+
+                if (lastYearPmYear == null) { lastYearPmYear = new PmInvestBusiness(); }
+                if (lastYearPmMon == null) { lastYearPmMon = new PmInvestBusiness(); }
+                if (lastYearPmCum == null) { lastYearPmCum = new PmInvestBusiness(); }
+                if (thisYearPnYear == null) { thisYearPnYear = new PlanYearInvestBusiness(); }
+                if (thisYearPnMon == null) { thisYearPnMon = new PlanMonthlyInvestBusinessExp(); }
+                if (thisYearPnCum == null) { thisYearPnCum = new PlanMonthlyInvestBusinessExp(); }
+
+
+                <h3>@item.BusinessName</h3>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="3"></th>
+                            <th scope="col">투자</th>
+                            <th scope="col">인원</th>
+                            <th scope="col">국내인원</th>
+                            <th scope="col">해외인원</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" rowspan="3">@(Convert.ToInt32(pmInvest.InvestYear) - 1)년</th>
+                            <th scope="row" colspan="2">연간</th>
+                            <td>@(WebUtil.NCommaRound(lastYearPmYear.Investment, 2)) </td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmYear.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmYear.DomesticPersonnel, 2)) </td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmYear.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="2">[@(pmInvest.Monthly)]월</th>
+                            <th scope="row">당월</th>
+                            <td>@(WebUtil.NCommaRound(lastYearPmMon.Investment, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmMon.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmMon.DomesticPersonnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmMon.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">누계</th>
+                            <td>@(WebUtil.NCommaRound(lastYearPmCum.Investment, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmCum.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmCum.DomesticPersonnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearPmCum.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="9">@(pmInvest.InvestYear)년</th>
+                            <th scope="row">연간</th>
+                            <th scope="row">계획</th>
+                            <td>@(WebUtil.NCommaRound(thisYearPnYear.Investment, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnYear.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnYear.DomesticPersonnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnYear.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="4">[@(pmInvest.Monthly)]월</th>
+                            <th scope="row">계획</th>
+                            <td>@(WebUtil.NCommaRound(thisYearPnMon.Investment, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnMon.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnMon.DomesticPersonnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnMon.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            <td>@(WebUtil.NCommaRound(thisYearPmMon.Investment, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmMon.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmMon.DomesticPersonnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmMon.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmMon.Investment, thisYearPnMon.Investment, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmMon.Personnel, thisYearPnMon.Personnel, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmMon.DomesticPersonnel, thisYearPnMon.DomesticPersonnel, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmMon.OverseasPersonnel, thisYearPnMon.OverseasPersonnel, 100, 2), 2) %</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmMon.Investment, lastYearPmMon.Investment, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmMon.Personnel, lastYearPmMon.Personnel, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmMon.DomesticPersonnel, lastYearPmMon.DomesticPersonnel, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmMon.OverseasPersonnel, lastYearPmMon.OverseasPersonnel, 100, 2), 2) %</p>
+                            </td>
+                        </tr>
+                        <tr>@*누계계획에서 인원 국내인원 해외인원은 당월이다.(인원은 합계의 개념이 아니란다.)**@
+                            <th scope="row" rowspan="4">누계</th>
+                            <th scope="row">계획</th>
+                            <td>@(WebUtil.NCommaRound(thisYearPnCum.Investment, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnMon.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnMon.DomesticPersonnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPnMon.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            <td>@(WebUtil.NCommaRound(thisYearPmCum.Investment, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmCum.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmCum.DomesticPersonnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmCum.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmCum.Investment, thisYearPnCum.Investment, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmCum.Personnel, thisYearPnMon.Personnel, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmCum.DomesticPersonnel, thisYearPnMon.DomesticPersonnel, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmCum.OverseasPersonnel, thisYearPnMon.OverseasPersonnel, 100, 2), 2) %</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmCum.Investment, lastYearPmCum.Investment, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmCum.Personnel, lastYearPmCum.Personnel, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmCum.DomesticPersonnel, lastYearPmCum.DomesticPersonnel, 100, 2), 2) %</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmCum.OverseasPersonnel, lastYearPmCum.OverseasPersonnel, 100, 2), 2) %</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--//tbl th_ver-->
+            }
+
+            @*<div class="btn_area bd_btm">
+                <a href="javascript:onClear(document.editForm);" class="btn full_green">초기화</a>
+                <a href="javascript:onEditAction(document.editForm);" class="btn full_green">계산하기</a>
+            </div>*@
+
+
+            @if (thisYearPmSum != null)
+            {
+                // 전년도 연간실적
+                PmInvestSum lastYearPmSumYear = lastYearPmSum.Where(w => w.Monthly == "12").Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault();
+                // 전년도 당월실적
+                PmInvestSum lastYearPmSumMon = lastYearPmSum.Where(w => w.Monthly == pmInvest.Monthly).Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault();
+                // 전년도 누계실적
+                PmInvestSum lastYearPmSumCum = lastYearPmSum.Where(w => w.Monthly == pmInvest.Monthly).Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault();
+                // 당해년도 연간계획
+                PlanYearInvestSummary thisYearPnSumYear = thisYearPnSum.Where(w => w.YearlyYear == pmInvest.InvestYear).FirstOrDefault();
+                // 당해년도 월간계획
+                PlanMonthlyInvestSummary thisYearPnSumMon = thisYearMonPnSum.Where(w => w.Monthly == pmInvest.Monthly).FirstOrDefault();
+                // 당해년도 누계계획
+                PlanMonthlyInvestSummary thisYearPnSumCum = thisYearMonPnSum.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(pmInvest.Monthly))
+                    .GroupBy(g => g.MonthlyInvestYear)
+                    .Select(cl => new PlanMonthlyInvestSummary
+                    {
+                        MonthlyInvestYear = cl.First().MonthlyInvestYear,
+                        Investment = cl.Sum(c => c.Investment),
+                        Personnel = cl.Sum(c => c.Personnel),
+                        DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+                        OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+                    }).FirstOrDefault();
+                // 당해년도 월간실적
+                PmInvestSum thisYearPmSumMon = thisYearPmSum.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault();
+                // 당해년도 누계실적
+                PmInvestSum thisYearPmSumCum = thisYearPmSum.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault();
+
+                if (lastYearPmSumYear == null) { lastYearPmSumYear = new PmInvestSum(); }
+                if (lastYearPmSumMon == null) { lastYearPmSumMon = new PmInvestSum(); }
+                if (lastYearPmSumCum == null) { lastYearPmSumCum = new PmInvestSum(); }
+                if (thisYearPnSumYear == null) { thisYearPnSumYear = new PlanYearInvestSummary(); }
+                if (thisYearPnSumMon == null) { thisYearPnSumMon = new PlanMonthlyInvestSummary(); }
+                if (thisYearPnSumCum == null) { thisYearPnSumCum = new PlanMonthlyInvestSummary(); }
+
+                <h3>[@pmInvest.Monthly]월 투자,인원 요약</h3>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="3"></th>
+                            <th scope="col">투자</th>
+                            <th scope="col">인원</th>
+                            <th scope="col">국내인원</th>
+                            <th scope="col">해외인원</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" rowspan="3">@(Convert.ToInt32(pmInvest.InvestYear) - 1)년</th>
+                            <th scope="row" colspan="2">연간</th>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumYear.Investment, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumYear.Personnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumYear.DomesticPersonnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumYear.OverseasPersonnel, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="2">[@pmInvest.Monthly]월</th>
+                            <th scope="row">당월</th>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumMon.Investment, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumMon.Personnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumMon.DomesticPersonnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumMon.OverseasPersonnel, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">누계</th>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumCum.Investment, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumCum.Personnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumCum.DomesticPersonnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(lastYearPmSumCum.OverseasPersonnel, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="9">@(pmInvest.InvestYear)년</th>
+                            <th scope="row">연간</th>
+                            <th scope="row">계획</th>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumYear.Investment, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumYear.Personnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumYear.DomesticPersonnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumYear.OverseasPersonnel, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="4">[@pmInvest.Monthly]월</th>
+                            <th scope="row">계획</th>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumMon.Investment, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumMon.Personnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumMon.DomesticPersonnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumMon.OverseasPersonnel, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            <td>@WebUtil.NCommaRound(thisYearPmSumMon.Investment, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPmSumMon.Personnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPmSumMon.DomesticPersonnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPmSumMon.OverseasPersonnel, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumMon.Investment, thisYearPnSumMon.Investment, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumMon.Personnel, thisYearPnSumMon.Personnel, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumMon.DomesticPersonnel, thisYearPnSumMon.DomesticPersonnel, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumMon.OverseasPersonnel, thisYearPnSumMon.OverseasPersonnel, 100, 2), 2)%</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumMon.Investment, lastYearPmSumMon.Investment, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumMon.Personnel, lastYearPmSumMon.Personnel, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumMon.DomesticPersonnel, lastYearPmSumMon.DomesticPersonnel, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumMon.OverseasPersonnel, lastYearPmSumMon.OverseasPersonnel, 100, 2), 2)%</p>
+                            </td>
+                        </tr>
+                        <tr>@*누계계획에서 인원 국내인원 해외인원은 당월이다.(인원은 합계의 개념이 아니란다.)**@
+                            <th scope="row" rowspan="4">누계</th>
+                            <th scope="row">계획</th>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumCum.Investment, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumMon.Personnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumMon.DomesticPersonnel, 2)</td>
+                            <td>@WebUtil.NCommaRound(thisYearPnSumMon.OverseasPersonnel, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            <td>@(WebUtil.NCommaRound(thisYearPmSumCum.Investment, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmSumCum.Personnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmSumCum.DomesticPersonnel, 2))</td>
+                            <td>@(WebUtil.NCommaRound(thisYearPmSumCum.OverseasPersonnel, 2))</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumCum.Investment, thisYearPnSumCum.Investment, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumCum.Personnel, thisYearPnSumMon.Personnel, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumCum.DomesticPersonnel, thisYearPnSumMon.DomesticPersonnel, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumCum.OverseasPersonnel, thisYearPnSumMon.OverseasPersonnel, 100, 2), 2)%</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumCum.Investment, lastYearPmSumCum.Investment, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumCum.Personnel, lastYearPmSumCum.Personnel, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumCum.DomesticPersonnel, lastYearPmSumCum.DomesticPersonnel, 100, 2), 2)%</p>
+                            </td>
+                            <td class="bg_blue">
+                                <p>@WebUtil.NCommaRound(WebUtil.NumberRound(thisYearPmSumCum.OverseasPersonnel, lastYearPmSumCum.OverseasPersonnel, 100, 2), 2)%</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn_area align_left_right">
+                    <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                    @*<button class="btn full_green" type="button" onclick="onSave();">저장하기</button>*@
+                </div>
+            }
+        </div>
+
+    </form>
+
+
+
+</div><!--//container-->
+<script>
+
+    function onCalculationOneAction() {
+        var f = document.frmMain;
+
+        // 영업활동
+        if (!onCheckMultipleNameDoubleValues("Investment", "투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Personnel", "인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DomesticPersonnel", "국내인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("OverseasPersonnel", "해외인원" + "@Message.MSG_001")) return false;
+
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Action";
+            f.submit();
+        }
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Write";
+            f.submit();
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            url: "Excel_Upload",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.action = "Write";
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+
+    }
+    function onSave() {
+        var f = document.frmMain;
+
+        // 영업활동
+        if (!onCheckMultipleNameDoubleValues("Investment", "투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Personnel", "인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DomesticPersonnel", "국내인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("OverseasPersonnel", "해외인원" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("SummaryInvestment", "투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryPersonnel", "인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryDomesticPersonnel", "국내인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryOverseasPersonnel", "해외인원" + "@Message.MSG_001")) return false;
+
+        f.action = "Edit_Action";
+        f.submit();
+    }
+
+    function onRegistReply() {
+        MYAPP.layerControl.layerShow($('#layerComment'));
+        onAdminLoad();
+    }
+</script>
+

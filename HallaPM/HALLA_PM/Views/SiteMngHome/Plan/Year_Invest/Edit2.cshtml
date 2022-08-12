@@ -1,0 +1,329 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit2";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PlanYearInvest planYearInvest = Model.planYearInvest;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+
+    List<PmInvestSum> lastYearSumPm = Model.lastYearSumPm;
+    List<PlanYearInvestSummary> lastYearSumPn = Model.lastYearSumPn;
+    List<PlanYearInvestSummary> thisYearSumPn = Model.thisYearSumPn;
+
+    int thisYear = Convert.ToInt32(planYearInvest.YearInvestYear);
+    int lastYear = thisYear + 4;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>사업계획</span>
+        <strong>중기투자인원계획</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="Seq" value="@planYearInvest.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@planYearInvest.OrgCompanySeq" />
+        <input type="hidden" name="RegistStatus" value="@planYearInvest.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+
+        <div class="con_box search">
+            <h3 class="mt0">중기투자인원계획 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 정규직 : 임원, 고문/자문(상근), 사무직(국내/FSE/현채인), 기능직, 별정직<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 비정규직 및 기타 : 계약직, 파견직, 도급직, 고문/자문(비상근)  / (단, 만도의 경우 도급직 제외함)
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@(planYearInvest.YearInvestYear)</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = planYearInvest.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+
+            <h3>중기 투자, 인원 요약</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" rowspan="2"></th>
+                        <th scope="col" colspan="4">@(Convert.ToInt32(planYearInvest.YearInvestYear) - 1)년</th>
+                        <th scope="col" colspan="4">@(planYearInvest.YearInvestYear)년 중기계획</th>
+                        <th scope="col" colspan="4">차이</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">투자</th>
+                        <th scope="col">인원</th>
+                        <th scope="col">국내인원</th>
+                        <th scope="col">해외인원</th>
+                        <th scope="col">투자</th>
+                        <th scope="col">인원</th>
+                        <th scope="col">국내인원</th>
+                        <th scope="col">해외인원</th>
+                        <th scope="col">투자</th>
+                        <th scope="col">인원</th>
+                        <th scope="col">국내인원</th>
+                        <th scope="col">해외인원</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = thisYear - 1; i <= lastYear; i++)
+                    {
+                        var LastSumPm = lastYearSumPm.FirstOrDefault();
+                        var LastSumPn = lastYearSumPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        var ThisSumpn = thisYearSumPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        var ThisSumpnL = thisYearSumPn.Where(w => w.YearlyYear == (i - 1).ToString()).FirstOrDefault();
+
+                        if (LastSumPm == null) { LastSumPm = new PmInvestSum(); }
+                        if (LastSumPn == null) { LastSumPn = new PlanYearInvestSummary(); }
+
+                        if (i == thisYear - 1)
+                        {
+                            <tr>
+                                <th scope="row">@i</th>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.Investment, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.Personnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.DomesticPersonnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.OverseasPersonnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.Investment, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.Personnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.DomesticPersonnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.OverseasPersonnel, 0))</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                            </tr>
+                        }
+                        else if (i == thisYear)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @i
+                                </th>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.Investment, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.Personnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.DomesticPersonnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.OverseasPersonnel, 0))</td>
+                                <td>@WebUtil.NCommaRound(ThisSumpn.Investment, 0)</td>
+                                <td>@WebUtil.NCommaRound(ThisSumpn.Personnel, 0)</td>
+                                <td>@WebUtil.NCommaRound(ThisSumpn.DomesticPersonnel, 0)</td>
+                                <td>@WebUtil.NCommaRound(ThisSumpn.OverseasPersonnel, 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(ThisSumpn.Investment - (LastSumPm.Investment), 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(ThisSumpn.Personnel - (LastSumPm.Personnel), 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(ThisSumpn.DomesticPersonnel - (LastSumPm.DomesticPersonnel), 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(ThisSumpn.OverseasPersonnel - (LastSumPm.OverseasPersonnel), 0)</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @i
+                                </th>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.Investment, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.Personnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.DomesticPersonnel, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.OverseasPersonnel, 0))</td>
+                                <td>@WebUtil.NCommaRound(ThisSumpn.Investment, 0)</td>
+                                <td>@WebUtil.NCommaRound(ThisSumpn.Personnel, 0)</td>
+                                <td>@WebUtil.NCommaRound(ThisSumpn.DomesticPersonnel, 0)</td>
+                                <td>@WebUtil.NCommaRound(ThisSumpn.OverseasPersonnel, 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(ThisSumpn.Investment - ThisSumpnL.Investment, 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(ThisSumpn.Personnel - ThisSumpnL.Personnel, 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(ThisSumpn.DomesticPersonnel - ThisSumpnL.DomesticPersonnel, 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(ThisSumpn.OverseasPersonnel - ThisSumpnL.OverseasPersonnel, 0)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+    function onCalculationAction() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Investment", "투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Personnel", "인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DomesticPersonnel", "국내인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("OverseasPersonnel", "해외인원" + "@Message.MSG_001")) return false;
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Action";
+            f.submit();
+        }
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Edit";
+            f.submit();
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down";
+        f.submit();
+    }
+
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+        onRegistStatusChange(afterRegistStatus);
+        //var f = document.frmMain;
+        //f.afterRegistStatus.value = afterRegistStatus;
+        //MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            url: "Excel_Upload",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.action = "Edit";
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+    }
+
+    function onSave() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Investment", "투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Personnel", "인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DomesticPersonnel", "국내인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("OverseasPersonnel", "해외인원" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("SummaryInvestment", "투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryPersonnel", "인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryDomesticPersonnel", "국내인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryOverseasPersonnel", "해외인원" + "@Message.MSG_001")) return false;
+
+        f.action = "Edit_Action";
+        f.submit();
+    }
+</script>
+

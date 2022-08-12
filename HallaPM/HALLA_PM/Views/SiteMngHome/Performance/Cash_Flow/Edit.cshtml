@@ -1,0 +1,1150 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PmCashFlow pmCashflow = Model.pmCashFlow;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+
+    List<PlanYearCfSales> pnSales = Model.pnSales;
+    List<PlanYearCfInvestment> pnInvestment = Model.pnInvestment;
+    List<PlanYearCfFinancial> pnFinancial = Model.pnFinancial;
+    List<PlanYearCfFcf> pnFcf = Model.pnFcf;
+    List<PlanYearCfBeCash> pnBeCash = Model.pnBeCash;
+
+    List<PmCashFlowSales> pmSales = Model.pmSales;
+    List<PmCashFlowInvestment> pmInvestment = Model.pmInvestment;
+    List<PmCashFlowFinancial> pmFinancial = Model.pmFinancial;
+    List<PmCashFlowFcf> pmFcf = Model.pmFcf;
+    List<PmCashFlowBeCash> pmBeCash = Model.pmBeCash;
+    List<PmCashFlowCumulative> pmCumulative = Model.pmCumulative;
+
+    PlanYearCfSales monPnSales = pnSales.Where(w => w.Monthly == pmCashflow.Monthly).FirstOrDefault();
+    PlanYearCfSales cumPnSales = pnSales.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(pmCashflow.Monthly))
+        .GroupBy(g => g.YearlyYear)
+        .Select(cl => new PlanYearCfSales
+        {
+            YearlyYear = cl.First().YearlyYear,
+            OperationProfit = cl.Sum(c => c.OperationProfit),
+            DepreciationCost = cl.Sum(c => c.DepreciationCost),
+            CorpTax = cl.Sum(c => c.CorpTax),
+            Ar = cl.Sum(c => c.Ar),
+            Inv = cl.Sum(c => c.Inv),
+            Ap = cl.Sum(c => c.Ap),
+            Etc = cl.Sum(c => c.Etc),
+            InterestExpense = cl.Sum(c => c.InterestExpense),
+            InterestIncome = cl.Sum(c => c.InterestIncome)
+        }).FirstOrDefault();
+
+    PlanYearCfInvestment monPnInvestment = pnInvestment.Where(w => w.Monthly == pmCashflow.Monthly).FirstOrDefault();
+    PlanYearCfInvestment cumPnInvestment = pnInvestment.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(pmCashflow.Monthly))
+        .GroupBy(g => g.YearlyYear)
+        .Select(cl => new PlanYearCfInvestment
+        {
+            YearlyYear = cl.First().YearlyYear,
+            Assets = cl.Sum(c => c.Assets),
+            EquityInvestment = cl.Sum(c => c.EquityInvestment),
+            AssetsSale = cl.Sum(c => c.AssetsSale),
+            Etc = cl.Sum(c => c.Etc)
+        }).FirstOrDefault();
+
+    PlanYearCfFinancial monPnFinancial = pnFinancial.Where(w => w.Monthly == pmCashflow.Monthly).FirstOrDefault();
+    PlanYearCfFinancial cumPnFinancial = pnFinancial.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(pmCashflow.Monthly))
+        .GroupBy(g => g.YearlyYear)
+        .Select(cl => new PlanYearCfFinancial
+        {
+            YearlyYear = cl.First().YearlyYear,
+            Allocation = cl.Sum(c => c.Allocation),
+            Increase = cl.Sum(c => c.Increase),
+            Borrowing = cl.Sum(c => c.Borrowing),
+            Repayment = cl.Sum(c => c.Repayment),
+            Etc = cl.Sum(c => c.Etc)
+        }).FirstOrDefault();
+
+    PlanYearCfFcf monPnFcf = pnFcf.Where(w => w.Monthly == pmCashflow.Monthly).FirstOrDefault();
+    PlanYearCfFcf cumPnFcf = pnFcf.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(pmCashflow.Monthly))
+        .GroupBy(g => g.YearlyYear)
+        .Select(cl => new PlanYearCfFcf
+        {
+            YearlyYear = cl.First().YearlyYear,
+            Fcf1 = cl.Sum(c => c.Fcf1),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            Fcf3 = cl.Sum(c => c.Fcf3),
+            CashSum = cl.Sum(c => c.CashSum),
+            Sales = cl.Sum(c => c.Sales),
+            FcfSales = cl.Sum(c => c.FcfSales)
+        }).FirstOrDefault();
+
+    PlanYearCfBeCash monPnBeCash = pnBeCash.Where(w => w.Monthly == pmCashflow.Monthly).FirstOrDefault();
+    PlanYearCfBeCash cumPnBeCash = pnBeCash.Where(w => Convert.ToInt32(w.Monthly) <= Convert.ToInt32(pmCashflow.Monthly))
+        .GroupBy(g => g.YearlyYear)
+        .Select(cl => new PlanYearCfBeCash
+        {
+            YearlyYear = cl.First().YearlyYear,
+            BasicCash = cl.Sum(c => c.BasicCash),
+            EndingCash = cl.Sum(c => c.EndingCash),
+            CreditLine = cl.Sum(c => c.CreditLine),
+            AvailableCash = cl.Sum(c => c.AvailableCash)
+        }).FirstOrDefault();
+
+    if (monPnSales == null) { monPnSales = new PlanYearCfSales(); }
+    if (cumPnSales == null) { cumPnSales = new PlanYearCfSales(); }
+
+    if (monPnInvestment == null) { monPnInvestment = new PlanYearCfInvestment(); }
+    if (cumPnInvestment == null) { cumPnInvestment = new PlanYearCfInvestment(); }
+
+    if (monPnFinancial == null) { monPnFinancial = new PlanYearCfFinancial(); }
+    if (cumPnFinancial == null) { cumPnFinancial = new PlanYearCfFinancial(); }
+
+    if (monPnFcf == null) { monPnFcf = new PlanYearCfFcf(); }
+    if (cumPnFcf == null) { cumPnFcf = new PlanYearCfFcf(); }
+
+    if (monPnBeCash == null) { monPnBeCash = new PlanYearCfBeCash(); }
+    if (cumPnBeCash == null) { cumPnBeCash = new PlanYearCfBeCash(); }
+
+    PmCashFlowSales monPmSales = pmSales.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("당월 실적")).FirstOrDefault();
+    PmCashFlowSales cumPmSales = pmSales.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("누계 실적")).FirstOrDefault();
+
+    PmCashFlowInvestment monPmInvestment = pmInvestment.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("당월 실적")).FirstOrDefault();
+    PmCashFlowInvestment cumPmInvestment = pmInvestment.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("누계 실적")).FirstOrDefault();
+
+    PmCashFlowFinancial monPmFinancial = pmFinancial.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("당월 실적")).FirstOrDefault();
+    PmCashFlowFinancial cumPmFinancial = pmFinancial.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("누계 실적")).FirstOrDefault();
+
+    PmCashFlowFcf monPmFcf = pmFcf.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("당월 실적")).FirstOrDefault();
+    PmCashFlowFcf cumPmFcf = pmFcf.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("누계 실적")).FirstOrDefault();
+
+    PmCashFlowBeCash monPmBeCash = pmBeCash.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("당월 실적")).FirstOrDefault();
+    PmCashFlowBeCash cumPmBeCash = pmBeCash.Where(w => w.Cumulative == Define.CUMULATIVE.GetKey("누계 실적")).FirstOrDefault();
+
+    PmCashFlowCumulative pnCum = pmCumulative.Where(w => w.Diff == Define.DIFF.GetKey("계획")).FirstOrDefault() == null ? new PmCashFlowCumulative() : pmCumulative.Where(w => w.Diff == Define.DIFF.GetKey("계획")).FirstOrDefault();
+    PmCashFlowCumulative pmCum = pmCumulative.Where(w => w.Diff == Define.DIFF.GetKey("실적")).FirstOrDefault() == null ? new PmCashFlowCumulative() : pmCumulative.Where(w => w.Diff == Define.DIFF.GetKey("실적")).FirstOrDefault();
+
+    // 관리자 댓글 등록
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = pmCashflow.CashFlowYear;
+    commentList.CommentMonth = pmCashflow.Monthly;
+    commentList.AttachTableName = "COMPANY";
+    commentList.AttachTableSeq = pmCashflow.OrgCompanySeq;
+    commentList.UserKey = SessionManager.GetAdminSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetAdminSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetAdminSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetAdminSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetAdminSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetAdminSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetAdminSession().insaDeptV.Deptkorname;
+    Search search = ViewBag.Search;
+}
+
+
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>Cash Flow</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="CashFlowYear" value="@pmCashflow.CashFlowYear" />
+        <input type="hidden" name="Monthly" value="@pmCashflow.Monthly" />
+        <input type="hidden" name="Seq" value="@pmCashflow.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@pmCashflow.OrgCompanySeq" />
+        <input type="hidden" name="RegistStatus" value="@pmCashflow.RegistStatus" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchMonth" value="@(search.searchMonth)" />
+        @*// 2018.01.03 반려사유 추가*@
+        <input type="hidden" name="RejectReson" value="" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+
+        <div class="con_box search">
+            <h3 class="mt0">Cash Flow 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@(pmCashflow.CashFlowYear)년 @(pmCashflow.Monthly)월</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = pmCashflow.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <h3>[@(pmCashflow.Monthly)]월 Cash Flow 관리지표 (누계)</h3>
+            <p class="caption"><span>(단위 : 억원)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">계획</th>
+                        <th scope="col">실적</th>
+                        <th scope="col">차이</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">
+                            세후EBITDA
+                        </th>
+                        <td>@WebUtil.NCommaRound(pnCum.Ebitda, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.Ebitda, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.Ebitda - pnCum.Ebitda, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">W/C변동</th>
+                        <td>@WebUtil.NCommaRound(pnCum.WcSum, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.WcSum, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.WcSum - pnCum.WcSum, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">영업활동 기타</th>
+                        <td>@WebUtil.NCommaRound(pnCum.Etc, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.Etc, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.Etc - pnCum.Etc, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Net CAPEX</th>
+                        <td>@WebUtil.NCommaRound(pnCum.NetCapexSum, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.NetCapexSum, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.NetCapexSum - pnCum.NetCapexSum, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">순금융비용</th>
+                        <td>@WebUtil.NCommaRound(pnCum.FinancialCost, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.FinancialCost, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.FinancialCost - pnCum.FinancialCost, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">FCF</th>
+                        <td>@WebUtil.NCommaRound(pnCum.Fcf2, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.Fcf2, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.Fcf2 - pnCum.Fcf2, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">재무활동</th>
+                        <td>@WebUtil.NCommaRound(pnCum.FinancialSum, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.FinancialSum, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.FinancialSum - pnCum.FinancialSum, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">현금흐름 합계</th>
+                        <td>@WebUtil.NCommaRound(pnCum.CashSum, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.CashSum, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.CashSum - pnCum.CashSum, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Ending Cash</th>
+                        <td>@WebUtil.NCommaRound(pnCum.EndingCash, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.EndingCash, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.EndingCash - pnCum.EndingCash, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Credit Line</th>
+                        <td>@WebUtil.NCommaRound(pnCum.CreditLine, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.CreditLine, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.CreditLine - pnCum.CreditLine, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">가용현금</th>
+                        <td>@WebUtil.NCommaRound(pnCum.AvailableCash, 0)</td>
+                        <td>@WebUtil.NCommaRound(pmCum.AvailableCash, 0)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(pmCum.AvailableCash - pnCum.AvailableCash, 0)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <br />
+            <hr />
+
+            <h3>영업활동</h3>
+            <p class="caption"><span>(단위 : 억원)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" rowspan="2">구분</th>
+                        <th scope="col" colspan="4">세후 EBITDA</th>
+                        <th scope="col" colspan="4">W/C변동</th>
+                        <th scope="col">기타</th>
+                        <th scope="col" colspan="3">순금융비용</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">영업이익</th>
+                        <th scope="col">감가비<br />(무형자산상각비)</th>
+                        <th scope="col">법인세<br />비용</th>
+                        <th scope="col">세후<br />EBITDA</th>
+                        <th scope="col">AR변동</th>
+                        <th scope="col">Inv변동</th>
+                        <th scope="col">AP변동</th>
+                        <th scope="col">W/C변동<br />소계</th>
+                        <th scope="col">기타<br />(미지급금外)</th>
+                        <th scope="col">이자비용</th>
+                        <th scope="col">이자수익</th>
+                        <th scope="col">순금융비용<br />소계</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">당월계획</th>
+                        <td>@WebUtil.NCommaRound(monPnSales.OperationProfit, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnSales.DepreciationCost, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnSales.CorpTax, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPnSales.OperationProfit + monPnSales.DepreciationCost + monPnSales.CorpTax), 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnSales.Ar, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnSales.Inv, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnSales.Ap, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPnSales.Ar + monPnSales.Inv + monPnSales.Ap), 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnSales.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnSales.InterestExpense, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnSales.InterestIncome, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPnSales.InterestExpense + monPnSales.InterestIncome), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            당월실적
+                            <input type="hidden" name="PmCashFlowSalesSeq" value="@monPmSales.Seq" />
+                        </th>
+                        <td><input type="text" name="OperationProfit" value="@monPmSales.OperationProfit" /></td>
+                        <td><input type="text" name="DepreciationCost" value="@monPmSales.DepreciationCost" /></td>
+                        <td><input type="text" name="CorpTax" value="@monPmSales.CorpTax" /></td>
+                        <td class="bg_blue">@(@monPmSales.OperationProfit + @monPmSales.DepreciationCost + @monPmSales.CorpTax)</td>
+                        <td><input type="text" name="Ar" value="@monPmSales.Ar" /></td>
+                        <td><input type="text" name="Inv" value="@monPmSales.Inv" /></td>
+                        <td><input type="text" name="Ap" value="@monPmSales.Ap" /></td>
+                        <td class="bg_blue">@(@monPmSales.Ar + @monPmSales.Inv + @monPmSales.Ap)</td>
+                        <td><input type="text" name="Etc" value="@monPmSales.Etc" /></td>
+                        <td><input type="text" name="InterestExpense" value="@monPmSales.InterestExpense" /></td>
+                        <td><input type="text" name="InterestIncome" value="@monPmSales.InterestIncome" /></td>
+                        <td class="bg_blue">@(monPmSales.InterestExpense + monPmSales.InterestIncome)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">당월차이</th>
+                        <td>@WebUtil.NCommaRound(monPmSales.OperationProfit - monPnSales.OperationProfit, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmSales.DepreciationCost - monPnSales.DepreciationCost, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmSales.CorpTax - monPnSales.CorpTax, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPmSales.OperationProfit + monPmSales.DepreciationCost + monPmSales.CorpTax) - (monPnSales.OperationProfit + monPnSales.DepreciationCost + monPnSales.CorpTax), 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmSales.Ar - monPnSales.Ar, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmSales.Inv - monPnSales.Inv, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmSales.Ap - monPnSales.Ap, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPmSales.Ar + monPmSales.Inv + monPmSales.Ap) - (monPnSales.Ar + monPnSales.Inv + monPnSales.Ap), 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmSales.Etc - monPnSales.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmSales.InterestExpense - monPnSales.InterestExpense, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmSales.InterestIncome - monPnSales.InterestIncome, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPmSales.InterestExpense + monPmSales.InterestIncome) - (monPnSales.InterestExpense + monPnSales.InterestIncome), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">누적계획</th>
+                        <td>@WebUtil.NCommaRound(cumPnSales.OperationProfit, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnSales.DepreciationCost, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnSales.CorpTax, 2)</td>
+                        <td>@WebUtil.NCommaRound((cumPnSales.OperationProfit + cumPnSales.DepreciationCost + cumPnSales.CorpTax), 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnSales.Ar, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnSales.Inv, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnSales.Ap, 2)</td>
+                        <td>@WebUtil.NCommaRound((cumPnSales.Ar + cumPnSales.Inv + cumPnSales.Ap), 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnSales.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnSales.InterestExpense, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnSales.InterestIncome, 2)</td>
+                        <td>@WebUtil.NCommaRound((cumPnSales.InterestExpense + cumPnSales.InterestIncome), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            누적실적
+                            <input type="hidden" name="PmCashFlowSalesSeq" value="@cumPmSales.Seq" />
+                        </th>
+                        <td><input type="text" name="OperationProfit" value="@cumPmSales.OperationProfit" /></td>
+                        <td><input type="text" name="DepreciationCost" value="@cumPmSales.DepreciationCost" /></td>
+                        <td><input type="text" name="CorpTax" value="@cumPmSales.CorpTax" /></td>
+                        <td class="bg_blue">@(cumPmSales.OperationProfit + cumPmSales.DepreciationCost + cumPmSales.CorpTax)</td>
+                        <td><input type="text" name="Ar" value="@cumPmSales.Ar" /></td>
+                        <td><input type="text" name="Inv" value="@cumPmSales.Inv" /></td>
+                        <td><input type="text" name="Ap" value="@cumPmSales.Ap" /></td>
+                        <td class="bg_blue">@(cumPmSales.Ar + cumPmSales.Inv + cumPmSales.Ap)</td>
+                        <td><input type="text" name="Etc" value="@cumPmSales.Etc" /></td>
+                        <td><input type="text" name="InterestExpense" value="@cumPmSales.InterestExpense" /></td>
+                        <td><input type="text" name="InterestIncome" value="@cumPmSales.InterestIncome" /></td>
+                        <td class="bg_blue">@(cumPmSales.InterestExpense + cumPmSales.InterestIncome)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">누적차이</th>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.OperationProfit - cumPnSales.OperationProfit, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.DepreciationCost - cumPnSales.DepreciationCost, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.CorpTax - cumPnSales.CorpTax, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound((cumPmSales.OperationProfit + cumPmSales.DepreciationCost + cumPmSales.CorpTax) - (cumPnSales.OperationProfit + cumPnSales.DepreciationCost + cumPnSales.CorpTax), 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.Ar - cumPnSales.Ar, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.Inv - cumPnSales.Inv, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.Ap - cumPnSales.Ap, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound((cumPmSales.Ar + cumPmSales.Inv + cumPmSales.Ap) - (cumPnSales.Ar + cumPnSales.Inv + cumPnSales.Ap), 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.Etc - cumPnSales.Etc, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.InterestExpense - cumPnSales.InterestExpense, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmSales.InterestIncome - cumPnSales.InterestIncome, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound((cumPmSales.InterestExpense + cumPmSales.InterestIncome) - (cumPnSales.InterestExpense + cumPnSales.InterestIncome), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Comment</th>
+                        <td colspan="12"><textarea class="w100" name="SalesComment">@pmCashflow.SalesComment</textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <h3>투자활동</h3>
+            <p class="caption"><span>(단위 : 억원)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" rowspan="2">구분</th>
+                        <th scope="col" colspan="5">Net Capex</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">유형/무형자산</th>
+                        <th scope="col">지분 투자</th>
+                        <th scope="col">자산 매각</th>
+                        <th scope="col">기타</th>
+                        <th scope="col">Net Capex 소계</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">당월계획</th>
+                        <td>@WebUtil.NCommaRound(monPnInvestment.Assets, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnInvestment.EquityInvestment, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnInvestment.AssetsSale, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnInvestment.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPnInvestment.Assets + monPnInvestment.EquityInvestment + monPnInvestment.AssetsSale + monPnInvestment.Etc), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            당월실적
+                            <input type="hidden" name="PmCashFlowInvestmentSeq" value="@monPmInvestment.Seq" />
+                        </th>
+                        <td><input type="text" name="Assets" value="@monPmInvestment.Assets" /></td>
+                        <td><input type="text" name="EquityInvestment" value="@monPmInvestment.EquityInvestment" /></td>
+                        <td><input type="text" name="AssetsSale" value="@monPmInvestment.AssetsSale" /></td>
+                        <td><input type="text" name="InvestmentEtc" value="@monPmInvestment.InvestmentEtc" /></td>
+                        <td class="bg_blue">@(monPmInvestment.Assets + monPmInvestment.EquityInvestment + monPmInvestment.AssetsSale + monPmInvestment.InvestmentEtc)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">당월차이</th>
+                        <td>@WebUtil.NCommaRound(monPmInvestment.Assets - monPnInvestment.Assets, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmInvestment.EquityInvestment - monPnInvestment.EquityInvestment, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmInvestment.AssetsSale - monPnInvestment.AssetsSale, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmInvestment.InvestmentEtc - monPnInvestment.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPmInvestment.Assets + monPmInvestment.EquityInvestment + monPmInvestment.AssetsSale + monPmInvestment.InvestmentEtc) - (monPnInvestment.Assets + monPnInvestment.EquityInvestment + monPnInvestment.AssetsSale + monPnInvestment.Etc), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">누적계획</th>
+                        <td>@WebUtil.NCommaRound(cumPnInvestment.Assets, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnInvestment.EquityInvestment, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnInvestment.AssetsSale, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnInvestment.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound((cumPnInvestment.Assets + cumPnInvestment.EquityInvestment + cumPnInvestment.AssetsSale + cumPnInvestment.Etc), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            누적실적
+                            <input type="hidden" name="PmCashFlowInvestmentSeq" value="@cumPmInvestment.Seq" />
+                        </th>
+                        <td><input type="text" name="Assets" value="@cumPmInvestment.Assets" /></td>
+                        <td><input type="text" name="EquityInvestment" value="@cumPmInvestment.EquityInvestment" /></td>
+                        <td><input type="text" name="AssetsSale" value="@cumPmInvestment.AssetsSale" /></td>
+                        <td><input type="text" name="InvestmentEtc" value="@cumPmInvestment.InvestmentEtc" /></td>
+                        <td class="bg_blue">@(cumPmInvestment.Assets + cumPmInvestment.EquityInvestment + cumPmInvestment.AssetsSale + cumPmInvestment.InvestmentEtc)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">누적차이</th>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmInvestment.Assets - cumPnInvestment.Assets, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmInvestment.EquityInvestment - cumPnInvestment.EquityInvestment, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmInvestment.AssetsSale - cumPnInvestment.AssetsSale, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmInvestment.InvestmentEtc - cumPnInvestment.Etc, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound((cumPmInvestment.Assets + cumPmInvestment.EquityInvestment + cumPmInvestment.AssetsSale + cumPmInvestment.InvestmentEtc) - (cumPnInvestment.Assets + cumPnInvestment.EquityInvestment + cumPnInvestment.AssetsSale), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Comment</th>
+                        <td colspan="5"><textarea class="w100" name="InvestmentComment">@pmCashflow.InvestmentComment</textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <h3>재무활동</h3>
+            <p class="caption"><span>(단위 : 억원)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">배당</th>
+                        <th scope="col">증자</th>
+                        <th scope="col">차입</th>
+                        <th scope="col">상환</th>
+                        <th scope="col">기타</th>
+                        <th scope="col">재무활동 소계</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">당월계획</th>
+                        <td>@WebUtil.NCommaRound(monPnFinancial.Allocation, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnFinancial.Increase, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnFinancial.Borrowing, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnFinancial.Repayment, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPnFinancial.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPnFinancial.Allocation + monPnFinancial.Increase + monPnFinancial.Borrowing + monPnFinancial.Repayment + monPnFinancial.Etc), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            당월실적
+                            <input type="hidden" name="PmCashFlowFinancialSeq" value="@monPmFinancial.Seq" />
+                        </th>
+                        <td><input type="text" name="Allocation" value="@monPmFinancial.Allocation" /></td>
+                        <td><input type="text" name="Increase" value="@monPmFinancial.Increase" /></td>
+                        <td><input type="text" name="Borrowing" value="@monPmFinancial.Borrowing" /></td>
+                        <td><input type="text" name="Repayment" value="@monPmFinancial.Repayment" /></td>
+                        <td><input type="text" name="FinancialEtc" value="@monPmFinancial.Etc" /></td>
+                        <td class="bg_blue">@(monPmFinancial.Allocation + monPmFinancial.Increase + monPmFinancial.Borrowing + monPmFinancial.Repayment + monPmFinancial.Etc)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">당월차이</th>
+                        <td>@WebUtil.NCommaRound(monPmFinancial.Allocation - monPnFinancial.Allocation, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmFinancial.Increase - monPnFinancial.Increase, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmFinancial.Borrowing - monPnFinancial.Borrowing, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmFinancial.Repayment - monPnFinancial.Repayment, 2)</td>
+                        <td>@WebUtil.NCommaRound(monPmFinancial.Etc - monPnFinancial.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound((monPmFinancial.Allocation + monPmFinancial.Increase + monPmFinancial.Borrowing + monPmFinancial.Repayment + monPmFinancial.Etc) - (monPnFinancial.Allocation + monPnFinancial.Increase + monPnFinancial.Borrowing + monPnFinancial.Repayment + monPnFinancial.Etc), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">누적계획</th>
+                        <td>@WebUtil.NCommaRound(cumPnFinancial.Allocation, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnFinancial.Increase, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnFinancial.Borrowing, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnFinancial.Repayment, 2)</td>
+                        <td>@WebUtil.NCommaRound(cumPnFinancial.Etc, 2)</td>
+                        <td>@WebUtil.NCommaRound((cumPnFinancial.Allocation + cumPnFinancial.Increase + cumPnFinancial.Borrowing + cumPnFinancial.Repayment + cumPnFinancial.Etc), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            누적실적
+                            <input type="hidden" name="PmCashFlowFinancialSeq" value="@cumPmFinancial.Seq" />
+                        </th>
+                        <td><input type="text" name="Allocation" value="@cumPmFinancial.Allocation" /></td>
+                        <td><input type="text" name="Increase" value="@cumPmFinancial.Increase" /></td>
+                        <td><input type="text" name="Borrowing" value="@cumPmFinancial.Borrowing" /></td>
+                        <td><input type="text" name="Repayment" value="@cumPmFinancial.Repayment" /></td>
+                        <td><input type="text" name="FinancialEtc" value="@cumPmFinancial.Etc" /></td>
+                        <td class="bg_blue">@(cumPmFinancial.Allocation + cumPmFinancial.Increase + cumPmFinancial.Borrowing + cumPmFinancial.Repayment + cumPmFinancial.Etc)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">누적차이</th>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmFinancial.Allocation - cumPnFinancial.Allocation, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmFinancial.Increase - cumPnFinancial.Increase, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmFinancial.Borrowing - cumPnFinancial.Borrowing, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmFinancial.Repayment - cumPnFinancial.Repayment, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound(cumPmFinancial.Etc - cumPnFinancial.Etc, 2)</td>
+                        <td class="bg_blue">@WebUtil.NCommaRound((cumPmFinancial.Allocation + cumPmFinancial.Increase + cumPmFinancial.Borrowing + cumPmFinancial.Repayment + cumPmFinancial.Etc) - (cumPnFinancial.Allocation + cumPnFinancial.Increase + cumPnFinancial.Borrowing + cumPnFinancial.Repayment + cumPnFinancial.Etc), 2)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Comment</th>
+                        <td colspan="6"><textarea class="w100" name="FinancialComment">@pmCashflow.FinancialComment</textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <div class="btn_area bd_btm">
+                <button class="btn full_green" type="button" onclick="onReset();">초기화</button>
+                <button class="btn full_green" type="button" onclick="onCalculationOneAction();">계산하기</button>
+            </div><!--//btn_area-->
+
+            @if (pmFcf != null && pmFcf.Count() > 0)
+            {
+                <h3>FCF</h3>
+                <p class="caption"><span>(단위 : 억원)</span></p>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="10%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">FCF1</th>
+                            <th scope="col">FCF2</th>
+                            <th scope="col">FCF3</th>
+                            <th scope="col">현금흐름 합계</th>
+                            <th scope="col">FCF/Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">당월계획</th>
+                            <td>@WebUtil.NCommaRound(monPnFcf.Fcf1, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPnFcf.Fcf2, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPnFcf.Fcf3, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPnFcf.CashSum, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPnFcf.FcfSales, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                당월실적
+                                <input type="hidden" name="PmCashFlowFcfSeq" value="@monPmFcf.Seq" />
+                                <input type="hidden" name="Cumulative" value="@monPmFcf.Cumulative" />
+                            </th>
+                            <td><input type="text" name="Fcf1" value="@monPmFcf.Fcf1" /></td>
+                            <td><input type="text" name="Fcf2" value="@monPmFcf.Fcf2" /></td>
+                            <td><input type="text" name="Fcf3" value="@monPmFcf.Fcf3" /></td>
+                            <td><input type="text" name="CashSum" value="@monPmFcf.CashSum" /></td>
+                            <td><input type="text" name="FcfSales" value="@monPmFcf.FcfSales" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">당월차이</th>
+                            <td>@WebUtil.NCommaRound(monPmFcf.Fcf1 - monPnFcf.Fcf1, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPmFcf.Fcf2 - monPnFcf.Fcf2, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPmFcf.Fcf3 - monPnFcf.Fcf3, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPmFcf.CashSum - monPnFcf.CashSum, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPmFcf.FcfSales - monPnFcf.FcfSales, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">누적계획</th>
+                            <td>@WebUtil.NCommaRound(cumPnFcf.Fcf1, 2)</td>
+                            <td>@WebUtil.NCommaRound(cumPnFcf.Fcf2, 2)</td>
+                            <td>@WebUtil.NCommaRound(cumPnFcf.Fcf3, 2)</td>
+                            <td>@WebUtil.NCommaRound(cumPnFcf.CashSum, 2)</td>
+                            <td>@WebUtil.NCommaRound(cumPnFcf.FcfSales, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                누적실적
+                                <input type="hidden" name="PmCashFlowFcfSeq" value="@cumPmFcf.Seq" />
+                                <input type="hidden" name="Cumulative" value="@cumPmFcf.Cumulative" />
+                            </th>
+                            <td><input type="text" name="Fcf1" value="@cumPmFcf.Fcf1" /></td>
+                            <td><input type="text" name="Fcf2" value="@cumPmFcf.Fcf2" /></td>
+                            <td><input type="text" name="Fcf3" value="@cumPmFcf.Fcf3" /></td>
+                            <td><input type="text" name="CashSum" value="@cumPmFcf.CashSum" /></td>
+                            <td><input type="text" name="FcfSales" value="@cumPmFcf.FcfSales" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">누적차이</th>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmFcf.Fcf1 - cumPnFcf.Fcf1, 2)</td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmFcf.Fcf2 - cumPnFcf.Fcf2, 2)</td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmFcf.Fcf3 - cumPnFcf.Fcf3, 2)</td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmFcf.CashSum - cumPnFcf.CashSum, 2)</td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmFcf.FcfSales - cumPnFcf.FcfSales, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Comment</th>
+                            <td colspan="5"><textarea class="w100" name="FcfComment">@pmCashflow.FcfComment</textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <!--//tbl th_ver-->
+            }
+
+            @if (pmBeCash != null && pmBeCash.Count() > 0)
+            {
+                <h3>기초/기말현금</h3>
+                <p class="caption"><span>(단위 : 억원)</span></p>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="10%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">기초현금</th>
+                            <th scope="col">Ending Cash</th>
+                            <th scope="col">Credit Line</th>
+                            <th scope="col">가용현금</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">당월계획</th>
+                            <td>@WebUtil.NCommaRound(monPnBeCash.BasicCash, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPnBeCash.EndingCash, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPnBeCash.CreditLine, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPnBeCash.AvailableCash, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                당월실적
+                                <input type="hidden" name="PmCashFlowBeCashSeq" value="@monPmBeCash.Seq" />
+                            </th>
+                            <td><input type="text" name="BasicCash" value="@monPmBeCash.BasicCash" /></td>
+                            <td class="bg_blue">@(monPmBeCash.EndingCash)</td>
+                            <td><input type="text" name="CreditLine" value="@monPmBeCash.CreditLine" /></td>
+                            <td class="bg_blue">@(monPmBeCash.AvailableCash)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">당월차이</th>
+                            <td>@WebUtil.NCommaRound(monPmBeCash.BasicCash - monPnBeCash.BasicCash, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPmBeCash.EndingCash - monPnBeCash.EndingCash, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPmBeCash.CreditLine - monPnBeCash.CreditLine, 2)</td>
+                            <td>@WebUtil.NCommaRound(monPmBeCash.AvailableCash - monPnBeCash.AvailableCash, 2)</td>
+                        </tr>
+                        <tr>
+                            @{ 
+                                decimal cumPnBasicCash = cumPmBeCash.BasicCash;
+                                decimal cumPnEndingCash = cumPnBasicCash + cumPnFcf.CashSum;
+                                decimal cumPnCreditLine = monPnBeCash.CreditLine;
+                                decimal cumPnAvailableCash = cumPnEndingCash + cumPnCreditLine;
+                             }
+                            <th scope="row">누적계획</th>
+                            @*기초현금 누적계획, 누적실적 ==> 전년도 12월 Ending Cash(누적)
+                                Ending Cash ==> 기초현금누적계획 + FCF2누적계획
+                                Create Line(누적계획) ==> 해당월 계획과 동일*@
+                            <td>@WebUtil.NCommaRound(cumPnBasicCash, 2)</td>
+                            <td>@WebUtil.NCommaRound(cumPnEndingCash, 2)</td>
+                            <td>@WebUtil.NCommaRound(cumPnCreditLine, 2)</td>
+                            @*<td>@(cumPnBeCash == null ? 0 : cumPnBeCash.BasicCash)</td>
+                            <td>@(cumPnBeCash == null ? 0 : cumPnBeCash.EndingCash)</td>
+                            <td>@(cumPnBeCash == null ? 0 : cumPnBeCash.CreditLine)</td>*@
+                            <td>@WebUtil.NCommaRound(cumPnAvailableCash, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                누적실적
+                                <input type="hidden" name="PmCashFlowBeCashSeq" value="@cumPmBeCash.Seq" />
+                            </th>
+                            <td>@*@(cumPmBeCash.BasicCash)*@
+                                <input type="text" name="BasicCash" value="@cumPmBeCash.BasicCash" />
+                            </td>
+                            <td class="bg_blue">@(cumPmBeCash.EndingCash)</td>
+                            <td><input type="text" name="CreditLine" value="@cumPmBeCash.CreditLine" /></td>
+                            <td class="bg_blue">@(cumPmBeCash.AvailableCash)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">누적차이</th>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmBeCash.BasicCash - cumPnBasicCash, 2)</td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmBeCash.EndingCash - cumPnEndingCash, 2)</td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmBeCash.CreditLine - cumPnCreditLine, 2)</td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(cumPmBeCash.AvailableCash - cumPnAvailableCash, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Comment</th>
+                            <td colspan="4"><textarea class="w100" name="BeCashComment">@pmCashflow.BeCashComment</textarea></td>
+                        </tr>
+                    </tbody>
+                </table>
+            <!--//tbl th_ver-->
+
+
+                <div class="btn_area bd_btm">
+                    <button class="btn full_green" type="button" onclick="onReset();">초기화</button>
+                    <button class="btn full_green" type="button" onclick="onCalculationTwoAction();">계산하기</button>
+                </div><!--//btn_area-->
+            }
+
+            <h3>[@(pmCashflow.Monthly)]월 Cash Flow 관리지표 (누계)</h3>
+                <p class="caption"><span>(단위 : 억원)</span></p>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="10%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">계획</th>
+                            <th scope="col">실적</th>
+                            <th scope="col">차이</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">세후EBITDA
+                                <input type="hidden" name="PmCashFlowCumulativeSeq" value="@pnCum.Seq" />
+                                <input type="hidden" name="PmCashFlowCumulativeSeq" value="@pmCum.Seq" />
+                            </th>
+                            <td><input type="text" name="CumulativeEbitda" value="@pnCum.Ebitda" /></td>
+                            <td><input type="text" name="CumulativeEbitda" value="@pmCum.Ebitda" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.Ebitda - pnCum.Ebitda, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">W/C변동</th>
+                            <td><input type="text" name="CumulativeWcSum" value="@pnCum.WcSum" /></td>
+                            <td><input type="text" name="CumulativeWcSum" value="@pmCum.WcSum" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.WcSum - pnCum.WcSum, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">영업활동 기타</th>
+                            <td><input type="text" name="CumulativeEtc" value="@pnCum.Etc" /></td>
+                            <td><input type="text" name="CumulativeEtc" value="@pmCum.Etc" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.Etc - pnCum.Etc, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Net CAPEX</th>
+                            <td><input type="text" name="CumulativeNetCapexSum" value="@pnCum.NetCapexSum" /></td>
+                            <td><input type="text" name="CumulativeNetCapexSum" value="@pmCum.NetCapexSum" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.NetCapexSum - pnCum.NetCapexSum, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">순금융비용</th>
+                            <td><input type="text" name="CumulativeFinancialCost" value="@pnCum.FinancialCost" /></td>
+                            <td><input type="text" name="CumulativeFinancialCost" value="@pmCum.FinancialCost" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.FinancialCost - pnCum.FinancialCost, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">FCF</th>
+                            <td><input type="text" name="CumulativeFcf2" value="@pnCum.Fcf2" /></td>
+                            <td><input type="text" name="CumulativeFcf2" value="@pmCum.Fcf2" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.Fcf2 - pnCum.Fcf2, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">재무활동</th>
+                            <td><input type="text" name="CumulativeFinancialSum" value="@pnCum.FinancialSum" /></td>
+                            <td><input type="text" name="CumulativeFinancialSum" value="@pmCum.FinancialSum" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.FinancialSum - pnCum.FinancialSum, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">현금흐름 합계</th>
+                            <td><input type="text" name="CumulativeCashSum" value="@pnCum.CashSum" /></td>
+                            <td><input type="text" name="CumulativeCashSum" value="@pmCum.CashSum" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.CashSum - pnCum.CashSum, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Ending Cash</th>
+                            <td><input type="text" name="CumulativeEndingCash" value="@pnCum.EndingCash" /></td>
+                            <td><input type="text" name="CumulativeEndingCash" value="@pmCum.EndingCash" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.EndingCash - pnCum.EndingCash, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Credit Line</th>
+                            <td><input type="text" name="CumulativeCreditLine" value="@pnCum.CreditLine" /></td>
+                            <td><input type="text" name="CumulativeCreditLine" value="@pmCum.CreditLine" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.CreditLine - pnCum.CreditLine, 2)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">가용현금</th>
+                            <td><input type="text" name="CumulativeAvailableCash" value="@pnCum.AvailableCash" /></td>
+                            <td><input type="text" name="CumulativeAvailableCash" value="@pmCum.AvailableCash" /></td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(pmCum.AvailableCash - pnCum.AvailableCash, 2)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--//tbl th_ver-->
+
+                <div class="btn_area align_left_right">
+                    <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                    <button class="btn full_green" type="button" onclick="onSave();">저장하기</button>
+                </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+
+    function onCalculationOneAction() {
+        var f = document.frmMain;
+
+        // 영업활동
+        if (!onCheckMultipleNameDoubleValues("OperationProfit", "영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DepreciationCost", "감가비" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CorpTax", "법인세비용" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Ar", "AR변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Inv", "Inv변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ap", "AP변동" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Etc", "기타" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("InterestExpense", "이자비용" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InterestIncome", "이자수익" + "@Message.MSG_001")) return false;
+        // 투자활동
+        if (!onCheckMultipleNameDoubleValues("Assets", "유형/무형자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("EquityInvestment", "지분투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AssetsSale", "자산매각" + "@Message.MSG_001")) return false;
+        //if (!onCheckMultipleNameDoubleValues("InvestmentEtc", "기타" + "@Message.MSG_001")) return false;
+        // 재무활동
+        if (!onCheckMultipleNameDoubleValues("Allocation", "배당" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Increase", "증자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Borrowing", "차입" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Repayment", "상환" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("FinancialEtc", "기타" + "@Message.MSG_001")) return false;
+
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_One_Action";
+            f.submit();
+        }
+    }
+
+    function onCalculationTwoAction() {
+        var f = document.frmMain;
+
+        // 영업활동
+        if (!onCheckMultipleNameDoubleValues("OperationProfit", "영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DepreciationCost", "감가비" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CorpTax", "법인세비용" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Ar", "AR변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Inv", "Inv변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ap", "AP변동" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Etc", "기타" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("InterestExpense", "이자비용" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InterestIncome", "이자수익" + "@Message.MSG_001")) return false;
+        // 투자활동
+        if (!onCheckMultipleNameDoubleValues("Assets", "유형/무형자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("EquityInvestment", "지분투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AssetsSale", "자산매각" + "@Message.MSG_001")) return false;
+        //if (!onCheckMultipleNameDoubleValues("InvestmentEtc", "기타" + "@Message.MSG_001")) return false;
+        // 재무활동
+        if (!onCheckMultipleNameDoubleValues("Allocation", "배당" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Increase", "증자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Borrowing", "차입" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Repayment", "상환" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("FinancialEtc", "기타" + "@Message.MSG_001")) return false;
+        // FCF
+        if (!onCheckMultipleNameDoubleValues("Fcf1", "Fcf1" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Fcf2", "Fcf2" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Fcf3", "Fcf3" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CashSum", "CashSum" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("FcfSales", "FcfSales" + "@Message.MSG_001")) return false;
+        // 기초기말현금
+        if (!onCheckMultipleNameDoubleValues("BasicCash", "기초현금" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CreditLine", "CreditLine" + "@Message.MSG_001")) return false;
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Two_Action";
+            f.submit();
+        }
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Edit";
+            f.submit();
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down2";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+        MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+        var orgCpyName = "@(orgCompanyName.CompanyName)";
+        var excelFileName = excelFilePath.substring(excelFilePath.lastIndexOf('\\') + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+        if (excelFileName.indexOf('cash flow') < 0 || excelFileName.indexOf(orgCpyName.toLowerCase()) < 0) {
+            alert('' + orgCpyName + ' - [Cash Flow] 파일이 아닙니다. \n파일을 확인해주세요');
+            return;
+        }
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            //url: "Excel_Upload",
+            url: "Excel_Upload3",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.action = "Edit";
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+
+    }
+
+
+    function onSave() {
+        var f = document.frmMain;
+
+
+        // 영업활동
+        if (!onCheckMultipleNameDoubleValues("OperationProfit", "영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DepreciationCost", "감가비" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CorpTax", "법인세비용" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Ar", "AR변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Inv", "Inv변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ap", "AP변동" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Etc", "기타" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("InterestExpense", "이자비용" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InterestIncome", "이자수익" + "@Message.MSG_001")) return false;
+        // 투자활동
+        if (!onCheckMultipleNameDoubleValues("Assets", "유형/무형자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("EquityInvestment", "지분투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AssetsSale", "자산매각" + "@Message.MSG_001")) return false;
+        //if (!onCheckMultipleNameDoubleValues("InvestmentEtc", "기타" + "@Message.MSG_001")) return false;
+        // 재무활동
+        if (!onCheckMultipleNameDoubleValues("Allocation", "배당" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Increase", "증자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Borrowing", "차입" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Repayment", "상환" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("FinancialEtc", "기타" + "@Message.MSG_001")) return false;
+        // FCF
+        if (!onCheckMultipleNameDoubleValues("Fcf1", "Fcf1" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Fcf2", "Fcf2" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Fcf3", "Fcf3" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CashSum", "CashSum" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("FcfSales", "FcfSales" + "@Message.MSG_001")) return false;
+        // 기초기말현금
+        if (!onCheckMultipleNameDoubleValues("BasicCash", "기초현금" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CreditLine", "CreditLine" + "@Message.MSG_001")) return false;
+
+        // 요약
+        if (!onCheckMultipleNameDoubleValues("CumulativeEbitda", "세후EBITDA" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeWcSum", "W/C변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeEtc", "영업활동기타" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeNetCapexSum", "Net CAPEX" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeFinancialCost", "순금융비용" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeFcf2", "FCF" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeFinancialSum", "재무활동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeCashSum", "현금흐름 합계" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeEndingCash", "Ending Cash" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeCreditLine", "Credit Line" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CumulativeAvailableCash", "가용현금" + "@Message.MSG_001")) return false;
+
+        f.action = "Edit_Action";
+        f.submit();
+    }
+
+    function onRegistReply() {
+        MYAPP.layerControl.layerShow($('#layerComment'));
+        onAdminLoad();
+    }
+</script>
+
+@Html.Partial("~/Views/Shared/AdminReply.cshtml", commentList)
+@*// 2018.01.03 반려사유 추가*@
+@Html.Partial("~/Views/Shared/RejectReply.cshtml")
+

@@ -1,0 +1,366 @@
+﻿@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    string message = TempData["alert"] == null ? string.Empty : TempData["alert"].ToString();
+    TempData["alert"] = "";
+    var session = (AdminSession)Session[Define.ADMIN_SESSION_NAME];
+    string url = Request.Url.ToString();
+    int orgCount = 0;
+    if (session != null)
+    {
+        orgCount = session.orgCount;
+    }
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <title>한라그룹 실적관리 시스템</title>
+
+    <link rel="stylesheet" href="~/Contents/SiteMngHome/Common/css/style.css" />
+    <script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/libs/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/libs/TweenMax.min.js"></script>
+    <script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/site.js"></script>
+    <script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/front.js"></script>
+    <script type="text/javascript" src="~/scripts/jquery.validate.js"></script>
+</head>
+<body>
+    <div class="wrap">
+        <header id="header">
+            <h1><a href="/SiteMngHome/Performance/Cash_Flow/List">한라</a></h1>
+            <div class="header_in">
+                <!--// style_select -->
+                <div class="login_info">
+                    @if (session == null || string.IsNullOrEmpty(session.insaUserV.userKorName))
+                    {
+                        <p><strong class="admin_name">미접속 상태입니다.</strong>(접속IP : @WebUtil.GetClientIP())</p>
+                    }
+                    else
+                    {
+                        <p><strong class="admin_name">[@session.insaUserV.userKorName]</strong>님 안녕하세요! (접속IP : @WebUtil.GetClientIP())</p>
+                        <a href="javascript:;" onclick="goLogOut();" class="btn circle blue logout">로그아웃</a>
+                    }
+                </div>
+                <!--// login_info-->
+            </div>
+            <!--// header_in-->
+        </header>
+        <!--// header-->
+
+        <nav id="lnb">
+            <ul class="depth1">
+                @if (session != null)
+                {
+                    if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                    {
+                        <li>
+                            <!-- class="on" 색 변함-->
+                            @if (url.IndexOf("/SiteMngHome/Admin/") > 0)
+                            {
+                                <a id="menu_dapth_admin" href="#" class="on"><i class="fa fa-user"></i><span class="fold_hide">관리자 관리</span></a>
+                                <ul class="depth2" style="display:inline;">
+                                    <li><a href="/SiteMngHome/Admin/Org/List" class="@(url.IndexOf("/SiteMngHome/Admin/Org/") > 0 ? "on" : "")">조직관리</a></li>
+                                    <li><a href="/SiteMngHome/Admin/Admin_Auth/List" class="@(url.IndexOf("/SiteMngHome/Admin/Admin_Auth/") > 0 ? "on" : "")">관리자 권한관리</a></li>
+                                    <li><a href="/SiteMngHome/Admin/System_Auth/List" class="@(url.IndexOf("/SiteMngHome/Admin/System_Auth/") > 0 ? "on" : "")">보고시스템 권한관리</a></li>
+                                    <!--2022.05 아이스프린트컨설팅 이형종 추가-->
+                                    <li><a href="/SiteMngHome/Admin/Disclosure/List" class="@(url.IndexOf("/SiteMngHome/Admin/Disclosure/") > 0 ? "on" : "")">공시항목관리</a></li>
+                                    <!--END-->
+                                    <li><a href="/SiteMngHome/Admin/Admin_Access_Log/List" class="@(url.IndexOf("/SiteMngHome/Admin/Admin_Access_Log/") > 0 ? "on" : "")">접속로그</a></li>
+                                </ul>
+                            }
+                            else
+                            {
+                                <a id="menu_dapth_admin" href="#"><i class="fa fa-user"></i><span class="fold_hide">관리자 관리</span></a>
+                                <ul class="depth2">
+                                    <li><a href="/SiteMngHome/Admin/Org/List">조직관리</a></li>
+                                    <li><a href="/SiteMngHome/Admin/Admin_Auth/List">관리자 권한관리</a></li>
+                                    <li><a href="/SiteMngHome/Admin/System_Auth/List">보고시스템 권한관리</a></li>
+                                    <li><a href="/SiteMngHome/Admin/Disclosure/List">공시항목관리</a></li>
+                                    <li><a href="/SiteMngHome/Admin/Admin_Access_Log/List">접속로그</a></li>
+                                </ul>
+                            }
+
+                        </li>
+                        <li>
+                            @if (url.IndexOf("/SiteMngHome/Schedule/") > 0)
+                            {
+                                <a id="menu_dapth_code" href="#" class="on"><i class="fa fa-envelope-o"></i><span class="fold_hide">일정관리</span></a>
+                                <ul class="depth2" style="display:inline;">
+                                    <li><a href="/SiteMngHome/Schedule/List" class="@(url.IndexOf("/SiteMngHome/Schedule/") > 0 ? "on" : "")">등록일정계획</a></li>
+                                </ul>
+                            }
+                            else
+                            {
+                                <a id="menu_dapth_code" href="#"><i class="fa fa-envelope-o"></i><span class="fold_hide">일정관리</span></a>
+                                <ul class="depth2">
+                                    <li><a href="/SiteMngHome/Schedule/List">등록일정계획</a></li>
+                                </ul>
+                            }
+                        </li>
+                    }
+                    if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자") ||
+                        session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자") ||
+                        session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("중간 관리자2") ||
+                        session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("실적 담당자"))
+                    {
+                        <li>
+                            @if (url.IndexOf("/SiteMngHome/Plan/") > 0)
+                            {
+                                <a id="menu_dapth_plan" href="#" class="on"><i class="fa fa-envelope-o"></i><span class="fold_hide">사업계획</span></a>
+                                <ul class="depth2" style="display:inline;">
+                                    <li><a href="/SiteMngHome/Plan/Monthly_Pal/List" class="@(url.IndexOf("/SiteMngHome/Plan/Monthly_Pal/") > 0 ? "on" : "")">손익월별계획</a></li>
+                                    <li><a href="/SiteMngHome/Plan/Year_Pal/List" class="@(url.IndexOf("/SiteMngHome/Plan/Year_Pal/") > 0 ? "on" : "")">손익중기계획</a></li>
+                                    <li><a href="/SiteMngHome/Plan/Year_Bs/List" class="@(url.IndexOf("/SiteMngHome/Plan/Year_Bs/") > 0 ? "on" : "")">중기BS</a></li>
+                                    @if (orgCount > 0)
+                                    {
+                                        <li><a href="/SiteMngHome/Plan/Year_Bs_Ex/List" class="@(url.IndexOf("/SiteMngHome/Plan/Year_Bs_Ex/") > 0 ? "on" : "")">중기BS - (주)한라 별도</a></li>
+                                    }
+                                    <li><a href="/SiteMngHome/Plan/Year_Cf/List" class="@(url.IndexOf("/SiteMngHome/Plan/Year_Cf/") > 0 ? "on" : "")">중기CF</a></li>
+                                    <li><a href="/SiteMngHome/Plan/Monthly_Invest/List" class="@(url.IndexOf("/SiteMngHome/Plan/Monthly_Invest/") > 0 ? "on" : "")">월별투자인원계획</a></li>
+                                    <li><a href="/SiteMngHome/Plan/Year_Invest/List" class="@(url.IndexOf("/SiteMngHome/Plan/Year_Invest/") > 0 ? "on" : "")">중기투자인원계획</a></li>
+                                    @if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                                    {
+                                        <li><a href="/SiteMngHome/Plan/Group/List" class="@(url.IndexOf("/SiteMngHome/Plan/Group/") > 0 ? "on" : "")">그룹데이터 요약</a></li>
+                                    }
+                                </ul>
+
+                            }
+                            else
+                            {
+                                <a id="menu_dapth_plan" href="#"><i class="fa fa-envelope-o"></i><span class="fold_hide">사업계획</span></a>
+                                <ul class="depth2">
+                                    <li><a href="/SiteMngHome/Plan/Monthly_Pal/List">손익월별계획</a></li>
+                                    <li><a href="/SiteMngHome/Plan/Year_Pal/List">손익중기계획</a></li>
+                                    <li><a href="/SiteMngHome/Plan/Year_Bs/List">중기BS</a></li>
+                                    @if (orgCount > 0)
+                                    {
+                                        <li><a href="/SiteMngHome/Plan/Year_Bs_Ex/List">중기BS - (주)한라 별도</a></li>
+                                    }
+                                    <li><a href="/SiteMngHome/Plan/Year_Cf/List">중기CF</a></li>
+                                    <li><a href="/SiteMngHome/Plan/Monthly_Invest/List">월별투자인원계획</a></li>
+                                    <li><a href="/SiteMngHome/Plan/Year_Invest/List">중기투자인원계획</a></li>
+                                    @if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                                    {
+                                        <li><a href="/SiteMngHome/Plan/Group/List">그룹데이터 요약</a></li>
+                                    }
+                                </ul>
+                            }
+                        </li>
+                        <li>
+                            @if (url.IndexOf("/SiteMngHome/Performance/") > 0)
+                            {
+                                <a id="menu_dapth_performance" href="#" class="on"><i class="fa fa-envelope-o"></i><span class="fold_hide">경영실적</span></a>
+                                <ul class="depth2" style="display:inline;">
+                                    <li><a href="/SiteMngHome/Performance/Cash_Flow/List" class="@(url.IndexOf("/SiteMngHome/Performance/Cash_Flow/") > 0 ? "on" : "")">Cash Flow</a></li>
+                                    <li><a href="/SiteMngHome/Performance/Pal/List" class="@(url.IndexOf("/SiteMngHome/Performance/Pal/") > 0 ? "on" : "")">손익</a></li>
+                                    <li><a href="/SiteMngHome/Performance/Quarter_Pal/List" class="@(url.IndexOf("/SiteMngHome/Performance/Quarter_Pal/") > 0 ? "on" : "")">분기별 손익</a></li>
+                                    <li><a href="/SiteMngHome/Performance/BsNew/List" class="@(url.IndexOf("/SiteMngHome/Performance/BsNew/") > 0 ? "on" : "")">BS</a></li>
+                                    @if (orgCount > 0)
+                                    {
+                                        <li><a href="/SiteMngHome/Performance/BsEx/List" class="@(url.IndexOf("/SiteMngHome/Performance/BsEx/") > 0 ? "on" : "")">BS - (주)한라 별도</a></li>
+                                    }
+                                    @*<li><a href="/SiteMngHome/Performance/Invest/List">투자.인원</a></li>*@
+                                    <li><a href="/SiteMngHome/Performance/InvestNew/List" class="@(url.IndexOf("/SiteMngHome/Performance/InvestNew/") > 0 ? "on" : "")">투자.인원</a></li>
+                                    @if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                                    {
+                                        <li><a href="/SiteMngHome/Performance/Group/List" class="@(url.IndexOf("/SiteMngHome/Performance/Group/") > 0 ? "on" : "")">그룹데이터 요약</a></li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <a id="menu_dapth_performance" href="#"><i class="fa fa-envelope-o"></i><span class="fold_hide">경영실적</span></a>
+                                <ul class="depth2">
+                                    <li><a href="/SiteMngHome/Performance/Cash_Flow/List">Cash Flow</a></li>
+                                    <li><a href="/SiteMngHome/Performance/Pal/List">손익</a></li>
+                                    <li><a href="/SiteMngHome/Performance/Quarter_Pal/List">분기별 손익</a></li>
+                                    <li><a href="/SiteMngHome/Performance/BsNew/List">BS</a></li>
+                                    @if (orgCount > 0)
+                                    {
+                                        <li><a href="/SiteMngHome/Performance/BsEx/List">BS - (주)한라 별도</a></li>
+                                    }
+                                    @*<li><a href="/SiteMngHome/Performance/Invest/List">투자.인원</a></li>*@
+                                    <li><a href="/SiteMngHome/Performance/InvestNew/List">투자.인원</a></li>
+                                    @if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                                    {
+                                        <li><a href="/SiteMngHome/Performance/Group/List">그룹데이터 요약</a></li>
+                                    }
+                                </ul>
+                            }
+                        </li>
+                        <li>
+                            @if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                            {
+                                if (url.IndexOf("/SiteMngHome/Correct/") > 0)
+                                {
+                                    <a id="menu_dapth_notice" href="#" class="on"><i class="fa fa-envelope-o"></i><span class="fold_hide">그룹데이터조정</span></a>
+                                    <ul class="depth2" style="display:inline;">
+                                        <li><a href="/SiteMngHome/Correct/PlanList" class="@(url.IndexOf("/SiteMngHome/Correct/PlanList") > 0 ? "on" : "")">계획 조정</a></li>
+                                        <li><a href="/SiteMngHome/Correct/PerformanceList" class="@(url.IndexOf("/SiteMngHome/Correct/PerformanceList") > 0 ? "on" : "")">실적 조정</a></li> >
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <a id="menu_dapth_notice" href="#"><i class="fa fa-envelope-o"></i><span class="fold_hide">그룹데이터조정</span></a>
+                                    <ul class="depth2">
+                                        <li><a href="/SiteMngHome/Correct/PlanList">계획 조정</a></li>
+                                        <li><a href="/SiteMngHome/Correct/PerformanceList">실적 조정</a></li>
+                                    </ul>
+                                }
+                            }
+                        </li>
+                        <li>
+                            @if (url.IndexOf("/SiteMngHome/Info/") > 0)
+                            {
+                                <a id="menu_dapth_guide" href="#" class="on"><i class="fa fa-cog"></i><span class="fold_hide">안내센터</span></a>
+                                <ul class="depth2" style="display:inline;">
+                                    <li><a href="/SiteMngHome/Info/Notice/List" class="@(url.IndexOf("/SiteMngHome/Info/Notice/") > 0 ? "on" : "")">공지사항</a></li>
+                                    <li><a href="/SiteMngHome/Info/Reference/List" class="@(url.IndexOf("/SiteMngHome/Info/Reference/") > 0 ? "on" : "")">자료실</a></li>
+                                </ul>
+                            }
+                            else
+                            {
+                                <a id="menu_dapth_guide" href="#"><i class="fa fa-cog"></i><span class="fold_hide">안내센터</span></a>
+                                <ul class="depth2">
+                                    <li><a href="/SiteMngHome/Info/Notice/List">공지사항</a></li>
+                                    <li><a href="/SiteMngHome/Info/Reference/List">자료실</a></li>
+                                </ul>
+                            }
+                        </li>
+                    }
+                    if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                    {
+
+                        <li>
+                            @if (url.IndexOf("/SiteMngHome/MngInfo/") > 0)
+                            {
+                                <a id="menu_dapth_notice" href="#" class="on"><i class="fa fa-cog"></i><span class="fold_hide">안내/알림관리</span></a>
+                                <ul class="depth2" style="display:inline;">
+                                    <li><a href="/SiteMngHome/MngInfo/Notice_Mng/List" class="@(url.IndexOf("/SiteMngHome/MngInfo/Notice_Mng/") > 0 ? "on" : "")">공지사항 관리</a></li>
+                                    <li><a href="/SiteMngHome/MngInfo/Reference_Mng/List" class="@(url.IndexOf("/SiteMngHome/MngInfo/Reference_Mng/") > 0 ? "on" : "")">자료실 관리</a></li>
+                                    <li><a href="/SiteMngHome/MngInfo/Performance/List" class="@(url.IndexOf("/SiteMngHome/MngInfo/Performance/") > 0 ? "on" : "")">경영실적 관리</a></li>
+                                    <li><a href="/SiteMngHome/MngInfo/Reply/BuList" class="@(url.IndexOf("/SiteMngHome/MngInfo/Performance/") > 0 ? "on" : "")">사업계획 댓글관리</a></li>
+                                    <li><a href="/SiteMngHome/MngInfo/Reply/PmList?searchCpySeq=-1" class="@(url.IndexOf("/SiteMngHome/MngInfo/Performance/") > 0 ? "on" : "")">경영실적 댓글관리</a></li>
+                                </ul>
+                            }
+                            else
+                            {
+                                <a id="menu_dapth_notice" href="#"><i class="fa fa-cog"></i><span class="fold_hide">안내/알림관리</span></a>
+                                <ul class="depth2">
+                                    <li><a href="/SiteMngHome/MngInfo/Notice_Mng/List">공지사항 관리</a></li>
+                                    <li><a href="/SiteMngHome/MngInfo/Reference_Mng/List">자료실 관리</a></li>
+                                    <li><a href="/SiteMngHome/MngInfo/Performance/List">경영실적 관리</a></li>
+                                    <li><a href="/SiteMngHome/MngInfo/Reply/BuList">사업계획 댓글관리</a></li>
+                                    <li><a href="/SiteMngHome/MngInfo/Reply/PmList?searchCpySeq=-1">경영실적 댓글관리</a></li>
+                                </ul>
+                            }
+                        </li>
+
+                    }
+                    if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                    {
+                        <li>
+                            @if (url.IndexOf("/SiteMngHome/Confirm/") > 0)
+                            {
+                                <a id="menu_dapth_notice" href="#" class="on"><i class="fa fa-cog"></i><span class="fold_hide">승인관리</span></a>
+                                <ul class="depth2" style="display:inline;">
+                                    <!--  <li><a href="/SiteMngHome/Confirm/BuList" class="@(url.IndexOf("/SiteMngHome/Confirm/") > 0 ? "on" : "")">승인관리</a></li>-->
+                                    <li><a href="/SiteMngHome/Confirm/PmList" class="@(url.IndexOf("/SiteMngHome/Confirm/") > 0 ? "on" : "")">경영실적 승인관리</a></li>
+                                </ul>
+                            }
+                            else
+                            {
+                                <a id="menu_dapth_notice" href="#"><i class="fa fa-cog"></i><span class="fold_hide">승인관리</span></a>
+                                <ul class="depth2">
+                                    <!--  <li><a href="/SiteMngHome/Confirm/BuList">승인관리</a></li>-->
+                                    <li><a href="/SiteMngHome/Confirm/PmList">경영실적 승인관리</a></li>
+                                </ul>
+                            }
+                        </li>
+
+                    }
+                    if (session.adminAuth.AuthLevel == Define.AUTH_LEVEL.GetKey("최종 관리자"))
+                    {
+                        <li>
+                            @if (url.IndexOf("/SiteMngHome/Disclosure/") > 0)
+                            {
+                                <a id="menu_dapth_notice" href="#" class="on"><i class="fa fa-cog"></i><span class="fold_hide">공시관리</span></a>
+                                <ul class="depth2" style="display:inline;">
+                                    <li><a href="/SiteMngHome/Disclosure/DisclosureList" class="@(url.IndexOf("/SiteMngHome/Disclosure/") > 0 ? "on" : "")">공시등록</a></li>
+                                    <li><a href="/SiteMngHome/Disclosure/DisclosureDraftList" class="@(url.IndexOf("/SiteMngHome/Disclosure/") > 0 ? "on" : "")">공시초안</a></li>
+
+                                </ul>
+                            }
+                            else
+                            {
+                                <a id="menu_dapth_notice" href="#"><i class="fa fa-cog"></i><span class="fold_hide">공시관리</span></a>
+                                <ul class="depth2">
+                                    <li><a href="/SiteMngHome/Disclosure/DisclosureList">공시등록</a></li>
+                                    <li><a href="/SiteMngHome/Disclosure/DisclosureDraftList" class="@(url.IndexOf("/SiteMngHome/Disclosure/") > 0 ? "on" : "")">공시초안</a></li>
+
+                                </ul>
+                            }
+                        </li>
+
+                    }
+                }
+            </ul>
+            <a href="#" class="btn_fold"><img src="~/contents/siteMngHome/common/img/btn_fold.png" alt="" /></a>
+        </nav>
+
+        <!--// container-->
+        @RenderBody()
+        <!--// container-->
+
+        @*<div id="layerComment" class="layer">
+          <!-- TODO JS : MYAPP.layerControl.layerShow($('#layerComment')); -->
+            <div class="layer_in">
+                <div class="comment_box_wrap">
+                    <textarea placeholder="최대 200자 이내로 입력해 주세요"></textarea>
+                    <button class="btn">댓글<br />등록</button>
+                </div><!--//comment_box_wrap-->
+                <a href="javascript:;" onclick="javascript: MYAPP.layerControl.layerHide($('#layerComment')); return false;" class="btn_layer_close"></a>
+            </div><!--//layer_in-->
+        </div>*@
+
+        <div id="mask"></div>
+        <!--//mask-->
+    </div>
+
+<script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/front.js"></script>
+<script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/libs/jquery-ui.js"></script>          <!-- datepicker 사용을 위해 넣어주세요!-->
+<script type="text/javascript">
+    $(function(){
+        MYAPP.common.init();
+
+        // selectbox
+        MYAPP.form.styleSelect($(".style_select select"));
+
+        // file
+        // MYAPP.form.styleFile($(".style_file input[type=file]"));
+        MYAPP.form.styleFile();
+
+        // datepicker
+        MYAPP.form.datePicker("#end_date");
+
+        // datepickerTime
+        MYAPP.form.datePickerTime("#start_date");
+    });
+
+    function goLogOut() {
+        if (confirm('로그아웃하시겠습니까?')) {
+            location.href = "/SiteMngHome/LogOut";
+        }
+    }
+</script>
+@if (!string.IsNullOrEmpty(message))
+{
+    <script>alert('@message');</script>
+}
+</body>
+</html>

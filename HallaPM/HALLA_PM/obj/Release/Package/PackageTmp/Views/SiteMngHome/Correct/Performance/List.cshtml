@@ -1,0 +1,224 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    List<PmGroupdataMonth> list = Model.list;
+    Search search = ViewBag.Search;
+
+    string thisYear = "";
+    string thisMonth = "";
+    string dataType = "";
+    if (!string.IsNullOrEmpty(search.searchYear))
+    {
+        thisYear = search.searchYear;
+    }
+    if (!string.IsNullOrEmpty(search.searchMonth))
+    {
+        thisMonth = search.searchMonth;
+    }
+    if (!string.IsNullOrEmpty(search.searchBusType))
+    {
+        dataType = search.searchBusType;
+    }
+}
+
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>그룹데이터 조정</span>
+        <strong>실적 조정</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="PageIndex" value="@search.PageIndex" />
+        <input type="hidden" name="pmYear" value="" />
+        <input type="hidden" name="pmMonth" value="" />
+        <input type="hidden" name="TableName" value="" />
+        <input type="hidden" name="GroupDataSeq" />
+
+        <div class="con_box search">
+            <h3 class="mt0">실적 조정</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 전체 그룹데이터에 대한 배당 조정을 하실수 있습니다. 
+            </div>
+        </div>
+        <div class="con_box search">
+            <div class="bg_gray">
+                <div class="style_select" style="width:15%;">
+                    <label>
+                        <span></span>
+                        <select name="searchYear">
+                            <option value="">년도</option>
+                            @for (int i = 2017; i <= DateTime.Now.Year + 10; i++)
+                            {
+                                <option value="@i" @(thisYear == i.ToString() ? "selected" : "")>@i</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:15%;">
+                    <label>
+                        <span></span>
+                        <select name="searchMonth">
+                            <option value="">월</option>
+                            @{
+                                string mon = "";
+                            }
+                            @for (int i = 1; i < 13; i++)
+                            {
+                                if (i < 10)
+                                {
+                                    mon = "0" + i;
+                                }
+                                else
+                                {
+                                    mon = i.ToString();
+                                }
+                                <option value="@mon" @(thisMonth == mon ? "selected" : "")>@mon</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:15%;">
+                    <label>
+                        <span></span>
+                        <select name="searchBusType">
+                            @{
+                                var query2 = from m in Define.PERFORMANCE_GROUPDATA_TYPE select m;
+
+                                foreach (var item in query2)
+                                {
+                                    <option value="@item.Key" @(dataType == item.Key ? "selected" : "")>@item.Value</option>
+                                }
+                            }
+                        </select>
+                    </label>
+                </div>
+                <input type="text" name="searchText" value="@ViewBag.Search.searchText" style="width:30%;display:none" />
+                <a href="javascript: onSearch(document.frmMain);" class="btn small full_green" style="width:9%;">검색</a>
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="/" /> 
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>
+                        <th scope="col">연도</th>
+                        <th scope="col">월</th> 
+                        <th scope="col">경영실적 항목</th>
+                        <th scope="col">등록여부</th>
+                        <th scope="col">등록완료일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (list == null || list.Count() <= 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="nv-noData">등록된 데이터가 없습니다.</td>
+                        </tr>
+
+                    }
+                    else
+                    {
+                        foreach (var item in list)
+                        {
+                            <tr>
+                                <td>@item.RowNum</td>
+                                <td>@item.GroupdataYear</td>
+                                <td>@item.GroupdataMonth</td>
+                                <td>
+                                    @if (item.RegistStatus > 0)
+                                    {
+                                        <a class="underline" href="javascript:;" onclick="onEdit(@item.Seq,'@item.GroupdataYear','@item.GroupdataMonth', '@item.DataType');">@Define.PERFORMANCE_GROUPDATA_TYPE.GetValue(item.DataType)</a>
+                                    }
+                                    else
+                                    {
+                                        <a href="javascript:;" onclick="alert('데이터가 취합되지 않았습니다. 회사별 최종승인 여부를 다시 확인해주세요')">@Define.PERFORMANCE_GROUPDATA_TYPE.GetValue(item.DataType)</a>
+                                    }
+                                </td> 
+                                @if (item.RegistStatus > 0)
+                                {
+                                    <td>등록</td>
+                                }
+                                else
+                                {
+                                    <td><span class="tc_red">미등록</span></td>
+                                }
+                                <td>@item.CreateDate.ToShortDateString().Replace("0001-01-01", "-")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <div class="paging">
+                <a href="javascript:;" onclick="onPagingList(document.frmMain, @search.FirstPageIndex)" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                <a href="javascript:;" onclick="onPagingList(document.frmMain, @search.PrevPageIndex)" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                <span>
+                    @for (int i = search.StartPageIndex; i <= search.EndPageIndex; i++)
+                    {
+                        if (search.PageIndex == i)
+                        {
+                            <strong>@i</strong>
+                        }
+                        else
+                        {
+                            <a href="#" onclick="onPagingList(document.frmMain, @i)">@i</a>
+                        }
+                    }
+                </span>
+                <a href="javascript:;" onclick="onPagingList(document.frmMain, @search.NextPageIndex)" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                <a href="javascript:;" onclick="onPagingList(document.frmMain, @search.FinalPageIndex)" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+            </div>
+            <!--// paging-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+    function onEdit(seq,year, month, pageName) {
+        var f = document.frmMain;
+        f.GroupDataSeq.value = seq;
+        f.pmYear.value = year;
+        f.pmMonth.value = month;
+        f.TableName.value = pageName;
+        f.action = "Performance" + funPageName(pageName) + "Edit";
+        f.submit();
+    }
+
+    function onPagingList(form, pageIndex) {
+        form.PageIndex.value = pageIndex;
+        form.action = "PerformanceList";
+        form.submit();
+    }
+
+    function onSearch(form) {
+        form.action = "PerformanceList";
+        form.method = "POST";
+        form.submit();
+    }
+    function funPageName(val) {
+        var strVal = '';
+        switch (val) {
+            case '01': strVal= 'CashFlow';break;
+            case '02': strVal= 'MonthPal';break;
+            case '03': strVal= 'QuarterPal';break;
+            case '04': strVal= 'Bs';break;
+            case '05': strVal= 'Invest'; break;
+           default: strVal = ''; break;
+        }
+        return strVal;
+    }
+</script> 

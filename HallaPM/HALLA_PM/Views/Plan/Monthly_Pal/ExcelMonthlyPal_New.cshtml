@@ -1,0 +1,893 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+    PlanGroup chk = Model.chk;
+
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvUnion = Model.lvUnion;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    // 2019.02.18 만도는 안 보이게 변경
+    lvCompany = lvCompany.Where(w => w.id != "3").ToList();
+
+    List<PmPalBusinessExp> lastPmB = Model.lastPmB;
+    List<PmPalBusinessExp> thisPnB = Model.thisPnB;
+    List<PmPalSummaryExp> lastPmC = Model.lastPmC;
+    List<PmPalSummaryExp> thisPnC = Model.thisPnC;
+
+    List<PmPalSummaryExp> UList = thisPnC.GroupBy(g => new { g.OrgUnionSeq })
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName
+        }).ToList();
+
+    List<PmPalSummaryExp> thisPnU = thisPnC.GroupBy(g => new { g.OrgUnionSeq, g.PalYear, g.Monthly })
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            PalYear = cl.First().PalYear,
+            Monthly = cl.First().Monthly,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    //List<PmPalSummaryExp> thisPnG = thisPnC.GroupBy(g => new { g.PalYear, g.Monthly })
+    //    .Select(cl => new PmPalSummaryExp
+    //    {
+    //        PalYear = cl.First().PalYear,
+    //        Monthly = cl.First().Monthly,
+    //        Sales = cl.Sum(c => c.Sales),
+    //        Ebit = cl.Sum(c => c.Ebit),
+    //        Pbt = cl.Sum(c => c.Pbt)
+    //    }).ToList();
+    List<PlanGroupdataPalMonth> thisPnG = Model.thisGroupPlan;
+    List<PmPalSummaryExp> lastPmU = lastPmC.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).GroupBy(g => new { g.OrgUnionSeq, g.PalYear, g.Monthly })
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            PalYear = cl.First().PalYear,
+            Monthly = cl.First().Monthly,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    List<PmPalSummaryExp> lastPmG = lastPmC.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).GroupBy(g => new { g.PalYear, g.Monthly })
+        .Select(cl => new PmPalSummaryExp
+        {
+            PalYear = cl.First().PalYear,
+            Monthly = cl.First().Monthly,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    // 그룹데이터는 권한이 없어서 안 보이는 부문도 모두 합하였다
+    // 권한 테이블과 조인하여 권한 체크
+    var UListJoin = from u in UList
+                    join uj in lvUnion on u.OrgUnionSeq equals Convert.ToInt32(uj.id)
+                    select new PmPalSummaryExp
+                    {
+                        OrgUnionSeq = u.OrgUnionSeq,
+                        UnionName = u.UnionName
+                    };
+
+    bool isBFirst = false;
+    bool isCfirst = false;
+
+    //string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    string fileName = chk.PlanYear + "년_월별_손익";
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DownExcelPlanMonthlyPal</title>
+    <style>
+        .mytable {
+            border-collapse: collapse;
+        }
+
+            .mytable th, .mytable td {
+                border: 1px solid black;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format:"#,##0"
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\.0%;
+        }
+    </style>
+</head>
+<body>
+    <h3>@(chk.PlanYear)년 손익월별계획</h3>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="30" style="text-align:right">(단위: 억원,%)</td>
+            </tr>
+        </tbody>
+    </table>
+    <table border="1">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="2" colspan="4">구분</th>
+                <th colspan="13">@(Convert.ToInt32(chk.PlanYear) - 1)년 실적</th>
+                <th colspan="13">@(chk.PlanYear)년 사업계획</th>
+            </tr>
+            <tr class="buLevel">
+                @for (int i = 1; i <= 13; i++)
+                {
+                    if (i == 13)
+                    {
+                        <th>계</th>
+                    }
+                    else
+                    {
+                        <th>@(i)월</th>
+                    }
+                }
+                @for (int i = 1; i <= 13; i++)
+                {
+                    if (i == 13)
+                    {
+                        <th>계</th>
+                    }
+                    else
+                    {
+                        <th>@(i)월</th>
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in UList)
+            {
+                var CList = thisPnC.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).GroupBy(g => new { g.OrgCompanySeq })
+                        .Select(cl => new PmPalBusinessExp
+                        {
+                            UnionName = cl.First().UnionName,
+                            OrgCompanySeq = cl.First().OrgCompanySeq,
+                            CompanyName = cl.First().CompanyName
+                        }).ToList(); ;
+                // 권한 테이블과 조인하여 권한있는 회사만 찾기
+
+                var CListJoin = from c in CList
+                                join cj in lvCompany on c.OrgCompanySeq equals Convert.ToInt32(cj.id)
+                                select new PmPalBusinessExp
+                                {
+                                    UnionName = c.UnionName,
+                                    OrgCompanySeq = c.OrgCompanySeq,
+                                    CompanyName = c.CompanyName
+                                };
+                foreach (var item2 in CListJoin)
+                {
+                    var BList = thisPnB.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).GroupBy(g => new { g.OrgBusinessSeq })
+                        .Select(cl => new PmPalBusinessExp
+                        {
+                            UnionName = cl.First().UnionName,
+                            CompanyName = cl.First().CompanyName,
+                            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+                            BusinessName = cl.First().BusinessName
+                        }).ToList();
+                    foreach (var item3 in BList)
+                    {
+                        var buPm = lastPmB.Where(w => w.OrgBusinessSeq == item3.OrgBusinessSeq).Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).ToList();
+                        var buPn = thisPnB.Where(w => w.OrgBusinessSeq == item3.OrgBusinessSeq).ToList();
+                        <tr>
+                            @if (!isCfirst)
+                            {
+                                <th class="buLevel" rowspan="@(BList.Count() * 4)">@(item3.UnionName)</th>
+                                <th class="buLevel" rowspan="@(BList.Count() * 4)">@(item3.CompanyName)</th>
+                                isCfirst = true;
+                            }
+                            @if (!isBFirst)
+                            {
+                                <th class="buLevel" rowspan="4">@(item3.BusinessName)</th>
+                                isBFirst = true;
+                            }
+                            <th class="buLevel">Sales</th>
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    PmPalBusinessExp pm = buPm.GroupBy(g => new { g.PalYear })
+                                        .Select(cl => new PmPalBusinessExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit),
+                                            Pbt = cl.Sum(c => c.Pbt)
+                                        }).FirstOrDefault();
+                                    if (pm == null) { pm = new PmPalBusinessExp(); }
+                                    <td class="MsoNTwo">@(pm.Sales)</td>
+                                }
+                                else
+                                {
+                                    PmPalBusinessExp pm = buPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    if (pm == null) { pm = new PmPalBusinessExp(); }
+                                    <td class="MsoNTwo">@(pm.Sales)</td>
+                                }
+                            }
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    PmPalBusinessExp pn = buPn.GroupBy(g => new { g.PalYear })
+                                        .Select(cl => new PmPalBusinessExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit),
+                                            Pbt = cl.Sum(c => c.Pbt)
+                                        }).FirstOrDefault();
+                                    <td class="MsoNTwo">@(pn.Sales)</td>
+                                }
+                                else
+                                {
+                                    PmPalBusinessExp pn = buPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    <td class="MsoNTwo">@(pn.Sales)</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="buLevel">EBIT</th>
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    PmPalBusinessExp pm = buPm.GroupBy(g => new { g.PalYear })
+                                        .Select(cl => new PmPalBusinessExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit),
+                                            Pbt = cl.Sum(c => c.Pbt)
+                                        }).FirstOrDefault();
+                                    if (pm == null) { pm = new PmPalBusinessExp(); }
+                                    <td class="MsoNTwo">@(pm.Ebit)</td>
+                                }
+                                else
+                                {
+                                    PmPalBusinessExp pm = buPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    if (pm == null) { pm = new PmPalBusinessExp(); }
+                                    <td class="MsoNTwo">@(pm.Ebit)</td>
+                                }
+                            }
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    PmPalBusinessExp pn = buPn.GroupBy(g => new { g.PalYear })
+                                        .Select(cl => new PmPalBusinessExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit),
+                                            Pbt = cl.Sum(c => c.Pbt)
+                                        }).FirstOrDefault();
+                                    <td class="MsoNTwo">@(pn.Ebit)</td>
+                                }
+                                else
+                                {
+                                    PmPalBusinessExp pn = buPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    <td class="MsoNTwo">@(pn.Ebit)</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="buLevel">%</th>
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    PmPalBusinessExp pm = buPm.GroupBy(g => new { g.PalYear })
+                                        .Select(cl => new PmPalBusinessExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit),
+                                            Pbt = cl.Sum(c => c.Pbt)
+                                        }).FirstOrDefault();
+                                    if (pm == null) { pm = new PmPalBusinessExp(); }
+                                    <td class="MsoNTwoPer">@(WebUtil.NumberRound(pm.Ebit, pm.Sales, 1, 4))</td>
+                                }
+                                else
+                                {
+                                    PmPalBusinessExp pm = buPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    if (pm == null) { pm = new PmPalBusinessExp(); }
+                                    <td class="MsoNTwoPer">@(WebUtil.NumberRound(pm.Ebit, pm.Sales, 1, 4))</td>
+                                }
+                            }
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    PmPalBusinessExp pn = buPn.GroupBy(g => new { g.PalYear })
+                                        .Select(cl => new PmPalBusinessExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit),
+                                            Pbt = cl.Sum(c => c.Pbt)
+                                        }).FirstOrDefault();
+                                    <td class="MsoNTwoPer">@(WebUtil.NumberRound(pn.Ebit, pn.Sales, 1, 4))</td>
+                                }
+                                else
+                                {
+                                    PmPalBusinessExp pn = buPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    <td class="MsoNTwoPer">@(WebUtil.NumberRound(pn.Ebit, pn.Sales, 1, 4))</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="buLevel">PBT</th>
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    PmPalBusinessExp pm = buPm.GroupBy(g => new { g.PalYear })
+                                        .Select(cl => new PmPalBusinessExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit),
+                                            Pbt = cl.Sum(c => c.Pbt)
+                                        }).FirstOrDefault();
+                                    if (pm == null) { pm = new PmPalBusinessExp(); }
+                                    <td class="MsoNTwo">@(pm.Pbt)</td>
+                                }
+                                else
+                                {
+                                    PmPalBusinessExp pm = buPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    if (pm == null) { pm = new PmPalBusinessExp(); }
+                                    <td class="MsoNTwo">@(pm.Pbt)</td>
+                                }
+                            }
+                            @for (int i = 1; i <= 13; i++)
+                            {
+                                if (i == 13)
+                                {
+                                    PmPalBusinessExp pn = buPn.GroupBy(g => new { g.PalYear })
+                                        .Select(cl => new PmPalBusinessExp
+                                        {
+                                            PalYear = cl.First().PalYear,
+                                            Sales = cl.Sum(c => c.Sales),
+                                            Ebit = cl.Sum(c => c.Ebit),
+                                            Pbt = cl.Sum(c => c.Pbt)
+                                        }).FirstOrDefault();
+                                    <td class="MsoNTwo">@(pn.Pbt)</td>
+                                }
+                                else
+                                {
+                                    PmPalBusinessExp pn = buPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                    <td class="MsoNTwo">@(pn.Pbt)</td>
+                                }
+                            }
+                        </tr>
+
+                        isBFirst = false;
+                    }
+                    isCfirst = false;
+                    var comPm = lastPmC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월"));
+                    var comPn = thisPnC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq);
+                    <tr class="ComLevel">
+                        <th rowspan="4" colspan="3">@(item2.CompanyName)</th>
+                        <th>Sales</th>
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                PmPalSummaryExp pm = comPm.GroupBy(g => new { g.PalYear })
+                                    .Select(cl => new PmPalSummaryExp
+                                    {
+                                        PalYear = cl.First().PalYear,
+                                        Sales = cl.Sum(c => c.Sales),
+                                        Ebit = cl.Sum(c => c.Ebit),
+                                        Pbt = cl.Sum(c => c.Pbt)
+                                    }).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Sales)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pm = comPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Sales)</td>
+                            }
+                        }
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                PmPalSummaryExp pn = comPn.Where(w => w.Monthly == "99").FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Sales)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pn = comPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Sales)</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>EBIT</th>
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                PmPalSummaryExp pm = comPm.GroupBy(g => new { g.PalYear })
+                                    .Select(cl => new PmPalSummaryExp
+                                    {
+                                        PalYear = cl.First().PalYear,
+                                        Sales = cl.Sum(c => c.Sales),
+                                        Ebit = cl.Sum(c => c.Ebit),
+                                        Pbt = cl.Sum(c => c.Pbt)
+                                    }).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Ebit)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pm = comPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Ebit)</td>
+                            }
+                        }
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                PmPalSummaryExp pn = comPn.Where(w => w.Monthly == "99").FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Ebit)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pn = comPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Ebit)</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>%</th>
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                PmPalSummaryExp pm = comPm.GroupBy(g => new { g.PalYear })
+                                    .Select(cl => new PmPalSummaryExp
+                                    {
+                                        PalYear = cl.First().PalYear,
+                                        Sales = cl.Sum(c => c.Sales),
+                                        Ebit = cl.Sum(c => c.Ebit),
+                                        Pbt = cl.Sum(c => c.Pbt)
+                                    }).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwoPer">@(WebUtil.NumberRound(pm.Ebit, pm.Sales, 1, 4))</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pm = comPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwoPer">@(WebUtil.NumberRound(pm.Ebit, pm.Sales, 1, 4))</td>
+                            }
+                        }
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                PmPalSummaryExp pn = comPn.Where(w => w.Monthly == "99").FirstOrDefault();
+                                <td class="MsoNTwoPer">@(WebUtil.NumberRound(pn.Ebit, pn.Sales, 1, 4))</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pn = comPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                <td class="MsoNTwoPer">@(WebUtil.NumberRound(pn.Ebit, pn.Sales, 1, 4))</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>PBT</th>
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                PmPalSummaryExp pm = comPm.GroupBy(g => new { g.PalYear })
+                                    .Select(cl => new PmPalSummaryExp
+                                    {
+                                        PalYear = cl.First().PalYear,
+                                        Sales = cl.Sum(c => c.Sales),
+                                        Ebit = cl.Sum(c => c.Ebit),
+                                        Pbt = cl.Sum(c => c.Pbt)
+                                    }).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Pbt)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pm = comPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Pbt)</td>
+                            }
+                        }
+                        @for (int i = 1; i <= 13; i++)
+                        {
+                            if (i == 13)
+                            {
+                                PmPalSummaryExp pn = comPn.Where(w => w.Monthly == "99").FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Pbt)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pn = comPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Pbt)</td>
+                            }
+                        }
+                    </tr>
+                }
+                // 부문 : 권한 있는 부문만 체크
+                var CheckUList = UListJoin.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).ToList();
+                if (CheckUList.Count() > 0)
+                {
+                    var uniPm = lastPmU.Where(w => w.OrgUnionSeq == item.OrgUnionSeq);
+                    var uniPn = thisPnU.Where(w => w.OrgUnionSeq == item.OrgUnionSeq);
+                    <tr class="UniLevel">
+                        <th rowspan="4" colspan="3">@(item.UnionName)</th>
+                        <th>Sales</th>
+                        @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pm = uniPm.GroupBy(g => new { g.PalYear })
+                                .Select(cl => new PmPalSummaryExp
+                                {
+                                    PalYear = cl.First().PalYear,
+                                    Sales = cl.Sum(c => c.Sales),
+                                    Ebit = cl.Sum(c => c.Ebit),
+                                    Pbt = cl.Sum(c => c.Pbt)
+                                }).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Sales)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pm = uniPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Sales)</td>
+                            }
+                        }
+                        @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pn = uniPn.Where(w => w.Monthly == "99").FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Sales)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pn = uniPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Sales)</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="UniLevel">
+                        <th>EBIT</th>
+                        @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pm = uniPm.GroupBy(g => new { g.PalYear })
+                                .Select(cl => new PmPalSummaryExp
+                                {
+                                    PalYear = cl.First().PalYear,
+                                    Sales = cl.Sum(c => c.Sales),
+                                    Ebit = cl.Sum(c => c.Ebit),
+                                    Pbt = cl.Sum(c => c.Pbt)
+                                }).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Ebit)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pm = uniPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Ebit)</td>
+                            }
+                        }
+                        @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pn = uniPn.Where(w => w.Monthly == "99").FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Ebit)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pn = uniPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Ebit)</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="UniLevel">
+                        <th>%</th>
+                        @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pm = uniPm.GroupBy(g => new { g.PalYear })
+                                .Select(cl => new PmPalSummaryExp
+                                {
+                                    PalYear = cl.First().PalYear,
+                                    Sales = cl.Sum(c => c.Sales),
+                                    Ebit = cl.Sum(c => c.Ebit),
+                                    Pbt = cl.Sum(c => c.Pbt)
+                                }).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwoPer">@(WebUtil.NumberRound(pm.Ebit, pm.Sales, 1, 4))</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pm = uniPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwoPer">@(WebUtil.NumberRound(pm.Ebit, pm.Sales, 1, 4))</td>
+                            }
+                        }
+                        @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pn = uniPn.Where(w => w.Monthly == "99").FirstOrDefault();
+                                <td class="MsoNTwoPer">@(WebUtil.NumberRound(pn.Ebit, pn.Sales, 1, 4))</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pn = uniPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                <td class="MsoNTwoPer">@(WebUtil.NumberRound(pn.Ebit, pn.Sales, 1, 4))</td>
+                            }
+                        }
+                    </tr>
+                    <tr class="UniLevel">
+                        <th>PBT</th>
+                        @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pm = uniPm.GroupBy(g => new { g.PalYear })
+                                .Select(cl => new PmPalSummaryExp
+                                {
+                                    PalYear = cl.First().PalYear,
+                                    Sales = cl.Sum(c => c.Sales),
+                                    Ebit = cl.Sum(c => c.Ebit),
+                                    Pbt = cl.Sum(c => c.Pbt)
+                                }).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Pbt)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pm = uniPm.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                if (pm == null) { pm = new PmPalSummaryExp(); }
+                                <td class="MsoNTwo">@(pm.Pbt)</td>
+                            }
+                        }
+                        @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pn = uniPn.Where(w => w.Monthly == "99").FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Pbt)</td>
+                            }
+                            else
+                            {
+                                PmPalSummaryExp pn = uniPn.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                                <td class="MsoNTwo">@(pn.Pbt)</td>
+                            }
+                        }
+                    </tr>
+                }
+            }
+            <!--그룹-->
+            @if (lvGroup.Count() > 0)
+            {
+                <tr class="GrpLevel">
+                    <th rowspan="4" colspan="3">그룹</th>
+                    <th>Sales</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pm = lastPmG.GroupBy(g => new { g.PalYear })
+                                .Select(cl => new PmPalSummaryExp
+                                {
+                                    PalYear = cl.First().PalYear,
+                                    Sales = cl.Sum(c => c.Sales),
+                                    Ebit = cl.Sum(c => c.Ebit),
+                                    Pbt = cl.Sum(c => c.Pbt)
+                                }).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Sales)</td>
+                        }
+                        else
+                        {
+                            PmPalSummaryExp pm = lastPmG.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Sales)</td>
+                        }
+                    }
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PlanGroupdataPalMonth pn = thisPnG.Where(w => w.GroupdataMonth == "99").FirstOrDefault();
+                            <td class="MsoNTwo">@(pn.Sales)</td>
+                        }
+                        else
+                        {
+                            PlanGroupdataPalMonth pn = thisPnG.Where(w => w.GroupdataMonth == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            <td class="MsoNTwo">@(pn.Sales)</td>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>EBIT</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pm = lastPmG.GroupBy(g => new { g.PalYear })
+                                .Select(cl => new PmPalSummaryExp
+                                {
+                                    PalYear = cl.First().PalYear,
+                                    Sales = cl.Sum(c => c.Sales),
+                                    Ebit = cl.Sum(c => c.Ebit),
+                                    Pbt = cl.Sum(c => c.Pbt)
+                                }).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Ebit)</td>
+                        }
+                        else
+                        {
+                            PmPalSummaryExp pm = lastPmG.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Ebit)</td>
+                        }
+                    }
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PlanGroupdataPalMonth pn = thisPnG.Where(w => w.GroupdataMonth == "99").FirstOrDefault();
+                            <td class="MsoNTwo">@(pn.Ebit)</td>
+                        }
+                        else
+                        {
+                            PlanGroupdataPalMonth pn = thisPnG.Where(w => w.GroupdataMonth == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            <td class="MsoNTwo">@(pn.Ebit)</td>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>%</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pm = lastPmG.GroupBy(g => new { g.PalYear })
+                                .Select(cl => new PmPalSummaryExp
+                                {
+                                    PalYear = cl.First().PalYear,
+                                    Sales = cl.Sum(c => c.Sales),
+                                    Ebit = cl.Sum(c => c.Ebit),
+                                    Pbt = cl.Sum(c => c.Pbt)
+                                }).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwoPer">@(WebUtil.NumberRound(pm.Ebit, pm.Sales, 1, 4))</td>
+                        }
+                        else
+                        {
+                            PmPalSummaryExp pm = lastPmG.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwoPer">@(WebUtil.NumberRound(pm.Ebit, pm.Sales, 1, 4))</td>
+                        }
+                    }
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PlanGroupdataPalMonth pn = thisPnG.Where(w => w.GroupdataMonth == "99").FirstOrDefault();
+                            <td class="MsoNTwoPer">@(WebUtil.NumberRound(pn.Ebit, pn.Sales, 1, 4))</td>
+                        }
+                        else
+                        {
+                            PlanGroupdataPalMonth pn = thisPnG.Where(w => w.GroupdataMonth == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            <td class="MsoNTwoPer">@(WebUtil.NumberRound(pn.Ebit, pn.Sales, 1, 4))</td>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>PBT</th>
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PmPalSummaryExp pm = lastPmG.GroupBy(g => new { g.PalYear })
+                                .Select(cl => new PmPalSummaryExp
+                                {
+                                    PalYear = cl.First().PalYear,
+                                    Sales = cl.Sum(c => c.Sales),
+                                    Ebit = cl.Sum(c => c.Ebit),
+                                    Pbt = cl.Sum(c => c.Pbt)
+                                }).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Pbt)</td>
+                        }
+                        else
+                        {
+                            PmPalSummaryExp pm = lastPmG.Where(w => w.Monthly == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            if (pm == null) { pm = new PmPalSummaryExp(); }
+                            <td class="MsoNTwo">@(pm.Pbt)</td>
+                        }
+                    }
+                    @for (int i = 1; i <= 13; i++)
+                    {
+                        if (i == 13)
+                        {
+                            PlanGroupdataPalMonth pn = thisPnG.Where(w => w.GroupdataMonth == "99").FirstOrDefault();
+                            <td class="MsoNTwo">@(pn.Pbt)</td>
+                        }
+                        else
+                        {
+                            PlanGroupdataPalMonth pn = thisPnG.Where(w => w.GroupdataMonth == i.ToString().PadLeft(2, '0')).FirstOrDefault();
+                            <td class="MsoNTwo">@(pn.Pbt)</td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

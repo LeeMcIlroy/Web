@@ -1,0 +1,59 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "LoginAccessTemp";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    /*
+    string pmSabun = Model.pmSaBun;
+    InsaUserV insa = Model.insa;
+    */
+    List<AdminAuth> adminAuthList = Model.adminAuthList;
+    //string strTet = HttpContext.Current.Server.UrlDecode("https://ep.halla.com/?rtn=%2fPortal%2fGadget%2fSignOnMando%3fSsoId%3dHALLA.HEIS%26HPRSURL%3d%2fSiteMngHome%2fPerformance%2fInvestNew%2fEdit%3a350%3a1");
+    //string strTet2 = HttpContext.Current.Server.UrlDecode("https://ep.halla.com/?rtn=%2fPortal%2fGadget%2fSignOnMando%3fSsoId%3dHALLA.HEIS%26HPRSURL%3d%2fSiteMngHome%2fConfirm%2fRegistSendForm%3a350%3a1%3a2019%3a02%3a8%3a7");
+    //string strTest = HttpContext.Current.Server.UrlDecode("%uC2E0%uB09C%uB2F9...");
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>실적관리시스템 관리자</span>
+        <strong>임시로그인화면</strong>
+
+        <form name="frmMain" method="post">
+            <select name="empNo">
+                <option value="">선택하세요.</option>
+                @{
+        foreach (var item in adminAuthList)
+        {
+                        <option value="@item.AuthUserKey">@(item.AuthUserKorName) - @(Define.AUTH_LEVEL.GetValue(item.AuthLevel)) - @(item.IsUse) </option>
+                    }
+    }
+            </select>
+            <input type="button" onclick="onSave();" value="로그인" />
+            <br />[원본  문자열] : @Model.pmSabun
+            <br />[암호화문자열] : @Model.EncPmSaBun
+            <br />[복호화문자열] : @Model.DecPmSaBun
+
+            @*<br />@Request.Url
+            <br />@Request.Url.Host
+            <br />@Request.Url.Scheme*@
+            @*<br />@Model.DecPmSaBunTest
+            <br />TaNWzz5TMBYUTCmVAX%2FNbc60PbtWlfg3aGyXlNKnYgfb9fZZFTLr8jYbuUhTGmwY%2BHH3PopWy0OENh7Bxq7h2ppmS0UrxSkKiK5t3GVwaj%2BhmIGAMJv34aRIEEaw%2FYHypTETGWG8U1h0Mp%2FnOJWclQ%3D%3D
+            <br />@Server.UrlEncode("TaNWzz5TMBaj4aJk001y6JP+g8Oqt6r7aGyXlNKnYgfb9fZZFTLr8jYbuUhTGmwY+HH3PopWy0OENh7Bxq7h2ppmS0UrxSkKiK5t3GVwaj+hmIGAMJv34aRIEEaw/YHyTba9f11qOiXjdKevkCoCKA==")*@
+        </form>
+        <script>
+                function onSave() {
+                    var f = document.frmMain;
+
+                    if (f.empNo.value == "") {
+                        alert('로그인할 사원을 선택하세요.');
+                        return;
+                    }
+
+                    f.action = "ssoLoginTempProc";
+                    f.submit();
+                }
+        </script>
+    </div>
+</div>
+

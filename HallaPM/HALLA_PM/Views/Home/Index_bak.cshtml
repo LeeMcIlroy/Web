@@ -1,0 +1,131 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<style>
+.btn_download {display:inline-block;padding:0 18px;font-size:12px;color:#a1a5af!important;line-height:32px;text-transform:uppercase;background:#252d3a;}
+.btn_download:after {display:inline-block;content:'\e865';margin-left:10px;font-family:'Linearicons-Free';color:#a1a5af;}
+
+.monthly_total_box {position:relative;width:100%;}
+.monthly_total_box .tit {display:block;padding-bottom:15px;padding-right:155px;color:#1b1b1b;line-height:32px;text-align:right;}
+.monthly_total_box .btn_download {position:absolute;top:0;right:0;}
+.monthly_total_box ul {overflow:hidden;display:table;width:102%;margin:0 -1%;}
+.monthly_total_box ul li {display:table-cell;width:25%;padding:0 1%;}
+.monthly_total_box ul li dl {color:#fff;text-align:center;}
+.monthly_total_box ul li dl dt {padding:30px 0 10px;font-size:16px;color:#a7e1fe;}
+.monthly_total_box ul li dl dd.total {padding-bottom:20px;}
+.monthly_total_box ul li dl dd.rate {padding:15px 0;}
+.monthly_total_box ul li dl dd .num {font-size:36px;font-family:"NotoSanskr_Medium";}
+.monthly_total_box ul li:nth-child(1) dl, .monthly_total_box ul li:nth-child(3) dl {background:#0090d7;}
+.monthly_total_box ul li:nth-child(2) dl, .monthly_total_box ul li:nth-child(4) dl {background:#014099;}
+.monthly_total_box ul li:nth-child(1) dl dd.rate, .monthly_total_box ul li:nth-child(3) dl  dd.rate {background:#0078b6;}
+.monthly_total_box ul li:nth-child(2) dl dd.rate, .monthly_total_box ul li:nth-child(4) dl  dd.rate {background:#013581;}
+.graph_box_wrap {margin-top:30px;}
+.graph_box_wrap h2 a {display:block;position:relative;padding:0 50px 0 20px;font-size:18px;color:#fff;line-height:50px;background:#364660;}
+.graph_box_wrap h2 a:before {display:block;content:'';position:absolute;top:0;right:0;width:50px;height:50px;background:#252d3a;}
+.graph_box_wrap h2 a:after {display:block;content:'\e874';position:absolute;top:0;right:14px;font-family:'Linearicons-Free';color:#fff;transition:all .3s;}
+.graph_box_wrap h2 a.open:after {transform:rotate(180deg);}
+.graph_box_wrap .graph_box {position:relative;width:100%;padding:40px;background:#fff;}
+.graph_box_wrap .unit {display:block;text-align:right;font-size:13px;color:#444;}
+</style>
+<div class="group_wrap">
+    <div class="monthly_total_box">
+        <span class="tit">※ 누계실적 기준</span>
+        <a href="#" class="btn_download">DOWNLOAD</a>
+        <ul>
+            <li>
+                <dl>
+                    <dt>FCF</dt>
+                    <dd class="total"><span class="num">180</span>억</dd>
+                    <dd class="rate">달성률 98%</dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dt>SALES</dt>
+                    <dd class="total"><span class="num">242</span>억</dd>
+                    <dd class="rate">달성률 98%</dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dt>EBIT</dt>
+                    <dd class="total"><span class="num">15</span>억(<span class="num">98</span>%)</dd>
+                    <dd class="rate">달성률 98%</dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dt>ROIC</dt>
+                    <dd class="total"><span class="num">120</span>%</dd>
+                    <dd class="rate">달성률 130%</dd>
+                </dl>
+            </li>
+        </ul>
+    </div><!--//monthly_total_box-->
+
+    <div class="graph_box_wrap">
+        <h2><a href="#">KPI Signal</a></h2>
+        <div class="graph_box">
+            <span class="unit">(단위 : %)</span>
+            <div class="box">
+                <div class="graph">그래프영역</div>
+            </div><!--//box-->
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+
+    <div class="graph_box_wrap">
+        <h2><a href="#">KPI X-Y Graph</a></h2>
+        <div class="graph_box">
+            <span class="unit">(단위 : 억원, %)</span>
+            <div class="box">
+                <div class="graph">그래프영역</div>
+            </div><!--//box-->
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+
+    <div class="graph_box_wrap">
+        <h2><a href="#">Cash Flow</a></h2>
+        <div class="graph_box">
+            <span class="unit">(단위: 억원)</span>
+            <div class="box">
+                <div class="graph">그래프영역</div>
+            </div><!--//box-->
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+
+    <div class="graph_box_wrap">
+        <h2><a href="#">당월 / 누계 손익</a></h2>
+
+        <div class="graph_box">
+            <h3>당월 손익</h3>
+
+            <div class="box_wrap">
+                <div class="box_2">
+                    <h4>Sales</h4>
+                    <span class="unit">(단위 : 억원, %)</span>
+                    <div class="graph">
+                        그래프영역
+                    </div>
+                    <!--//graph-->
+                </div><!--//box_2-->
+
+                <div class="box_2">
+                    <h4>Sales</h4>
+                    <span class="unit">(단위 : 억원, %)</span>
+                    <div class="graph">
+                        그래프영역
+                    </div>
+                    <!--//graph-->
+                </div><!--//box_2-->
+            </div><!--//box_wrap-->
+            
+            <div class="table_wrap">
+
+            </div><!--//table_wrap-->
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+
+</div><!--//group_wrap-->
+

@@ -1,0 +1,67 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+
+    PlanMonthlyPal planMonthlyPal = Model.planMonthlyPal;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<PlanMonthlyPalBusiness> pBusinessList = Model.pBusinessList;
+
+    string fileName = "손익월별계획_" + planMonthlyPal.MonthlyPalYear + "년_" + orgCompanyName.CompanyName;
+
+    fileName = Server.UrlEncode(fileName);
+
+    Response.Charset = "UTF-8";
+    Response.ContentEncoding = System.Text.Encoding.GetEncoding("UTF-8");
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + fileName + ".xls");
+    Response.ContentType = "application/ms-excel";
+    //Response.AppendHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
+    //Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    //Response.AppendHeader("Content-Disposition", "attachment;filename=" + fileName + ".xlsx");
+    //Response.ContentType = "application/ms-excel";
+}
+
+
+<div>
+    <h3>손익월별계획 - 엑셀 업로드 양식</h3>
+    <h4>등록년도 : <label>@(planMonthlyPal.MonthlyPalYear)</label></h4>
+    <h4>회사 : <label>@orgCompanyName.UnionName > @orgCompanyName.CompanyName</label></h4>
+    <h4 style="color:red;">해당 양식은 상단의 회사에 해당년도에서만 업로드 가능합니다.</h4>
+    <h4 style="color:red;">다른 년도나 다른 회사에서는 해당 폼에서 다운로드 하여 사용하십시요.</h4>
+    <h4 style="color:red;">노란색 이외의 항목을 수정하면 업로드가 불가능할 수 있습니다.</h4>
+</div>
+<div>
+    <table border="1" cellpadding="0" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ParentSeq</th>
+                <th>Seq</th>
+                <th>BusinessSeq</th>
+                <th>회사명</th>
+                <th>Business명</th>
+                <th>월</th>
+                <th>Sales</th>
+                <th>Ebit</th>
+                <th>Pbt</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in pBusinessList)
+            {
+                <tr>
+                    <th>@item.PlanMonthlyPalSeq</th>
+                    <th>@item.Seq</th>
+                    <th>@item.OrgBusinessSeq</th>
+                    <th>@item.CompanyName</th>
+                    <th>@item.BusinessName</th>
+                    <th>@item.Monthly</th>
+                    <th style="background-color:yellow">@item.Sales</th>
+                    <th style="background-color:yellow">@item.Ebit</th>
+                    <th style="background-color:yellow">@item.Pbt</th>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

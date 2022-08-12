@@ -1,0 +1,27 @@
+2019-08-26 15:45:03 | System.Data.SqlClient.SqlException (0x80131904): '
+					                        AND  MONTHLY_TYPE = @MonthlyTypeFirst) B
+	                        GROUP BY   DashBoardCashEbit,Da' 근처의 구문이 잘못되었습니다.
+문자열 '
+			                        FROM  PM_GROUPDATA_PAL_MONTHLY
+			                        WHERE  GROUPDATA_YEAR =  @Year
+					                        AND GROUPDATA_MONTH =  @Month
+					                        AND  MONTHLY_TYPE =@MonthlyTypeSecond) B
+	                        GROUP BY  DashBoardCashEbit,DashBoardCashPlanEbit'의 따옴표가 짝이 맞지 않습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.GroupMainRepo.groupMainEbit_NEW(Object param) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\GroupMain\GroupMainRepo.cs:줄 479
+ClientConnectionId:13ec350d-8913-4da0-845b-9aa5bf3885f4
+Error Number:102,State:1,Class:15

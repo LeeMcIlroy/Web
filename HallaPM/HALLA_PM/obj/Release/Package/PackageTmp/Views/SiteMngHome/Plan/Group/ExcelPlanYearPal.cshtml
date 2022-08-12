@@ -1,0 +1,348 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+
+    PlanGroup chk = Model.chk;
+    List<PmPalBusinessExp> pmLastYearBu = Model.pmLastYearBu;
+    List<PmPalSummaryExp> pmLastYearCom = Model.pmLastYearCom;
+    List<PlanYearPalBusinessExp> pnThisYearBu = Model.pnThisYearBu;
+    List<PlanYearPalBusinessSummaryExp> pnThisYearCom = Model.pnThisYearCom;
+
+    var unionGroupPn = pnThisYearCom.GroupBy(g => new { g.OrgUnionSeq, g.YearlyYear })
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+
+        }).ToList();
+
+    var unionGroupPm = pmLastYearCom.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+        .Where(w => w.Monthly == "12")
+        .GroupBy(g => new { g.OrgUnionSeq, g.PalYear })
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            PalYear = cl.First().PalYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    var unionGroupList = unionGroupPm.GroupBy(g => g.OrgUnionSeq)
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName
+        }).ToList();
+
+    var pmLastYearBuWhere = pmLastYearBu.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).Where(w => w.Monthly == "12").ToList();
+
+    var businessList = pnThisYearBu.GroupBy(g => new { g.OrgCompanySeq, g.OrgBusinessSeq })
+        .Select(cl => new PlanYearPalBusinessExp
+        {
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+            BusinessName = cl.First().BusinessName
+        }).ToList();
+
+    // 손익중기에 합계값을 저장하기에 해당 사항은 뺀다.
+    var groupSumPn = unionGroupPn.Where(w => w.YearlyYear != "99").Where(w=>w.YearlyYear != "9999").GroupBy(g => g.YearlyYear)
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+
+        }).ToList();
+
+    var groupSumPm = unionGroupPm
+        .GroupBy(g => g.PalYear)
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            PalYear = cl.First().PalYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    var companyList = pnThisYearCom.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        }).ToList();
+
+    string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>중기 손익</h2>
+    </div><!--//top_wrap-->
+
+        <div class="con_wrap">
+            <div class="graph_box">
+                <h3>한라 그룹</h3>
+
+                <div class="box">
+                    <div class="graph">
+                        <table class="tbl tbl_type01" border="1">
+                            <colgroup>
+                                <col width="7%" />
+                                <col width="7%" />
+                                <col width="/" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th scope="col" colspan="8" class="rbd lbd0" style="text-align:right;">
+                                        (단위 : 억원)
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="col" colspan="2" class="rbd lbd0">
+                                        구분
+                                    </th>
+                                    <th scope="col">@(Convert.ToInt32(groupSumPn.First().YearlyYear) - 1)년</th>
+                                    @foreach (var item in groupSumPn)
+                                    {
+                                        var y = item.YearlyYear + "년";
+                                        <th scope="col">@y</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                @foreach (var union in unionGroupList)
+                                {
+                                    var unionPmRow = unionGroupPm.Where(w => w.OrgUnionSeq == union.OrgUnionSeq).First() == null ? new PmPalSummaryExp() : unionGroupPm.Where(w => w.OrgUnionSeq == union.OrgUnionSeq).First();
+                                    var unionpnRows = unionGroupPn.Where(w => w.OrgUnionSeq == union.OrgUnionSeq).ToList();
+                                    <tr>
+                                        <th scope="row" rowspan="4" class="lbd0">
+                                            @union.UnionName
+                                        </th>
+                                        <th scope="row">Sales</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(unionPmRow.Sales, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                        @foreach (var summary in unionpnRows)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Sales, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">EBIT</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(unionPmRow.Ebit, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                        @foreach (var summary in unionpnRows)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Ebit, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">%</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00%">@Math.Round(unionPmRow.Sales == 0 ? 0 : unionPmRow.Ebit / unionPmRow.Sales, 4, MidpointRounding.AwayFromZero).ToString()</td>
+                                        @foreach (var summary in unionpnRows)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00%">@(summary.Sales == 0 ? "0" : Math.Round(summary.Ebit / summary.Sales, 4, MidpointRounding.AwayFromZero).ToString())</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">PBT</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(unionPmRow.Pbt, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                        @foreach (var summary in unionpnRows)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Pbt, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                        }
+                                    </tr>
+                                }
+                                <tr>
+                                    <th scope="row" rowspan="4" class="lbd0">
+                                        합계
+                                    </th>
+                                    <th scope="row">Sales</th>
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupSumPm.Count() == 0 ? 0 : groupSumPm.First().Sales, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                    @foreach (var summary in groupSumPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Sales, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row">EBIT</th>
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupSumPm.Count() == 0 ? 0 : groupSumPm.First().Ebit, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                    @foreach (var summary in groupSumPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Ebit, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row">%</th>
+                                    <td style="mso-number-format:\#\,\#\#0\.00%">@(groupSumPm.Count() == 0 ? "0" : (Math.Round(groupSumPm.First().Sales == 0 ? 0 : groupSumPm.FirstOrDefault().Ebit / groupSumPm.FirstOrDefault().Sales, 4, MidpointRounding.AwayFromZero).ToString()))</td>
+                                    @foreach (var summary in groupSumPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00%">@(summary.Sales == 0 ? "0" : Math.Round(summary.Ebit / summary.Sales, 4, MidpointRounding.AwayFromZero).ToString()) %</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row">PBT</th>
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupSumPm.Count() == 0 ? 0 : groupSumPm.First().Pbt, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                    @foreach (var summary in groupSumPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Pbt, 2, MidpointRounding.AwayFromZero).ToString()</td>
+                                    }
+                                </tr>
+                            </tbody>
+                        </table><!--// tbl-->
+                    </div><!--//graph-->
+                </div><!--//box-->
+            </div><!--//graph_box-->
+        </div><!--//con_wrap-->
+
+    @foreach (var item in companyList.OrderBy(o => o.OrgUnionSeq).ThenBy(t => t.OrgCompanySeq))
+    {
+
+        var pmLastYearBuWhereRow = pmLastYearBuWhere.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).ToList();
+        var pnThisYearBuRow = pnThisYearBu.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).ToList();
+        var pmLastYearComRow = pmLastYearCom.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+            .Where(w => w.Monthly == "12")
+            .Where(w => w.OrgCompanySeq == item.OrgCompanySeq).ToList();
+        var pnThisYearComRow = pnThisYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).Where(w => w.YearlyYear != "99").Where(w => w.YearlyYear != "9999").ToList();
+
+        <div class="type_tab_con" id="yearpal01_@item.OrgCompanySeq">
+            <div class="con_wrap">
+                <div class="graph_box">
+                    <h3>@item.CompanyName</h3>
+                    <div class="box">
+                        <div class="graph">
+                            <table class="tbl tbl_type01" border="1">
+                                <colgroup>
+                                    <col width="7%" />
+                                    <col width="7%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="8" class="rbd lbd0" style="text-align:right;">
+                                            (단위 : 억원)
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col">@(Convert.ToInt32(groupSumPn.First().YearlyYear) - 1)년</th>
+                                        @foreach (var years in groupSumPn)
+                                        {
+                                            var y = years.YearlyYear + "년";
+                                            <th scope="col">@y</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <tbody>
+                                    @foreach (var business in businessList.Where(w => w.OrgCompanySeq ==item.OrgCompanySeq).ToList())
+                                    {
+
+                                        var buPm = pmLastYearBuWhereRow.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).FirstOrDefault() == null ? new PmPalBusinessExp() : pmLastYearBuWhereRow.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).FirstOrDefault();
+                                        var buPn = pnThisYearBuRow.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).ToList();
+
+                                        if (buPn != null)
+                                        {
+                                            <tr>
+                                                <th scope="row" rowspan="4" class="lbd0">
+                                                    @business.BusinessName
+                                                </th>
+                                                <th scope="row">Sales</th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@(buPm == null ? 0 : Math.Round(buPm.Sales, 2, MidpointRounding.AwayFromZero))</td>
+
+                                                @foreach (var data in buPn)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(data.Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            </tr>
+
+                                            <tr>
+                                                <th scope="row" class="lbd0">EBIT</th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@(buPm == null ? 0 : Math.Round(buPm.Ebit, 2, MidpointRounding.AwayFromZero))</td>
+                                                @foreach (var data in buPn)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(data.Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            </tr>
+
+                                            <tr>
+                                                <th scope="row">%</th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00%">@(buPm == null ? 0 : (buPm.Sales == 0 ? 0 : Math.Round(buPm.Ebit / buPm.Sales, 4, MidpointRounding.AwayFromZero)))</td>
+                                                @foreach (var data in buPn)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\.00%">@(data == null ? 0 : (data.Sales == 0 ? 0 : Math.Round(data.Ebit / data.Sales, 4, MidpointRounding.AwayFromZero)))</td>
+                                                }
+                                            </tr>
+
+                                            <tr>
+                                                <th scope="row" class="lbd0">PBT</th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@(buPm == null ? 0 : Math.Round(buPm.Pbt, 2, MidpointRounding.AwayFromZero))</td>
+                                                @foreach (var data in buPn)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(data.Pbt, 2, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            </tr>
+                                        }
+                                    }
+                                    <tr class="total">
+                                        <th scope="row" rowspan="4" class="lbd0">
+                                            합계
+                                        </th>
+                                        <th scope="row">Sales</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearComRow.Count() == 0 ? 0 : pmLastYearComRow.First().Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                        @foreach (var total in pnThisYearComRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(total.Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                        }
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">EBIT</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearComRow.Count() == 0 ? 0 : pmLastYearComRow.First().Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                        @foreach (var total in pnThisYearComRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(total.Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                        }
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">%</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00%">@(pmLastYearComRow.Count() == 0 ? 0 : (pmLastYearComRow.First().Sales == 0 ? 0 : Math.Round(pmLastYearComRow.First().Ebit / pmLastYearComRow.First().Sales, 4, MidpointRounding.AwayFromZero)))</td>
+                                        @foreach (var data in pnThisYearComRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00%">@(data == null ? 0 : (data.Sales == 0 ? 0 : Math.Round(data.Ebit / data.Sales, 4, MidpointRounding.AwayFromZero)))</td>
+                                        }
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">PBT</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearComRow.Count() == 0 ? 0 : pmLastYearComRow.First().Pbt, 2, MidpointRounding.AwayFromZero)</td>
+                                        @foreach (var total in pnThisYearComRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(total.Pbt, 2, MidpointRounding.AwayFromZero)</td>
+                                        }
+                                    </tr>
+                                </tbody>
+
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div><!--//graph-->
+                    </div><!--//box-->
+                </div><!--//graph_box-->
+            </div><!--//con_wrap-->
+        </div><!--//type_tab_con-->
+    }
+
+</div><!--//plan_wrap-->

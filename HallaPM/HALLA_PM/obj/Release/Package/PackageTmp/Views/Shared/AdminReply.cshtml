@@ -1,0 +1,93 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    CommentList commentList = Model;
+
+    /*
+    if (string.IsNullOrWhiteSpace(c.UserKey))
+    {
+        Response.Redirect(Define.SYSTEM_ERROR_PAGE_URL);
+        return;
+    }
+    */
+}
+<div id="layerComment" class="layer">
+    <form name="frmReply" id="frmReply">
+        <input type="hidden" name="UserKey" id="UserKey" value="@commentList.UserKey" />
+        <input type="hidden" name="EmpNo" id="EmpNo" value="@commentList.EmpNo" />
+        <input type="hidden" name="UserKorName" id="UserKorName" value="@commentList.UserKorName" />
+        <input type="hidden" name="CompKorName" id="CompKorName" value="@commentList.CompKorName" />
+        <input type="hidden" name="DeptKorName" id="DeptKorName" value="@commentList.DeptKorName" />
+        <input type="hidden" name="AttachTableName" id="AttachTableName" value="@commentList.AttachTableName" />
+        <input type="hidden" name="AttachTableSeq" id="AttachTableSeq" value="@commentList.AttachTableSeq" />
+        <input type="hidden" name="CommentYear" id="CommentYear" value="@commentList.CommentYear" />
+        <input type="hidden" name="CommentMonth" id="CommentMonth" value="@commentList.CommentMonth" />
+        <input type="hidden" name="AdminWrite" id="AdminWrite" value="Y" />
+        <input type="hidden" name="PageIndex" id="PageIndex" value="1" />
+        <input type="hidden" name="Seq" id="Seq" value="" />
+        <!-- TODO JS : MYAPP.layerControl.layerShow($('#layerComment')); -->
+        <div class="layer_in">
+            <div class="comment_box_wrap">
+                <textarea name="comment" id="comment"></textarea>
+                <button class="btn" type="button" onclick="onAdminReplySave();">댓글<br />등록</button>
+            </div><!--//comment_box_wrap-->
+            <div class="bg_gray">
+              <i class="fa fa-info-circle" aria-hidden="true"></i>
+              입력 된 댓글은 해당 월에 실적등록시스템이 오픈 될 때 모든 메뉴에 동일한 댓글이 첫번 째 댓글로 노출됩니다.
+            </div>
+            <a href="javascript:;" onclick="javascript: MYAPP.layerControl.layerHide($('#layerComment')); return false;" class="btn_layer_close"></a>
+        </div><!--//layer_in-->
+    </form>
+</div>
+<script type="text/javascript">
+
+    function onAdminReplySave() {
+        var f = document.frmReply;
+
+        if (f.comment.value.length > 1500) {
+            alert('1500자 이내로 입력해주세요.');
+            return;
+        }
+        if (f.comment.value.trim().length == 0) {
+            alert('코멘트를 입력해주세요.');
+            return;
+        }
+        $.ajax({
+            url: "/ReplyAdmin/SetReplyAdmin",
+            type: "post",
+            data: $("#frmReply").serialize(),
+            dataType: "json",
+            success: function (res) {
+                if (res.success == true) {
+                    alert(res.result);
+                    MYAPP.layerControl.layerHide($('#layerComment'));
+                }
+                else {
+                    alert(res.result);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                alert("Error : 댓글 입력에 실패했습니다.");
+            }
+        });
+    }
+
+    function onAdminLoad() {
+        var f = document.frmReply;
+        $.ajax({
+            url: "/ReplyAdmin/GetReplyOne",
+            type: "post",
+            data: $("#frmReply").serialize(),
+            dataType: "json",
+            success: function (res) {
+                if (res.List != null) {
+                    $("#comment").text(res.List.Comment);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+            }
+        });
+    }
+</script>

@@ -1,0 +1,272 @@
+﻿@charset "utf-8";
+@import url("reset.css");
+@import url("nv.d3.min.css");
+@import url("nv.d3_2.css");
+@import url("font-awesome.min.css");
+@import url("jquery.mCustomScrollbar.css");
+@import url("layout.css");
+@import url("common.css");
+
+/* 메인 */
+.main_wrap {}
+.main_box { position: relative; margin-top: 40px; }
+.main_box:first-child { margin-top: 0; }
+.main_box:after {display:block;content:'';clear:both;}
+.main_box h2 { margin-bottom: 20px; font-family:'NotoSanskr_Medium';font-size:24px;color:#000; }
+.main_box h2 span { font-family:'NotoSanskr_Light';font-size:14px;color:#000; }
+.main_box .p_right { position: absolute; right: 0; top: 0; line-height: 28px; font-family:'NotoSanskr_Light';font-size:14px;color:#000; }
+.main_box .p_right .style_select { margin-left: 10px; margin-right: 0; }
+.main_box .main_content { background-color: #fff; }
+/* list */
+.main_box.list .main_content { padding: 40px; }
+.main_box.list .list_content { height: 251px; overflow: hidden; }
+.main_box.list .list_content table { width: 100%; border-top: 1px solid #364660; border-bottom: 1px solid #364660; }
+.main_box.list .list_content tr { border-top: 1px solid #e5e5e5; }
+.main_box.list .list_content tr:first-child { border-top: 0; }
+.main_box.list .list_content td { height: 49px; line-height: 49px; text-align: right; color: #707070; font-family: 'NotoSanskr_Light'; font-size: 15px; }
+.main_box.list .list_content td:first-child { text-align: left; }
+.main_box.list .list_content span { font-family: 'NotoSanskr_Medium'; }
+.main_box.list .list_content span.company { color: #000; }
+.main_box.list .list_content span.approval { color: #014099; }
+/* stock */
+.main_box.stock .main_content { position: relative; padding: 40px; }
+.main_box.stock .main_content:after {display:block;content:'';clear:both;}
+.main_box.stock .stock_content { float: left; width: 30%; margin-left: 5%; text-align: center; color: #fff; }
+.main_box.stock .stock_content:first-child { margin-left: 0; }
+.main_box.stock .stock_content.stock1 { background-color: #0090d7; }
+.main_box.stock .stock_content.stock2 { background-color: #014099; }
+.main_box.stock .stock_content.stock3 { background-color: #0090d7; }
+.main_box.stock .stock_content .title { padding: 20px 0; }
+.main_box.stock .stock_content .name { font-family: 'NotoSanskr_Regular'; font-size: 22px; }
+.main_box.stock .stock_content .code { padding-top: 5px; font-family: 'NotoSanskr_Thin'; font-size: 14px; }
+.main_box.stock .stock_content .CurJuka { background-color: rgba(0,0,0,0.2); line-height: 60px; font-family: 'NotoSanskr_Medium'; font-size: 30px; }
+.main_box.stock .stock_content .Debi { padding: 20px 0; }
+.main_box.stock .stock_content .Debi_title { font-family: 'NotoSanskr_Light'; font-size: 14px; }
+.main_box.stock .stock_content .Debi_content { padding: 5px 0; color: #f4ec48; font-family: 'NotoSanskr_Regular'; font-size: 14px; }
+/* exchange */
+.main_box.exchange .main_content { position: relative; }
+.main_box.exchange .main_content:after { display:block; content:''; clear:both; }
+.main_box.exchange .exchange_content { float: left; width: 25%; padding: 40px 0; border-left: 1px solid #e7ebee; text-align: center; }
+.main_box.exchange .exchange_content:first-child { border-left: 0; }
+.main_box.exchange .exchange_content .flag { margin-bottom: 10px; }
+.main_box.exchange .exchange_content .nation { line-height: 30px; font-size: 18px; }
+.main_box.exchange .exchange_content .name { color: #000000; font-family: 'NotoSanskr_Regular'; }
+.main_box.exchange .exchange_content .cur_unit { color: #707070; font-family: 'NotoSanskr_Light'; }
+.main_box.exchange .exchange_content .deal_bas_r { line-height: 60px; color: #0090ff; font-family: 'NotoSanskr_Medium'; font-size: 30px; }
+.main_box.exchange .exchange_content .Debi_content { color: #000; font-family: 'NotoSanskr_Light'; font-size: 16px; }
+/* interest */
+.main_box.interest .main_content { position: relative; }
+.main_box.interest .main_content:after  {display:block; content:''; clear:both; }
+.main_box.interest .interest_content { float: left; width: 33.3333%; padding: 40px; border-left: 1px solid #e7ebee; text-align: center; }
+.main_box.interest .interest_content:first-child { border-left: 0; }
+.main_box.interest .interest_content table { width: 100%; text-align: left; }
+.main_box.interest .interest_content th.title { color: #000; font-family: 'NotoSanskr_Regular'; font-size: 18px; }
+.main_box.interest .interest_content th.num { padding-bottom: 10px; text-align: right; color: #0090ff; font-family: 'NotoSanskr_Medium'; font-size: 30px; }
+.main_box.interest .interest_content td { line-height: 30px; color: #707070; font-family: 'NotoSanskr_Light'; font-size: 15px; }
+.main_box.interest .interest_content td.num { text-align: right; }
+/* loading */
+.loading { position: absolute; width: 100%; height: 100%; left: 0; top: 0; background-color: rgba(255,255,255,0.8); }
+.loading>img { display: block; position: absolute; left: 0; top: 0; right: 0; bottom: 0; margin: auto; }
+
+/* 그룹메인 */
+#kpiTable span {display:inline-block;width:70px;text-align:right;}
+#kpiTable span:before {float:left;content:'';width:14px;height:14px;border-radius:50%;vertical-align:middle;text-align:left;}
+#kpiTable span.cgreen:before {background:#8fc31f;}
+#kpiTable span.corg:before {background:#f39800;}
+#kpiTable span.cred:before {background:#d71826;}
+#kpiTable.tbl_scroll_wrap {padding-left:151px;}
+#kpiTable.tbl_scroll_wrap .tbl_box {width:152px;}
+
+.tbl_info {margin-top:30px;text-align:center;color:#666;}
+.tbl_info strong {font-family:"NotoSanskr_Medium";color:#000;}
+.tbl_info span, .tbl_info strong {margin:0 15px;}
+.tbl_info span:before {display:inline-block;content:'';width:14px;height:14px;margin-right:10px;border-radius:50%;vertical-align:middle;}
+.tbl_info span.cgreen:before {background:#8fc31f;}
+.tbl_info span.corg:before {background:#f39800;}
+.tbl_info span.cred:before {background:#d71826;}
+
+/* 경영실적 */
+.download_box_list {width:100%;margin: 0 -0.3%;}
+.download_box_list:after {display:block;content:'';clear:both;}
+.download_box_list li {float:left;width:20%;padding:0 0.3%;}
+.download_box_list li .download_box {width:100%;padding:28px 0;background:#fff;text-align:center;box-shadow:3px 3px 3px #ccc;}
+.download_box_list li .download_box dt {padding-bottom:40px;margin-bottom:15px;font-size:18px;color:#000;}
+.download_box_list li .down1 dt {background:url("/Contents/user/Common/img/ico_cashflow.gif") bottom center no-repeat;}
+.download_box_list li .down2 dt {background:url("/Contents/user/Common/img/ico_profit.gif") bottom center no-repeat;}
+.download_box_list li .down3 dt {background:url("/Contents/user/Common/img/ico_qprofit.gif") bottom center no-repeat;}
+.download_box_list li .down4 dt {background:url("/Contents/user/Common/img/ico_balance.gif") bottom center no-repeat;}
+.download_box_list li .down5 dt {background:url("/Contents/user/Common/img/ico_invest.gif") bottom center no-repeat;}
+
+
+/* 사업계획 공통 */
+.plan_wrap h3 {position:relative;padding-left:10px;font-family:"NotoSanskr_Medium";font-size:18px;color:#222;}
+.plan_wrap h3:before, .plan_wrap h3:after {display:inline-block;content:'';width:3px;height:7px;position:absolute;left:0;}
+.plan_wrap h3:before {;background:#00ade9;top:3px;}
+.plan_wrap h3:after {background:#014099;top:10px;}
+
+.plan_wrap .con_wrap {background:#fff;margin-bottom:40px;}
+.plan_wrap .con_wrap .graph_box {width:100%;padding:40px;}
+.plan_wrap .con_wrap .graph_box.pd0 {padding:0;}
+.plan_wrap .con_wrap .graph_box .box {margin-top:40px;}
+.plan_wrap .con_wrap .graph_box .box:first-child {margin-top:0;}
+.plan_wrap .con_wrap .graph_box .graph.graph.bd {border:1px solid #c0c0c0;}
+.plan_wrap .con_wrap .tbl tbody th {background:#fff;}
+
+
+
+/*댓글 레이어*/
+.btn_comment {display:block;position:fixed;bottom:75px;right:25px;width:58px;height:53px;background:url("/Contents/user/Common/img/ico_comment.png") 0 0 no-repeat;text-indent:-9999px;overflow:hidden; z-index: 10010;}
+.btn_layer_close:after {display:block; content:'\e870'; position:absolute; right:13px; top:13px; font-family:'Linearicons-Free'; font-size:30px; color:#999;}
+.comment_box_wrap {padding:20px;background:#f3f3f3;border-bottom:1px solid #364660;}
+.comment_box_wrap textarea {width:85%;height:70px;margin-right:1%;font-family:"NotoSanskr_Demilight";color:#000;line-height:20px;}
+.comment_box_wrap .btn {width:13%;height:70px;font-size:16px;vertical-align:top;}
+.comment_list_wrap {margin-top:30px;}
+.comment_list_wrap h1 {margin-bottom:10px;font-size:30px;color:#000;text-align:center;}
+.comment_list_wrap .comment_list_scroll {overflow-y:auto;height:360px;border-bottom:1px solid #bbb;}
+.comment_list_wrap .comment {position:relative;padding:20px 0;border-top:1px solid #bbb;}
+.comment_list_wrap .comment:first-child {border-top:0;}
+.comment_list_wrap .comment dt, .comment_list_wrap .comment dd {line-height:20px;}
+.comment_list_wrap .comment dt {margin-bottom:10px;width:90%;font-size:16px;color:#1b1b1b;width:calc(100% - 140px);}
+.comment_list_wrap .comment dd {color:#707070;}
+.comment_list_wrap .comment dd.date {position:absolute;top:20px;right:25px;}
+.comment_list_wrap .comment .btn_del {position:absolute;top:5px;right:0;}
+.comment_list_wrap .comment .btn_del span {display:inline-block;width:0;height:0;font-size:0;text-indent:-9999px;overflow:hidden;}
+.comment_list_wrap .comment .btn_del:after {display:block;content:'\e811';font-family:'Linearicons-Free';color:#707070;vertical-align:top;}
+
+/* 실적 트렌드분석 */
+
+.ani-enter-active, .ani-leave-active { transition: opacity 0.2s cubic-bezier(.37,.01,.28,1.01), transform 0.2s cubic-bezier(.37,.01,.28,1.01); }
+.ani-enter, .ani-leave-to { opacity: 0; transform: translateY( -50px );}
+
+.trend_wrap form { opacity: 0; }
+.trend_setting .bt { display: inline-block; }
+
+.trend_setting_wrap { margin-top: 10px; }
+.trend_setting_wrap:first-child { margin-top: 0; }
+.trend_setting_wrap h2 { line-height: 2; color: #000000; font-size: 18px; }
+.trend_setting { overflow: hidden; }
+.trend_setting .p_top { position: relative; background-color: #fff; z-index: 30; }
+.trend_setting .p_bottom { background-color: #f8f8f8; border-width: 0 1px 1px; border-style: solid; border-color: #aaaaaa; }
+.trend_setting .style_radio + .style_radio { margin-left: 30px; }
+
+.trend_setting.p_level .p_bottom { padding: 15px 20px 20px; }
+.trend_setting.p_level .p_depth1>ul { border-right: 1px solid #aaaaaa; }
+.trend_setting.p_level .p_depth1>ul:after { content: ''; display: block; height: 0; clear: both; visibility: hidden; }
+.trend_setting.p_level .p_depth1>ul>li { float: left; width: 25%; }
+.trend_setting.p_level .p_depth1>ul>li .bt { width: 100%; height: 54px; line-height: 54px; color: #707070; font-family: 'NotoSanskr_Demilight'; font-size: 14px; text-align: center; border-left: 1px solid #dcdcdc; border-top: 1px solid #aaaaaa; border-bottom: 1px solid #aaaaaa; transition: all 0.15s cubic-bezier(.37,.01,.28,1.01); }
+.trend_setting.p_level .p_depth1>ul>li .bt .ico { display: inline-block; width: 20px; height: 20px; margin-right: 10px; vertical-align: middle; background-size: contain; background-repeat: no-repeat; }
+.trend_setting.p_level .p_depth1>ul>li .bt .ico.ico_group { background-image: url('/Contents/user/Common/img/ico_group.png'); }
+.trend_setting.p_level .p_depth1>ul>li .bt .ico.ico_sector { background-image: url('/Contents/user/Common/img/ico_sector.png'); }
+.trend_setting.p_level .p_depth1>ul>li .bt .ico.ico_company { background-image: url('/Contents/user/Common/img/ico_company.png'); }
+.trend_setting.p_level .p_depth1>ul>li .bt .ico.ico_unit { background-image: url('/Contents/user/Common/img/ico_unit.png'); }
+.trend_setting.p_level .p_depth1>ul>li .bt:hover .ico.ico_group, .trend_setting.p_level .p_depth1>ul>li .bt.on .ico.ico_group { background-image: url('/Contents/user/Common/img/ico_group_on.png'); }
+.trend_setting.p_level .p_depth1>ul>li .bt:hover .ico.ico_sector, .trend_setting.p_level .p_depth1>ul>li .bt.on .ico.ico_sector { background-image: url('/Contents/user/Common/img/ico_sector_on.png'); }
+.trend_setting.p_level .p_depth1>ul>li .bt:hover .ico.ico_company, .trend_setting.p_level .p_depth1>ul>li .bt.on .ico.ico_company { background-image: url('/Contents/user/Common/img/ico_company_on.png'); }
+.trend_setting.p_level .p_depth1>ul>li .bt:hover .ico.ico_unit, .trend_setting.p_level .p_depth1>ul>li .bt.on .ico.ico_unit { background-image: url('/Contents/user/Common/img/ico_unit_on.png'); }
+.trend_setting.p_level .p_depth1>ul>li:first-child .bt { border-left: 1px solid #aaaaaa; }
+.trend_setting.p_level .p_depth1>ul>li .bt:hover, .trend_setting.p_level .p_depth1>ul>li .bt.on { color: #fff; background-color: #014099; border-left: 1px solid #014099; border-top: 1px solid #014099; border-bottom: 1px solid #014099; }
+.trend_setting.p_level .p_depth2 ul { position: relative; z-index: 20; }
+.trend_setting.p_level .p_depth2 ul:after { content: ''; display: block; height: 0; clear: both; visibility: hidden; }
+.trend_setting.p_level .p_depth2 ul>li { float: left; margin-right: 2px; margin-top: 5px; }
+.trend_setting.p_level .p_depth2 ul>li .bt { height: 44px; line-height: 44px; padding: 0 29px; color: #fff; font-family: 'NotoSanskr_Regular'; font-size: 14px; background-color: #767c87; }
+.trend_setting.p_level .p_depth2 ul>li .bt:hover, .trend_setting.p_level .p_depth2 ul>li .bt.on { background-color: #014099; }
+.trend_setting.p_level .p_depth3 { position: relative; margin-top: 10px; z-index: 10; }
+.trend_setting.p_level .p_depth3 ul>li .bt { background-color: #8b9bb9; }
+.trend_setting.p_level .p_depth3 ul>li .bt:hover, .trend_setting.p_level .p_depth3 ul>li .bt.on { background-color: #1f7dc3; }
+
+.trend_setting.p_period .p_bottom { padding: 0 20px; }
+.trend_setting.p_period .p_depth1 { padding: 0 20px; line-height: 54px; border: 1px solid #aaaaaa; }
+.trend_setting.p_period .p_depth2>table { width: 100%; }
+.trend_setting.p_period .p_depth2>table tr { border-bottom: 1px solid #dcdcdc; }
+.trend_setting.p_period .p_depth2>table th, .trend_setting.p_period .p_depth2>table td { padding: 15px 0; vertical-align: middle; }
+.trend_setting.p_period .p_depth2>table th { width: 75px; text-align: left; }
+.trend_setting.p_period .p_bt { padding: 15px 0; text-align: right; }
+.trend_setting.p_period .p_bt .bt { height: 35px; line-height: 35px; padding: 0 29px; color: #fff; font-family: 'NotoSanskr_Regular'; font-size: 14px; background-color: #1b1b1b; }
+
+.trend_graph_box { position:relative; padding:40px; margin-top: 30px; background:#fff; }
+.trend_graph_box h3 {position:relative;padding-left:10px;margin-bottom: 40px;font-family:"NotoSanskr_Medium";font-size:18px;color:#222;}
+.trend_graph_box h3:before, .trend_graph_box h3:after {display:inline-block;content:'';width:3px;height:7px;position:absolute;left:0;}
+.trend_graph_box h3:before {;background:#00ade9;top:3px;}
+.trend_graph_box h3:after {background:#014099;top:10px;}
+
+.trend_wrap .tbl tbody th { background-color: #fff; }
+
+/* 그래프 차트 chart_box */
+.chart_box { position: relative; }
+.chart_box .p_unit { position: absolute; color: #444444; font-family:'NotoSanskr_Regular'; font-size: 13px; }
+
+.chart_box0 { padding: 25px 15px 40px; }
+.chart_box0 .p_unit { right: 15px; top: 25px; }
+.chart_box0 .p_xaxis { position: absolute; left: 50%; top: 480px; margin-left: -55px; font-size: 16px;  }
+.chart_box0 .p_yaxis { position: absolute; top: 240px; margin-top: -30px; font-size: 16px; text-align: center; }
+.chart_box0 .p_standard { position: absolute; right: 0; top: 480px; margin-right: 160px; font-size: 14px; }
+.chart_box0 .p_desc { position: absolute; color: #959595; font-size: 13px; text-align: center; }
+.chart_box0 .p_desc:after { position: absolute; }
+.chart_box0 .p_desc0 { left: 50%; top: 20px; margin-left: -200px; }
+.chart_box0 .p_desc0:after { content: '▼'; left: 50%; bottom: -15px; margin-left: -10px; }
+.chart_box0 .p_desc1 { left: 50%; top: 445px; margin-left: -200px; }
+.chart_box0 .p_desc1:after { content: '▲'; left: 50%; top: -15px; margin-left: -10px; }
+.chart_box0 .p_desc2 { left: 50%; top: 445px; margin-left: 70px; }
+.chart_box0 .p_desc2:after { content: '▲'; left: 50%; top: -15px; margin-left: -10px; }
+.chart_box0 .chart { height: 480px; margin-left: 60px; }
+.chart_box0 .p_navi { margin: 10px 140px 0 110px; }
+.chart_box0 .p_navi>ul { display: table; width: 100%; padding: 20px 10px; background-color: #f5f6f8; border: 1px solid #dcdcdc; border-radius: 5px;}
+.chart_box0 .p_navi>ul>li { display: table-cell; text-align: center; }
+.chart_box0 .p_navi>ul>li>a { display: inline-block; position: relative; margin-left: 15px; color: #666666; font-size: 14px; }
+.chart_box0 .p_navi>ul>li>a>span { display: block; position: absolute; width: 13px; height: 13px; left: -15px; top: 2px; border-radius: 7px; }
+.chart_box0 .p_navi>ul>li>a.on:after { content: ''; display: block; position: absolute; width: 100%; height: 1px; left: 0; bottom: -2px; background-color: #666666; }
+
+.chart_box1 { padding: 40px 20px; }
+.chart_box1 .p_unit { right: 40px; top: 45px; }
+.chart_box1 .chart { height: 540px; }
+
+.chart_box2 { padding: 25px 25px 10px; border: 1px solid #c0c0c0; }
+.chart_box2 .p_title { color: #000000; font-family:'NotoSanskr_Bold'; font-size: 22px; text-align: center; }
+.chart_box2 .p_unit { right: 25px; top: 32px; }
+.chart_box2 .chart.chart_type2 { height: 320px; }
+.chart_box2 a.bt_percentage { display: block; position: absolute; width: 50px; height: 50px; right: -1px; bottom: -1px; background: url('/Contents/user/Common/img/icon_percentage.png') left top no-repeat; }
+.chart_box2 a.bt_percentage.on { background-position: right; }
+.chart_box2 .percentage { position: absolute; right: 12px; bottom: 46px; transition: all 0.2s ease-out; }
+.chart_box2 .percentage>p { position: absolute; left: 0; top: 32px; width: 100%; color: #000000; font-family:'NotoSanskr_Medium'; font-size: 22px; text-align: center; }
+.chart_box2 .chart.chart_type12 { position: absolute; left: 0; top: 44px; width: 100%; height: 220px; }
+
+.chart_box3 { padding: 40px 0 20px; border: 1px solid #c0c0c0; }
+.chart_box3 .p_unit { right: 20px; top: 15px; }
+.chart_box3 .p_box:after { content: ''; display: block; height: 0; clear: both; visibility: hidden; }
+.chart_box3 .p_box>li { float: left; position: relative; width: 33.333%; padding: 0 20px; }
+.chart_box3 .p_box>li .p_title { color: #000000; font-family:'NotoSanskr_Regular'; font-size: 18px; text-align: center; }
+.chart_box3 .chart { height: 320px; }
+.chart_box3 .chart .nv-legendWrap.nvd3-svg { display: none; }
+/* .chart_box3 .p_box>li:nth-child(2) .chart .nv-legendWrap.nvd3-svg { display: block; } */
+.chart_box3 .legend { position: absolute; width: 100%; bottom: 30px; }
+.chart_box3 .legend>ul { text-align: center; }
+.chart_box3 .legend>ul>li { display: inline-block; padding-right: 20px; font-size: 13px; }
+.chart_box3 .legend>ul>li>span { display: inline-block; width: 9px; height: 9px; }
+
+.chart_box4 { padding: 30px 40px; border: 1px solid #c0c0c0; }
+.chart_box4 .p_title { color: #000000; font-family:'NotoSanskr_Regular'; font-size: 18px; text-align: center; }
+.chart_box4 .p_unit { right: 40px; top: 35px; }
+.chart_box4 .chart { height: 180px; }
+
+.chart_box5 { padding: 25px 25px 35px; border: 1px solid #c0c0c0; }
+.chart_box5 .p_title { color: #000000; font-family:'NotoSanskr_Regular'; font-size: 18px; text-align: center; }
+.chart_box5 .p_unit { right: 25px; top: 32px; }
+.chart_box5 .p_box:after { content: ''; display: block; height: 0; clear: both; visibility: hidden; }
+.chart_box5 .p_box>li { float: left; position: relative; width: 50%; }
+.chart_box5 .p_box>li:first-child:after { content: ''; display: block; position: absolute; right: 0; top: 30px; height: calc(100% - 30px); border-right: 1px dotted #bbbbbb; }
+.chart_box5 .p_box>li>p { color: #000000; font-family:'NotoSanskr_Regular'; font-size: 16px; text-align: center; }
+.chart_box5 .p_box>li>p>span { position: relative; padding: 0 10px; }
+.chart_box5 .p_box>li>p>span:before { content: ''; display: block; position: absolute; width: 1px; height: 60%; left: 0; top: 20%; background-color: #999999; }
+.chart_box5 .p_box>li>p>span:after { content: ''; display: block; position: absolute; width: 1px; height: 60%; right: 0; top: 20%; background-color: #999999; }
+.chart_box5 .chart { height: 290px; }
+
+.chart_box6 { padding: 30px 40px; border: 1px solid #c0c0c0; }
+.chart_box6 .p_unit { right: 40px; top: 35px; }
+.chart_box6 .chart { height: 260px; }
+
+.chart_box7 { padding: 30px 40px; border: 1px solid #c0c0c0; }
+.chart_box7 .p_unit { right: 40px; top: 35px; }
+.chart_box7 .chart { height: 390px; }
+
+.chart_box8 { padding: 50px 40px 40px; }
+.chart_box8 .p_unit { right: 40px; top: 26px; }

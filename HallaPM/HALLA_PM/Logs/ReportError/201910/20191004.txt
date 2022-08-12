@@ -1,0 +1,337 @@
+2019-10-04 10:32:28 | System.Data.SqlClient.SqlException (0x80131904): 키워드 'JOIN' 근처의 구문이 잘못되었습니다.
+')' 근처의 구문이 잘못되었습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.TrendInvestRepo.GetInvestUnionCompany_NEW_Month(Object param) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\JsonData\TrendInvest\TrendInvestRepo.cs:줄 265
+ClientConnectionId:79586421-e26a-4c28-b6e4-3b3fd9fa6bd7
+Error Number:156,State:1,Class:15  SELECT   INVEST_YEAR ,
+                                     MONTHLY 
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL  FROM (
+	                            SELECT A.INVEST_YEAR  
+		                            , A.MONTHLY	
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL 
+		                            FROM PM_INVEST A
+	                            INNER JOIN JOIN PM_INVEST_SUM B 
+	                            ON A.SEQ = B.PM_INVEST_SEQ   AND A.INVEST_YEAR <= '2018'
+		                            WHERE 
+                                             (A.INVEST_YEAR  +  A.MONTHLY >=  @PREYEAR 
+                                            AND   A.INVEST_YEAR  +  A.MONTHLY <=  @ENDYEAR )
+													                            AND MONTHLY_TYPE = '10'
+													                            AND A.REGIST_STATUS = 7
+													                            AND A.ORG_COMPANY_SEQ <> 13															
+												                            GROUP BY A.INVEST_YEAR ,MONTHLY
+                            UNION ALL
+	                            SELECT GROUPDATA_YEAR AS INVEST_YEAR
+		                            , GROUPDATA_MONTH AS MONTHLY	 
+		                            , INVESTMENT  AS INVESTMENT
+		                            , PERSONNEL 
+		                            , DOMESTIC_PERSONNEL  +  OVERSEAS_PERSONNEL   AS PERSONNEL2
+		                            ,  DOMESTIC_PERSONNEL 
+		                            ,  OVERSEAS_PERSONNEL  	
+		                            FROM PM_GROUPDATA_INVEST_MONTHLY A WITH(NOLOCK)
+		                            WHERE  
+				                           ( GROUPDATA_YEAR + GROUPDATA_MONTH >= '2019'  )  
+                                            AND   ( GROUPDATA_YEAR + GROUPDATA_MONTH <=  @ENDYEAR )  
+			                            AND	MONTHLY_TYPE = '10' ) C
+                            GROUP BY  INVEST_YEAR,MONTHLY
+                            ORDER BY  INVEST_YEAR,MONTHLY
+                            
+2019-10-04 10:32:30 | System.Data.SqlClient.SqlException (0x80131904): 키워드 'JOIN' 근처의 구문이 잘못되었습니다.
+')' 근처의 구문이 잘못되었습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.TrendInvestRepo.GetInvestUnionCompany_NEW_Month(Object param) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\JsonData\TrendInvest\TrendInvestRepo.cs:줄 265
+ClientConnectionId:79586421-e26a-4c28-b6e4-3b3fd9fa6bd7
+Error Number:156,State:1,Class:15  SELECT   INVEST_YEAR ,
+                                     MONTHLY 
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL  FROM (
+	                            SELECT A.INVEST_YEAR  
+		                            , A.MONTHLY	
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL 
+		                            FROM PM_INVEST A
+	                            INNER JOIN JOIN PM_INVEST_SUM B 
+	                            ON A.SEQ = B.PM_INVEST_SEQ   AND A.INVEST_YEAR <= '2018'
+		                            WHERE 
+                                             (A.INVEST_YEAR  +  A.MONTHLY >=  @PREYEAR 
+                                            AND   A.INVEST_YEAR  +  A.MONTHLY <=  @ENDYEAR )
+													                            AND MONTHLY_TYPE = '10'
+													                            AND A.REGIST_STATUS = 7
+													                            AND A.ORG_COMPANY_SEQ <> 13															
+												                            GROUP BY A.INVEST_YEAR ,MONTHLY
+                            UNION ALL
+	                            SELECT GROUPDATA_YEAR AS INVEST_YEAR
+		                            , GROUPDATA_MONTH AS MONTHLY	 
+		                            , INVESTMENT  AS INVESTMENT
+		                            , PERSONNEL 
+		                            , DOMESTIC_PERSONNEL  +  OVERSEAS_PERSONNEL   AS PERSONNEL2
+		                            ,  DOMESTIC_PERSONNEL 
+		                            ,  OVERSEAS_PERSONNEL  	
+		                            FROM PM_GROUPDATA_INVEST_MONTHLY A WITH(NOLOCK)
+		                            WHERE  
+				                           ( GROUPDATA_YEAR + GROUPDATA_MONTH >= '2019'  )  
+                                            AND   ( GROUPDATA_YEAR + GROUPDATA_MONTH <=  @ENDYEAR )  
+			                            AND	MONTHLY_TYPE = '10' ) C
+                            GROUP BY  INVEST_YEAR,MONTHLY
+                            ORDER BY  INVEST_YEAR,MONTHLY
+                            
+2019-10-04 10:32:41 | System.Data.SqlClient.SqlException (0x80131904): 키워드 'JOIN' 근처의 구문이 잘못되었습니다.
+')' 근처의 구문이 잘못되었습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.TrendInvestRepo.GetInvestUnionCompany_NEW_Month(Object param) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\JsonData\TrendInvest\TrendInvestRepo.cs:줄 265
+ClientConnectionId:79586421-e26a-4c28-b6e4-3b3fd9fa6bd7
+Error Number:156,State:1,Class:15  SELECT   INVEST_YEAR ,
+                                     MONTHLY 
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL  FROM (
+	                            SELECT A.INVEST_YEAR  
+		                            , A.MONTHLY	
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL 
+		                            FROM PM_INVEST A
+	                            INNER JOIN JOIN PM_INVEST_SUM B 
+	                            ON A.SEQ = B.PM_INVEST_SEQ   AND A.INVEST_YEAR <= '2018'
+		                            WHERE 
+                                             (A.INVEST_YEAR  +  A.MONTHLY >=  @PREYEAR 
+                                            AND   A.INVEST_YEAR  +  A.MONTHLY <=  @ENDYEAR )
+													                            AND MONTHLY_TYPE = '10'
+													                            AND A.REGIST_STATUS = 7
+													                            AND A.ORG_COMPANY_SEQ <> 13															
+												                            GROUP BY A.INVEST_YEAR ,MONTHLY
+                            UNION ALL
+	                            SELECT GROUPDATA_YEAR AS INVEST_YEAR
+		                            , GROUPDATA_MONTH AS MONTHLY	 
+		                            , INVESTMENT  AS INVESTMENT
+		                            , PERSONNEL 
+		                            , DOMESTIC_PERSONNEL  +  OVERSEAS_PERSONNEL   AS PERSONNEL2
+		                            ,  DOMESTIC_PERSONNEL 
+		                            ,  OVERSEAS_PERSONNEL  	
+		                            FROM PM_GROUPDATA_INVEST_MONTHLY A WITH(NOLOCK)
+		                            WHERE  
+				                           ( GROUPDATA_YEAR + GROUPDATA_MONTH >= '2019'  )  
+                                            AND   ( GROUPDATA_YEAR + GROUPDATA_MONTH <=  @ENDYEAR )  
+			                            AND	MONTHLY_TYPE = '10' ) C
+                            GROUP BY  INVEST_YEAR,MONTHLY
+                            ORDER BY  INVEST_YEAR,MONTHLY
+                            
+2019-10-04 10:32:44 | 01,02,03,04,05,06,07,08,09,10,11,12
+2019-10-04 10:32:57 | System.Data.SqlClient.SqlException (0x80131904): 키워드 'JOIN' 근처의 구문이 잘못되었습니다.
+')' 근처의 구문이 잘못되었습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.TrendInvestRepo.GetInvestUnionCompany_NEW_Month(Object param) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\JsonData\TrendInvest\TrendInvestRepo.cs:줄 265
+ClientConnectionId:79586421-e26a-4c28-b6e4-3b3fd9fa6bd7
+Error Number:156,State:1,Class:15  SELECT   INVEST_YEAR ,
+                                     MONTHLY 
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL  FROM (
+	                            SELECT A.INVEST_YEAR  
+		                            , A.MONTHLY	
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL 
+		                            FROM PM_INVEST A
+	                            INNER JOIN JOIN PM_INVEST_SUM B 
+	                            ON A.SEQ = B.PM_INVEST_SEQ   AND A.INVEST_YEAR <= '2018'
+		                            WHERE 
+                                             (A.INVEST_YEAR  +  A.MONTHLY >=  @PREYEAR 
+                                            AND   A.INVEST_YEAR  +  A.MONTHLY <=  @ENDYEAR )
+													                            AND MONTHLY_TYPE = '10'
+													                            AND A.REGIST_STATUS = 7
+													                            AND A.ORG_COMPANY_SEQ <> 13															
+												                            GROUP BY A.INVEST_YEAR ,MONTHLY
+                            UNION ALL
+	                            SELECT GROUPDATA_YEAR AS INVEST_YEAR
+		                            , GROUPDATA_MONTH AS MONTHLY	 
+		                            , INVESTMENT  AS INVESTMENT
+		                            , PERSONNEL 
+		                            , DOMESTIC_PERSONNEL  +  OVERSEAS_PERSONNEL   AS PERSONNEL2
+		                            ,  DOMESTIC_PERSONNEL 
+		                            ,  OVERSEAS_PERSONNEL  	
+		                            FROM PM_GROUPDATA_INVEST_MONTHLY A WITH(NOLOCK)
+		                            WHERE  
+				                           ( GROUPDATA_YEAR + GROUPDATA_MONTH >= '2019'  )  
+                                            AND   ( GROUPDATA_YEAR + GROUPDATA_MONTH <=  @ENDYEAR )  
+			                            AND	MONTHLY_TYPE = '10' ) C
+                            GROUP BY  INVEST_YEAR,MONTHLY
+                            ORDER BY  INVEST_YEAR,MONTHLY
+                            
+2019-10-04 10:33:13 | 01,02,03,04,05,06,07,08,09,10
+2019-10-04 10:33:22 | System.Data.SqlClient.SqlException (0x80131904): 키워드 'JOIN' 근처의 구문이 잘못되었습니다.
+')' 근처의 구문이 잘못되었습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.TrendInvestRepo.GetInvestUnionCompany_NEW_Month(Object param) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\JsonData\TrendInvest\TrendInvestRepo.cs:줄 265
+ClientConnectionId:79586421-e26a-4c28-b6e4-3b3fd9fa6bd7
+Error Number:156,State:1,Class:15  SELECT   INVEST_YEAR ,
+                                     MONTHLY 
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL  FROM (
+	                            SELECT A.INVEST_YEAR  
+		                            , A.MONTHLY	
+		                            ,SUM(ISNULL(INVESTMENT,0)) INVESTMENT
+		                            ,SUM(PERSONNEL) AS PERSONNEL
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) + SUM(ISNULL(OVERSEAS_PERSONNEL,0)) AS PERSONNEL2
+		                            ,SUM(ISNULL(DOMESTIC_PERSONNEL,0)) DOMESTIC_PERSONNEL
+		                            ,SUM(ISNULL(OVERSEAS_PERSONNEL,0)) OVERSEAS_PERSONNEL 
+		                            FROM PM_INVEST A
+	                            INNER JOIN JOIN PM_INVEST_SUM B 
+	                            ON A.SEQ = B.PM_INVEST_SEQ   AND A.INVEST_YEAR <= '2018'
+		                            WHERE 
+                                             (A.INVEST_YEAR  +  A.MONTHLY >=  @PREYEAR 
+                                            AND   A.INVEST_YEAR  +  A.MONTHLY <=  @ENDYEAR )
+													                            AND MONTHLY_TYPE = '10'
+													                            AND A.REGIST_STATUS = 7
+													                            AND A.ORG_COMPANY_SEQ <> 13															
+												                            GROUP BY A.INVEST_YEAR ,MONTHLY
+                            UNION ALL
+	                            SELECT GROUPDATA_YEAR AS INVEST_YEAR
+		                            , GROUPDATA_MONTH AS MONTHLY	 
+		                            , INVESTMENT  AS INVESTMENT
+		                            , PERSONNEL 
+		                            , DOMESTIC_PERSONNEL  +  OVERSEAS_PERSONNEL   AS PERSONNEL2
+		                            ,  DOMESTIC_PERSONNEL 
+		                            ,  OVERSEAS_PERSONNEL  	
+		                            FROM PM_GROUPDATA_INVEST_MONTHLY A WITH(NOLOCK)
+		                            WHERE  
+				                           ( GROUPDATA_YEAR + GROUPDATA_MONTH >= '2019'  )  
+                                            AND   ( GROUPDATA_YEAR + GROUPDATA_MONTH <=  @ENDYEAR )  
+			                            AND	MONTHLY_TYPE = '10' ) C
+                            GROUP BY  INVEST_YEAR,MONTHLY
+                            ORDER BY  INVEST_YEAR,MONTHLY
+                            
+2019-10-04 11:03:42 | System.Data.SqlClient.SqlException (0x80131904): 열 이름 'INVEST_YEAR'이(가) 유효하지 않습니다.
+열 이름 'INVEST_YEAR'이(가) 유효하지 않습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.TrendPalRepo.GetPalUnionCompany_NEW_Quater(Object param, String strQuater) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\JsonData\TrendPal\TrendPalRepo.cs:줄 211
+ClientConnectionId:71cc6531-2b2c-40a5-a0b0-d56580148bbe
+Error Number:207,State:1,Class:16
+2019-10-04 11:03:46 | System.Data.SqlClient.SqlException (0x80131904): 열 이름 'INVEST_YEAR'이(가) 유효하지 않습니다.
+열 이름 'INVEST_YEAR'이(가) 유효하지 않습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.TrendPalRepo.GetPalUnionCompany_NEW_Quater(Object param, String strQuater) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\JsonData\TrendPal\TrendPalRepo.cs:줄 211
+ClientConnectionId:71cc6531-2b2c-40a5-a0b0-d56580148bbe
+Error Number:207,State:1,Class:16

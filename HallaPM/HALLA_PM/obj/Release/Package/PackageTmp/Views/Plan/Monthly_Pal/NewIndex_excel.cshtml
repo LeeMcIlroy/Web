@@ -1,0 +1,556 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    List<PlanMonthlyPalBusinessExp> pnBu = Model.pnBu;
+    List<PlanMonthlyPalBusinessMonthlySumExp> pnCom = Model.pnCom;
+
+    var groupTable = pnCom.GroupBy(g => new { g.MonthlyPalYear, g.Monthly })
+        .Select(cl => new PlanMonthlyPalBusinessMonthlySumExp
+        {
+            MonthlyPalYear = cl.First().MonthlyPalYear,
+            Monthly = cl.First().Monthly,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    // 그룹으로 묶음 :" 회사에서 합계는 제외 : 99
+    var groupGraph = groupTable.Where(w => w.Monthly != "99").ToList();
+
+    var businessList = pnBu.GroupBy(g => new { g.OrgCompanySeq, g.OrgBusinessSeq })
+        .Select(cl => new PlanMonthlyPalBusinessExp
+        {
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName,
+            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+            BusinessName = cl.First().BusinessName
+        }).ToList();
+
+    var year = SessionManager.GetMemberSession().planYear.First().RegistYear;
+    string fileName = year + "년_월별_손익";
+    //Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    //Response.ContentType = "application/vnd.ms-excel";
+}
+<style>
+    .mytable {
+        border-collapse: collapse;
+    }
+
+        .mytable th, .mytable td {
+            border: 1px solid black;
+        }
+
+        html, body {
+	min-width:1200px;
+	margin:0;
+	padding:0;
+	border:0;
+	background:#ecf0f5;
+	font-family:"NotoSanskr_Regular", "MalgunGothic", "Malgun Gothic", sans-serif;
+	font-size:14px;
+	font-weight:400;
+	font-style:normal;
+	line-height:1.2;
+	-webkit-text-size-adjust:none;
+	-webkit-font-smoothing:antialiased;
+}
+
+/* Common Style */
+.thin {font-family:'NotoSanskr_Thin';}
+.light {font-family:'NotoSanskr_Light';}
+.demilight {font-family:'NotoSanskr_Demilight';}
+.regular {font-family:'NotoSanskr_Regular';}
+.medium {font-family:'NotoSanskr_Medium';}
+.bold {font-family:'NotoSansKr_Bold';}
+
+.hidden {display:block; overflow:hidden; width:0; height:0; text-indent:-9999em; visibility: hidden;}
+
+.mt0 {margin-top:0 !important;}
+.mb0 {margin-bottom:0 !important;}
+.ml0 {margin-left:0 !important;}
+.mr0 {margin-right:0 !important;}
+.mt40 {margin-top:40px !important;}
+
+.ta_left {text-align:left !important;}
+.ta_right {text-align:right !important;}
+.ta_center {text-align:center !important;}
+
+.bl {display:block!important;}
+.in_bl {display:inline-block!important;}
+
+.in_nospace {word-spacing:0; letter-spacing:0; font-size:0 !important;}
+
+.ellipsis {overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
+
+.underline {text-decoration:underline!important;}
+
+.align_left_right {margin-top:30px;}
+.align_left_right::after {display:block; content:""; clear:both;}
+.align_left_right .left {float:left;}
+.align_left_right .right {float:right;}
+
+/*	BG  */
+.bg_white {background:#fff;}
+.bg_gray {background:#ebebeb;}
+.bg_blue {background:#e8f4fb;}
+
+
+/* TEXT COLOR*/
+.tc_red {color:#f00;}
+
+
+/*	CONTENTS BOX  */
+.con_box {width:100%; padding:25px 30px; background:#fff;}
+.con_box .clear_area {overflow:hidden; width:100%; clear:both;}
+
+/*	HEADER  */
+.con_box h3 {margin:40px 0 20px; font-family:"NotoSanskr_Medium"; font-size:18px; color:#222;}
+.con_box>h3:first-child {margin:0 0 20px;}
+
+/* TAB  */
+.tab {width:100%; margin-bottom:30px;}
+.tab>ul::after {display:block; content:""; clear:both;}
+.tab>ul>li {display:table; float:left; width:50%;}
+.tab>ul>li>a {display:table-cell; position:relative; height:35px; color:#444; text-align:center; vertical-align:middle; border-top:2px solid #999; border-right:1px solid #999; border-bottom:2px solid #999;}
+.tab>ul>li:first-child>a {border-left:2px solid #999;}
+.tab>ul>li:last-child>a {border-right:2px solid #999;}
+.tab>ul>li.on>a {color:#fff; background:#444; border:2px solid #444;}
+.tab>ul>li.on>a::after {display:block; content:''; position:absolute; left:50%; bottom:-12px; margin-left:-5px; width:0; height:0; border:5px solid #444; border-left-color:transparent; border-right-color:transparent; border-bottom-color:transparent;}
+
+.tab.cols-3>ul>li {width:33.3333%;}
+.tab.cols-4>ul>li {width:25%;}
+.tab.cols-5>ul>li {width:20%;}
+.tab.cols-6>ul>li {width:16.6666%;}
+
+/*	TABLE   */
+.tbl {width:100%; table-layout:fixed;}
+.tbl th {padding:10px 0; font-size:14px; color:#222; text-align:center; background:#ebebeb; vertical-align:middle; background-clip: padding-box;}
+.tbl td {position:relative; padding:10px; font-size:13px; color:#888; text-align:center; word-break:break-word; border-right:1px solid #ebebeb; border-bottom:1px solid #ebebeb; vertical-align:middle; background-clip: padding-box;}
+.tbl th.tbl_tit {color:#fff; background:#095573;}
+.tbl td .style_check, .tbl td .style_select {display:inline-block; vertical-align:middle;}
+.tbl td .btn.rank {width:40%; max-width:30px;}
+.tbl td .btn.single {width:80%;}
+.tbl td .consult_item {margin-top : 5px; margin-bottom : 5px; line-height : 19px;}
+.tbl td .consult_item > span { color : #222;}
+
+.tbl.ta_left td {text-align:left;}
+.tbl.ta_right td {text-align:right;}
+
+.tbl.tr_hover tr:hover, .tbl.tr_hover tr.on {background:rgba(0,192,239,0.2);}
+
+.tbl td.all_check {font-family:NotoSanskr_Medium; color:#222; background:#f2f2f2;}
+.tbl td textarea {width:90%; height:100px; padding:10px; font-family:"NotoSanskr_Demilight"; font-size:13px; line-height:20px; border:1px solid #ccc; }
+.tbl td textarea.w100 {width:100%!important;}
+.tbl td .description {margin-top:10px; font-family:NotoSanskr_Demilight; color:#999; line-height:18px;}
+
+.th_hor thead th {border-left:1px solid #fff;border-top:1px solid #fff;}
+.th_hor thead tr:first-child th {border-top:0;}
+/* .th_hor thead th:first-child {border-left:0;} */
+.th_hor thead th:last-child {border-right:1px solid #ebebeb;}
+.th_hor tbody th {border-top:1px solid #fff;border-left:1px solid #fff;}
+/* .th_hor tbody th:first-child {border-left:0;} */
+.th_hor tbody td:first-child {border-left:1px solid #ebebeb;}
+
+.th_ver {border-top:1px solid #ebebeb;}
+.th_ver tbody th {border-right:1px solid #fff; border-bottom:1px solid #fff;}
+
+.tbl.detail th {background:rgba(0,192,239,0.2);}
+.tbl.detail th.tbl_tit {color:#fff; background:#05b7e3;}
+
+.dl_tbl {display:table; width:100%; table-layout:fixed;}
+.dl_tbl>dt {display:table-cell; width:30%; padding:7px 5px; vertical-align:middle;}
+.dl_tbl>dd {display:table-cell; width:70%; padding:7px 5px; vertical-align:middle;}
+
+.dl_tbl.rank_control {border-bottom:1px solid #ddd;}
+.dl_tbl.rank_control>dt {width:70%; padding-left:20px;}
+.dl_tbl.rank_control>dd {width:30%; text-align:center;}
+.dl_tbl.rank_control>dd>a {width:40%; max-width:30px; margin-left:5px;}
+
+.dl_tbl.thead dt, .dl_tbl.thead dd {padding:7px 5px; text-align:center; background:#ddd;}
+
+.dl_tbl .description {margin-top:10px; font-family:NotoSanskr_Demilight; color:#999; line-height:18px;}
+
+.tbl2 {width:100%; table-layout:auto;}
+.tbl2 td {position:relative; padding:0; border-width:0;}
+
+/* PAING    */
+.paging {width:100%; margin-top:40px; text-align:center;}
+.paging>a {display:inline-block; position:relative; width:36px; height:36px; vertical-align:middle; border:1px solid #ccc;}
+.paging>a::after {display:block; content:''; position:absolute; left:0; top:5px; width:100%; font-family:FontAwesome; font-size:20px; text-align:center;}
+.paging>a.btn_first::after {content:'\f100';}
+.paging>a.btn_prev::after {content:'\f104';}
+.paging>a.btn_next::after {content:'\f105';}
+.paging>a.btn_last::after {content:'\f101';}
+.paging>span {display:inline-block; text-align:center; vertical-align:middle;}
+.paging>span>* {display:inline-block; width:36px; height:36px; font-size:16px; line-height:34px; border:1px solid #ccc;}
+.paging>span>strong {color:#fff; background:#004098; border:1px solid #004098;}
+
+/* 리스트 */
+.list_tbl {width:100%;}
+.list_tbl>li {position:relative; padding:10px 20px; font-size:13px; color:#888; text-align:left; word-break:break-word; border:1px solid #ebebeb; border-top:0; vertical-align:middle;}
+.list_tbl>li:first-child {border-top:1px solid #ebebeb;}
+.list_tbl>li:hover, .list_tbl>li.on {background:rgba(0,192,239,0.2);}
+
+.dash_list>li {position:relative; padding-left:10px;}
+.dash_list>li::after {display:block; content:'-'; position:absolute; left:0; top:0;}
+
+.description_list {margin-top:15px;}
+.description_list>li {position:relative; padding-left:15px; font-family:NotoSanskr_Demilight; font-size:13px; line-height:24px;}
+.description_list>li::before {display:block; content:'※'; position:absolute; left:0; top:0;}
+.description_list>li>strong.red {font-family:NotoSanskr_Medium; color:#f35958;}
+
+/*	FORM 	*/
+input[type=text], input[type=password] {width:100%; height:30px; padding:0 5px; line-height:30px; background:#fff; border:1px solid #ddd;}
+textarea {width:100%; min-height:100px; padding:10px; line-height:20px; background:#fff; border:1px solid #ddd;}
+input[type=text]:focus, input[type=password]:focus {border:1px solid #0f81be;}
+
+::-webkit-input-placeholder {font-size:12px;}
+::-moz-placeholder {font-size:12px;}
+::-ms-input-placeholder {font-size:12px;}
+
+.style_check {display:inline-block; overflow:hidden; vertical-align:middle;}
+.style_check + .style_check {margin-left:15px;}
+.style_check.bl + .style_check {margin-left:0;margin-top:10px;}
+.style_check>label {display:inline-block; position:relative; vertical-align:top;}
+.style_check>label>i {display:inline-block; position:relative; width:18px; height:18px; margin-right:7px; vertical-align:middle; background:#fff; border:1px solid #ccc;}
+.style_check.no_txt>label>i {margin-right:0;}
+.style_check>label>input[type=checkbox] {position:absolute; left:0; top:0; width:18px; height:18px; opacity:0;}
+/* .style_check>label strong {vertical-align:middle;} */
+
+.style_check>label>input[type=checkbox]:checked+i {border:2px solid #0f81be;}
+.style_check>label>input[type=checkbox]:checked+i::after {display:block; content:'\f00c'; position:absolute; left:1px; top:0; font-family:FontAwesome; color:#0f81be;}
+
+.style_radio {display:inline-block; overflow:hidden; vertical-align:middle;}
+.style_radio + .style_radio {margin-left:15px;}
+.style_radio>label {display:inline-block; overflow:hidden; position:relative; vertical-align:top;}
+.style_radio>label>i {display:inline-block; position:relative; width:18px; height:18px; margin-right:7px; vertical-align:middle; background:#fff; border:1px solid #ccc; border-radius:50%;}
+.style_radio>label>input[type=radio] {position:absolute; left:0; top:0; width:18px; height:18px; opacity:0;}
+.style_radio>label strong {vertical-align:middle;}
+
+.style_radio>label>input[type=radio]:checked+i {border:2px solid #0f81be;}
+.style_radio>label>input[type=radio]:checked+i::after {display:block; content:''; position:absolute; left:4px; top:4px; width:6px; height:6px; background:#0f81be; border-radius:50%;}
+
+.style_radio>label.on>i {border:2px solid #00c0ef;}
+.style_radio>label.on>i::after {display:block; content:'\f00c'; position:absolute; left:1px; top:0; font-family:FontAwesome; color:#00c0ef;}
+
+.style_radio2 { display:inline-block; overflow:hidden; margin-right:3px; vertical-align:middle;}
+.style_radio2>label>input[type=radio] { display:none;}
+.style_radio2>label>strong { display:inline-block; width:28px; height:28px; border:2px solid #ccc; background:#fff; color:#777; border-radius:50%; font-size:13px; font-family:"NotoSanskr_Medium"; line-height:24px; text-align:center;}
+.style_radio2>label>input[type=radio]:checked + strong { border:2px solid #00c0ef; background:#00c0ef; color:#fff;}
+
+.style_select {display:inline-block; /*min-width:100px;*/ vertical-align:middle;}
+.style_select label {display:block; overflow:hidden; position:relative; height:30px; padding-left:8px; padding-right:42px; line-height:30px; background:#fff; border:1px solid #ddd; vertical-align:top;}
+.style_select label::before {display:block; content:''; position:absolute; right:30px; top:0; width:1px; height:30px; background:#ddd;}
+.style_select label::after {
+	display:block;
+	content:'';
+	position:absolute;
+	right:11px;
+	top:13px;
+	width:0;
+	height:0;
+	border:4px solid #47c977;
+	border-left-color:transparent;
+	border-right-color:transparent;
+	border-bottom-color:transparent;
+	transition:all .3s;
+}
+.style_select label>span {display:block; font-size:13px; color:#999;}
+.style_select label>select {position:absolute; left:0; top:0; z-index:100; width:100%; height:30px; font-size:14px; opacity:0;}
+
+.style_select label.on {border:1px solid #00c0ef;}
+.style_select label.on>span {color:#00c0ef;}
+.style_select label.on::before {background:#00c0ef;}
+.style_select label.on::after {
+	top:8px;
+	border:4px solid #f35958;
+	border-left-color:transparent;
+	border-right-color:transparent;
+	border-top-color:transparent;
+}
+
+.style_file {display:inline-block; position:relative; min-width:100px; vertical-align:middle;}
+.style_file>label {display:inline-block; overflow:hidden; box-sizing:border-box; width:100%; padding-right:110px; height:30px; background:#fff; border:1px solid #ddd; vertical-align:top;}
+.style_file>label>span {display:inline-block; overflow:hidden; width:100%; padding:0 5px; line-height:30px; text-overflow:ellipsis; white-space:nowrap;}
+.style_file>label>input[type=file] {width:100%; height:30px; position:absolute; left:0; top:0; z-index:2; opacity:0;}
+.style_file>label>button {display:block; position:absolute; right:0; top:0; width:110px; height:30px; color:#fff; text-align:center; line-height:30px; background:#0f81be; border:0;}
+
+.datepicker button {margin-left:5px; font-size:18px; vertical-align:middle; background:transparent; border:0; cursor:pointer;}
+
+/*	BUTTON */
+.btn_area {margin-top:30px; text-align:right;}
+.btn_area.top {margin-top:0; margin-bottom:15px;}
+.btn_area.center {text-align:center;}
+.btn_area.bd_btm {padding-bottom:40px;border-bottom:1px solid #ddd;}
+
+.btn {display:inline-block; position:relative; width:100px; height:40px; text-align:center; font-size:16px; line-height:40px; background:#fff;}
+ button.btn {padding:0; border:0; font-family:"NotoSanskr_Regular"; vertical-align:middle; cursor:pointer;}
+.btn.small {height:30px; line-height:30px; font-size:14px; vertical-align:middle;}
+.btn.long {width:150px;}
+.btn.add, .btn.remove, .btn.del {width:40px; margin-left:3px;}
+.btn.add::after {display:block; content:'\f067'; position:absolute; left:12px; top:0; font-family:FontAwesome; font-size:20px; color:#fff;}
+.btn.remove::after {display:block; content:'\f068'; position:absolute; left:12px; top:0; font-family:FontAwesome; font-size:20px; color:#fff;}
+.btn.del::after {display:block; content:'\f00d'; position:absolute; left:12px; top:0; font-family:FontAwesome; font-size:20px; color:#fff;}
+.btn.small.add, .btn.small.remove, .btn.small.del {width:30px; margin-left:3px;}
+.btn.small.add::after {font-size:14px; left:9px;}
+.btn.small.remove::after {font-size:14px; left:9px;}
+.btn.small.del::after {font-size:14px; left:9px;}
+.btn.circle {border-radius:13px;}
+.btn.blue {color:#0f81be; background:#fff; border:1px solid #0f81be;}
+.btn.gray {border:1px solid #999;}
+.btn.green {color:#0d7556; background:#fff; border:1px solid #0d7556;}
+.btn.full_blue {color:#fff; background:#0f81be; border:1px solid #0f81be;}
+.btn.full_green {color:#fff; background:#004098; border:1px solid #004098;}
+.btn.full_gray {color:#fff; background:#999; border:1px solid #999;}
+.btn>i {font-size:12px;}
+
+.btn_area2 {margin-top:30px;}
+.btn_area2::after {display:block; content:""; clear:both;}
+.btn_area2 .left {float:left;}
+.btn_area2 .right {float:right;}
+
+/* Text */
+.con_box .description {margin-top:8px;}
+.con_box .caption {position:relative;}
+.con_box .caption>span {position:absolute;right:0;top:-20px;font-size:12px;}
+.con_box .tblinfo {margin-bottom:8px;}
+.con_box .tblinfo>strong {font-weight:bold;}
+
+
+
+/*  Danger Area  */
+.alert-danger {position:fixed; left:0; top:0; z-index:1000; width:100%; height:60px; color:#fff; line-height:60px; text-align:center; background:#dd4b39;}
+.alert-danger>button.close {position:absolute; right:15px; top:15px; width:30px; height:30px; font-size:21px; color:#fff; background:transparent; border:1px solid #fff; cursor:pointer;}
+
+/* file */
+.file_list >a {display:inline-block;margin:0 10px;}
+.file_list >a:first-child {margin-left:0;}
+</style>
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>@(year)년 월별 손익</h2>
+    </div><!--//top_wrap-->
+
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+            <div class="box">
+                <div class="graph">
+                    <table class="mytable">
+                        <colgroup>
+                            <col width="7%" />
+                            <col width="/" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="15" class="rbd lbd0" style="text-align:right;">
+                                    (단위 : 억원)
+                                </th>
+                            </tr>
+                            <tr>
+                                <th scope="col" colspan="2" class="rbd lbd0">
+                                    구분
+                                </th>
+                                <th scope="col">1월</th>
+                                <th scope="col">2월</th>
+                                <th scope="col">3월</th>
+                                <th scope="col">4월</th>
+                                <th scope="col">5월</th>
+                                <th scope="col">6월</th>
+                                <th scope="col">7월</th>
+                                <th scope="col">8월</th>
+                                <th scope="col">9월</th>
+                                <th scope="col">10월</th>
+                                <th scope="col">11월</th>
+                                <th scope="col">12월</th>
+                                <th scope="col">계</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row" colspan="2">Sales</th>
+                                @foreach (var summary in groupTable)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\">@Math.Round(summary.Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" colspan="2" class="lbd0">EBIT</th>
+                                @foreach (var summary in groupTable)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\">@Math.Round(summary.Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" colspan="2" class="lbd0">%</th>
+                                @foreach (var summary in groupTable)
+                                {
+                                    <td>@(summary.Sales == 0 ? 0 : Math.Round(summary.Ebit / summary.Sales * 100, 1, MidpointRounding.AwayFromZero))%</td>
+                                }
+                            </tr>
+                            @*<tr>
+                                <th scope="row" colspan="2" class="lbd0">PBT</th>
+                                @foreach (var summary in groupTable)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\">@Math.Round(summary.Pbt, 2)</td>
+                                }
+                            </tr>*@
+
+                        </tbody>
+                    </table><!--// tbl-->
+                </div><!--//graph-->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+
+    </div><!--//con_wrap-->
+
+    @foreach (var company in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+    {
+        List<PlanMonthlyPalBusinessMonthlySumExp> pnComRow = pnCom.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).ToList();
+        List<PlanMonthlyPalBusinessExp> pnCompanyBuList = businessList.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).ToList();
+        <div class="type_tab_con" id="yearpal_@company.id">
+            <div class="con_wrap">
+
+                <div class="graph_box">
+
+                    <h3>@company.txt</h3>
+                    <div class="box">
+                        <div class="graph">
+                            <table class="mytable" border="1">
+                                <colgroup>
+                                    <col width="7%" />
+                                    <col width="7%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="15" class="rbd lbd0" style="text-align:right;">
+                                            (단위 : 억원)
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col">1월</th>
+                                        <th scope="col">2월</th>
+                                        <th scope="col">3월</th>
+                                        <th scope="col">4월</th>
+                                        <th scope="col">5월</th>
+                                        <th scope="col">6월</th>
+                                        <th scope="col">7월</th>
+                                        <th scope="col">8월</th>
+                                        <th scope="col">9월</th>
+                                        <th scope="col">10월</th>
+                                        <th scope="col">11월</th>
+                                        <th scope="col">12월</th>
+                                        <th scope="col">계</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (pnCompanyBuList != null)
+                                    {
+                                        foreach (var business in pnCompanyBuList)
+                                        {
+                                            var bu = pnBu.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).ToList();
+                                            <tr>
+                                                <th scope="row" rowspan="3" class="lbd0">
+                                                    @business.BusinessName
+                                                </th>
+                                                <th scope="row">Sales</th>
+                                                @foreach (var data in bu)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\">@Math.Round(data.Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="lbd0">EBIT</th>
+                                                @foreach (var data in bu)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\">@Math.Round(data.Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            </tr>
+                                            <tr>
+                                                <th scope="row">%</th>
+                                                @foreach (var data in bu)
+                                                {
+                                                    <td>@(data.Sales == 0 ? 0 : Math.Round(data.Ebit / data.Sales * 100, 1, MidpointRounding.AwayFromZero))%</td>
+                                                }
+                                            </tr>
+                                            @*<tr>
+                                                <th scope="row" class="lbd0">PBT</th>
+                                                @foreach (var data in bu)
+                                                {
+                                                    <td style="mso-number-format:\#\,\#\#0\">@Math.Round(data.Pbt, 2)</td>
+                                                }
+                                            </tr>*@
+                                        }
+                                    }
+                                    <tr class="total">
+                                        <th scope="row" rowspan="3" class="lbd0">
+                                            합계
+                                        </th>
+                                        <th scope="row">Sales</th>
+                                        @if (pnComRow != null)
+                                        {
+                                            foreach (var total in pnComRow)
+                                            {
+                                                <td style="mso-number-format:\#\,\#\#0\">@Math.Round(total.Sales, 2, MidpointRounding.AwayFromZero)</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">EBIT</th>
+                                        @if (pnComRow != null)
+                                        {
+                                            foreach (var total in pnComRow)
+                                            {
+                                                <td style="mso-number-format:\#\,\#\#0\">@Math.Round(total.Ebit, 2, MidpointRounding.AwayFromZero)</td>
+                                            }
+                                        }
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">%</th>
+                                        @if (pnComRow != null)
+                                        {
+                                            foreach (var total in pnComRow)
+                                            {
+                                                <td>@(total.Sales == 0 ? 0 : Math.Round(total.Ebit / total.Sales * 100, 1, MidpointRounding.AwayFromZero))%</td>
+                                            }
+                                        }
+                                    </tr>
+                                    @*<tr class="total">
+                                        <th scope="row">PBT</th>
+                                        @if (pnComRow != null)
+                                        {
+                                            foreach (var total in pnComRow)
+                                            {
+                                                <td style="mso-number-format:\#\,\#\#0\">@Math.Round(total.Pbt, 2)</td>
+                                            }
+                                        }
+                                    </tr>*@
+
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div><!--//graph-->
+                    </div><!--//box-->
+                </div><!--//graph_box-->
+            </div><!--//con_wrap-->
+        </div><!--//type_tab_con-->
+
+    }
+
+</div><!--//plan_wrap-->
+<div class="btn_area align_left_right">
+    <button class="btn full_green left" type="button" onclick="javascript: window.close();">닫기</button>
+</div>
+<script>
+    //$(function () {
+    //    /*탭*/
+    //    MYAPP.tab.init($(".type_tab2"));
+    //})
+</script>

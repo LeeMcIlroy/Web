@@ -1,0 +1,307 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "Index";
+
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    // 2019.02.18 만도는 안 보이게 변경
+    lvCompany = lvCompany.Where(w => w.id != "3").ToList();
+
+    //string year = Model.year;
+    List<TbOrgCompanyExp> orgCompanyList = Model.tbOrgCompanyList;
+    List<PlanYearInvestSummary> groupTotalSummaryList = Model.groupTotalSummaryList;
+
+
+    List<PlanGroupdataInvestSummary> groupTotalSummaryList_NEW= Model.groupTotalSummaryList_NEW;
+
+    // 댓글 관련
+    var year = SessionManager.GetMemberSession().planYear.First().RegistYear;
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = year;
+    commentList.CommentMonth = "99";
+    commentList.AttachTableName = "PLAN_YEAR_INVEST";
+    commentList.AttachTableSeq = 0;
+    commentList.UserKey = SessionManager.GetMemberSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetMemberSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetMemberSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Deptkorname;
+        }
+        <form name="frmForm" method="post">
+            <div class="plan_wrap">
+                <div class="top_wrap">
+                    <h2>중기 투자, 인원</h2>
+                    @*<a href="/Plan/Year_Invest/Index_excel" class="btn_download" target="_blank">DOWNLOAD</a>*@
+                    @*2019.01.24 분기*@
+                    <a href="javascript:;" onclick="goDownOrView();" class="btn_download">DOWNLOAD</a>
+                </div><!--//top_wrap-->
+
+                @if (lvGroup.Count() > 0)
+                {
+                    <div class="con_wrap">
+                        <div class="graph_box">
+                            <h3>한라 그룹</h3>
+                            <div class="box">
+                                <div class="box_col_wrap">
+                                    <div class="col2 fl graph">
+                                        <div class="chart_box chart_box4">
+                                            <p class="p_title">투자</p>
+                                            <span class="p_unit">(단위 : 억원)</span>
+                                            <div class="chart chart_type11" id="chart1"></div>
+                                            @{
+                                                //string gInvestmentText = "";
+                                                //foreach (var s in groupTotalSummaryList)
+                                                //{
+                                                //    gInvestmentText += "{";
+                                                //    gInvestmentText += "x:" + s.YearlyYear + ",";
+                                                //    gInvestmentText += "y:" + Math.Round(s.Investment, MidpointRounding.AwayFromZero) + "},";
+                                                //}
+                                                //if (gInvestmentText.Length > 0)
+                                                //{
+                                                //    gInvestmentText = gInvestmentText.Substring(0, gInvestmentText.Length - 1);
+                                                //}
+
+                                                string gInvestmentText = "";
+                                                foreach (var s in groupTotalSummaryList_NEW)
+                                                {
+                                                    gInvestmentText += "{";
+                                                    gInvestmentText += "x:" + s.GroupdataMonth + ",";
+                                                    gInvestmentText += "y:" + Math.Round(s.Investment, MidpointRounding.AwayFromZero) + "},";
+                                                }
+                                                if (gInvestmentText.Length > 0)
+                                                {
+                                                    gInvestmentText = gInvestmentText.Substring(0, gInvestmentText.Length - 1);
+                                                }
+                                            }
+
+                                            <script>
+                                                (function () {
+                                                    var data = [
+                                                      { key: "투자", values: [ @gInvestmentText] }
+                                                    ];
+                                                    data.map(function (obj, i) {
+                                                        obj.color = ['#009de4'][i];
+                                                        obj.pointShape = ['diamond2'][i];
+                                                        obj.strokeWidth = 1;
+                                                        return obj;
+                                                    });
+
+                                                    MYAPP.graph.type11(data, '#chart1', '');
+                                                })();
+                                            </script>
+                                        </div>
+                                        <!-- chart_box -->
+                                    </div>
+                                    <div class="col2 fr graph">
+                                        <div class="chart_box chart_box4">
+                                            <p class="p_title">인원</p>
+                                            <span class="p_unit">(단위 : 명)</span>
+                                            <div class="chart chart_type11" id="chart2"></div>
+                                            @{
+                                                //string gPersonnelText = "";
+                                                //foreach (var s in groupTotalSummaryList)
+                                                //{
+                                                //    gPersonnelText += "{";
+                                                //    gPersonnelText += "x:" + s.YearlyYear + ",";
+                                                //    gPersonnelText += "y:" + Math.Round(s.Personnel, MidpointRounding.AwayFromZero) + "},";
+                                                //}
+                                                //if (gPersonnelText.Length > 0)
+                                                //{
+                                                //    gPersonnelText = gPersonnelText.Substring(0, gPersonnelText.Length - 1);
+                                                //}
+
+                                                string gPersonnelText = "";
+                                                foreach (var s in groupTotalSummaryList_NEW)
+                                                {
+                                                    gPersonnelText += "{";
+                                                    gPersonnelText += "x:" + s.GroupdataMonth + ",";
+                                                    gPersonnelText += "y:" + Math.Round(s.Personnel, MidpointRounding.AwayFromZero) + "},";
+                                                }
+                                                if (gPersonnelText.Length > 0)
+                                                {
+                                                    gPersonnelText = gPersonnelText.Substring(0, gPersonnelText.Length - 1);
+                                                }
+                                            }
+                                            <script>
+                                                (function () {
+                                                    var data = [
+                                                      { key: "인원", values: [ @gPersonnelText] }
+                                                    ];
+                                                    data.map(function (obj, i) {
+                                                        obj.color = ['#ff520d'][i];
+                                                        obj.pointShape = ['square'][i];
+                                                        obj.strokeWidth = 1;
+                                                        return obj;
+                                                    });
+
+                                                    MYAPP.graph.type11(data, '#chart2', '');
+                                                })();
+                                            </script>
+                                        </div>
+                                        <!-- chart_box -->
+                                    </div>
+                                </div><!--//box_col_wrap-->
+                            </div><!--//box-->
+                        </div><!--//graph_box-->
+
+                    </div><!--//con_wrap-->
+                                                }
+                <div class="tab_wrap">
+                    <div class="type_tab2">
+                        <ul>
+                            @foreach (var company in orgCompanyList.Where(w => w.isUse == "Y").OrderBy(o => o.UpId).ThenBy(t => t.id))
+                            {
+                                var chkCompany = lvCompany.Where(w => w.id == company.seq.ToString()).FirstOrDefault();
+                                if (chkCompany != null)
+                                {
+                                    <li><a href="#yearpal_@company.seq">@company.companyName</a></li>
+                                }
+                            }
+                            <!--
+                            <li><a href="#yearpal01">한라홀딩스</a></li>
+                            <li><a href="#yearpal02">JJ한라</a></li>
+                            <li><a href="#yearpal03">만도</a></li>
+                            <li><a href="#yearpal04">만도헬라</a></li>
+                            <li><a href="#yearpal05">만도브로제</a></li>
+                            <li><a href="#yearpal06">㈜한라</a></li>
+                                -->
+                        </ul>
+                    </div><!--//type_tab-->
+                    @*2018.12.14 회사리스트는 현재 사용중인 리스트만 보여준다.*@
+                    @foreach (var company in orgCompanyList.Where(w => w.isUse == "Y").OrderBy(o => o.UpId).ThenBy(t => t.id))
+            {
+
+                var chkCompany = lvCompany.Where(w => w.id == company.seq.ToString()).FirstOrDefault();
+                if (chkCompany != null)
+                {
+                            <div class="type_tab_con" id="yearpal_@company.seq">
+                                <div class="con_wrap">
+
+                                    <div class="graph_box">
+                                        <div class="box">
+                                            <div class="box_col_wrap">
+                                                <div class="col2 fl graph">
+                                                    <div class="chart_box chart_box4">
+                                                        <p class="p_title">투자</p>
+                                                        <span class="p_unit">(단위 : 억원)</span>
+                                                        <div class="chart chart_type11" id="chart_@company.seq"></div>
+                                                        @{
+                                                            string investmentText = "";
+
+                                                            investmentText += "{";
+                                                            investmentText += "x:" + company.pmInvestSum.investYear + ",";
+                                                            investmentText += "y:" + Math.Round(company.pmInvestSum.Investment, MidpointRounding.AwayFromZero) + "},";
+
+                                                            foreach (var s in company.totalPlanYearInvestSummaryList)
+                                                            {
+                                                                investmentText += "{";
+                                                                investmentText += "x:" + s.YearlyYear + ",";
+                                                                investmentText += "y:" + Math.Round(s.Investment, MidpointRounding.AwayFromZero) + "},";
+                                                            }
+                                                            if (investmentText.Length > 0)
+                                                            {
+                                                                investmentText = investmentText.Substring(0, investmentText.Length - 1);
+                                                            }
+                                                        }
+                                                        <script>
+                                                            (function () {
+                                                                var data = [
+                                                                  { key: "투자", values: [ @investmentText] }
+                                                                ];
+                                                                data.map(function (obj, i) {
+                                                                    obj.color = ['#009de4'][i];
+                                                                    obj.pointShape = ['diamond2'][i];
+                                                                    obj.strokeWidth = 1;
+                                                                    return obj;
+                                                                });
+
+                                                                MYAPP.graph.type11(data, '#chart_@company.seq', '');
+                                                            })();
+                                                        </script>
+                                                    </div>
+                                                    <!-- chart_box -->
+                                                </div>
+                                                <div class="col2 fr graph">
+                                                    <div class="chart_box chart_box4">
+                                                        <p class="p_title">인원</p>
+                                                        <span class="p_unit">(단위 : 명)</span>
+                                                        <div class="chart chart_type11" id="chart99_@company.seq"></div>
+                                                        @{
+                                                            string personnelText = "";
+
+                                                            personnelText += "{";
+                                                            personnelText += "x:" + company.pmInvestSum.investYear + ",";
+                                                            personnelText += "y:" + Math.Round(company.pmInvestSum.Personnel, MidpointRounding.AwayFromZero) + "},";
+
+                                                            foreach (var s in company.totalPlanYearInvestSummaryList)
+                                                            {
+                                                                personnelText += "{";
+                                                                personnelText += "x:" + s.YearlyYear + ",";
+                                                                personnelText += "y:" + Math.Round(s.Personnel, MidpointRounding.AwayFromZero) + "},";
+                                                            }
+                                                            if (personnelText.Length > 0)
+                                                            {
+                                                                personnelText = personnelText.Substring(0, personnelText.Length - 1);
+                                                            }
+                                                        }
+                                                        <script>
+                                                            (function () {
+                                                                var data = [
+                                                                  { key: "인원", values: [ @personnelText] }
+                                                                ];
+                                                                data.map(function (obj, i) {
+                                                                    obj.color = ['#ff520d'][i];
+                                                                    obj.pointShape = ['square'][i];
+                                                                    obj.strokeWidth = 1;
+                                                                    return obj;
+                                                                });
+
+                                                                MYAPP.graph.type11(data, '#chart99_@company.seq', '');
+                                                            })();
+                                                        </script>
+                                                    </div>
+                                                    <!-- chart_box -->
+                                                </div>
+                                            </div><!--//box_col_wrap-->
+                                        </div><!--//box-->
+                                    </div><!--//graph_box-->
+                                </div><!--//con_wrap-->
+                            </div><!--//type_tab_con-->
+                                                                }
+                                                            }
+                </div><!--//tab_wrap-->
+            </div><!--//plan_wrap-->
+            <script>
+                $(function () {
+                    /*탭*/
+                    MYAPP.tab.init($(".type_tab2"));
+                })
+
+                function goDownOrView() {
+                    var f = document.frmForm;
+                    // 웹 모바일 분기
+                    var filter = "win16|win32|win64|mac";
+
+                    if (navigator.platform) {
+
+                        if (0 > filter.indexOf(navigator.platform.toLowerCase())) {
+                            // Mobile
+                            f.action = "ViewYearInvest";
+                            f.target = "_Blank";
+                            f.submit();
+                        } else {
+                            // Pc
+                            f.action = "ExcelYearInvest_New";
+                            //f.target = "_Blank";
+                            f.submit();
+                        }
+
+                    }
+
+                }
+            </script>
+        </form>
+        @Html.Partial("~/Views/Shared/PartialReply.cshtml", commentList)

@@ -1,0 +1,242 @@
+﻿@using HALLA_PM.Models;
+@{
+    Layout = null;
+    List<OrgUnionExp> orgUnionList = Model.orgUnionList;
+    List<TbOrgCompanyExp> tbOrgCompanyList = Model.tbOrgCompanyList;
+    List<TbPlanMonthlyPalExp> planMonthlyPalList = Model.tbPlanMonthlyPalList;
+    List<PlanMonthlyPalBusinessMonthlySum> groupTotalSummary = Model.groupTotalSummary;
+    List<OrgUnionExp> procedOrgUnionList = new List<OrgUnionExp>();
+    foreach(var union in orgUnionList)
+    {
+        if(union.planMonthlyPalBusinessSummaryList != null && union.planMonthlyPalBusinessSummaryList.Count() > 0)
+        {
+            procedOrgUnionList.Add(union);
+        }
+    }
+    Response.AppendHeader("Content-Disposition", "attachment;filename=plan_monthly_pal_excel.xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>2018년 월별 손익</h2>
+    </div><!--//top_wrap-->
+
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+            <div class="box">
+                <div class="graph">
+                    <table class="tbl tbl_type01" border="1">
+                        <colgroup>
+                            <col width="7%" />
+                            <col width="/" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="15" class="rbd lbd0" style="text-align:right;">
+                                    (단위 : 억원)
+                                </th>
+                            </tr>
+                            <tr>
+                                <th scope="col" colspan="2" class="rbd lbd0">
+                                    구분
+                                </th>
+                                <th scope="col">1월</th>
+                                <th scope="col">2월</th>
+                                <th scope="col">3월</th>
+                                <th scope="col">4월</th>
+                                <th scope="col">5월</th>
+                                <th scope="col">6월</th>
+                                <th scope="col">7월</th>
+                                <th scope="col">8월</th>
+                                <th scope="col">9월</th>
+                                <th scope="col">10월</th>
+                                <th scope="col">11월</th>
+                                <th scope="col">12월</th>
+                                <th scope="col">계</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var union in procedOrgUnionList)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="3" class="lbd0">
+                                        @union.UnionName
+                                    </th>
+                                    <th scope="row">Sales</th>
+                                    @foreach(var summary in union.planMonthlyPalBusinessSummaryList)
+                                    {
+                                        <td>@summary.Sales</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="lbd0">EBIT</th>
+                                    @foreach(var summary in union.planMonthlyPalBusinessSummaryList)
+                                    {
+                                        <td>@summary.Ebit</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="lbd0">%</th>
+                                    @foreach (var summary in union.planMonthlyPalBusinessSummaryList)
+                                    {
+                                        <td>@summary.EbitRate %</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table><!--// tbl-->
+                </div><!--//graph-->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+
+    </div><!--//con_wrap-->
+
+    @foreach (var company in tbOrgCompanyList)
+    {
+        TbPlanMonthlyPalExp tbPlanMonthlyPal = planMonthlyPalList.Where(x => x.orgCompanySeq == company.seq).FirstOrDefault();
+        List<PlanMonthlyPalBusinessMonthlySum> totalPlanMonthlyPalBusinessSummaryList = company.totalPlanMonthlyPalBusinessSummaryList;
+        <div class="type_tab_con" id="yearpal_@company.seq">
+            <div class="con_wrap">
+
+                <div class="graph_box">
+
+                    <h3>@company.companyName</h3>
+                    <div class="box">
+                        <div class="graph">
+                            <table class="tbl tbl_type01" border="1">
+                                <colgroup>
+                                    <col width="7%" />
+                                    <col width="7%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="15" class="rbd lbd0" style="text-align:right;">
+                                            (단위 : 억원)
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col">1월</th>
+                                        <th scope="col">2월</th>
+                                        <th scope="col">3월</th>
+                                        <th scope="col">4월</th>
+                                        <th scope="col">5월</th>
+                                        <th scope="col">6월</th>
+                                        <th scope="col">7월</th>
+                                        <th scope="col">8월</th>
+                                        <th scope="col">9월</th>
+                                        <th scope="col">10월</th>
+                                        <th scope="col">11월</th>
+                                        <th scope="col">12월</th>
+                                        <th scope="col">계</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    @if (company.orgBusinessList != null)
+                                    {
+                                        foreach (var business in company.orgBusinessList)
+                                        {
+                                            if (business.planMonthlyPalBusinessMonthlySumList != null)
+                                            {
+                                                var summaryList = business.planMonthlyPalBusinessMonthlySumList;
+                                                decimal totSales = 0.0;
+                                                decimal totEbit = 0.0;
+                                                <tr>
+                                                    <th scope="row" rowspan="3" class="lbd0">
+                                                        @business.BusinessName
+                                                    </th>
+                                                    <th scope="row">Sales</th>
+                                                    @foreach(var data in summaryList)
+                                                    {
+                                                        totSales += data.Sales;
+                                                        <td>@data.Sales</td>
+                                                    }
+                                                    <td>@totSales</td>
+                                                    <!-- <td>4,229</td>-->
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row" class="lbd0">EBIT</th>
+                                                    @foreach(var data in summaryList)
+                                                    {
+                                                        totEbit += data.Ebit;
+                                                        <td>@data.Ebit</td>
+                                                    }
+                                                    <td>@totEbit</td>
+                                                    <!-- <td>163</td>-->
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">%</th>
+                                                    @foreach(var data in summaryList)
+                                                    {
+                                                        <td>@data.EbitRate %</td>
+                                                    }
+                                                    @{ 
+                                                        decimal totRate = 0.0M;
+                                                        //if (!Double.IsNaN(totEbit / totSales))
+                                                        //{
+                                                        //    totRate = Math.Round((totEbit / totSales) * 100, 1);
+                                                        //}
+                                                    }
+                                                    <td>@totRate %</td>
+                                                    <!-- <td>3.7%</td>-->
+                                                </tr>
+
+                                            }
+                                        }
+                                        <tr class="total">
+                                            <th scope="row" rowspan="3" class="lbd0">
+                                                합계
+                                            </th>
+                                            <th scope="row">Sales</th>
+                                            @if (totalPlanMonthlyPalBusinessSummaryList != null)
+                                            {
+                                                foreach (var total in totalPlanMonthlyPalBusinessSummaryList)
+                                                {
+                                                    <td>@total.Sales</td>
+                                                }
+                                            }
+                                        </tr>
+                                            <tr class="total">
+                                                <th scope="row">EBIT</th>
+                                                @if (totalPlanMonthlyPalBusinessSummaryList != null)
+                                                {
+                                                    foreach (var total in totalPlanMonthlyPalBusinessSummaryList)
+                                                    {
+                                                        <td>@total.Ebit</td>
+                                                    }
+                                                }
+                                            </tr>
+                                            <tr class="total">
+                                                <th scope="row">%</th>
+                                                @if (totalPlanMonthlyPalBusinessSummaryList != null)
+                                                {
+                                                    foreach (var total in totalPlanMonthlyPalBusinessSummaryList)
+                                                    {
+                                                        <td>@total.EbitRate %</td>
+                                                    }
+                                                }
+                                            </tr>
+                                    }
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div><!--//graph-->
+                    </div><!--//box-->
+                </div><!--//graph_box-->
+            </div><!--//con_wrap-->
+        </div><!--//type_tab_con-->
+
+    }
+        
+</div><!--//plan_wrap-->
+<script>
+    $(function () {
+        /*탭*/
+        MYAPP.tab.init($(".type_tab2"));
+    })
+</script>

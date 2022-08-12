@@ -1,0 +1,1226 @@
+﻿
+@{
+   
+}
+
+
+<section class="group_wrap">
+    <div class="top_wrap">
+        <h2>그룹메인</h2>
+    </div><!--//top_wrap-->
+
+    <form name="frmForm" method="post">
+        <div class="top_wrap">
+            <div class="style_select">
+                <label class="">
+                    <span>2019년</span>
+                    <select name="year" id="year" onchange="onChangeDate();">
+                        <option value="2018">2018년</option>
+                        <option value="2019" selected>2019년</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="style_select">
+                <label class="">
+                    <span>6월</span>
+                    <select name="mm" id="mm" onchange="onChangeDate();">
+                        <option value="01">1월</option>
+                        <option value="02">2월</option>
+                        <option value="03">3월</option>
+                        <option value="04">4월</option>
+                        <option value="05">5월</option>
+                        <option value="06" selected>6월</option>
+                    </select>
+                </label>
+            </div>
+        </div><!--//top_wrap-->
+    </form>
+
+    <div class="monthly_total_box">
+
+        <div class="monthly_total col mtotal01">
+            <h3>FCF</h3>
+            <div class="monthly_info">
+                <dl>
+                    <dt>누계</dt>
+                    <dd class="total_info"><span class="total">-812</span>억</dd>
+                    <dd class="rate_info">달성률  <span class="rate">181%</span></dd>
+                </dl>
+            </div>
+        </div><!--//monthly_total-->
+
+        <div class="monthly_total col2 mtotal02">
+            <h3>SALES</h3>
+            <div class="monthly_info">
+                <dl>
+                    <dt>당월</dt>
+                    <dd class="total_info"><span class="total">7,111</span>억</dd>
+                    <dd class="rate_info">달성률  <span class="rate">100%</span></dd>
+                </dl>
+                <dl>
+                    <dt>누계</dt>
+                    <dd class="total_info"><span class="total">42,034</span>억</dd>
+                    <dd class="rate_info">달성률  <span class="rate">104%</span></dd>
+                </dl>
+            </div>
+        </div><!--//monthly_total-->
+
+        <div class="monthly_total col2 mtotal03">
+            <h3>EBIT</h3>
+            <div class="monthly_info">
+
+                <dl>
+                    <dt>당월</dt>
+                    <dd class="total_info"><span class="total">118</span>억 (1.7%)</dd>
+                    <dd class="rate_info">달성률  <span class="rate">49%</span></dd>
+                </dl>
+                <dl>
+                    <dt>누계</dt>
+                    <dd class="total_info"><span class="total">1,301</span>억 (3.1%)</dd>
+                    <dd class="rate_info">달성률  <span class="rate">114%</span></dd>
+                </dl>
+            </div>
+        </div><!--//monthly_total-->
+
+        <div class="monthly_total col mtotal04">
+            <h3>ROIC</h3>
+            <div class="monthly_info">
+                <dl>
+                    <dt>누계</dt>
+                    <dd class="total_info"><span class="total">4.7%</span></dd>
+                    <dd class="rate_info">달성률<span class="rate">117%</span></dd>
+                </dl>
+            </div>
+        </div><!--//monthly_total-->
+    </div><!--//monthly_total_box-->
+    <!--S: KPI 종합-->
+    <div class="graph_box_wrap open">
+        <!--첫번째 섹션은 open 클래스 추가-->
+        <h2><a href="#">KPI 종합</a></h2>
+        <div class="graph_box">
+
+            <div class="box">
+                <div class="graph">
+                    <p class="unit">(단위 : %)</p>
+
+                    <div class="tbl_scroll_wrap" id="kpiTable">
+                        <div class="tbl_box">
+                            <table class="tbl th_hor tblfix">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="row2">구분</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">FCF</th>
+                                        <th scope="row">누계</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" rowspan="2">매출</th>
+                                        <th scope="row">당월</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="bg">누계</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" rowspan="2">EBIT</th>
+                                        <th scope="row">당월</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="bg">누계</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" rowspan="2">PBT</th>
+                                        <th scope="row">당월</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="bg">누계</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">부채비율</th>
+                                        <th scope="row">누계</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">ROIC</th>
+                                        <th scope="row">누계</th>
+                                    </tr>
+                                </tbody>
+                            </table><!--tbl-->
+                        </div><!--//tbl_box-->
+
+                        <div class="tbl_scroll">
+                            <div class="tbl_add">
+                                <table class="tbl th_hor">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="3" class="ld">지주부문</th>
+                                            <th colspan="3" class="ld">자동차부문</th>
+                                            <th colspan="1" class="ld">건설부문</th>
+
+
+                                            <th rowspan="2" class="ld">그룹<br>Total</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="ld">한라홀딩스(사업)</th>
+                                            <th>한라홀딩스(지주)</th>
+                                            <th>JJ한라</th>
+                                            <th class="ld">만도헬라</th>
+                                            <th>만도브로제</th>
+                                            <th>만도(BU)</th>
+                                            <th class="ld">(주)한라</th>
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class='ld'><span class='cgreen'>671%</span></td>
+                                            <td><span>N/A</span></td>
+                                            <td><span class='cgreen'>335%</span></td>
+                                            <td class='ld'><span class='cgreen'>204%</span></td>
+                                            <td><span class='cgreen'>148%</span></td>
+                                            <td><span class='cgreen'>174%</span></td>
+                                            <td class='ld'><span class='cgreen'>171%</span></td>
+                                            <td class="ld"><span class='cgreen'>181%</span></td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class='ld'><span class='cgreen'>102%</span></td>
+                                            <td><span class='cgreen'>128%</span></td>
+                                            <td><span class='cgreen'>108%</span></td>
+                                            <td class='ld'><span class='corg'>95%</span></td>
+                                            <td><span class='corg'>91%</span></td>
+                                            <td><span class='cgreen'>101%</span></td>
+                                            <td class='ld'><span class='corg'>96%</span></td>
+                                            <td class="ld"><span class='cgreen'>100%</span></td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class='ld bg'><span class='cgreen'>106%</span></td>
+                                            <td class='bg'><span class='cgreen'>104%</span></td>
+                                            <td class='bg'><span class='cgreen'>100%</span></td>
+                                            <td class='ld bg'><span class='corg'>96%</span></td>
+                                            <td class='bg'><span class='cgreen'>100%</span></td>
+                                            <td class='bg'><span class='cgreen'>106%</span></td>
+                                            <td class='ld bg'><span class='cgreen'>102%</span></td>
+                                            <td class="ld bg"><span class='cgreen'>104%</span></td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class='ld'><span class='cgreen'>104%</span></td>
+                                            <td><span class='cgreen'>188%</span></td>
+                                            <td><span class='cgreen'>195%</span></td>
+                                            <td class='ld'><span class='cgreen'>101%</span></td>
+                                            <td><span class='cgreen'>136%</span></td>
+                                            <td><span class='cred'>79%</span></td>
+                                            <td class='ld'><span class='cred'>-146%</span></td>
+                                            <td class="ld"><span class='cred'>49%</span></td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class='ld bg'><span class='cgreen'>109%</span></td>
+                                            <td class='bg'><span class='cgreen'>116%</span></td>
+                                            <td class='bg'><span class='cgreen'>728%</span></td>
+                                            <td class='ld bg'><span class='cgreen'>109%</span></td>
+                                            <td class='bg'><span class='cgreen'>211%</span></td>
+                                            <td class='bg'><span class='cgreen'>127%</span></td>
+                                            <td class='ld bg'><span class='cred'>54%</span></td>
+                                            <td class="ld bg"><span class='cgreen'>114%</span></td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class='ld'><span class='cred'>39%</span></td>
+                                            <td><span class='cgreen'>567%</span></td>
+                                            <td><span class='cgreen'>126%</span></td>
+                                            <td class='ld'><span class='cgreen'>109%</span></td>
+                                            <td><span class='cred'>73%</span></td>
+                                            <td><span class='cred'>-22%</span></td>
+                                            <td class='ld'><span class='cred'>-898%</span></td>
+                                            <td class="ld"><span class='cred'>-138%</span></td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class='ld bg'><span class='cgreen'>120%</span></td>
+                                            <td class='bg'><span class='cgreen'>160%</span></td>
+                                            <td class='bg'><span class='cgreen'>119%</span></td>
+                                            <td class='ld bg'><span class='cgreen'>123%</span></td>
+                                            <td class='bg'><span class='cgreen'>401%</span></td>
+                                            <td class='bg'><span class='cgreen'>165%</span></td>
+                                            <td class='ld bg'><span class='cred'>-325%</span></td>
+                                            <td class="ld bg"><span class='cgreen'>132%</span></td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class='ld bg'><span class='corg'>97%</span></td>
+                                            <td class='bg'><span>N/A</span></td>
+                                            <td class='bg'><span class='cgreen'>111%</span></td>
+                                            <td class='ld bg'><span class='cgreen'>119%</span></td>
+                                            <td class='bg'><span class='cgreen'>106%</span></td>
+                                            <td class='bg'><span class='cgreen'>108%</span></td>
+                                            <td class='ld bg'><span class='corg'>99%</span></td>
+                                            <td class="ld bg"></td>
+
+                                        </tr>
+                                        <tr>
+                                            <td class='ld bg'><span class='cgreen'>117%</span></td>
+                                            <td class='bg'><span>N/A</span></td>
+                                            <td class='bg'><span>N/A</span></td>
+                                            <td class='ld bg'><span class='cgreen'>128%</span></td>
+                                            <td class='bg'><span class='cgreen'>217%</span></td>
+                                            <td class='bg'><span class='cgreen'>123%</span></td>
+                                            <td class='ld bg'><span class='cred'>83%</span></td>
+                                            <td class='ld bg'><span class='cgreen'>117%</span></td>
+
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="tbl_info">
+                        <strong>Signal : 목표대비 달성률</strong>
+                        <span class="cgreen">100% 이상</span>
+                        <span class="corg">90%~100% </span>
+                        <span class="cred">90% 이하</span>
+                    </div><!--//tbl_info-->
+
+                </div><!--//graph-->
+            </div><!--//box-->
+
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+    <!--S: 손익 목표 달성 현황-->
+    <div class="graph_box_wrap">
+        <h2><a href="#">손익 목표 달성 현황</a></h2>
+        <div class="graph_box pd0">
+
+            <div class="box">
+                <div class="chart_box chart_box0">
+                    <span class="p_unit">(단위: 억원, %)</span>
+                    <span class="p_xaxis">EBIT 달성률</span>
+                    <span class="p_yaxis">Sales<br />달성률</span>
+                    <span class="p_standard">※ 누계실적 기준</span>
+                    <!-- // TODO: 190411 -->
+                    <!-- <span class="p_desc p_desc0">영업이익 미달</span> -->
+                    <!-- <span class="p_desc p_desc1">매출 미달<br />영업이익 미달</span> -->
+                    <!-- <span class="p_desc p_desc2">매출 미달</span> -->
+                    <div class="chart chart_type6" id="chart1"></div>
+                    <div class="p_navi">
+                        <ul>
+                            <li><a href="#"><span></span></a></li>
+                        </ul>
+                    </div>
+
+                    <script>
+                            ( function(){
+                                var data = [
+                                  //{ key: '한라홀딩스(사업)', values: [ { x: 101, y: 101, v0: { k: 'EBIT', v: 5000 }, v1: { k: 'SALES', v: 200 }, v2: { k: '(%)', v: 3.9 } } ] },
+                                  //{ key: '한라홀딩스(지주)', values: [ { x: 101, y: 102, v0: { k: 'EBIT', v: 27805 }, v1: { k: 'SALES', v: 1091 }, v2: { k: '(%)', v: 3.9 } } ] },
+                                  //{ key: 'JJ한라', values: [ { x: 120, y: 80, v0: { k: 'EBIT', v: 27805 }, v1: { k: 'SALES', v: 1091 }, v2: { k: '(%)', v: 3.9 } } ] },
+                                  //{ key: '만도', values: [ { x: 20, y: 20, v0: { k: 'EBIT', v: 27805 }, v1: { k: 'SALES', v: 1091 }, v2: { k: '(%)', v: 3.9 } } ] },
+                                  //{ key: '만도헬라', values: [ { x: 95, y: 90, v0: { k: 'EBIT', v: 27805 }, v1: { k: 'SALES', v: 1091 }, v2: { k: '(%)', v: 3.9 } } ] },
+                                  //{ key: '만도브로제', values: [ { x: 180.6, y: 150, v0: { k: 'EBIT', v: 27805 }, v1: { k: 'SALES', v: 1091 }, v2: { k: '(%)', v: 3.9 } } ] },
+                                  //{ key: '㈜한라', values: [ { x: 140, y: 103, v0: { k: 'EBIT', v: 27805 }, v1: { k: 'SALES', v: 1091 }, v2: { k: '(%)', v: 3.9 } } ] }
+                                  {key: '한라홀딩스(사업)', union : '지주부문',values : [{ x : 108.62, y : 105.64, v0 : { k : 'EBIT', v : 115}, v1 : { k : 'SALES', v : 3617}, v2 : { k : '(%)', v : 3.2}}]},{key: '한라홀딩스(지주)', union : '지주부문',values : [{ x : 115.53, y : 104.36, v0 : { k : 'EBIT', v : 189}, v1 : { k : 'SALES', v : 267}, v2 : { k : '(%)', v : 70.5}}]},{key: 'JJ한라', union : '지주부문',values : [{ x : 727.56, y : 99.68, v0 : { k : 'EBIT', v : 7}, v1 : { k : 'SALES', v : 69}, v2 : { k : '(%)', v : 9.7}}]},{key: '만도헬라', union : '자동차부문',values : [{ x : 109.17, y : 95.64, v0 : { k : 'EBIT', v : 196}, v1 : { k : 'SALES', v : 3073}, v2 : { k : '(%)', v : 6.4}}]},{key: '만도브로제', union : '자동차부문',values : [{ x : 210.62, y : 99.78, v0 : { k : 'EBIT', v : 23}, v1 : { k : 'SALES', v : 459}, v2 : { k : '(%)', v : 5.1}}]},{key: '만도(BU)', union : '자동차부문',values : [{ x : 126.56, y : 105.50, v0 : { k : 'EBIT', v : 811}, v1 : { k : 'SALES', v : 28842}, v2 : { k : '(%)', v : 2.8}}]},{key: '(주)한라', union : '건설부문',values : [{ x : 54.14, y : 102.27, v0 : { k : 'EBIT', v : 91}, v1 : { k : 'SALES', v : 5837}, v2 : { k : '(%)', v : 1.6}}]},
+                                ];
+                                data.map( function( obj0 ){
+                                    obj0.values.map( function( obj1 ){
+                                        obj1.x1 = obj1.x;
+                                        obj1.x = obj1.x > 160 ? 160 : obj1.x < 40 ? 40 : obj1.x;
+                                        obj1.y1 = obj1.y;
+                                        obj1.y = obj1.y > 125 ? 125 : obj1.y < 75 ? 75 : obj1.y;
+                                    } );
+                                } );
+
+                                MYAPP.graph.type6( data, '#chart1', '.chart_box0 .p_navi' );
+                            } )();
+                    </script>
+                </div>
+                <!-- chart_box -->
+            </div><!--//box-->
+
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+    <!--S: Cash Flow-->
+    <div class="graph_box_wrap">
+        <h2><a href="#">Cash Flow</a></h2>
+        <div class="graph_box">
+
+            <div class="box">
+                <div class="chart_box chart_box1">
+                    <span class="p_unit">(단위: 억원)</span>
+                    <div class="chart chart_type1" id="chart2"></div>
+
+                    <script>
+                            ( function(){
+                                var data = {
+                                    plan: [
+                                        {name : '연초현금' ,value :6882.55},{name : '세후,EBITDA' ,value :2500.62},{name : 'W/C,변동' ,value :-742.72},{name : '영업,기타' ,value :-2326.98},{name : 'Net,CAPEX' ,value :-3264.38},{name : '순금융,비용' ,value :-459.30},{name : '재무활동' ,value :3008.01},{name : '06월, 월말현금' ,value :5585.92},{name : '가용현금' ,value :16681.22}
+                                        //{ name: "연초현금", value: 7071.6 },
+                                        //{ name: "세후,EBITDA", value: 2491 },
+                                        //{ name: "W/C,변동", value: -477 },
+                                        //{ name: "영업,기타", value: -983 },
+                                        //{ name: "Net,CAPEX", value: -2816 },
+                                        //{ name: "순금융,비용", value: -364 },
+                                        //{ name: "재무", value: 1854 },
+                                        //{ name: "기말현금", value: 6776 },
+                                        //{ name: "가용현금", value: 70000 }
+                                    ],
+                                    result: [
+                                        {name : '연초현금' ,value :6870.70},{name : '세후,EBITDA' ,value :2776.64},{name : 'W/C,변동' ,value :-337.24},{name : '영업,기타' ,value :-1316.66},{name : 'Net,CAPEX' ,value :-1475.50},{name : '순금융,비용' ,value :-459.65},{name : '재무활동' ,value :1183.13},{name : '06월, 월말현금' ,value :7241.42},{name : '가용현금' ,value :18253.77}
+                                    ]
+                                };
+                                data = ( function( data ) {
+                                    var calc = function( arr ) {
+                                        var cumulative = 0;
+                                        var classArr = [ 'start', 'c0', 'c0', 'c0', 'c1', 'c2', 'c3 noline', 'end noline', 'etc noline' ];
+                                        for( var i = 0; i < arr.length; i++ ) {
+                                            arr[ i ].name0 = arr[ i ].name.split( ',' )[ 0 ];
+                                            arr[ i ].name1 = arr[ i ].name.split( ',' )[ 1 ];
+
+                                            arr[ i ].start = i < 7 ? cumulative : 0;
+                                            cumulative += arr[ i ].value;
+                                            arr[ i ].end = i < 7 ? cumulative : arr[ i ].value;
+
+                                            arr[ i ].class = classArr[ i ] + ( ( arr[ i ].value >= 0 ) ? ' positive' : ' negative' );
+                                        }
+                                        var arrClone = arr.slice();
+                                        arrClone.pop();
+                                        arrClone.sort( function(a, b){ return a.end - b.end } );
+                                        arr[ 8 ].end = arrClone[ 7 ].end / 2;
+
+                                        return arr;
+                                    };
+                                    var calcFcf = function( arr ) {
+                                        var fcf = 0;
+                                        for( var i = 1; i < 6; i++ ) {
+                                            fcf += arr[ i ].value;
+                                        }
+                                        return fcf;
+                                    };
+
+                                    var plan = calc( data.plan );
+                                    var result = calc( data.result );
+
+                                    var gap = plan.map( function( obj, i ) {
+                                        return { name: obj.name, value: result[ i ].value - obj.value }
+                                    } );
+
+                                    var fcfPlan = calcFcf( plan );
+                                    var fcfResult = calcFcf( result );
+
+                                    return { plan: plan, result: result, gap: gap, fcfPlan: fcfPlan, fcfResult: fcfResult };
+                                } )( data );
+
+                                MYAPP.graph.type1( data, '#chart2' );
+                            } )();
+                    </script>
+                </div>
+                <!-- chart_box -->
+            </div><!--//box-->
+
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+    <!--S: 손익 (당월/누계)-->
+    <div class="graph_box_wrap">
+        <h2><a href="#">손익 (당월/누계)</a></h2>
+
+        <div class="graph_box">
+
+            <div class="box">
+                <h3>06 월</h3>
+                <div class="box_col_wrap">
+                    <div class="col2 fl graph">
+                        <div class="chart_box chart_box2" id="chart3">
+                            <p class="p_title">Sales</p>
+                            <span class="p_unit">(단위: 억원)</span>
+                            <div class="chart chart_type2"></div>
+                            <a class="bt_percentage" href="#"></a>
+                            <div class="percentage">
+                                <img class="bg" src="/Contents/user/Common/img/percentage_bg.png" alt="">
+                                <p>실적 비중</p>
+                                <div class="chart chart_type12"></div>
+                            </div>
+
+                            <script>
+                                    ( function(){
+                                        var data0 = [
+                                            { key :'지주부문',values : [ { x: '전년', y :774.52 ,total: { y: 7072.92 }}, { x: '계획', y : 620.51,total: { y: 7140.23 }}, { x: '실적', y : 636.85,total: { y: 7110.54 }} ] },{ key :'자동차부문',values : [ { x: '전년', y :5250.26 ,total: { y: 7072.92 }}, { x: '계획', y : 5305.78,total: { y: 7140.23 }}, { x: '실적', y : 5307.84,total: { y: 7110.54 }} ] },{ key :'건설부문',values : [ { x: '전년', y :1048.14 ,total: { y: 7072.92 }}, { x: '계획', y : 1213.94,total: { y: 7140.23 }}, { x: '실적', y : 1165.85,total: { y: 7110.54 }} ] },
+                                        ];
+
+                                        var data1 = [
+                                            //{ key: "지주", y: 50.5 },
+                                            //{ key: "건설", y: 30 },
+                                            //{ key: "자동차", y: 20 }
+                                            { key: '지주', y: 9.000000 },{ key: '자동차', y: 75.000000 },{ key: '건설', y: 16.000000 }
+                                        ];
+
+                                        MYAPP.graph.type3( data0, data1, '#chart3' );
+                                    } )();
+                            </script>
+                        </div>
+                        <!-- chart_box -->
+                    </div>
+                    <div class="col2 fr graph">
+                        <div class="chart_box chart_box2" id="chart4">
+                            <p class="p_title">EBIT</p>
+                            <span class="p_unit">(단위 : 억원, %)</span>
+                            <div class="chart chart_type2"></div>
+                            <!-- <a class="bt_percentage" href="#"></a> -->
+                            <div class="percentage">
+                                <img class="bg" src="/Contents/user/Common/img/percentage_bg.png" alt="">
+                                <p>실적 비중</p>
+                                <div class="chart chart_type12"></div>
+                            </div>
+
+                            <script>
+                                    ( function(){
+                                        var data0 = [
+                                              { key :'지주부문',values : [ { x: '전년', y :40.40,p: 5.2 ,total: { y: 331.44, p : 4.7 }}, { x: '계획', y : 30.68, p : 4.9,total: { y: 242.29, p : 3.4 }}, { x: '실적', y : 40.02, p : 6.3,total: { y: 117.61, p : 1.7 }} ] },{ key :'자동차부문',values : [ { x: '전년', y :243.07,p: 4.6 ,total: { y: 331.44, p : 4.7 }}, { x: '계획', y : 167.63, p : 3.2,total: { y: 242.29, p : 3.4 }}, { x: '실적', y : 141.62, p : 2.7,total: { y: 117.61, p : 1.7 }} ] },{ key :'건설부문',values : [ { x: '전년', y :47.97,p: 4.6 ,total: { y: 331.44, p : 4.7 }}, { x: '계획', y : 43.98, p : 3.6,total: { y: 242.29, p : 3.4 }}, { x: '실적', y : -64.03, p : -5.5,total: { y: 117.61, p : 1.7 }} ] },
+                                        ];
+
+                                        var data1 = [
+                                            { key: '지주', y: 34.000000 },{ key: '자동차', y: 120.000000 },{ key: '건설', y: -54.000000 }
+                                        ];
+
+                                        MYAPP.graph.type3( data0, data1, '#chart4' );
+                                    } )();
+                            </script>
+                        </div>
+                        <!-- chart_box -->
+                    </div>
+                </div><!--//box_col2_wrap-->
+            </div><!--//box-->
+
+            <div class="box">
+                <h3>06 월 누계</h3>
+                <div class="box_col_wrap">
+                    <div class="col2 fl graph">
+                        <div class="chart_box chart_box2" id="chart5">
+                            <p class="p_title">Sales</p>
+                            <span class="p_unit">(단위: 억원)</span>
+                            <div class="chart chart_type2"></div>
+                            <a class="bt_percentage" href="#"></a>
+                            <div class="percentage">
+                                <img class="bg" src="/Contents/user/Common/img/percentage_bg.png" alt="">
+                                <p>실적 비중</p>
+                                <div class="chart chart_type12"></div>
+                            </div>
+
+                            <script>
+                                    ( function(){
+                                        var data0 = [
+                                            //{ key: "지주", total: { y: 45158.6 }, values: [ { x: '전년', y: 31233 }, { x: '계획', y: 30963 }, { x: '실적', y: 31002 } ] },
+                                            //{ key: "건설", total: { y: 43399 }, values: [ { x: '전년', y: 9457 }, { x: '계획', y: 7780 }, { x: '실적', y: 7703 } ] },
+                                            //{ key: "자동차", total: { y: 43202 }, values: [ { x: '전년', y: 4769 }, { x: '계획', y: 5099 }, { x: '실적', y: 4946 } ] }
+                                            { key :'지주부문',values : [ { x: '전년', y :4945.88 ,total: { y: 41839.21 }}, { x: '계획', y : 3749.62 ,total: { y: 40336.10 }}, { x: '실적', y : 3953.87 ,total: { y: 42033.91 }} ] },{ key :'자동차부문',values : [ { x: '전년', y :31002.22 ,total: { y: 41839.21 }}, { x: '계획', y : 31010.47 ,total: { y: 40336.10 }}, { x: '실적', y : 32374.30 ,total: { y: 42033.91 }} ] },{ key :'건설부문',values : [ { x: '전년', y :6340.38 ,total: { y: 41839.21 }}, { x: '계획', y : 5707.01 ,total: { y: 40336.10 }}, { x: '실적', y : 5836.74 ,total: { y: 42033.91 }} ] },
+                                        ];
+
+                                        var data1 = [
+                                          { key: '지주', y: 9.000000 },{ key: '자동차', y: 77.000000 },{ key: '건설', y: 14.000000 }
+                                          //{ key: "지주", y: 50.5 },
+                                          //{ key: "건설", y: 30 },
+                                          //{ key: "자동차", y: 20 }
+                                        ];
+
+                                        MYAPP.graph.type3( data0, data1, '#chart5' );
+                                    } )();
+                            </script>
+                        </div>
+                        <!-- chart_box -->
+                    </div>
+                    <div class="col2 fr graph">
+                        <div class="chart_box chart_box2" id="chart6">
+                            <p class="p_title">EBIT</p>
+                            <span class="p_unit">(단위 : 억원, %)</span>
+                            <div class="chart chart_type2"></div>
+                            <!-- <a class="bt_percentage" href="#"></a> -->
+                            <div class="percentage">
+                                <img class="bg" src="/Contents/user/Common/img/percentage_bg.png" alt="">
+                                <p>실적 비중</p>
+                                <div class="chart chart_type12"></div>
+                            </div>
+
+                            <script>
+                                    ( function(){
+                                        var data0 = [
+                                            //{ key: "지주", total: { y: 45158, p: 60 }, values: [ { x: '전년', y: 31233, p: 60 }, { x: '계획', y: 3063, p: 60 }, { x: '실적', y: 31002, p: 60 } ] },
+                                            //{ key: "건설", total: { y: 15942, p: 60 }, values: [ { x: '전년', y: 9457, p: 60 }, { x: '계획', y: 7780, p: 60 }, { x: '실적', y: 7703, p: 60 } ] },
+                                            //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                            { key :'지주부문',values : [ { x: '전년', y :620.57, p : 12.5, total : { y : 1873.92, p : 4.5 }}, { x: '계획', y : 268.07, p : 7.1 , total : { y : 1136.18, p : 2.8 }}, { x: '실적', y : 310.53, p : 7.9 , total : { y : 1300.73, p : 3.1 }} ] },{ key :'자동차부문',values : [ { x: '전년', y :1313.52, p : 4.2, total : { y : 1873.92, p : 4.5 }}, { x: '계획', y : 831.36, p : 2.7 , total : { y : 1136.18, p : 2.8 }}, { x: '실적', y : 1030.38, p : 3.2 , total : { y : 1300.73, p : 3.1 }} ] },{ key :'건설부문',values : [ { x: '전년', y :389.10, p : 6.1, total : { y : 1873.92, p : 4.5 }}, { x: '계획', y : 167.75, p : 2.9 , total : { y : 1136.18, p : 2.8 }}, { x: '실적', y : 90.82, p : 1.6 , total : { y : 1300.73, p : 3.1 }} ] },
+                                        ];
+
+                                        var data1 = [
+                                            //{ key: "지주", y: 40 },
+                                            //{ key: "건설", y: 30 },
+                                            //{ key: "자동차", y: 30 }
+                                            { key: '지주', y: 22.000000 },{ key: '자동차', y: 72.000000 },{ key: '건설', y: 6.000000 }
+                                        ];
+
+                                        MYAPP.graph.type3( data0, data1, '#chart6' );
+                                    } )();
+                            </script>
+                        </div>
+                        <!-- chart_box -->
+                    </div>
+                </div><!--//box_col2_wrap-->
+            </div><!--//box-->
+
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+    <!--S: 손익 (연간예상)-->
+
+    <div class="graph_box_wrap">
+        <h2><a href="#">손익 (연간예상)</a></h2>
+
+        <div class="graph_box">
+
+            <div class="box">
+                <h3>Sales</h3>
+                <div class="chart_box chart_box3">
+                    <span class="p_unit">(단위 : 억원)</span>
+                    <ul class="p_box">
+                        <li>
+                            <p class="p_title">06 월 누계</p>
+                            <div class="chart chart_type2" id="chart7"></div>
+                        </li>
+
+                        <li>
+                            <p class="p_title">잔여월(7월 ~ 12월)</p>
+                            <div class="chart chart_type2" id="chart8"></div>
+                        </li>
+                        <li>
+                            <p class="p_title">연간예상</p>
+                            <div class="chart chart_type2" id="chart9"></div>
+                        </li>
+                    </ul>
+                    <div class="legend">
+                        <ul id="chart17">
+                            <li><span class="rect"></span> <sapn class="txt"></sapn></li>
+                        </ul>
+                    </div>
+                    <script>
+                            ( function(){
+                                var data0 = [
+                                    { key :'지주부문',values : [ { x: '전년', y :4945.88,total : { y : 41839.21 }}, { x: '계획', y :3749.62,total : { y : 40336.10 }},{ x: '실적', y :3953.87,total : { y : 42033.91 }} ] },{ key :'자동차부문',values : [ { x: '전년', y :31002.22,total : { y : 41839.21 }}, { x: '계획', y :31010.47,total : { y : 40336.10 }},{ x: '실적', y :32374.30,total : { y : 42033.91 }} ] },{ key :'건설부문',values : [ { x: '전년', y :6340.38,total : { y : 41839.21 }}, { x: '계획', y :5707.01,total : { y : 40336.10 }},{ x: '실적', y :5836.74,total : { y : 42033.91 }} ] },
+                                ];
+                                var data1 = [
+                                    { key: '지주부문', values: [{ x: '전년', y: 4490.97, total: { y: 43669.52 } }, { x: '계획', y: 3815.63, total: { y: 50303.60 } }, { x: '예상', y: 3844.71, total: { y: 48536.50 } }] },{ key :'자동차부문',values : [ { x: '전년', y :32313.74, total : { y : 43669.52 }},{ x: '계획', y : 37054.68, total : { y : 50303.60 }}, { x: '예상', y : 35592.46, total : { y : 48536.50 }} ] },{key :'건설부문',values : [ { x: '전년', y :6864.81, total : { y : 43669.52 }},{ x: '계획', y : 9433.29, total : { y : 50303.60 }}, { x: '예상', y : 9099.33, total : { y : 48536.50 }} ]  },
+                                ];
+                                var data2 = [
+                                    { key :'지주부문',values : [ { x: '전년', y :9436.85, total : { y : 85508.73 }},{ x: '계획', y : 7565.25, total : { y : 90639.70 }},{ x: '예상', y : 7798.58, total : { y : 90570.41 }} ] },{ key :'자동차부문',values : [ { x: '전년', y :63315.96, total : { y : 85508.73 }},{ x: '계획', y : 68065.15, total : { y : 90639.70 }},{ x: '예상', y : 67966.76, total : { y : 90570.41 }} ] },{ key :'건설부문',values : [ { x: '전년', y :13205.19, total : { y : 85508.73 }},{ x: '계획', y : 15140.30, total : { y : 90639.70 }},{ x: '예상', y : 14936.07, total : { y : 90570.41 }} ] },
+                                ];
+
+                                MYAPP.graph.type2( data0, '#chart7' );
+                                MYAPP.graph.type2( data1, '#chart8' );
+                                MYAPP.graph.type2( data2, '#chart9' );
+                                MYAPP.graph.type15( data0, '#chart17' );
+                            } )();
+                    </script>
+                </div>
+                <!-- chart_box -->
+            </div><!--//box-->
+
+            <div class="box">
+                <h3>EBIT</h3>
+                <div class="chart_box chart_box3">
+                    <span class="p_unit">(단위 : 억원, %)</span>
+                    <ul class="p_box">
+
+                        <li>
+                            <p class="p_title">06 월 누계</p>
+                            <div class="chart chart_type2" id="chart10"></div>
+                        </li>
+                        <li>
+                            <p class="p_title">잔여월(7월 ~ 12월)</p>
+                            <div class="chart chart_type2" id="chart11"></div>
+                        </li>
+                        <li>
+                            <p class="p_title">연간예상</p>
+                            <div class="chart chart_type2" id="chart12"></div>
+                        </li>
+                    </ul>
+                    <div class="legend">
+                        <ul id="chart18">
+                            <li><span class="rect"></span> <sapn class="txt"></sapn></li>
+                        </ul>
+                    </div>
+                    <script>
+                            ( function(){
+                                var data0 = [
+                                  //{ key: "지주", total: { y: 45158, p: 60 }, values: [ { x: '전년', y: 31233, p: 60, total: { y: 45158, p: 60 } }, { x: '계획', y: 30963, p: 60 }, { x: '실적', y: 31002, p: 60 } ] },
+                                  //{ key: "건설", total: { y: 43399, p: 60 }, values: [ { x: '전년', y: 9457, p: 60 }, { x: '계획', y: 7780, p: 60 }, { x: '실적', y: 7703, p: 60 } ] },
+                                  //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                  //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                  //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                  //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                  //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                  //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                  { key :'지주부문',values : [ { x: '전년', y :620.57, p : 12.5, total : { y : 1873.92, p : 4.5 }},{ x: '계획', y : 268.07, p : 7.1, total : { y : 1136.18, p : 2.8  }},{ x: '실적', y : 310.53, p : 7.9, total : { y : 1300.73, p : 3.1  }} ] },{ key :'자동차부문',values : [ { x: '전년', y :1313.52, p : 4.2, total : { y : 1873.92, p : 4.5 }},{ x: '계획', y : 831.36, p : 2.7, total : { y : 1136.18, p : 2.8  }},{ x: '실적', y : 1030.38, p : 3.2, total : { y : 1300.73, p : 3.1  }} ] },{ key :'건설부문',values : [ { x: '전년', y :389.10, p : 6.1, total : { y : 1873.92, p : 4.5 }},{ x: '계획', y : 167.75, p : 2.9, total : { y : 1136.18, p : 2.8  }},{ x: '실적', y : 90.82, p : 1.6, total : { y : 1300.73, p : 3.1  }} ] },
+                                ];
+                                var data1 = [
+                                  //{ key: "지주", total: { y: 45158, p: 60 }, values: [ { x: '전년', y: 31233, p: 60 }, { x: '계획', y: 30963, p: 60 }, { x: '실적', y: 31002, p: 60 } ] },
+                                  //{ key: "건설", total: { y: 43399, p: 60 }, values: [ { x: '전년', y: 9457, p: 60 }, { x: '계획', y: 7780, p: 60 }, { x: '실적', y: 7703, p: 60 } ] },
+                                  //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                  { key: '지주부문', values: [{ x: '전년', y: 147.29, p: 3.3, total: { y: 1403.33, p: 3.2 } }, { x: '계획', y: 183.29, p: 4.8, total: { y: 2980.97, p: 5.9 } }, { x: '예상', y: 169.44, p: 4.4, total: { y: 2708.11, p: 5.6 } }] }, { key: '자동차부문', values: [{ x: '전년', y: 1067.64, p: 3.3, total: { y: 1403.33, p: 3.2 } }, { x: '계획', y: 2215.93, p: 6.0, total: { y: 2980.97, p: 5.9 } }, { x: '예상', y: 1947.50, p: 5.5, total: { y: 2708.11, p: 5.6 } }] }, { key: '건설부문', values: [{ x: '전년', y: 188.40, p: 2.7, total: { y: 1403.33, p: 3.2 } }, { x: '계획', y: 581.75, p: 6.2, total: { y: 2980.97, p: 5.9 } }, { x: '예상', y: 591.17, p: 6.5, total: { y: 2708.11, p: 5.6 } }] },
+                                ];
+                                var data2 = [
+                                  //{ key: "지주", total: { y: 45158, p: 60 }, values: [ { x: '전년', y: 31233, p: 60 }, { x: '계획', y: 30963, p: 60 }, { x: '실적', y: 31002, p: 60 } ] },
+                                  //{ key: "건설", total: { y: 43399, p: 60 }, values: [ { x: '전년', y: 9457, p: 60 }, { x: '계획', y: 7780, p: 60 }, { x: '실적', y: 7703, p: 60 } ] },
+                                  //{ key: "자동차", total: { y: 43202, p: 60 }, values: [ { x: '전년', y: 4769, p: 60 }, { x: '계획', y: 5099, p: 60 }, { x: '실적', y: 4946, p: 60 } ] }
+                                  { key :'지주부문',values : [ { x: '전년', y :767.86,p : 8.1, total : { y : 3277.25, p : 3.8 }},{ x: '계획', y : 451.36, p : 6.0, total : { y : 4117.15, p : 4.5 }},{ x: '예상', y : 479.97, p : 6.2, total : { y : 4008.84, p : 4.4 }} ] },{ key :'자동차부문',values : [ { x: '전년', y :2381.16,p : 3.8, total : { y : 3277.25, p : 3.8 }},{ x: '계획', y : 3047.29, p : 4.5, total : { y : 4117.15, p : 4.5 }},{ x: '예상', y : 2977.88, p : 4.4, total : { y : 4008.84, p : 4.4 }} ] },{ key :'건설부문',values : [ { x: '전년', y :577.50,p : 4.4, total : { y : 3277.25, p : 3.8 }},{ x: '계획', y : 749.50, p : 5.0, total : { y : 4117.15, p : 4.5 }},{ x: '예상', y : 681.99, p : 4.6, total : { y : 4008.84, p : 4.4 }} ] },
+                                ];
+
+                                MYAPP.graph.type2( data0, '#chart10' );
+                                MYAPP.graph.type2( data1, '#chart11' );
+                                MYAPP.graph.type2( data2, '#chart12' );
+                                MYAPP.graph.type15( data0, '#chart18' );
+                            } )();
+                    </script>
+                </div>
+                <!-- chart_box -->
+            </div><!--//box-->
+
+            <div class="box">
+                <!--그룹일 경우-->
+                <!--S: 유동 테이블-->
+                <div class="graph">
+                    <div class="tbl_scroll_wrap">
+                        <div class="tbl_box">
+                            <table class="tbl tbl_type01 tblfix">
+                                <thead>
+                                    <tr>
+                                        <th colspan="2" class="lbd0">구분</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th rowspan="3" class="lbd0">잔<br />여<br />월</th>
+                                        <th>SALES</th>
+                                    </tr>
+                                    <tr>
+                                        <th>EBIT</th>
+                                    </tr>
+                                    <tr>
+                                        <th>%</th>
+                                    </tr>
+                                    <tr>
+                                        <th rowspan="3" class="lbd0">연<br />간<br />예<br />상</th>
+                                        <th>SALES</th>
+                                    </tr>
+                                    <tr>
+                                        <th>EBIT</th>
+                                    </tr>
+                                    <tr>
+                                        <th>%</th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div><!--//tbl_box-->
+
+                        <div class="tbl_scroll">
+                            <div class="tbl_add">
+                                <!--테이블 추가 되는 영역-->
+
+                                <div class="tbl_wrap">
+                                    <table class="tbl tbl_type01">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="3">지주부문</th>
+                                            </tr>
+                                            <tr>
+                                                <th>계획</th>
+                                                <th>예상</th>
+                                                <th>계획대비</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>3,816</td>
+                                                <td>3,845</td>
+                                                <td>100.8%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>183</td>
+                                                <td>169</td>
+                                                <td class=minus>92.4%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>4.8%</td>
+                                                <td>4.4%</td>
+                                                <td class=minus>-0.4%</td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>7,565</td>
+                                                <td>7,799</td>
+                                                <td>103.1%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>451</td>
+                                                <td>480</td>
+                                                <td>106.3%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>6.0%</td>
+                                                <td>6.2%</td>
+                                                <td>0.2%</td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tbl_wrap">
+                                    <table class="tbl tbl_type01">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="3">자동차부문</th>
+                                            </tr>
+                                            <tr>
+                                                <th>계획</th>
+                                                <th>예상</th>
+                                                <th>계획대비</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>37,055</td>
+                                                <td>35,592</td>
+                                                <td class=minus>96.1%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2,216</td>
+                                                <td>1,948</td>
+                                                <td class=minus>87.9%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>6.0%</td>
+                                                <td>5.5%</td>
+                                                <td class=minus>-0.5%</td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>68,065</td>
+                                                <td>67,967</td>
+                                                <td class=minus>99.9%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>3,047</td>
+                                                <td>2,978</td>
+                                                <td class=minus>97.7%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>4.5%</td>
+                                                <td>4.4%</td>
+                                                <td class=minus>-0.1%</td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tbl_wrap">
+                                    <table class="tbl tbl_type01">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="3">건설부문</th>
+                                            </tr>
+                                            <tr>
+                                                <th>계획</th>
+                                                <th>예상</th>
+                                                <th>계획대비</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>9,433</td>
+                                                <td>9,099</td>
+                                                <td class=minus>96.5%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>582</td>
+                                                <td>591</td>
+                                                <td>101.6%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>6.2%</td>
+                                                <td>6.5%</td>
+                                                <td>0.3%</td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>15,140</td>
+                                                <td>14,936</td>
+                                                <td class=minus>98.7%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>750</td>
+                                                <td>682</td>
+                                                <td class=minus>91.0%</td>
+                                            </tr>
+                                            <tr>
+                                                <td>5.0%</td>
+                                                <td>4.6%</td>
+                                                <td class=minus>-0.4%</td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+
+                                <!--// tbl-->
+                            </div><!--//tbl_add-->
+                        </div><!--//tbl_scroll-->
+
+                    </div><!--//tbl_scroll_wrap-->
+                    <!--E: 유동 테이블-->
+                </div><!--//graph-->
+            </div><!--/box-->
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+    <!--S: ROIC-->
+    <div class="graph_box_wrap">
+        <h2><a href="#">ROIC</a></h2>
+        <div class="graph_box">
+
+            <div class="box">
+                <div class="chart_box chart_box4">
+                    <p class="p_title">ROIC</p>
+                    <span class="p_unit">(단위 : %)</span>
+                    <div class="chart chart_type7" id="chart13"></div>
+
+                    <script>
+                            ( function(){
+                                var data = [
+                                    { key: '계획', values: [ {x : 0, y : 0.00},{x : 1, y : 2.02},{x : 2, y : 1.23},{x : 3, y : 2.54},{x : 4, y : 3.32},{x : 5, y : 3.83},{x : 6, y : 4.05},{x : 7, y : 4.39},{x : 8, y : 4.58},{x : 9, y : 5.17},{x : 10, y : 5.70},{x : 11, y : 6.21},{x : 12, y : 7.21} ] },
+                                    { key: '실적', values: [ {x : 0, y : 0.00},{x : 1, y : 5.48},{x : 2, y : 2.95},{x : 3, y : 4.00},{x : 4, y : 4.34},{x : 5, y : 5.02},{x : 6, y : 4.72},{x : 7, y : 0},{x : 8, y : 0},{x : 9, y : 0},{x : 10, y : 0},{x : 11, y : 0},{x : 12, y : 0} ] }
+                                ];
+                                data.map( function( obj, i ) {
+                                    obj.color = ['#009de4', '#ff520d'][i];
+                                    obj.strokeWidth = 1;
+                                    return obj;
+                                });
+
+                                MYAPP.graph.type7( data, '#chart13' );
+                            } )();
+                    </script>
+
+                </div>
+                <!-- chart_box -->
+            </div><!--//box-->
+
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+    <!--S: 투자, 인원-->
+    <div class="graph_box_wrap">
+        <h2><a href="#">투자, 인원</a></h2>
+        <div class="graph_box">
+            <div class="box">
+                <div class="chart_box chart_box5">
+                    <p class="p_title">투자</p>
+                    <span class="p_unit">(단위 : 억원, %)</span>
+                    <ul class="p_box">
+                        <li>
+                            <div class="chart chart_type7" id="chart15"></div>
+                            <p><span>06월 누계 집행률</span></p>
+                        </li>
+                        <li>
+                            <div class="chart chart_type7" id="chart16"></div>
+                            <p><span>연간 진척도</span></p>
+                        </li>
+                    </ul>
+
+                    <script>
+                            ( function(){
+                                var data0 = { objective: [{ key: '계획', y :3155.08} ], sum : [ { key : '실적', y: 1509.26}], title : '집행률'}
+                                var data1 = { objective: [{ key: '계획', y :5184.32} ], sum : [ { key : '실적', y: 1509.26}], title : '진척도'}
+
+                                MYAPP.graph.type8( data0, '#chart15', '#1f7dc3' );
+                                MYAPP.graph.type8( data1, '#chart16', '#014099' );
+                            } )();
+                    </script>
+                </div>
+                <!-- chart_box -->
+            </div><!--//box-->
+
+            <div class="box">
+                <div class="chart_box chart_box4">
+                    <p class="p_title">인원</p>
+                    <span class="p_unit">(단위 : 명)</span>
+                    <div class="chart chart_type14" id="chart24"></div>
+                    <script>
+                            ( function(){
+                                var data = [
+                                    { key: '인원', values: [ {x : 0, y : 16014},{x : 1, y : 15892},{x : 2, y : 15884},{x : 3, y : 15814},{x : 4, y : 15775},{x : 5, y : 15681},{x : 6, y : 15665},{x : 7, y : 0},{x : 8, y : 0},{x : 9, y : 0},{x : 10, y : 0},{x : 11, y : 0},{x : 12, y : 0} ] }
+                                ];
+                                data.map( function( obj, i ) {
+                                    obj.color = [ '#009de4' ][ i ];
+                                    obj.pointShape = [ 'square' ][ i ];
+                                    obj.strokeWidth = 1;
+                                    return obj;
+                                } );
+
+                                MYAPP.graph.type14( data, '#chart24' );
+                            } )();
+                    </script>
+                </div>
+                <!-- chart_box -->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+    </div><!--//graph_box_wrap-->
+
+</section><!--//group_wrap-->
+<script>
+    $(function () {
+        /*셀렉트박스 스타일*/
+        MYAPP.form.styleSelect($(".style_select select"));
+        /*테이블 스크롤 세팅*/
+        MYAPP.table.setScroll($("#container .tbl_scroll"));
+    })
+
+
+
+    function onChangeDate() {
+        var f = document.frmForm;
+        f.action = "/Org/Index";
+        f.submit();
+    }
+</script>
+
+<a href="javascript:;" class="btn_comment" onclick="onGetReplyList();">코멘트</a>
+
+<div id="layerComment" class="layer">
+    <form name="frmReply" id="frmReply">
+        <input type="hidden" name="UserKey" id="UserKey" value="H0000000231" />
+        <input type="hidden" name="EmpNo" id="EmpNo" value="T91150" />
+        <input type="hidden" name="UserKorName" id="UserKorName" value="김성혁" />
+        <input type="hidden" name="CompKorName" id="CompKorName" value="한라홀딩스" />
+        <input type="hidden" name="DeptKorName" id="DeptKorName" value="경영기획팀" />
+        <input type="hidden" name="AttachTableName" id="AttachTableName" value="GROUP" />
+        <input type="hidden" name="AttachTableSeq" id="AttachTableSeq" value="0" />
+        <input type="hidden" name="CommentYear" id="CommentYear" value="2019" />
+        <input type="hidden" name="CommentMonth" id="CommentMonth" value="06" />
+        <input type="hidden" name="CompanyName" id="CompanyName" value="그룹" />
+        <input type="hidden" name="PageIndex" id="PageIndex" value="1" />
+        <input type="hidden" name="Seq" id="Seq" value="" />
+
+        <div class="layer_in">
+            <div class="comment_box_wrap">
+                <textarea name="comment" id="comment"></textarea>
+                <button class="btn full_gray" type="button" onclick="onSave();">댓글<br />등록</button>
+            </div><!--//comment_box_wrap-->
+
+
+            <div class="comment_list_wrap">
+                <div class="comment_list_scroll" id="replyList">
+                    <h1>Aug 2018</h1>
+                    <!--코멘트는 최신순으로 최대 5개 노출-->
+                    <div class="comment">
+                        <dl>
+                            <dt>한라그룹 / 경영지원본부 / 이한라</dt>
+                            <dd>당월 매출은 계획 대비 8% 상승되어 상기와 같은 결과를 달성하였습니다</dd>
+                            <dd class="date">23  Aug, 2018</dd>
+                        </dl>
+                        <a href="#" class="btn_del"><span>삭제</span></a>
+                    </div><!--//comment-->
+                </div><!--//comment_list_scroll-->
+
+                <div class="paging" id="paging">
+                    <a href="javascript:;" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                    <a href="javascript:;" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                    <span id="PageList">
+                        <strong>1</strong>
+                        <a href="#">2</a>
+                        <a href="#">3</a>
+                        <a href="#">4</a>
+                        <a href="#">5</a>
+                        <a href="#">6</a>
+                        <a href="#">7</a>
+                        <a href="#">8</a>
+                        <a href="#">9</a>
+                        <a href="#">10</a>
+                    </span>
+                    <a href="javascript:;" onclick="onPaging(document.listForm, '')" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                    <a href="javascript:;" onclick="onPaging(document.listForm, '')" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+                </div><!--//paging-->
+            </div><!--//comment_list_wrap-->
+            <a href="javascript:;" onclick="javascript: MYAPP.layerControl.layerHide($('#layerComment')); return false;" class="btn_layer_close"></a>
+        </div><!--//layer_in-->
+    </form>
+</div><!--//layerComment-->
+<script type="text/javascript">
+    function onGetReplyList() {;
+        MYAPP.layerControl.layerShow($('#layerComment'));
+        onList(1);
+    }
+
+    function onSave() {
+        var f = document.frmReply;
+
+        if (f.comment.value.length > 1500) {
+            alert('1500자 이내로 입력해주세요.');
+            return;
+        }
+        if (f.comment.value.trim().length == 0) {
+            alert('코멘트를 입력해주세요.');
+            return;
+        }
+        $.ajax({
+            url: "/Reply/SetReplySave",
+            type: "post",
+            data: $("#frmReply").serialize(),
+            dataType: "json",
+            success: function (res) {
+                if (res.success == true) {
+                    // 댓글 등록 완료 후 알림 메세지
+                    // 대상자 가져오기
+                    //GetReplyListAll
+                    $.ajax({
+                        url: "/Reply/GetReplyListAll",
+                        type: "post",
+                        data: $("#frmReply").serialize(),
+                        dataType: "json",
+                        success: function (res) {
+                            //console.log(res.List);
+                            //console.log(res.PageInfo);
+
+                            if (res.List.length <= 0) {
+                            }
+                            else {
+                                var users = [];
+                                $.each(res.List, function (i, item) {
+                                    users.push({ userKey: $.trim(item.UserKey) });
+                                });
+                                // 보낸다 푸쉬
+                                var params = {
+                                    Type: "2",
+                                    Title: "-",
+                                    Contents: $('#CommentYear').val() + "년 " + $('#CommentMonth').val() + "월 " + $("#CompanyName").val() + "에 댓글이 등록되었습니다.",
+                                    Link: "",
+                                    users: users
+                                };
+                                $.post('/Api/SendPush', params, function (data) {
+                                    if (data) {
+                                        var message = '';
+                                        if (data.result) {
+                                            message = data.message;
+                                        }
+                                        else {
+                                            message = data.errorMessage;
+                                        }
+                                        //$('#message').html(message)
+                                        console.log(message);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    onList(1);
+                    $("#comment").val('');
+                }
+                else {
+                    alert("댓글 입력에 실패했습니다.");
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                alert("Error : 댓글 입력에 실패했습니다.");
+            }
+        });
+    }
+
+    function onDelete(seq) {
+        var f = document.frmReply;
+
+        f.Seq.value = seq;
+        $.ajax({
+            url: "/Reply/SetReplyDelete",
+            type: "post",
+            data: $("#frmReply").serialize(),
+            dataType: "json",
+            success: function (res) {
+                if (res.success == true) {
+                    onList(1);
+                    $("#comment").val('');
+                    alert("댓글을 삭제했습니다..");
+                }
+                else {
+                    alert("댓글 삭제에 실패했습니다.");
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                alert("Error : 댓글 삭제에 실패했습니다.");
+            }
+        });
+    }
+
+
+    function onList(pageIndex) {
+        var f = document.frmReply;
+
+        f.PageIndex.value = pageIndex;
+        $.ajax({
+            url: "/Reply/GetReplyList",
+            type: "post",
+            data: $("#frmReply").serialize(),
+            dataType: "json",
+            success: function (res) {
+                console.log(res.List);
+                console.log(res.PageInfo);
+
+                var $html = "";
+                if (res.List.length <= 0) {
+                    $html ="<p style='text-align:center;'>등록된 댓글이 없습니다.</p>";
+                }
+                else {
+                    $.each(res.List, function (i, item) {
+                        $html += "<div class='comment'>";
+                        $html += "  <dl>";
+                        // 2019.04.11 소속부서 삭제
+                        //$html += "      <dt>" + item.CompKorName + " / " + item.DeptKorName + " / " + item.UserKorName + "</dt>";
+                        $html += "      <dt>" + item.CompKorName + " / " + item.UserKorName + "</dt>";
+                        if (item.Comment == null) {
+                            $html += "      <dd></dd>";
+                        }
+                        else {
+                            $html += "      <dd>" + item.Comment == null ? "" : item.Comment.replace(/\r\n/gi, "<br />") + "</dd>";
+                        }
+                        $html += "      <dd class='date'>" + item.CreateDateToString + "</dd>";
+                        $html += "  </dl>";
+                        if ($("#UserKey").val() == item.UserKey) {
+                            $html += "  <a href='javascript:;' onClick='onDelete(" + item.Seq + ")';' class='btn_del'><span>삭제</span></a>";
+                        }
+                        $html += "</div>";
+                    });
+                }
+
+                var $Page = "";
+                $Page += "<a href='javascript:;' onclick='onList(" + res.PageInfo.FirstPageIndex + ");' class='btn_first'><i class=''></i><span class='hidden'>처음으로</span></a>";
+                $Page += "<a href='javascript:;' onclick='onList(" + res.PageInfo.PrevPageIndex + ");' class='btn_prev'><i class=''></i><span class='hidden'>이전으로</span></a>";
+                $Page += "<span>";
+                for (var i = res.PageInfo.StartPageIndex; i <= res.PageInfo.EndPageIndex; i++) {
+                    if (res.PageInfo.StartPageIndex == i) {
+                        $Page += "<strong>" + i + "</strong>";
+                    }
+                    else {
+                        $Page += "<a href='javascript:;' onclick='onList(" + i + ");'>" + i + "</a>";
+                    }
+                }
+                $Page += "</span>";
+                $Page += "<a href='javascript:;' onclick='onList(" + res.PageInfo.NextPageIndex + ");' class='btn_next'><i class=''></i><span class='hidden'>다음으로</span></a>";
+                $Page += "<a href='javascript:;' onclick='onList(" + res.PageInfo.FinalPageIndex + ");' class='btn_last'><i class=''></i><span class='hidden'>마지막으로</span></a>";
+                // 페이징 작업
+                $("#replyList").html($html);
+                $("#paging").html($Page);
+            },
+            error: function (xhr) {
+                console.log(xhr);
+            }
+        });
+    }
+</script>

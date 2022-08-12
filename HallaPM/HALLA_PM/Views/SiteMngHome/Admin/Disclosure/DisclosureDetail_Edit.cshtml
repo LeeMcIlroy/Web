@@ -1,0 +1,241 @@
+﻿@using HALLA_PM.Models;
+@{
+    ViewBag.Title = "DisclosureDetail_Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    List<DisclosureItem> disItemList = Model.disItemList;
+    DisclosureDetail detail = Model.detail;
+    //List<PlanSchedule> YearList = Model.YearList;
+}
+
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>관리자관리</span>
+        <span>공시관리</span>
+        <strong>세부항목 등록</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="Seq" value="@detail.Seq" />
+        <input type="hidden" name="hCheck" id="hCheck" value="N" />
+        <input type="hidden" name="message" value="수정" />
+        <input type="hidden" name="oldDetailName" id="oldDetailName" value="@detail.DetailName" />
+        <input type="hidden" name="oldDisItemSeq" id="oldDisItemSeq" value="@detail.DisItemSeq" />
+        <div class="con_box search">
+            <h3 class="mt0">세부항목 등록</h3>
+            <div class="bg_gray">
+                수정 삭제 시 하위 레벨까지 일괄 반영되므로 신중히 작업해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">레벨</th>
+                        <td>Level2 세부항목</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">부문</th>
+                        <td>
+                            <!--@detail.DisName-->
+                            <div class="style_select" style="width:30%;">
+                                <label>
+                                    <span></span>
+                                    <select name="DisItemSeq" id="DisItemSeq">
+                                        <option value="">선택하세요.</option>
+                                        @foreach (var item in disItemList)
+                                        {
+                                            if(item.Seq == detail.DisItemSeq)
+                                            {
+                                                <option value="@item.Seq" selected>@item.DisName</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@item.Seq">@item.DisName</option>
+                                            }                                            
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">세부항목</th>
+                        <td>
+                            <input type="text" name="DetailName" id="DetailName" style="width:30%;" value="@detail.DetailName" />
+                            <button class="btn full_green" type="button" onclick="onDuplicateAllowDisclosureDetail();">중복확인</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">사용여부</th>
+                        <td>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="Y" @(detail.IsUse == "Y" ? " checked" : "") ><i></i>
+                                    <strong>사용</strong>
+                                </label>
+                            </div>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="N" @(detail.IsUse == "Y" ? " " : " checked") ><i></i>
+                                    <strong>미사용</strong>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                  
+                </tbody>
+            </table>
+            <div class="btn_area2">
+                <div class="left">
+                    <button class="btn full_blue" type="button" onclick="onList();">목록</button>
+                </div>
+                <div class="right">
+                    <button class="btn full_green" type="button" onclick="onDelete();">삭제</button>
+                    <button class="btn full_green" type="button" onclick="onWrite();">수정</button>
+                </div>
+            </div>
+        </div>
+        <!--// con_box -->
+    </form>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $("#frmMain").validate({
+            rules: {
+                DisItemSeq: {
+                    required: true,
+                },
+                DetailName: {
+                    required: true,
+                }
+            },
+            messages: {
+                DisItemSeq: {
+                    required: "공시항목을 선택하세요.",
+                },
+                DetailName: {
+                    required: "세부항목을 입력하세요.",
+                }
+            }, errorPlacement: function (error, element) {
+                // do nothing
+            },
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    alert(validator.errorList[0].message);
+                    validator.errorList[0].element.focus();
+                }
+            }
+        });
+    });
+
+   
+
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+
+    function onWrite() {
+        var f = document.frmMain;
+
+
+        if ($("#DisItemSeq").val() == "") {
+            alert('공시항목을 선택하세요.');
+            return;
+        }
+
+        if ($(f).valid()) {
+            $.ajax({
+                url: "DisclosureDetail_Duplicate_Ajax",
+                type: "post",
+                data: { DetailName: $("#DetailName").val(), DisItemSeq: $("#DisItemSeq").val() },
+                dataType: "json",
+                success: function (res) {
+                    //
+                    if (res.success == true) {
+                        $("#hCheck").val("Y");
+                    }
+                    else {
+                        $("#hCheck").val("N");
+                    }
+                    
+                    if (f.oldDetailName.value == f.DetailName.value && f.oldDisItemSeq.value == f.DisItemSeq.value) {
+                    }
+                    else {
+                        if (f.hCheck.value == "N") {
+                            alert("중복 확인을 눌러주세요.");
+                            return false;
+                        }
+                    }
+
+                    if (confirm("수정하시겠습니까?")) {
+                        f.action = "DisclosureDetail_Write_Action";
+                        f.submit();
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+    }
+
+    function onDelete() {
+        var f = document.frmMain;
+
+        if (confirm("하위 L3가 있는 경우 삭제불가 \n삭제하시겠습니까?" )) {
+            f.action = "DisclosureDetail_Delete_Action";
+            f.submit();
+        }
+    }
+
+    function onDuplicateAllowDisclosureDetail() {
+
+        if ($("#DisItemSeq").val() == "") {
+            alert('공시항목을 선택하세요.');
+            return;
+        }
+    
+        var f = document.frmMain;
+        
+        if ($(f).valid()) {
+            $.ajax({
+                url: "DisclosureDetail_Duplicate_Ajax",
+                type: "post",
+                data: { DetailName: $("#DetailName").val(), DisItemSeq: $("#DisItemSeq").val() },
+                dataType: "json",
+                success: function (res) {
+                    //
+                    if (res.success == true) {
+                        alert("등록 가능합니다.");
+                        $("#hCheck").val("Y");
+                    }
+                    else {
+                        alert("세부항목이 중복되었습니다.\n다시 입력해주세요");
+                        $("#hCheck").val("N");
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+    }
+</script>
+

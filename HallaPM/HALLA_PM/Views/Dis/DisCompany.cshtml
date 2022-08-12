@@ -1,0 +1,291 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+
+@{
+    ViewBag.Title = "DisCompany";
+    List<GroupMain> groupMainDisclosure = Model.groupMainDisclosure;
+    List<RegistYearList> registYearPm = Model.registYearPm;
+    List<DisclosureData> groupCompanyDisData = Model.groupCompanyDisData;
+    GroupCompany selectCompanyName = Model.selectCompanyName;
+
+    Search search = ViewBag.search;
+
+
+    var y = registYearPm
+        .GroupBy(g => g.RegistYear)
+        .Select(cl => new RegistYearList
+        {
+            RegistYear = cl.First().RegistYear
+        })
+        .ToList();
+
+    if (string.IsNullOrWhiteSpace(search.year))
+    {
+        search.year = y.Last().RegistYear;
+    }
+
+    var m = registYearPm.Where(w => w.RegistYear == search.year).ToList();
+
+    if (string.IsNullOrWhiteSpace(search.mm))
+    {
+        search.mm = m.Last().RegistMonth;
+    }
+
+    decimal month = Convert.ToDecimal(search.mm);
+
+    //var year = SessionManager.GetMemberSession().planYear.First().RegistYear;
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = search.year;
+    commentList.CommentMonth = search.mm;
+    commentList.AttachTableName = "COMPANY";
+    commentList.AttachTableSeq = search.OrgCompanySeq;
+    commentList.UserKey = SessionManager.GetMemberSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetMemberSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetMemberSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Deptkorname;
+    commentList.CompanyName = selectCompanyName.companyName;
+
+
+
+
+
+}
+
+<section class="group_wrap">
+    <div class="top_wrap">
+        <!--h2회사명-->
+        <h2>@selectCompanyName.companyName</h2>
+    </div><!--//top_wrap-->
+    <form name="frmForm" method="post">
+        <div class="top_wrap">
+            <div class="style_select">
+                <label class="">
+                    <span>@(search.year)년</span>
+                    <select name="year" id="year" onchange="onChangeDate();">
+                        @foreach (var item in y)
+                        {
+                            <option value="@item.RegistYear" @(search.year == item.RegistYear ? " selected" : "")>@(item.RegistYear)년</option>
+                        }
+                    </select>
+                </label>
+            </div>
+
+        </div><!--//top_wrap-->       
+        <div class="graph_box_wrap">
+
+            <div class="box">
+                <div class="graph">
+                    <div class="tbl_scroll_wrap" id="kpiTable" style="padding-left: 230px;">
+                        <div class="tbl_box" style="width: 230px;">
+                            <table class="tbl th_hor tblfix">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="row3">구분</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @*@if (groupCompanyDisData == null || groupCompanyDisData.Count <= 0)
+                                    {
+                                        <tr>
+
+                                            <td colspan="2" class="ld"></td>
+
+
+                                        </tr>
+                                    }*@
+                                    @if(groupCompanyDisData != null)
+                                    {
+
+                                        foreach (var item in groupCompanyDisData)
+                                        {
+                                            <tr>
+                                                <th style="width: 190px;" scope="row">@item.DisName</th>
+                                                <th style="width: 140px;" scope="row">@item.DetailName</th>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table><!--tbl-->
+                        </div><!--//tbl_box-->
+
+                        <div class="tbl_scroll">
+                                    <div class="tbl_add">
+                                        @if (groupCompanyDisData != null)
+                                        {
+                                        <table class="tbl th_hor" style="width:@( groupCompanyDisData.Count <= 0 ? "1200px" : "")">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="24" class="ld">@selectCompanyName.companyName</th>
+                                                </tr>
+                                                <tr>
+                                                    <th class="ld" colspan="2">1월</th>
+                                                    <th colspan="2">2월</th>
+                                                    <th colspan="2">3월</th>
+                                                    <th colspan="2">4월</th>
+                                                    <th colspan="2">5월</th>
+                                                    <th colspan="2">6월</th>
+                                                    <th colspan="2">7월</th>
+                                                    <th colspan="2">8월</th>
+                                                    <th colspan="2">9월</th>
+                                                    <th colspan="2">10월</th>
+                                                    <th colspan="2">11월</th>
+                                                    <th colspan="2">12월</th>
+                                                </tr>
+                                                <tr>
+                                                    <th class="ld">공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th>공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+                                                    <th >공시항목 (대상유무)</th>
+                                                    <th>금액(백만원)</th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in groupCompanyDisData)
+                                                {
+                                                <tr>
+
+                                                    <td style="width: 300px;" class="ld">@item.JAN_01 @(@item.JAN_02 != "" ? "(" + @item.JAN_02 + ")" : "" )</td> 
+                                                    <td><span>@(@item.JAN_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.JAN_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.FEB_01 @(@item.FEB_02 != "" ? "(" + @item.FEB_02 + ")" : "" )</td> 
+                                                    <td><span>@(@item.FEB_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.FEB_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.MAR_01 @(@item.MAR_02 != "" ? "(" + @item.MAR_02 + ")" : "" )</td>
+                                                    <td><span>@(@item.MAR_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.MAR_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.APR_01 @(@item.APR_02 != "" ? "(" + @item.APR_02 + ")" : "" )</td>
+                                                    <td><span>@(@item.APR_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.APR_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.MAY_01 @(@item.MAY_02 != "" ? "(" + @item.MAY_02 + ")" : "" )</td>
+                                                    <td><span>@(@item.MAY_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.MAY_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.JUN_01 @(@item.JUN_02 != "" ? "(" + @item.JUN_02 + ")" : "" )</td>
+                                                    <td><span>@(@item.JUN_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.JUN_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.JUL_01 @(@item.JUL_02 != "" ? "(" + @item.JUL_02 + ")" : "" )</td>
+                                                    <td> <span>@(@item.JUL_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.JUL_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.AUG_01 @(@item.AUG_02 != "" ? "(" + @item.AUG_02 + ")" : "" )</td>
+                                                    <td><span>@(@item.AUG_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.AUG_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.SEP_01 @(@item.SEP_02 != "" ? "(" + @item.SEP_02 + ")" : "" )</td>
+                                                    <td><span>@(@item.SEP_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.SEP_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.OCT_01 @(@item.OCT_02 != "" ? "(" + @item.OCT_02 + ")" : "" )</td>
+                                                    <td><span>@(@item.OCT_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.OCT_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.NOV_01 @(@item.NOV_02 != "" ? "(" + @item.NOV_02 + ")" : "" )</td>
+                                                    <td><span>@(@item.NOV_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.NOV_03)) ) </span></td>
+                                                    <td style="width: 300px;" class="ld">@item.DEC_01 @(@item.DEC_02 != "" ? "(" + @item.DEC_02 + ")" : "" )</td>
+                                                    <td> <span>@(@item.DEC_03 == "0" ? "" : string.Format("{0:n0}", Convert.ToInt32(@item.DEC_03)) ) </span></td>
+
+
+                                                </tr>
+                                                }
+                                                @*@if (groupCompanyDisData == null || groupCompanyDisData.Count <= 0)
+                                                {
+                                                    <tr>
+
+                                                        <td colspan="12" class="ld">데이터가 없습니다.</td>
+
+
+                                                    </tr>
+                                                }*@
+                                            </tbody>
+                                        </table>
+                                        }
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+    </form>
+</section><!--//group_wrap-->
+<script>
+    $(function () {
+
+        /*셀렉트박스 스타일*/
+        MYAPP.form.styleSelect($(".style_select select"));
+        /*테이블 스크롤 세팅*/
+        MYAPP.table.setScroll($("#container .tbl_scroll"));
+
+        displayControll();
+    })
+
+    function onChangeDate() {
+        var f = document.frmForm;
+        var p = getQuerystring('Seq');
+
+        f.action = "/Dis/DisCompany?Seq=" + p;
+        f.submit();
+    }
+
+    function displayControll(){
+        var p = getQuerystring('Seq');
+        var ItemNum = getItemstring();
+        //var a = getQuerystring('ShowItem');
+        //alert(ItemNum);
+        //$('#clsCashFlow').attr('class','graph_box_wrap close');
+        if (p === "2") {
+            // $('.graph_box_wrap.open').css('display', 'none');
+            $('#clsCashFlow').css('display', 'none');
+            $('#profitAndlossLayer').attr('class','graph_box_wrap open');
+            $('#fibs').css('display', 'none');
+        }
+
+        if (p == "6") {
+            $("#exBs").css('display', '');
+            $("#exBs2").css('display', '');
+            //$('#clsCashFlow').attr('class','graph_box_wrap open');
+
+        }
+        else {
+            $("#exBs").css('display', 'none');
+            $("#exBs2").css('display', 'none');
+        }
+        if(ItemNum == "1" || ItemNum == "0") {
+            $('#clsCashFlow').attr('class','graph_box_wrap open');
+        }
+        else if ( ItemNum == "2" || ItemNum == "3" || ItemNum == "4"){ 
+            $('#profitAndlossLayer').attr('class','graph_box_wrap open'); 
+        }
+        else if ( ItemNum == "5"){ 
+            $('#fibs').attr('class','graph_box_wrap open'); 
+        }
+    }
+
+    function getQuerystring(paramName){
+        var tempUrl = window.location.search.substring(1);
+        var tempArray = tempUrl.split('&');
+        for (var i = 0; tempArray.length; i++) {
+            var keyValuePair = tempArray[i].split('=');
+            if (keyValuePair[0] == paramName) {
+                return keyValuePair[1];
+            }
+        }
+    }
+
+    function getItemstring(){
+        var tempUrl = window.location.href
+        var tempArray = tempUrl.split('#');
+        if(tempArray.length > 1){
+            return tempArray[1];
+        } 
+        return 0;
+    }
+</script>
+@Html.Partial("~/Views/Shared/PartialReply.cshtml", commentList)

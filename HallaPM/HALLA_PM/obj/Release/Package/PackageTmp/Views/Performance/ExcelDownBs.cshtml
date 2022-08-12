@@ -1,0 +1,412 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+
+    List<PmBsSummaryExp> pmThisYearCom = Model.pmThisYearCom;
+    List<PmBsSummaryExp> pmLastYearCom = Model.pmLastYearCom;
+    List<PmBsSummaryExp> pnThisYearCom = Model.pnThisYearCom;
+
+    List<PmBsSummaryEx> pmThisYearComEx = Model.pmThisYearComEx;
+    List<PmBsSummaryEx> pmLastYearComEx = Model.pmLastYearComEx;
+    List<PmBsSummaryEx> pnThisYearComEx = Model.pnThisYearComEx;
+
+    string companyName = "ExcelDownBs";
+    string year = "";
+    string mm = "";
+    if (pmThisYearCom.Count() > 0)
+    {
+        companyName = pmThisYearCom.First().CompanyName;
+        year = pmThisYearCom.First().BsYear;
+        mm = pmThisYearCom.First().Monthly;
+    }
+
+    decimal month = Convert.ToDecimal(mm);
+
+    string fileName = companyName + "_" + year + "_" + mm + "_BS";
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+<style>
+    .mytable {
+        border-collapse: collapse;
+    }
+
+        .mytable th, .mytable td {
+            border: 1px solid black;
+        }
+
+    .buLevel {
+        background-color: #f2f2f2;
+    }
+
+        .buLevel th, .buLevel td {
+            background-color: #f2f2f2;
+        }
+
+    .ComLevel {
+        background-color: #fff2cc;
+    }
+
+        .ComLevel th, .ComLevel td {
+            background-color: #fff2cc;
+        }
+
+    .UniLevel {
+        background-color: #d0cece;
+    }
+
+        .UniLevel th, .UniLevel td {
+            background-color: #d0cece;
+        }
+
+    .GrpLevel {
+        background-color: #bdd7ee;
+    }
+
+        .GrpLevel th, .GrpLevel td {
+            background-color: #bdd7ee;
+        }
+
+    .MsoNTwo {
+        mso-number-format:\#\,\#\#0\
+    }
+
+    .MsoNTwoPer {
+        mso-number-format:\#\,\#\#0\%
+    }
+
+    .MsoNOne {
+        mso-number-format:\#\,\#\#0\.0
+    }
+
+    .MsoNOnePer {
+        mso-number-format:\#\,\#\#0\.0%
+    }
+</style>
+<h3>@(year)년 BS 관리지표(@(mm)월 누계)</h3>
+<br />
+<table>
+    <tr>
+        <th style="text-align:right" colspan="9">(단위 : 억원)</th>
+    </tr>
+</table>
+<table class="mytable" border="1">
+    <thead>
+        <tr class="buLevel">
+            <th rowspan="3" colspan="4">구분</th>
+            <th>@(Convert.ToInt32(year) - 1)년</th>
+            <th colspan="4">@(year)년</th>
+        </tr>
+        <tr class="buLevel">
+            <th>기말</th>
+            <th colspan="4">@(mm)월 누계</th>
+        </tr>
+        <tr class="buLevel">
+            <th>실적</th>
+            <th>계획</th>
+            <th>실적</th>
+            <th>계획대비</th>
+            <th>전년대비</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in pmThisYearCom)
+        {
+            PmBsSummaryExp comLastYearPm = pmLastYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            PmBsSummaryExp comThisYearPn = pnThisYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+
+            int unionCnt = 15;
+            if (pmThisYearCom.First().OrgCompanySeq == 6)
+            {
+                unionCnt += 15;
+            }
+
+            if (comLastYearPm == null) { comLastYearPm = new PmBsSummaryExp(); }
+            if (comThisYearPn == null) { comThisYearPn = new PmBsSummaryExp(); }
+            <tr>
+                <th class="ComLevel" rowspan="@(unionCnt)">@item.UnionName</th>
+                <th class="ComLevel" rowspan="15">@item.CompanyName</th>
+                <th class="ComLevel" rowspan="6">B/S</th>
+                <th class="ComLevel">자산</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.Assets)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.Assets)</th>
+                <th class="MsoNTwo">@item.Assets</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.Assets : item.Assets - comThisYearPn.Assets)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.Assets : item.Assets - comLastYearPm.Assets)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">부채</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.Liabilities)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.Liabilities)</th>
+                <th class="MsoNTwo">@item.Liabilities</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.Liabilities : item.Liabilities - comThisYearPn.Liabilities)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.Liabilities : item.Liabilities - comLastYearPm.Liabilities)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">자본</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.Capital)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.Capital)</th>
+                <th class="MsoNTwo">@item.Capital</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.Capital : item.Capital - comThisYearPn.Capital)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.Capital : item.Capital - comLastYearPm.Capital)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">현금</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.Cash)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.Cash)</th>
+                <th class="MsoNTwo">@item.Cash</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.Cash : item.Cash - comThisYearPn.Cash)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.Cash : item.Cash - comLastYearPm.Cash)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">차입금</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.Loan)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.Loan)</th>
+                <th class="MsoNTwo">@item.Loan</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.Loan : item.Loan - comThisYearPn.Loan)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.Loan : item.Loan - comLastYearPm.Loan)</th>
+            </tr>
+            decimal lastCapital = comLastYearPm == null ? 0 : comLastYearPm.Capital;
+            decimal thisCapital = comThisYearPn == null ? 0 : comThisYearPn.Capital;
+            decimal lastPmLR = lastCapital == 0 ? 0 : Math.Round((comLastYearPm.Liabilities / lastCapital * 100), 2, MidpointRounding.AwayFromZero);
+            decimal thisPnLR = thisCapital == 0 ? 0 : Math.Round((comThisYearPn.Liabilities / thisCapital * 100), 2, MidpointRounding.AwayFromZero);
+            decimal thisPmLR = item.Capital == 0 ? 0 : Math.Round((item.Liabilities / item.Capital * 100) , 2, MidpointRounding.AwayFromZero);
+            <tr>
+                <th class="ComLevel">부채비율</th>
+                <th class="MsoNTwoPer">@(lastPmLR)%</th>
+                <th class="MsoNTwoPer">@(thisPnLR)%</th>
+                <th class="MsoNTwoPer">@(thisPmLR)%</th>
+                <th class="MsoNTwoPer">@(thisPmLR - thisPnLR)%</th>
+                <th class="MsoNTwoPer">@(thisPmLR - lastPmLR)%</th>
+            </tr>
+            <tr>
+                <th class="ComLevel" rowspan="3">ROIC</th>
+                <th class="ComLevel">세후 영업이익</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.AfterTaxOperationProfit)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.AfterTaxOperationProfit)</th>
+                <th class="MsoNTwo">@item.AfterTaxOperationProfit</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.AfterTaxOperationProfit : item.AfterTaxOperationProfit - comThisYearPn.AfterTaxOperationProfit)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.AfterTaxOperationProfit : item.AfterTaxOperationProfit - comLastYearPm.AfterTaxOperationProfit)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">투하자본</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.PainInCapital)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.PainInCapital)</th>
+                <th class="MsoNTwo">@item.PainInCapital</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.PainInCapital : item.PainInCapital - comThisYearPn.PainInCapital)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.PainInCapital : item.PainInCapital - comLastYearPm.PainInCapital)</th>
+            </tr>
+            decimal lastPainInCapital = comLastYearPm == null ? 0 : comLastYearPm.PainInCapital;
+            decimal thisPainInCapital = comThisYearPn == null ? 0 : comThisYearPn.PainInCapital;
+            decimal lastPmROIC = lastPainInCapital == 0 ? 0 : Math.Round(comLastYearPm.AfterTaxOperationProfit / lastPainInCapital * 100, 2, MidpointRounding.AwayFromZero);
+            decimal thisPnROIC = thisPainInCapital == 0 ? 0 : Math.Round(WebUtil.NewRoic((comThisYearPn.AfterTaxOperationProfit / thisPainInCapital * 100), month), 2, MidpointRounding.AwayFromZero);
+            decimal thisPmROIC = item.PainInCapital == 0 ? 0 : Math.Round(WebUtil.NewRoic((item.AfterTaxOperationProfit / item.PainInCapital * 100), month), 2, MidpointRounding.AwayFromZero);
+            <tr>
+                <th class="ComLevel">ROIC</th>
+                <th class="MsoNOnePer">@(lastPmROIC)%</th>
+                <th class="MsoNOnePer">@(thisPnROIC)%</th>
+                <th class="MsoNOnePer">@(thisPmROIC)%</th>
+                <th class="MsoNOnePer">@(thisPmROIC - thisPnROIC)%</th>
+                <th class="MsoNOnePer">@(thisPmROIC - lastPmROIC)%</th>
+            </tr>
+            <tr>
+                <th class="ComLevel" rowspan="6">W/C</th>
+                <th class="ComLevel">A/R</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.Ar)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.Ar)</th>
+                <th class="MsoNTwo">@item.Ar</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.Ar : item.Ar - comThisYearPn.Ar)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.Ar : item.Ar - comLastYearPm.Ar)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th class="MsoNOne">@(comLastYearPm == null ? 0 : Math.Round(comLastYearPm.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(comThisYearPn == null ? 0 : Math.Round(comThisYearPn.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@Math.Round(item.ArToDays, 1, MidpointRounding.AwayFromZero)</th>
+                <th class="MsoNOne">@(Math.Round(comThisYearPn == null ? item.ArToDays : item.ArToDays - comThisYearPn.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(Math.Round(comLastYearPm == null ? item.ArToDays : item.ArToDays - comLastYearPm.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">A/P</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.Ap)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.Ap)</th>
+                <th class="MsoNTwo">@item.Ap</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.Ap : item.Ap - comThisYearPn.Ap)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.Ap : item.Ap - comLastYearPm.Ap)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th class="MsoNOne">@(comLastYearPm == null ? 0 : Math.Round(comLastYearPm.ApToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(comThisYearPn == null ? 0 : Math.Round(comThisYearPn.ApToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@Math.Round(item.ApToDays, 1, MidpointRounding.AwayFromZero)</th>
+                <th class="MsoNOne">@(Math.Round(comThisYearPn == null ? item.ApToDays : item.ApToDays - comThisYearPn.ApToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(Math.Round(comLastYearPm == null ? item.ApToDays : item.ApToDays - comLastYearPm.ApToDays, 1, MidpointRounding.AwayFromZero))</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">Inventory</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? 0 : comLastYearPm.Inventory)</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? 0 : comThisYearPn.Inventory)</th>
+                <th class="MsoNTwo">@item.Inventory</th>
+                <th class="MsoNTwo">@(comThisYearPn == null ? item.Inventory : item.Inventory - comThisYearPn.Inventory)</th>
+                <th class="MsoNTwo">@(comLastYearPm == null ? item.Inventory : item.Inventory - comLastYearPm.Inventory)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th class="MsoNOne">@(comLastYearPm == null ? 0 : Math.Round(comLastYearPm.InventoryToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(comThisYearPn == null ? 0 : Math.Round(comThisYearPn.InventoryToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@Math.Round(item.InventoryToDays, 1, MidpointRounding.AwayFromZero)</th>
+                <th class="MsoNOne">@(Math.Round(comThisYearPn == null ? item.InventoryToDays : item.InventoryToDays - comThisYearPn.InventoryToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(Math.Round(comLastYearPm == null ? item.InventoryToDays : item.InventoryToDays - comLastYearPm.InventoryToDays, 1, MidpointRounding.AwayFromZero))</th>
+            </tr>
+
+        }
+        @if (pmThisYearCom.First().OrgCompanySeq == 6)
+        {
+            PmBsSummaryEx comThisYearPmEx = pmThisYearComEx.FirstOrDefault();
+            PmBsSummaryEx comLastYearPmEx = pmLastYearComEx.FirstOrDefault();
+            PmBsSummaryEx comThisYearPnEx = pnThisYearComEx.FirstOrDefault();
+
+            if (comThisYearPmEx == null) { comThisYearPmEx = new PmBsSummaryEx(); }
+            if (comLastYearPmEx == null) { comLastYearPmEx = new PmBsSummaryEx(); }
+            if (comThisYearPnEx == null) { comThisYearPnEx = new PmBsSummaryEx(); }
+            <tr>
+                <th class="ComLevel" rowspan="15">(주)한라별도</th>
+                <th class="ComLevel" rowspan="6">B/S</th>
+                <th class="ComLevel">자산</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.Assets)</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.Assets)</th>
+                <th class="MsoNTwo">@comThisYearPmEx.Assets</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? comThisYearPmEx.Assets : comThisYearPmEx.Assets - comThisYearPnEx.Assets)</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? comThisYearPmEx.Assets : comThisYearPmEx.Assets - comLastYearPmEx.Assets)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">부채</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.Liabilities)</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.Liabilities)</th>
+                <th class="MsoNTwo">@comThisYearPmEx.Liabilities</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? comThisYearPmEx.Liabilities : comThisYearPmEx.Liabilities - comThisYearPnEx.Liabilities)</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? comThisYearPmEx.Liabilities : comThisYearPmEx.Liabilities - comLastYearPmEx.Liabilities)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">자본</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.Capital)</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.Capital)</th>
+                <th class="MsoNTwo">@comThisYearPmEx.Capital</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? comThisYearPmEx.Capital : comThisYearPmEx.Capital - comThisYearPnEx.Capital)</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? comThisYearPmEx.Capital : comThisYearPmEx.Capital - comLastYearPmEx.Capital)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">현금</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.Cash)</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.Cash)</th>
+                <th class="MsoNTwo">@comThisYearPmEx.Cash</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? comThisYearPmEx.Cash : comThisYearPmEx.Cash - comThisYearPnEx.Cash)</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? comThisYearPmEx.Cash : comThisYearPmEx.Cash - comLastYearPmEx.Cash)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">차입금</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.Loan)</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.Loan)</th>
+                <th class="MsoNTwo">@comThisYearPmEx.Loan</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? comThisYearPmEx.Loan : comThisYearPmEx.Loan - comThisYearPnEx.Loan)</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? comThisYearPmEx.Loan : comThisYearPmEx.Loan - comLastYearPmEx.Loan)</th>
+            </tr>
+            decimal lastCapitalEx = comLastYearPmEx == null ? 0 : comLastYearPmEx.Capital;
+            decimal thisCapitalEx = comThisYearPnEx == null ? 0 : comThisYearPnEx.Capital;
+            decimal lastPmLREx = lastCapitalEx == 0 ? 0 : Math.Round((comLastYearPmEx.Liabilities / lastCapitalEx * 100), 2, MidpointRounding.AwayFromZero);
+            decimal thisPnLREx = thisCapitalEx == 0 ? 0 : Math.Round((comThisYearPnEx.Liabilities / thisCapitalEx * 100), 2, MidpointRounding.AwayFromZero);
+            decimal thisPmLREx = comThisYearPmEx.Capital == 0 ? 0 : Math.Round((comThisYearPmEx.Liabilities / comThisYearPmEx.Capital * 100), 2, MidpointRounding.AwayFromZero);
+            <tr>
+                <th class="ComLevel">부채비율</th>
+                <th class="MsoNTwoPer">@(lastPmLREx)%</th>
+                <th class="MsoNTwoPer">@(thisPnLREx)%</th>
+                <th class="MsoNTwoPer">@(thisPmLREx)%</th>
+                <th class="MsoNTwoPer">@(thisPmLREx - thisPnLREx)%</th>
+                <th class="MsoNTwoPer">@(thisPmLREx - lastPmLREx)%</th>
+            </tr>
+            <tr>
+                <th class="ComLevel" rowspan="3">ROIC</th>
+                <th class="ComLevel">세후 영업이익</th>
+                <th class="MsoNOne">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.AfterTaxOperationProfit)</th>
+                <th class="MsoNOne">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.AfterTaxOperationProfit)</th>
+                <th class="MsoNOne">@comThisYearPmEx.AfterTaxOperationProfit</th>
+                <th class="MsoNOne">@(comThisYearPnEx == null ? comThisYearPmEx.AfterTaxOperationProfit : comThisYearPmEx.AfterTaxOperationProfit - comThisYearPnEx.AfterTaxOperationProfit)</th>
+                <th class="MsoNOne">@(comLastYearPmEx == null ? comThisYearPmEx.AfterTaxOperationProfit : comThisYearPmEx.AfterTaxOperationProfit - comLastYearPmEx.AfterTaxOperationProfit)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">투하자본</th>
+                <th class="MsoNOne">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.PainInCapital)</th>
+                <th class="MsoNOne">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.PainInCapital)</th>
+                <th class="MsoNOne">@comThisYearPmEx.PainInCapital</th>
+                <th class="MsoNOne">@(comThisYearPnEx == null ? comThisYearPmEx.PainInCapital : comThisYearPmEx.PainInCapital - comThisYearPnEx.PainInCapital)</th>
+                <th class="MsoNOne">@(comLastYearPmEx == null ? comThisYearPmEx.PainInCapital : comThisYearPmEx.PainInCapital - comLastYearPmEx.PainInCapital)</th>
+            </tr>
+            decimal lastPainInCapitalEx = comLastYearPmEx == null ? 0 : comLastYearPmEx.PainInCapital;
+            decimal thisPainInCapitalEx = comThisYearPnEx == null ? 0 : comThisYearPnEx.PainInCapital;
+            decimal lastPmROICEx = lastPainInCapitalEx == 0 ? 0 : Math.Round(comLastYearPmEx.AfterTaxOperationProfit / lastPainInCapitalEx * 100, 2, MidpointRounding.AwayFromZero);
+            decimal thisPnROICEx = thisPainInCapitalEx == 0 ? 0 : Math.Round(WebUtil.NewRoic((comThisYearPnEx.AfterTaxOperationProfit / thisPainInCapitalEx * 100), month), 2, MidpointRounding.AwayFromZero);
+            decimal thisPmROICEx = comThisYearPmEx.PainInCapital == 0 ? 0 : Math.Round(WebUtil.NewRoic((comThisYearPmEx.AfterTaxOperationProfit / comThisYearPmEx.PainInCapital * 100), month), 2, MidpointRounding.AwayFromZero);
+            <tr>
+                <th class="ComLevel">ROIC</th>
+                <th class="MsoNOnePer">@(lastPmROICEx)%</th>
+                <th class="MsoNOnePer">@(thisPnROICEx)%</th>
+                <th class="MsoNOnePer">@(thisPmROICEx)%</th>
+                <th class="MsoNOnePer">@(thisPmROICEx - thisPnROICEx)%</th>
+                <th class="MsoNOnePer">@(thisPmROICEx - lastPmROICEx)%</th>
+            </tr>
+            <tr>
+                <th class="ComLevel" rowspan="6">W/C</th>
+                <th class="ComLevel">A/R</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.Ar)</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.Ar)</th>
+                <th class="MsoNTwo">@comThisYearPmEx.Ar</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? comThisYearPmEx.Ar : comThisYearPmEx.Ar - comThisYearPnEx.Ar)</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? comThisYearPmEx.Ar : comThisYearPmEx.Ar - comLastYearPmEx.Ar)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th class="MsoNOne">@(comLastYearPmEx == null ? 0 : Math.Round(comLastYearPmEx.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(comThisYearPnEx == null ? 0 : Math.Round(comThisYearPnEx.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@Math.Round(comThisYearPmEx.ArToDays, 1, MidpointRounding.AwayFromZero)</th>
+                <th class="MsoNOne">@(Math.Round(comThisYearPnEx == null ? comThisYearPmEx.ArToDays : comThisYearPmEx.ArToDays - comThisYearPnEx.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(Math.Round(comLastYearPmEx == null ? comThisYearPmEx.ArToDays : comThisYearPmEx.ArToDays - comLastYearPmEx.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">A/P</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.Ap)</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.Ap)</th>
+                <th class="MsoNTwo">@comThisYearPmEx.Ap</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? comThisYearPmEx.Ap : comThisYearPmEx.Ap - comThisYearPnEx.Ap)</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? comThisYearPmEx.Ap : comThisYearPmEx.Ap - comLastYearPmEx.Ap)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th class="MsoNOne">@(comLastYearPmEx == null ? 0 : Math.Round(comLastYearPmEx.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(comThisYearPnEx == null ? 0 : Math.Round(comThisYearPnEx.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@Math.Round(comThisYearPmEx.ArToDays, 1, MidpointRounding.AwayFromZero)</th>
+                <th class="MsoNOne">@(Math.Round(comThisYearPnEx == null ? comThisYearPmEx.ArToDays : comThisYearPmEx.ArToDays - comThisYearPnEx.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(Math.Round(comLastYearPmEx == null ? comThisYearPmEx.ArToDays : comThisYearPmEx.ArToDays - comLastYearPmEx.ArToDays, 1, MidpointRounding.AwayFromZero))</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">Inventory</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? 0 : comLastYearPmEx.Inventory)</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? 0 : comThisYearPnEx.Inventory)</th>
+                <th class="MsoNTwo">@comThisYearPmEx.Inventory</th>
+                <th class="MsoNTwo">@(comThisYearPnEx == null ? comThisYearPmEx.Inventory : comThisYearPmEx.Inventory - comThisYearPnEx.Inventory)</th>
+                <th class="MsoNTwo">@(comLastYearPmEx == null ? comThisYearPmEx.Inventory : comThisYearPmEx.Inventory - comLastYearPmEx.Inventory)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th class="MsoNOne">@(comLastYearPmEx == null ? 0 : Math.Round(comLastYearPmEx.InventoryToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(comThisYearPnEx == null ? 0 : Math.Round(comThisYearPnEx.InventoryToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@Math.Round(comThisYearPmEx.InventoryToDays, 1, MidpointRounding.AwayFromZero)</th>
+                <th class="MsoNOne">@(Math.Round(comThisYearPnEx == null ? comThisYearPmEx.InventoryToDays : comThisYearPmEx.InventoryToDays - comThisYearPnEx.InventoryToDays, 1, MidpointRounding.AwayFromZero))</th>
+                <th class="MsoNOne">@(Math.Round(comLastYearPmEx == null ? comThisYearPmEx.InventoryToDays : comThisYearPmEx.InventoryToDays - comLastYearPmEx.InventoryToDays, 1, MidpointRounding.AwayFromZero))</th>
+            </tr>
+
+        }
+    </tbody>
+</table>

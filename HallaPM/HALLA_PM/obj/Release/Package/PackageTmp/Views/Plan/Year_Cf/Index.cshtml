@@ -1,0 +1,334 @@
+﻿@using HALLA_PM.Models;
+@{
+    ViewBag.Title = "Index";
+    string year = Model.year;
+    List<TbOrgCompanyExp> tbOrgCompanyList = Model.tbOrgCompanyList;
+    List<PlanYearCfSummary> groupTotalSummaryList = Model.groupTotalSummaryList;
+
+}
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>중기 C/F</h2>
+        <a href="/Plan/Year_Cf/Index_excel" class="btn_download">DOWNLOAD</a>
+    </div><!--//top_wrap-->
+
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+
+            <div class="box">
+              <div class="chart_box chart_box7">
+                <span class="p_unit">(단위 : 억원)</span>
+                <div class="chart chart_type10" id="chart1"></div>
+                @{
+                    string gSalesText = "";
+                    string gInvestmentText = "";
+                    string gFcfText = "";
+
+                    foreach(var s in groupTotalSummaryList)
+                    {
+                        gSalesText += "{";
+                        gSalesText += "x:" + s.YearlyYear + ",";
+                        gSalesText += "y:" + Math.Round(s.CfSales, MidpointRounding.AwayFromZero) + "},";
+
+                        gInvestmentText += "{";
+                        gInvestmentText += "x:" + s.YearlyYear + ",";
+                        gInvestmentText += "y:" + Math.Round(s.CfInvestment, MidpointRounding.AwayFromZero) + "},";
+
+                        gFcfText += "{";
+                        gFcfText += "x:" + s.YearlyYear + ",";
+                        gFcfText += "y:" + Math.Round(s.Fcf2, MidpointRounding.AwayFromZero) + "},";
+                    }
+                    if(gSalesText.Length > 0)
+                    {
+                        gSalesText = gSalesText.Substring(0, gSalesText.Length - 1);
+                    }
+                    if(gInvestmentText.Length > 0)
+                    {
+                        gInvestmentText = gInvestmentText.Substring(0, gInvestmentText.Length - 1);
+                    }
+                    if(gFcfText.Length > 0)
+                    {
+                        gFcfText = gFcfText.Substring(0, gFcfText.Length - 1);
+                    }
+                }
+                <script>
+                  ( function(){
+                    var data = [
+                    	{ key: '영업활동', values: [ @gSalesText ] },
+                    	{ key: '투자활동', values: [ @gInvestmentText ] },
+                    	{ key: 'FCF', values: [ @gFcfText ] }
+                    ];
+                    data[2].line = true;
+                    data[2].color = '#c112ae';
+
+                    MYAPP.graph.type10( data, '#chart1' );
+                  } )();
+                </script>
+              </div>
+              <!-- chart_box -->
+            </div><!--//box-->
+
+            <div class="box">
+                <div class="graph">
+                    <table class="tbl tbl_type01">
+                        <colgroup>
+                            <col width="10%" />
+                            <col width="/" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" class="rbd lbd0">
+                                    구분
+                                </th>
+                                @foreach (var summary in groupTotalSummaryList)
+                                {
+                                    <th scope="col">@summary.YearlyYear 년</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row" class="lbd0">Ending cash</th>
+                                @foreach (var summary in groupTotalSummaryList)
+                                {
+                                    <td>@Math.Round(summary.CfEndingCash, MidpointRounding.AwayFromZero)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">가용현금</th>
+                                @foreach (var summary in groupTotalSummaryList)
+                                {
+                                    <td>@Math.Round(summary.CfAvailableCash, MidpointRounding.AwayFromZero)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">FCF</th>
+                                @foreach (var summary in groupTotalSummaryList)
+                                {
+                                    <td>@Math.Round(summary.Fcf2, MidpointRounding.AwayFromZero)</td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table><!--// tbl-->
+                </div><!--//graph-->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+
+    </div><!--//con_wrap-->
+
+    <div class="tab_wrap">
+        <div class="type_tab2">
+            <ul>
+                @foreach (var company in tbOrgCompanyList)
+                {
+                    <li><a href="#yearpal_@company.seq">@company.companyName</a></li>
+                }
+                <!--
+                <li><a href="#yearpal01">한라홀딩스</a></li>
+                <li><a href="#yearpal02">JJ한라</a></li>
+                <li><a href="#yearpal03">만도</a></li>
+                <li><a href="#yearpal04">만도헬라</a></li>
+                <li><a href="#yearpal05">만도브로제</a></li>
+                <li><a href="#yearpal06">㈜한라</a></li>
+                    -->
+            </ul>
+        </div><!--//type_tab-->
+
+        @foreach (var company in tbOrgCompanyList)
+        {
+            List<PlanYearCfSummary> totalPlanYearCfSummaryList = company.totalPlanYearCfSummaryList;
+            string salesText = "";
+            string investmentText = "";
+            string fcfText = "";
+
+            salesText += "{";
+            salesText += "x:" + company.pmCashFlowCumulativeSummary.cashFlowYear + ",";
+            salesText += "y:" + Math.Round((company.pmCashFlowCumulativeSummary.ebitda + company.pmCashFlowCumulativeSummary.wcSum + company.pmCashFlowCumulativeSummary.etc + company.pmCashFlowCumulativeSummary.financialCost), MidpointRounding.AwayFromZero) + "},";
+
+            investmentText += "{";
+            investmentText += "x:" + company.pmCashFlowCumulativeSummary.cashFlowYear + ",";
+            investmentText += "y:" + Math.Round(company.pmCashFlowCumulativeSummary.netCapexSum, MidpointRounding.AwayFromZero) + "},";
+
+            fcfText += "{";
+            fcfText += "x:" + company.pmCashFlowCumulativeSummary.cashFlowYear + ",";
+            fcfText += "y:" + Math.Round(company.pmCashFlowCumulativeSummary.fcf2, MidpointRounding.AwayFromZero) + "},";
+
+            if (totalPlanYearCfSummaryList != null)
+            {
+                foreach(var s in totalPlanYearCfSummaryList)
+                {
+                    salesText += "{";
+                    salesText += "x:" + s.YearlyYear + ",";
+                    salesText += "y:" + Math.Round(s.CfSales, MidpointRounding.AwayFromZero) + "},";
+
+                    investmentText += "{";
+                    investmentText += "x:" + s.YearlyYear + ",";
+                    investmentText += "y:" + Math.Round(s.CfInvestment, MidpointRounding.AwayFromZero) + "},";
+
+                    fcfText += "{";
+                    fcfText += "x:" + s.YearlyYear + ",";
+                    fcfText += "y:" + Math.Round(s.Fcf2, MidpointRounding.AwayFromZero) + "},";
+                }
+                if(salesText.Length > 0)
+                {
+                    salesText = salesText.Substring(0, salesText.Length - 1);
+                }
+                if(investmentText.Length > 0)
+                {
+                    investmentText = investmentText.Substring(0, investmentText.Length - 1);
+                }
+                if(fcfText.Length > 0)
+                {
+                    fcfText = fcfText.Substring(0, fcfText.Length - 1);
+                }
+            }
+
+            <div class="type_tab_con" id="yearpal_@company.seq">
+                <div class="con_wrap">
+
+                    <div class="graph_box">
+                        <div class="box">
+                            <div class="chart_box chart_box7">
+                                <span class="p_unit">(단위 : 억원)</span>
+                                <div class="chart chart_type10" id="chart_@company.seq"></div>
+                                <script>
+                          ( function(){
+                            var data = [
+                            	{ key: '영업활동', values: [ @salesText ] },
+                            	{ key: '투자활동', values: [ @investmentText ] },
+                            	{ key: '합산값', values: [ @fcfText ] }
+                            ];
+                            data[2].line = true;
+                            data[2].color = '#c112ae';
+
+                            MYAPP.graph.type10( data, '#chart_@company.seq' );
+                          } )();
+                                </script>
+                            </div>
+                            <!-- chart_box -->
+                        </div><!--//box-->
+
+                        <div class="box">
+                            <div class="graph">
+                                <table class="tbl tbl_type01">
+                                    <colgroup>
+                                        <col width="10%" />
+                                        <col width="/" />
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" rowspan="2" class="rbd lbd0">
+                                                구분
+                                            </th>
+                                            <th scope="col" colspan="6" class="rbd">@year 년 중기계획</th>
+                                            <th scope="col" colspan="5">전년대비</th>
+                                        </tr>
+                                        <tr>
+                                            <th scope="col">@(Convert.ToInt32(year)-1) 년</th>
+                                            @{
+                                                int length = 0;
+                                            }
+                                            @foreach(var cf in company.totalPlanYearCfSummaryList)
+                                            {
+                                                length++;
+                                                <th scope="col"@(length == company.totalPlanYearCfSummaryList.Count() ? "class=rbd" : "")>@cf.YearlyYear 년</th>
+                                            }
+                                            <!--
+                                                <th scope="col">'18년</th>
+                                                <th scope="col">'19년</th>
+                                                <th scope="col">'20년</th>
+                                                <th scope="col">'21년</th>
+                                                <th scope="col" class="rbd">'22년</th>
+                                                -->
+
+                                            @foreach (var cf in company.totalPlanYearCfSummaryList)
+                                            {
+                                                <th scope="col">@cf.YearlyYear 년</th>
+                                            }
+                                            <!--
+                                            <th scope="col">'18년</th>
+                                            <th scope="col">'19년</th>
+                                            <th scope="col">'20년</th>
+                                            <th scope="col">'21년</th>
+                                            <th scope="col">'22년</th>
+                                                -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row" class="lbd0">
+                                                Ending cash
+                                            </th>
+                                            <td>@Math.Round(company.pmCashFlowCumulativeSummary.endingCash, MidpointRounding.AwayFromZero)</td>
+                                            @{
+                                                length = 0;
+                                            }
+                                            @foreach (var cf in company.totalPlanYearCfSummaryList)
+                                            {
+                                                length++;
+                                                <td @(length == company.totalPlanYearCfSummaryList.Count() ? "class=rbd" : "")>@Math.Round(cf.CfEndingCash, MidpointRounding.AwayFromZero)</td>
+                                            }
+
+                                            @foreach (var diff in company.pmCashFlowCumulativeDiffSummaryList)
+                                            {
+                                                <td>@Math.Round(diff.endingCash, MidpointRounding.AwayFromZero)</td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" class="lbd0">
+                                                가용현금
+                                            </th>
+                                            <td>@Math.Round(company.pmCashFlowCumulativeSummary.availableCash, MidpointRounding.AwayFromZero)</td>
+                                            @{
+                                                length = 0;
+                                            }
+                                            @foreach (var cf in company.totalPlanYearCfSummaryList)
+                                            {
+                                                length++;
+                                                <td @(length == company.totalPlanYearCfSummaryList.Count() ? "class=rbd" : "")>@Math.Round(cf.CfAvailableCash, MidpointRounding.AwayFromZero)</td>
+                                            }
+
+                                            @foreach (var diff in company.pmCashFlowCumulativeDiffSummaryList)
+                                            {
+                                                <td>@Math.Round(diff.availableCash, MidpointRounding.AwayFromZero)</td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th scope="row" class="lbd0">
+                                                FCF
+                                            </th>
+                                            <td>@Math.Round(company.pmCashFlowCumulativeSummary.fcf2, MidpointRounding.AwayFromZero)</td>
+                                            @{
+                                                length = 0;
+                                            }
+                                            @foreach (var cf in company.totalPlanYearCfSummaryList)
+                                            {
+                                                length++;
+                                                <td @(length == company.totalPlanYearCfSummaryList.Count() ? "class=rbd" : "")>@Math.Round(cf.Fcf2, MidpointRounding.AwayFromZero)</td>
+                                            }
+
+                                            @foreach (var diff in company.pmCashFlowCumulativeDiffSummaryList)
+                                            {
+                                                <td>@Math.Round(diff.fcf2, MidpointRounding.AwayFromZero)</td>
+                                            }
+                                        </tr>
+                                    </tbody>
+                                </table><!--// tbl-->
+                            </div><!--//graph-->
+                        </div><!--//box-->
+
+                    </div><!--//graph_box-->
+                </div><!--//con_wrap-->
+
+            </div><!--//type_tab_con-->
+        }
+
+    </div><!--//tab_wrap-->
+</div><!--//plan_wrap-->
+<script>
+    $(function () {
+        /*탭*/
+        MYAPP.tab.init($(".type_tab2"));
+    })
+</script>

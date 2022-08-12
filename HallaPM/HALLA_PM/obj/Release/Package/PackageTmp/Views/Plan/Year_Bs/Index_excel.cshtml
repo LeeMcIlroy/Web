@@ -1,0 +1,130 @@
+﻿@using HALLA_PM.Models;
+@{
+    Layout = null;
+    ViewBag.Title = "Index";
+    string year = Model.year;
+    List<TbOrgCompanyExp> orgCompanyList = Model.tbOrgCompanyList;
+    List<PlanYearBsSummary> groupTotalSummaryList = Model.groupTotalSummaryList;
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=plan_year_bs_excel.xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>중기 B/S</h2>
+    </div><!--//top_wrap-->
+
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+
+            <div class="box">
+                <div class="graph">
+                    <table class="tbl tbl_type01" border="1">
+                        <colgroup>
+                            <col width="10%" />
+                            <col width="/" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="7" class="rbd lbd0" style="text-align:right;">
+                                    (단위 : %)
+                                </th>
+                            </tr>
+                            <tr>
+                                <th scope="col" class="rbd lbd0">
+                                    구분
+                                </th>
+                                @foreach (var summary in groupTotalSummaryList)
+                                {
+                                    <th scope="col">@summary.YearlyYear 년</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row" class="lbd0">ROIC</th>
+                                @foreach (var summary in groupTotalSummaryList)
+                                {
+                                    <td>@summary.Roic</td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table><!--// tbl-->
+                </div><!--//graph-->
+            </div><!--//box-->
+        </div><!--//con_wrap-->
+    </div><!--//group_wrap-->
+
+    <div class="tab_wrap">
+
+        @foreach (var company in orgCompanyList)
+        {
+            <div class="type_tab_con" id="yearpal_@company.seq">
+                <div class="con_wrap">
+                    <div class="graph_box">
+                        <h3>@company.companyName</h3>
+                        <div class="box">
+                            <table class="tbl tbl_type01" border="1">
+                                <colgroup>
+                                    <col width="10%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="7" class="rbd lbd0" style="text-align:right;">
+                                            (단위 : %)
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col"> @(Convert.ToInt32(year)-1) 년</th>
+                                        @foreach (var summary in company.totalPlanYearBsSummaryList)
+                                        {
+                                            <th scope="col">@summary.YearlyYear 년</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="lbd0">ROIC</th>
+                                        @*@if(Double.IsNaN(company.pmBsSummary.AfterTaxOperationProfit / company.pmBsSummary.PainInCapital))
+                                        {
+                                            <td>0</td>
+                                        }
+                                        else
+                                        {
+                                            <td>@Math.Round(company.pmBsSummary.AfterTaxOperationProfit / company.pmBsSummary.PainInCapital, 1, MidpointRounding.AwayFromZero)</td>
+                                        }*@
+                                        @foreach (var summary in company.totalPlanYearBsSummaryList)
+                                        {
+                                            <td>@summary.Roic</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">부채비율</th>
+                                        @*@if (Double.IsNaN(company.pmBsSummary.Liabilities / company.pmBsSummary.Assets))
+                                        {
+                                            <td>0</td>
+                                        }
+                                        else
+                                        {
+                                            <td>@Math.Round(company.pmBsSummary.Liabilities / company.pmBsSummary.Assets, 1, MidpointRounding.AwayFromZero)</td>
+                                        }*@
+                                        @foreach (var summary in company.totalPlanYearBsSummaryList)
+                                        {
+                                            <td>@summary.LiabilitiesRate</td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+ </div><!--//plan_wrap-->

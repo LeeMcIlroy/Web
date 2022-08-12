@@ -1,0 +1,1309 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A8E59158-8837-448A-8044-2E2AB42C221E}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>HALLA_PM</RootNamespace>
+    <AssemblyName>HALLA_PM</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ClosedXML, Version=0.93.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ClosedXML.0.93.0\lib\net40\ClosedXML.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Dapper, Version=1.50.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.50.5\lib\net451\Dapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.7.2.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
+      <HintPath>..\packages\DocumentFormat.OpenXml.2.7.2\lib\net40\DocumentFormat.OpenXml.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ExcelNumberFormat, Version=1.0.3.0, Culture=neutral, PublicKeyToken=23c6f5d73be07eca, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExcelNumberFormat.1.0.3\lib\net20\ExcelNumberFormat.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FastMember.Signed, Version=1.3.0.0, Culture=neutral, PublicKeyToken=9e8f22703bef9a29, processorArchitecture=MSIL">
+      <HintPath>..\packages\FastMember.Signed.1.3.0\lib\net45\FastMember.Signed.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Fluentx, Version=2.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Fluentx.2.0.4\lib\Fluentx.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Fluentx.Mvc, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Fluentx.Mvc.1.0.4\lib\Fluentx.Mvc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AI.Agent.Intercept, Version=1.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.Agent.Intercept.1.2.1\lib\net45\Microsoft.AI.Agent.Intercept.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AI.DependencyCollector, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.DependencyCollector.2.0.0\lib\net45\Microsoft.AI.DependencyCollector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AI.PerfCounterCollector, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.PerfCounterCollector.2.0.0\lib\net45\Microsoft.AI.PerfCounterCollector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AI.ServerTelemetryChannel, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.0.0\lib\net45\Microsoft.AI.ServerTelemetryChannel.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AI.Web, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.Web.2.0.0\lib\net45\Microsoft.AI.Web.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AI.WindowsServer, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.WindowsServer.2.0.0\lib\net45\Microsoft.AI.WindowsServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.ApplicationInsights, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.2.0.0\lib\net45\Microsoft.ApplicationInsights.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp, Version=106.5.4.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.106.5.4\lib\net452\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Web.Razor">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Webpages">
+      <HintPath>..\packages\Microsoft.AspNet.Webpages.3.2.3\lib\net45\System.Web.Webpages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Webpages.Deployment">
+      <HintPath>..\packages\Microsoft.AspNet.Webpages.3.2.3\lib\net45\System.Web.Webpages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Webpages.Razor">
+      <HintPath>..\packages\Microsoft.AspNet.Webpages.3.2.3\lib\net45\System.Web.Webpages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Helpers">
+      <HintPath>..\packages\Microsoft.AspNet.Webpages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Contents\appDownload\512.png" />
+    <Content Include="Contents\appDownload\57.png" />
+    <Content Include="Contents\appDownload\HPRS_appDownload.html" />
+    <Content Include="Contents\appDownload\images\appBg.jpg" />
+    <Content Include="Contents\appDownload\images\btn_android.png" />
+    <Content Include="Contents\appDownload\images\btn_ios.png" />
+    <Content Include="Contents\appDownload\images\copyright.png" />
+    <Content Include="Contents\SiteMngHome\Common\css\common.css" />
+    <Content Include="Contents\SiteMngHome\Common\css\datepicker.css" />
+    <Content Include="Contents\SiteMngHome\Common\css\font-awesome.min.css" />
+    <Content Include="Contents\SiteMngHome\Common\css\layout.css" />
+    <Content Include="Contents\SiteMngHome\Common\css\reset.css" />
+    <Content Include="Contents\SiteMngHome\Common\css\style.css" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\fontawesome-webfont.eot" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\fontawesome-webfont.svg" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\fontawesome-webfont.ttf" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\fontawesome-webfont.woff" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\fontawesome-webfont.woff2" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\FontAwesome.otf" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Bold.eot" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Bold.ttf" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Bold.woff" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Bold.woff2" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Demilight.eot" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Demilight.ttf" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Demilight.woff" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Demilight.woff2" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Light.eot" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Light.ttf" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Light.woff" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Light.woff2" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Medium.eot" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Medium.ttf" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Medium.woff" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Medium.woff2" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Regular.eot" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Regular.ttf" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Regular.woff" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Regular.woff2" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Thin.eot" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Thin.ttf" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Thin.woff" />
+    <Content Include="Contents\SiteMngHome\Common\css\webfont\NotoSanskr_Thin.woff2" />
+    <Content Include="Contents\SiteMngHome\Common\img\btn_fold.png" />
+    <Content Include="Contents\SiteMngHome\Common\img\logo_black.svg" />
+    <Content Include="Contents\SiteMngHome\Common\img\logo_white.svg" />
+    <Content Include="Contents\SiteMngHome\Common\js\front.js" />
+    <Content Include="Contents\SiteMngHome\Common\js\libs\jquery-1.11.3.min.js" />
+    <Content Include="Contents\SiteMngHome\Common\js\libs\jquery-ui.js" />
+    <Content Include="Contents\SiteMngHome\Common\js\libs\jquery-ui.min.js" />
+    <Content Include="Contents\SiteMngHome\Common\js\libs\jquery.cookie.js" />
+    <Content Include="Contents\SiteMngHome\Common\js\libs\TweenMax.min.js" />
+    <Content Include="Contents\SiteMngHome\Common\js\site.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\css\smart_editor2.css" />
+    <Content Include="Contents\SiteMngHome\Common\se\css\smart_editor2_in.css" />
+    <Content Include="Contents\SiteMngHome\Common\se\css\smart_editor2_items.css" />
+    <Content Include="Contents\SiteMngHome\Common\se\css\smart_editor2_out.css" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_b1.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_button.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_button_left.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_button_right.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_find_h3.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_help.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_icon_tool.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_line1.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_quote2.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_set.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_text_tool.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\bg_tool2.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\editor_guideline_698.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\editor_guideline_890.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\icon_set.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\ico_extend.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\ko_KR\btn_set.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\ko_KR\bx_set_110302.gif" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\ko_KR\text_tool_set.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\photoQuickPopup\bg_drag_image.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\photoQuickPopup\btn_cancel.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\photoQuickPopup\btn_confirm.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\photoQuickPopup\btn_confirm2.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\photoQuickPopup\btn_del.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\photoQuickPopup\btn_find.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\img\text_tool_set2.png" />
+    <Content Include="Contents\SiteMngHome\Common\se\js\HuskyEZCreator.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\js\jindo.min.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\js\jindo_component.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\js\SE2BasicCreator.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\js\SE2B_Configuration_General.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\js\SE2B_Configuration_Service.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\js\smarteditor2.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\js\smarteditor2.min.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\photo_uploader\plugin\hp_SE2M_AttachQuickPhoto.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\photo_uploader\popup\attach_photo.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\photo_uploader\popup\callback.html" />
+    <Content Include="Contents\SiteMngHome\Common\se\photo_uploader\popup\jindo.fileuploader.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\photo_uploader\popup\jindo.min.js" />
+    <Content Include="Contents\SiteMngHome\Common\se\photo_uploader\popup\photo_uploader.html" />
+    <Content Include="Contents\SiteMngHome\Common\se\readme.txt" />
+    <Content Include="Contents\SiteMngHome\Common\se\release_notes.txt" />
+    <Content Include="Contents\SiteMngHome\Common\se\SmartEditor2.html" />
+    <Content Include="Contents\SiteMngHome\Common\se\SmartEditor2Skin.html" />
+    <Content Include="Contents\SiteMngHome\Common\se\smart_editor2_inputarea.html" />
+    <Content Include="Contents\SiteMngHome\Common\se\smart_editor2_inputarea_ie8.html" />
+    <Content Include="Contents\SiteMngHome\Common\se\src_include.txt" />
+    <Content Include="Contents\SiteMngHome\Mail\AllConfirmMail.html" />
+    <Content Include="Contents\SiteMngHome\Mail\AllConfirmMail2.html" />
+    <Content Include="Contents\SiteMngHome\Mail\img\bg.gif" />
+    <Content Include="Contents\SiteMngHome\Mail\img\bg.jpg" />
+    <Content Include="Contents\SiteMngHome\Mail\img\footer.gif" />
+    <Content Include="Contents\SiteMngHome\Mail\img\footer.jpg" />
+    <Content Include="Contents\SiteMngHome\Mail\img\header.gif" />
+    <Content Include="Contents\SiteMngHome\Mail\img\header.jpg" />
+    <Content Include="Contents\SiteMngHome\Mail\mail.html" />
+    <Content Include="Contents\SiteMngHome\Mail\mail2.html" />
+    <Content Include="Contents\user\Common\css\common.css" />
+    <Content Include="Contents\user\Common\css\font-awesome.min.css" />
+    <Content Include="Contents\user\Common\css\jquery.mCustomScrollbar.css" />
+    <Content Include="Contents\user\Common\css\layout.css" />
+    <Content Include="Contents\user\Common\css\logout.css" />
+    <Content Include="Contents\user\Common\css\nv.d3.min.css" />
+    <Content Include="Contents\user\Common\css\nv.d3_2.css" />
+    <Content Include="Contents\user\Common\css\reset.css" />
+    <Content Include="Contents\user\Common\css\style.css" />
+    <Content Include="Contents\user\Common\css\webfont\fontawesome-webfont.eot" />
+    <Content Include="Contents\user\Common\css\webfont\fontawesome-webfont.svg" />
+    <Content Include="Contents\user\Common\css\webfont\fontawesome-webfont.ttf" />
+    <Content Include="Contents\user\Common\css\webfont\fontawesome-webfont.woff" />
+    <Content Include="Contents\user\Common\css\webfont\fontawesome-webfont.woff2" />
+    <Content Include="Contents\user\Common\css\webfont\FontAwesome.otf" />
+    <Content Include="Contents\user\Common\css\webfont\Linearicons-Free.svg" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Bold.eot" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Bold.ttf" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Bold.woff" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Bold.woff2" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Demilight.eot" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Demilight.ttf" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Demilight.woff" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Demilight.woff2" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Light.eot" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Light.ttf" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Light.woff" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Light.woff2" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Medium.eot" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Medium.ttf" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Medium.woff" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Medium.woff2" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Regular.eot" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Regular.ttf" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Regular.woff" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Regular.woff2" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Thin.eot" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Thin.ttf" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Thin.woff" />
+    <Content Include="Contents\user\Common\css\webfont\NotoSanskr_Thin.woff2" />
+    <Content Include="Contents\user\Common\img\exchange_flag_CNH.png" />
+    <Content Include="Contents\user\Common\img\exchange_flag_EUR.png" />
+    <Content Include="Contents\user\Common\img\exchange_flag_JPY.png" />
+    <Content Include="Contents\user\Common\img\exchange_flag_USD.png" />
+    <Content Include="Contents\user\Common\img\icon_percentage.png" />
+    <Content Include="Contents\user\Common\img\ico_balance.gif" />
+    <Content Include="Contents\user\Common\img\ico_cashflow.gif" />
+    <Content Include="Contents\user\Common\img\ico_chart.png" />
+    <Content Include="Contents\user\Common\img\ico_chart_on.png" />
+    <Content Include="Contents\user\Common\img\ico_comment.png" />
+    <Content Include="Contents\user\Common\img\ico_company.png" />
+    <Content Include="Contents\user\Common\img\ico_company_on.png" />
+    <Content Include="Contents\user\Common\img\ico_group.png" />
+    <Content Include="Contents\user\Common\img\ico_group_on.png" />
+    <Content Include="Contents\user\Common\img\ico_invest.gif" />
+    <Content Include="Contents\user\Common\img\ico_login.png" />
+    <Content Include="Contents\user\Common\img\ico_plan.png" />
+    <Content Include="Contents\user\Common\img\ico_plan_on.png" />
+    <Content Include="Contents\user\Common\img\ico_profit.gif" />
+    <Content Include="Contents\user\Common\img\ico_qprofit.gif" />
+    <Content Include="Contents\user\Common\img\ico_record.png" />
+    <Content Include="Contents\user\Common\img\ico_record_on.png" />
+    <Content Include="Contents\user\Common\img\ico_sector.png" />
+    <Content Include="Contents\user\Common\img\ico_sector_on.png" />
+    <Content Include="Contents\user\Common\img\ico_unit.png" />
+    <Content Include="Contents\user\Common\img\ico_unit_on.png" />
+    <Content Include="Contents\user\Common\img\loading.png" />
+    <Content Include="Contents\user\Common\img\logo.png" />
+    <Content Include="Contents\user\Common\img\logout_btm_bg.png" />
+    <Content Include="Contents\user\Common\img\logout_logo.png" />
+    <Content Include="Contents\user\Common\img\logout_top_bg.png" />
+    <Content Include="Contents\user\Common\img\percentage_bg.png" />
+    <Content Include="Contents\user\Common\img\tit_bar.gif" />
+    <Content Include="Contents\user\Common\js\front.js" />
+    <Content Include="Contents\user\Common\js\libs\d3.min.js" />
+    <Content Include="Contents\user\Common\js\libs\html5shiv.js" />
+    <Content Include="Contents\user\Common\js\libs\IE9.js" />
+    <Content Include="Contents\user\Common\js\libs\jquery-1.11.3.min.js" />
+    <Content Include="Contents\user\Common\js\libs\jquery-ui.js" />
+    <Content Include="Contents\user\Common\js\libs\jquery-ui.min.js" />
+    <Content Include="Contents\user\Common\js\libs\jquery.cookie.js" />
+    <Content Include="Contents\user\Common\js\libs\jquery.mCustomScrollbar.concat.min.js" />
+    <Content Include="Contents\user\Common\js\libs\jquery.mCustomScrollbar.min.js" />
+    <Content Include="Contents\user\Common\js\libs\nv.d3.min.js" />
+    <Content Include="Contents\user\Common\js\libs\TweenMax.min.js" />
+    <Content Include="Contents\user\Common\js\libs\vue.min.js" />
+    <Content Include="Contents\user\Common\js\nv.d3.plugin.js" />
+    <Content Include="Fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Global.asax" />
+    <Content Include="scripts\ai.0.22.9-build00167.js" />
+    <Content Include="scripts\ai.0.22.9-build00167.min.js" />
+    <Content Include="Contents\user\Common\js\libs\nv.d3.min.js.map" />
+    <Content Include="Contents\user\local\Trend_Analysis\Cash_Flow.json" />
+    <Content Include="Contents\user\local\Trend_Analysis\Financial.json" />
+    <Content Include="Contents\user\local\Trend_Analysis\Invest.json" />
+    <Content Include="Contents\user\local\Trend_Analysis\Pal.json" />
+    <Content Include="Contents\user\local\Trend_Analysis\Level_Cash_Flow.json" />
+    <Content Include="Contents\user\local\Trend_Analysis\Level_Financial.json" />
+    <Content Include="Contents\user\local\Trend_Analysis\Level_Invest.json" />
+    <Content Include="Contents\user\local\Trend_Analysis\Level_Pal.json" />
+    <Content Include="Contents\SiteMngHome\Common\se\photo_uploader\popup\file_uploader.php" />
+    <Content Include="Contents\SiteMngHome\Common\se\photo_uploader\popup\file_uploader_html5.php" />
+    <Content Include="Contents\SiteMngHome\Common\se\sample.php" />
+    <Content Include="Contents\SiteMngHome\Sample\pm_bs_sample.xlsx" />
+    <Content Include="Contents\appDownload\halla_hprs.apk" />
+    <Content Include="Contents\appDownload\halla_hprs.ipa" />
+    <Content Include="Contents\appDownload\manifest.plist" />
+    <None Include="Properties\PublishProfiles\release.pubxml" />
+    <None Include="scripts\jquery.validate-vsdoc.js" />
+    <Content Include="scripts\jquery.validate.js" />
+    <Content Include="scripts\jquery.validate.min.js" />
+    <Content Include="SQL\HALLA_PM.SCHEMA_OLD.sql" />
+    <Content Include="SQL\HALLA_PM.SCHEMA.sql" />
+    <Content Include="SQL\HALLA_PM_SCHEMA_20180914.sql" />
+    <Content Include="Views\Org\Sample.html" />
+    <Content Include="Views\Plan\Year_Bs\NewIndex.cshtml" />
+    <Content Include="Views\Plan\Year_Invest\Index.cshtml" />
+    <Content Include="프로젝트설명.txt" />
+    <Content Include="Contents\user\Common\css\webfont\Linearicons-Free.eot" />
+    <Content Include="Contents\user\Common\css\webfont\Linearicons-Free.ttf" />
+    <Content Include="Contents\user\Common\css\webfont\Linearicons-Free.woff" />
+    <Content Include="Contents\user\Common\css\webfont\Linearicons-Free.woff2" />
+    <None Include="scripts\jquery-2.2.4.intellisense.js" />
+    <Content Include="scripts\jquery-2.2.4.js" />
+    <Content Include="scripts\jquery-2.2.4.min.js" />
+    <Content Include="Views\SiteMngHome\Main\Index.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\ExcelPlanMonthlyPal.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\ExcelPlanYearPal.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\ExcelPlanYearInvest.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\ExcelPlanYearBs.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\ExcelPlanYearCf.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Invest\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Invest\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Invest\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Invest\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Group\ExcelPmCashFlow.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Group\ExcelPmPal.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Group\ExcelPmQuarterPal.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Group\ExcelPmBs.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Group\ExcelPmInvest.cshtml" />
+    <Content Include="Views\Performance\ExcelDownInvest.cshtml" />
+    <Content Include="Views\Home\Error.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs_Ex\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs_Ex\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs_Ex\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs_Ex\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsEx\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsEx\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsEx\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsEx\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsNew\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsNew\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsNew\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsNew\View.cshtml" />
+    <Content Include="Views\Shared\AdminReply.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\PalTemp\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\PalTemp\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\PalTemp\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\PalTemp\Write.cshtml" />
+    <Content Include="Views\Test\Index.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\InvestNew\list.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\InvestNew\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\InvestNew\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\InvestNew\View.cshtml" />
+    <Content Include="Views\Shared\RejectReply.cshtml" />
+    <Content Include="Views\Shared\_LayoutMngTopFrame.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsEx\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\BsNew\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Cash_Flow\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\InvestNew\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Pal\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Quarter_Pal\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Invest\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Pal\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs_Ex\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Cf\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Invest\Edit2.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Pal\Edit2.cshtml" />
+    <Content Include="Views\Performance\ViewingCashFlow.cshtml" />
+    <Content Include="Views\Performance\ViewingPal.cshtml" />
+    <Content Include="Views\Performance\ViewingQuarterPal.cshtml" />
+    <Content Include="Views\Performance\ViewingBs.cshtml" />
+    <Content Include="Views\Performance\ViewingInvest.cshtml" />
+    <Content Include="Views\Plan\Monthly_Pal\ExcelMonthlyPal.cshtml" />
+    <Content Include="Views\Plan\Monthly_Pal\ViewMonthlyPal.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\DownExcelPlanMonthlyPal.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\DownExcelPlanYearPal.cshtml" />
+    <Content Include="Views\Plan\Year_Pal\ViewYearPal.cshtml" />
+    <Content Include="Views\Plan\Year_Pal\ExcelYearPal.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\DownExcelPlanMonthlyInvest.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\DownExcelPlanYearBs.cshtml" />
+    <Content Include="Views\Plan\Year_Bs\ViewYearBs.cshtml" />
+    <Content Include="Views\Plan\Year_Bs\ExcelYearBs.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\DownExcelPlanYearCf.cshtml" />
+    <Content Include="Views\Plan\Year_Cf\ExcelYearCf.cshtml" />
+    <Content Include="Views\Plan\Year_Cf\ViewYearCf.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\DownExcelPlanYearInvest.cshtml" />
+    <Content Include="Views\Plan\Year_Invest\ExcelYearInvest.cshtml" />
+    <Content Include="Views\Plan\Year_Invest\ViewYearInvest.cshtml" />
+    <Content Include="Views\Test\View.cshtml" />
+    <Content Include="Views\Shared\SearChView.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Reply\PmList.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Reply\BuList.cshtml" />
+    <Content Include="Views\SiteMngHome\Confirm\BuList.cshtml" />
+    <Content Include="Views\SiteMngHome\Confirm\PmList.cshtml" />
+    <Content Include="Views\Shared\SearchPlanListView.cshtml" />
+    <Content Include="Views\Shared\SearchPmListView.cshtml" />
+    <Content Include="Views\Test\MailTest.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Performance\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Plan\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Plan\MonthPalEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Plan\CashFlowEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Plan\BsEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Plan\InvestEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Performance\CashFlowEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Performance\MonthPalEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Performance\QuarterPalEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Performance\BsEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Correct\Performance\InvestEdit.cshtml" />
+    <Content Include="Views\SiteMngHome\Confirm\RegistSendForm.cshtml" />
+    <Content Include="Views\Org\NewIndex.cshtml" />
+    <Content Include="Views\Plan\Year_Invest\NewIndex.cshtml" />
+    <Content Include="Views\Plan\Year_Bs\NewIndex2.cshtml" />
+    <Content Include="Views\Plan\Monthly_Pal\NewIndex2.cshtml" />
+    <Content Include="Views\Plan\Year_Pal\NewIndex2.cshtml" />
+    <Content Include="Views\Plan\Year_Cf\NewIndex2.cshtml" />
+    <Content Include="Views\Plan\Year_Invest\ExcelYearInvest_New.cshtml" />
+    <Content Include="Views\Plan\Year_Bs\ExcelYearBs_New.cshtml" />
+    <Content Include="Views\Plan\Monthly_Pal\ExcelMonthlyPal_New.cshtml" />
+    <Content Include="Views\Plan\Year_Pal\ExcelYearPal_New.cshtml" />
+    <Content Include="Views\Plan\Year_Cf\ExcelYearCf_New.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Pal\Write2.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Quarter_Pal\Write2.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Disclosure\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Disclosure\DisclosureItem_Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Disclosure\DisclosureItem_Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Disclosure\DisclosureDetail_Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Disclosure\DisclosureDetail_Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Disclosure\DisclosureTitle_Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Disclosure\DisclosureTitle_Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Disclosure\DisclosureDraftList.cshtml" />
+    <Content Include="Views\SiteMngHome\Disclosure\DisclosureList.cshtml" />
+    <Content Include="Views\Shared\SearchDisclosureView.cshtml" />
+    <Content Include="Views\SiteMngHome\Disclosure\DisclosureView.cshtml" />
+    <Content Include="Views\Shared\_LayoutMngDisTopFrame.cshtml" />
+    <Content Include="Views\SiteMngHome\Disclosure\DisclosureDraftWrite.cshtml" />
+    <Content Include="Views\Dis\DisCompany.cshtml" />
+    <Content Include="Views\Dis\DisclosureIndex.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\Api\ApiController.cs" />
+    <Compile Include="Controllers\Common\AdminReplyController.cs" />
+    <Compile Include="Controllers\Common\CommonController.cs" />
+    <Compile Include="Controllers\Common\PartialReplayController.cs" />
+    <Compile Include="Controllers\Disclosure\DisclosureController.cs" />
+    <Compile Include="Controllers\Performance\PerformanceController.cs" />
+    <Compile Include="Controllers\Plan\Monthly_Pal\MonthlyPalController.cs" />
+    <Compile Include="Controllers\Plan\Year_Bs\YearBsController.cs" />
+    <Compile Include="Controllers\Plan\Year_Cf\YearCfController.cs" />
+    <Compile Include="Controllers\Plan\Year_Invest\YearInvestController.cs" />
+    <Compile Include="Controllers\Plan\Year_Pal\YearPalController.cs" />
+    <Compile Include="Controllers\Common\BaseController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\Main\MainController.cs" />
+    <Compile Include="Controllers\Org\OrgController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Admin\Admin_Access_Log\AdminAccessLogController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Admin\Admin_Auth\AdminAuthController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Admin\Disclosure\DisclosureController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Admin\System_Auth\SystemAuthController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Common\SiteMngBaseController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Confirm\ConfirmController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Correct\ApiCorrectController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Correct\CorrectController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Disclosure\DisclosureMngController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Info\Notice\NoticeController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Info\Reference\ReferenceController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Main\MainController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Admin\Org\OrgController.cs" />
+    <Compile Include="Controllers\SiteMngHome\MngInfo\Performance\PerformanceController.cs" />
+    <Compile Include="Controllers\SiteMngHome\MngInfo\Notice_Mng\NoticeMngController.cs" />
+    <Compile Include="Controllers\SiteMngHome\MngInfo\Reference_Mng\ReferenceMngController.cs" />
+    <Compile Include="Controllers\SiteMngHome\MngInfo\Reply\ReplayMngController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Bs\PmBsController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Bs\PmBsExController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Bs\PmBsNewController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Cash_Flow\PmCashFlowController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Group\PmGroupController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Invest\PmInvestController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Invest\PmInvestNewController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Pal\PmPalController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Pal\PmPalTempController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Performance\Quarter_Pal\PmQuarterPalController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Plan\Group\PlanGroupController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Plan\Monthly_Invest\PlanMonthlyInvestController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Plan\Monthly_Pal\PlanMonthlyPalController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Plan\Year_Bs\PlanYearBsController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Plan\Year_Bs\PlanYearBsExController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Plan\Year_Cf\PlanYearCfController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Plan\Year_Invest\PlanYearInvestController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Plan\Year_Pal\PlanYearPalController.cs" />
+    <Compile Include="Controllers\SiteMngHome\Schedule\ScheduleController.cs" />
+    <Compile Include="Controllers\SiteMngHome\SiteMngHomeController.cs" />
+    <Compile Include="Controllers\TestController.cs" />
+    <Compile Include="Controllers\Trend_Analysis\Cash_Flow\TrendCashFlowController.cs" />
+    <Compile Include="Controllers\Trend_Analysis\Financial\TrendFinancialController.cs" />
+    <Compile Include="Controllers\Trend_Analysis\Invest\TrendInvestController.cs" />
+    <Compile Include="Controllers\Trend_Analysis\Pal\TrendPalController.cs" />
+    <Compile Include="Core\AdminLoginFilter.cs" />
+    <Compile Include="Core\AdminSession.cs" />
+    <Compile Include="Core\AuthAdminFilter.cs" />
+    <Compile Include="Core\Define.cs" />
+    <Compile Include="Core\MemberSession.cs" />
+    <Compile Include="Core\Message.cs" />
+    <Compile Include="Core\SessionManager.cs" />
+    <Compile Include="Core\SystemAuthFilter.cs" />
+    <Compile Include="Core\SystemLoginFilter.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\AdminAccessLog\AdminAccessLog.cs" />
+    <Compile Include="Models\AdminAccessLog\AdminAccessLogRepo.cs" />
+    <Compile Include="Models\AdminAccessLog\IAdminAccessLogRepo.cs" />
+    <Compile Include="Models\AdminAuth\AdminAuth.cs" />
+    <Compile Include="Models\AdminAuth\AdminAuthRepo.cs" />
+    <Compile Include="Models\AdminAuth\IAdminAuthRepo.cs" />
+    <Compile Include="Models\AdminOrgAuth\AdminOrgAuth.cs" />
+    <Compile Include="Models\AdminOrgAuth\AdminOrgAuthRepo.cs" />
+    <Compile Include="Models\AdminOrgAuth\IAdminOrgAuthRepo.cs" />
+    <Compile Include="Models\ApiMobileDevice\IMobileDeviceRepo.cs" />
+    <Compile Include="Models\ApiMobileDevice\MobileDevice.cs" />
+    <Compile Include="Models\ApiMobileDevice\MobileDeviceRepo.cs" />
+    <Compile Include="Models\ApiPushDetail\IPushDetailRepo.cs" />
+    <Compile Include="Models\ApiPushDetail\PushDetail.cs" />
+    <Compile Include="Models\ApiPushDetail\PushDetailRepo.cs" />
+    <Compile Include="Models\ApiPushMaster\IPushMasterRepo.cs" />
+    <Compile Include="Models\ApiPushMaster\PushMaster.cs" />
+    <Compile Include="Models\ApiPushMaster\PushMasterRepo.cs" />
+    <Compile Include="Models\businessPerformance\BusinessPerformance.cs" />
+    <Compile Include="Models\businessPerformance\BusinessPerformanceExp.cs" />
+    <Compile Include="Models\businessPerformance\BusinessPerformanceRepo.cs" />
+    <Compile Include="Models\businessPerformance\IBusinessPerformanceRepo.cs" />
+    <Compile Include="Models\CommentList\CommentList.cs" />
+    <Compile Include="Models\CommentList\CommentListRepo.cs" />
+    <Compile Include="Models\CommentList\ICommentListRepo.cs" />
+    <Compile Include="Models\Common\BaseInfo.cs" />
+    <Compile Include="Models\Common\DbCon.cs" />
+    <Compile Include="Models\Common\IBaseRepo.cs" />
+    <Compile Include="Models\Confirm\ConfirmAllView.cs" />
+    <Compile Include="Models\Confirm\ConfirmAllViewRepo.cs" />
+    <Compile Include="Models\Confirm\IConfirmAllViewRepo.cs" />
+    <Compile Include="Models\Correct\PlanBs\IPlanGroupdataBsMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanBs\IPlanGroupdataBsSummaryCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanBs\JsonGroupDataBs.cs" />
+    <Compile Include="Models\Correct\PlanBs\PlanGroupdataBsMonthCr.cs" />
+    <Compile Include="Models\Correct\PlanBs\PlanGroupdataBsMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanBs\PlanGroupdataBsSummaryCr.cs" />
+    <Compile Include="Models\Correct\PlanBs\PlanGroupdataBsSummaryCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\IPlanGroupdataCashflowMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\JsonGroupDataCashflow.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\PlanGroupdataCashflowMonthCr.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\PlanGroupdataCashflowMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanInvest\IPlanGroupdataInvestMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanInvest\IPlanGroupdataInvestSummaryCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanInvest\PlanGroupdataInvestMonthCr.cs" />
+    <Compile Include="Models\Correct\PlanInvest\PlanGroupdataInvestMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanInvest\PlanGroupdataInvestSummaryCr.cs" />
+    <Compile Include="Models\Correct\PlanInvest\PlanGroupdataInvestSummaryCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\clsMonthData.cs" />
+    <Compile Include="Models\Correct\PlanPal\clsQuarterData.cs" />
+    <Compile Include="Models\Correct\PlanPal\clsSummaryData.cs" />
+    <Compile Include="Models\Correct\PlanPal\IPlanGroupdataPalMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\IPlanGroupdataPalMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\IPlanGroupdataPalQuarterCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\IPlanGroupdataPalQuarterRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\IPlanGroupdataPalSummaryCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\IPlanGroupdataPalSummaryRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\IPlanGroupdataYearRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\IPmGroupdataMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\JsonMonthPal.cs" />
+    <Compile Include="Models\Correct\PlanBs\IPlanGroupdataBsMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanBs\IPlanGroupdataBsSummaryRepo.cs" />
+    <Compile Include="Models\Correct\PlanBs\PlanGroupdataBsMonth.cs" />
+    <Compile Include="Models\Correct\PlanBs\PlanGroupdataBsMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanBs\PlanGroupdataBsSummary.cs" />
+    <Compile Include="Models\Correct\PlanBs\PlanGroupdataBsSummaryRepo.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\IPlanGroupdataCashflowMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\IPlanGroupdataCashflowSummaryRepo.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\PlanGroupdataCashflowMonth.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\PlanGroupdataCashflowMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\PlanGroupdataCashflowSummary.cs" />
+    <Compile Include="Models\Correct\PlanCashFlow\PlanGroupdataCashflowSummaryRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalMonth.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalMonthCr.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalQuarter.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalQuarterCr.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalQuarterCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalQuarterRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalSummary.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalSummaryCr.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalSummaryCrRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataPalSummaryRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataYear.cs" />
+    <Compile Include="Models\Correct\PlanPal\PlanGroupdataYearRepo.cs" />
+    <Compile Include="Models\Correct\PlanInvest\IPlanGroupdataInvestMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanInvest\IPlanGroupdataInvestSummaryRepo.cs" />
+    <Compile Include="Models\Correct\PlanInvest\JsonGroupDataInvest.cs" />
+    <Compile Include="Models\Correct\PlanInvest\PlanGroupdataInvestMonth.cs" />
+    <Compile Include="Models\Correct\PlanInvest\PlanGroupdataInvestMonthRepo.cs" />
+    <Compile Include="Models\Correct\PlanInvest\PlanGroupdataInvestSummary.cs" />
+    <Compile Include="Models\Correct\PlanInvest\PlanGroupdataInvestSummaryRepo.cs" />
+    <Compile Include="Models\Correct\PlanPal\PmGroupdataMonth.cs" />
+    <Compile Include="Models\Correct\PlanPal\PmGroupdataMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmBs\IPmGroupdataBsMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmBs\IPmGroupdataBsMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmBs\JsonGroupDataPmBs.cs" />
+    <Compile Include="Models\Correct\PmBs\PmGroupdataBsMonthCr.cs" />
+    <Compile Include="Models\Correct\PmBs\PmGroupdataBsMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmCashFlow\IPmGroupdataCashflowMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmCashFlow\JsonGroupDataPmCashflow.cs" />
+    <Compile Include="Models\Correct\PmBs\PmGroupdataBsMonth.cs" />
+    <Compile Include="Models\Correct\PmBs\PmGroupdataBsMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmCashFlow\IPmGroupdataCashflowMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmCashFlow\PmGroupdataCashflowMonth.cs" />
+    <Compile Include="Models\Correct\PmCashFlow\PmGroupdataCashflowMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmCashFlow\PmGroupdataCashflowMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmCashFlow\PmGroupdataCashflowMonthCr.cs" />
+    <Compile Include="Models\Correct\PmInvest\IPmGroupdataInvestMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmInvest\IPmGroupdataInvestMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmInvest\JsonGroupDataPmInvest.cs" />
+    <Compile Include="Models\Correct\PmInvest\PmGroupdataInvestMonth.cs" />
+    <Compile Include="Models\Correct\PmInvest\PmGroupdataInvestMonthCr.cs" />
+    <Compile Include="Models\Correct\PmInvest\PmGroupdataInvestMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmInvest\PmGroupdataInvestMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmPal\IPmGroupdataPalMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmPal\IPmGroupdataPalMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmPal\JsonGroupDataPmPal.cs" />
+    <Compile Include="Models\Correct\PmPal\PmGroupdataPalMonth.cs" />
+    <Compile Include="Models\Correct\PmPal\PmGroupdataPalMonthCr.cs" />
+    <Compile Include="Models\Correct\PmPal\PmGroupdataPalMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmPal\PmGroupdataPalMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmQuarterPal\IPmGroupdataQuarterPalMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmQuarterPal\IPmGroupdataQuarterPalMonthRepo.cs" />
+    <Compile Include="Models\Correct\PmQuarterPal\JsonGroupDataPmQuarterPal.cs" />
+    <Compile Include="Models\Correct\PmQuarterPal\PmGroupdataQuarterPalMonth.cs" />
+    <Compile Include="Models\Correct\PmQuarterPal\PmGroupdataQuarterPalMonthCr.cs" />
+    <Compile Include="Models\Correct\PmQuarterPal\PmGroupdataQuarterPalMonthCrRepo.cs" />
+    <Compile Include="Models\Correct\PmQuarterPal\PmGroupdataQuarterPalMonthRepo.cs" />
+    <Compile Include="Models\DisclosureData\DisclosureData.cs" />
+    <Compile Include="Models\DisclosureData\DisclosureDataRepo.cs" />
+    <Compile Include="Models\DisclosureData\IDisclosureDataRepo.cs" />
+    <Compile Include="Models\DisclosureDetail\DisclosureDetail.cs" />
+    <Compile Include="Models\DisclosureDetail\DisclosureDetailExp.cs" />
+    <Compile Include="Models\DisclosureDetail\DisclosureDetailRepo.cs" />
+    <Compile Include="Models\DisclosureDetail\IDisclosureDetailRepo.cs" />
+    <Compile Include="Models\DisclosureDraft\DisclosureDraft.cs" />
+    <Compile Include="Models\DisclosureDraft\DisclosureDraftExp.cs" />
+    <Compile Include="Models\DisclosureDraft\DisclosureDraftRepo.cs" />
+    <Compile Include="Models\DisclosureDraft\IDisclosureDraftRepo.cs" />
+    <Compile Include="Models\DisclosureItem\DisclosureItem.cs" />
+    <Compile Include="Models\DisclosureItem\IDisclosureItemRepo.cs" />
+    <Compile Include="Models\DisclosureItem\DisclosureItemExp.cs" />
+    <Compile Include="Models\DisclosureItem\DisclosureItemRepo.cs" />
+    <Compile Include="Models\DisclosureTitle\DisclosureTitle.cs" />
+    <Compile Include="Models\DisclosureTitle\DisclosureTitleExp.cs" />
+    <Compile Include="Models\DisclosureTitle\DisclosureTitleRepo.cs" />
+    <Compile Include="Models\DisclosureTitle\IDisclosureTitleRepo.cs" />
+    <Compile Include="Models\Disclosure\IDisclosureRepo.cs" />
+    <Compile Include="Models\Disclosure\Disclosure.cs" />
+    <Compile Include="Models\Disclosure\DisclosureAdmin.cs" />
+    <Compile Include="Models\Disclosure\DisclosureRepo.cs" />
+    <Compile Include="Models\ExcelFileUploadList\ExcelFileUploadList.cs" />
+    <Compile Include="Models\ExcelFileUploadList\ExcelFileUploadListRepo.cs" />
+    <Compile Include="Models\ExcelFileUploadList\IExcelFileUploadListRepo.cs" />
+    <Compile Include="Models\fileInfo\FileInfo.cs" />
+    <Compile Include="Models\fileInfo\FileInfoRepo.cs" />
+    <Compile Include="Models\fileInfo\IFileInfoRepo.cs" />
+    <Compile Include="Models\GroupCompany\GroupCompany.cs" />
+    <Compile Include="Models\GroupCompany\GroupCompanyRepo.cs" />
+    <Compile Include="Models\GroupCompany\IGroupCompany.cs" />
+    <Compile Include="Models\GroupMain\GroupMain.cs" />
+    <Compile Include="Models\GroupMain\GroupMainRepo.cs" />
+    <Compile Include="Models\GroupMain\IGroupMain.cs" />
+    <Compile Include="Models\InsaDeptV\IInsaDeptVRepo.cs" />
+    <Compile Include="Models\InsaDeptV\InsaDeptV.cs" />
+    <Compile Include="Models\InsaDeptV\InsaDeptVRepo.cs" />
+    <Compile Include="Models\InsaUserV\IInsaUserVRepo.cs" />
+    <Compile Include="Models\InsaUserV\InsaUserV.cs" />
+    <Compile Include="Models\InsaUserV\InsaUserVRepo.cs" />
+    <Compile Include="Models\JsonData\Period.cs" />
+    <Compile Include="Models\JsonData\TrendBs\ITrendBsRepo.cs" />
+    <Compile Include="Models\JsonData\TrendBs\TrendBs.cs" />
+    <Compile Include="Models\JsonData\TrendBs\TrendBsRepo.cs" />
+    <Compile Include="Models\JsonData\TrendDataTable.cs" />
+    <Compile Include="Models\JsonData\PageAuth\IPageAuthRepo.cs" />
+    <Compile Include="Models\JsonData\KeyValues.cs" />
+    <Compile Include="Models\JsonData\LevelFour.cs" />
+    <Compile Include="Models\JsonData\LevelOne.cs" />
+    <Compile Include="Models\JsonData\LevelThree.cs" />
+    <Compile Include="Models\JsonData\LevelTwo.cs" />
+    <Compile Include="Models\JsonData\PageAuth\PageAuthRepo.cs" />
+    <Compile Include="Models\JsonData\TrendCashFlow\ITrendCashFlowRepo.cs" />
+    <Compile Include="Models\JsonData\TrendCashFlow\TrendCashFlow.cs" />
+    <Compile Include="Models\JsonData\TrendCashFlow\TrendCashFlowRepo.cs" />
+    <Compile Include="Models\JsonData\TrendInvest\ITrendInvestRepo.cs" />
+    <Compile Include="Models\JsonData\TrendInvest\TrendInvest.cs" />
+    <Compile Include="Models\JsonData\TrendInvest\TrendInvestRepo.cs" />
+    <Compile Include="Models\JsonData\TrendPal\ITrendPalRepo.cs" />
+    <Compile Include="Models\JsonData\TrendPal\TrendPal.cs" />
+    <Compile Include="Models\JsonData\TrendPal\TrendPalRepo.cs" />
+    <Compile Include="Models\JsonData\TrendSearch.cs" />
+    <Compile Include="Models\JsonData\Values.cs" />
+    <Compile Include="Models\MailInfo\MailInfo.cs" />
+    <Compile Include="Models\MailSendList\IMailSendListRepo.cs" />
+    <Compile Include="Models\MailSendList\MailSendList.cs" />
+    <Compile Include="Models\MailSendList\MailSendListRepo.cs" />
+    <Compile Include="Models\notice\INoticeRepo.cs" />
+    <Compile Include="Models\notice\Notice.cs" />
+    <Compile Include="Models\notice\NoticeExp.cs" />
+    <Compile Include="Models\notice\NoticeRepo.cs" />
+    <Compile Include="Models\OrgBusiness\IOrgBusinessRepo.cs" />
+    <Compile Include="Models\OrgBusiness\OrgBusiness.cs" />
+    <Compile Include="Models\OrgBusiness\OrgBusinessExp.cs" />
+    <Compile Include="Models\OrgBusiness\OrgBusinessRepo.cs" />
+    <Compile Include="Models\OrgCompany\IOrgCompanyRepo.cs" />
+    <Compile Include="Models\OrgCompany\OrgCompany.cs" />
+    <Compile Include="Models\OrgCompany\OrgCompanyRepo.cs" />
+    <Compile Include="Models\OrgUnion\IOrgUnionRepo.cs" />
+    <Compile Include="Models\OrgUnion\OrgUnion.cs" />
+    <Compile Include="Models\OrgUnion\OrgUnionExp.cs" />
+    <Compile Include="Models\OrgUnion\OrgUnionRepo.cs" />
+    <Compile Include="Models\PlanGroup\IPlanGroupRepo.cs" />
+    <Compile Include="Models\PlanGroup\PlanGroup.cs" />
+    <Compile Include="Models\PlanGroup\PlanGroupRepo.cs" />
+    <Compile Include="Models\PlanMonthlyInvestBusiness\IPlanMonthlyInvestBusinessRepo.cs" />
+    <Compile Include="Models\PlanMonthlyInvestBusiness\PlanMonthlyInvestBusiness.cs" />
+    <Compile Include="Models\PlanMonthlyInvestBusiness\PlanMonthlyInvestBusinessExp.cs" />
+    <Compile Include="Models\PlanMonthlyInvestBusiness\PlanMonthlyInvestBusinessRepo.cs" />
+    <Compile Include="Models\PlanMonthlyInvestSummary\IPlanMonthlyInvestSummaryRepo.cs" />
+    <Compile Include="Models\PlanMonthlyInvestSummary\PlanMonthlyInvestSummary.cs" />
+    <Compile Include="Models\PlanMonthlyInvestSummary\PlanMonthlyInvestSummaryExp.cs" />
+    <Compile Include="Models\PlanMonthlyInvestSummary\PlanMonthlyInvestSummaryRepo.cs" />
+    <Compile Include="Models\PlanMonthlyInvest\IPlanMonthlyInvestRepo.cs" />
+    <Compile Include="Models\PlanMonthlyInvest\PlanMonthlyInvest.cs" />
+    <Compile Include="Models\PlanMonthlyInvest\PlanMonthlyInvestAdmin.cs" />
+    <Compile Include="Models\PlanMonthlyInvest\PlanMonthlyInvestRepo.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusinessMonthlySum\IPlanMonthlyPalBusinessMonthlySumRepo.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusinessMonthlySum\PlanMonthlyPalBusinessMonthlySum.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusinessMonthlySum\PlanMonthlyPalBusinessMonthlySumExp.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusinessMonthlySum\PlanMonthlyPalBusinessMonthlySumRepo.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusinessQuarterSum\IPlanMonthlyPalBusinessQuarterSumRepo.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusinessQuarterSum\PlanMonthlyPalBusinessQuarterSum.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusinessQuarterSum\PlanMonthlyPalBusinessQuarterSumRepo.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusiness\IPlanMonthlyPalBusinessRepo.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusiness\PlanMonthlyPalBusiness.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusiness\PlanMonthlyPalBusinessExp.cs" />
+    <Compile Include="Models\PlanMonthlyPalBusiness\PlanMonthlyPalBusinessRepo.cs" />
+    <Compile Include="Models\PlanMonthlyPal\IPlanMonthlyPalRepo.cs" />
+    <Compile Include="Models\PlanMonthlyPal\PlanMonthlyPal.cs" />
+    <Compile Include="Models\PlanMonthlyPal\PlanMonthlyPalRepo.cs" />
+    <Compile Include="Models\PlanSchedulePerformanceReg\IPlanSchedulePerformanceRegRepo.cs" />
+    <Compile Include="Models\PlanSchedulePerformanceReg\PlanSchedulePerformanceReg.cs" />
+    <Compile Include="Models\PlanSchedulePerformanceReg\PlanSchedulePerformanceRegRepo.cs" />
+    <Compile Include="Models\PlanSchedule\IPlanScheduleRepo.cs" />
+    <Compile Include="Models\PlanSchedule\PlanSchedule.cs" />
+    <Compile Include="Models\PlanSchedule\PlanScheduleRepo.cs" />
+    <Compile Include="Models\PlanYearBsBsheetEx\IPlanYearBsBsheetExRepo.cs" />
+    <Compile Include="Models\PlanYearBsBsheetEx\PlanYearBsBsheetEx.cs" />
+    <Compile Include="Models\PlanYearBsBsheetEx\PlanYearBsBsheetExRepo.cs" />
+    <Compile Include="Models\PlanYearBsBsheet\IPlanYearBsBsheetRepo.cs" />
+    <Compile Include="Models\PlanYearBsBsheet\PlanYearBsBsheet.cs" />
+    <Compile Include="Models\PlanYearBsBsheet\PlanYearBsBsheetRepo.cs" />
+    <Compile Include="Models\PlanYearBsEx\IPlanYearBsExRepo.cs" />
+    <Compile Include="Models\PlanYearBsEx\PlanYearBsExAdmin.cs" />
+    <Compile Include="Models\PlanYearBsEx\PlanYearBsEx.cs" />
+    <Compile Include="Models\PlanYearBsEx\PlanYearBsExRepo.cs" />
+    <Compile Include="Models\PlanYearBsRoicEx\IPlanYearBsRoicExRepo.cs" />
+    <Compile Include="Models\PlanYearBsRoicEx\PlanYearBsRoicEx.cs" />
+    <Compile Include="Models\PlanYearBsRoicEx\PlanYearBsRoicExRepo.cs" />
+    <Compile Include="Models\PlanYearBsRoic\IPlanYearBsRoicRepo.cs" />
+    <Compile Include="Models\PlanYearBsRoic\PlanYearBsRoic.cs" />
+    <Compile Include="Models\PlanYearBsRoic\PlanYearBsRoicRepo.cs" />
+    <Compile Include="Models\PlanYearBsSummaryEx\IPlanYearBsSummaryExRepo.cs" />
+    <Compile Include="Models\PlanYearBsSummaryEx\PlanYearBsSummaryEx.cs" />
+    <Compile Include="Models\PlanYearBsSummaryEx\PlanYearBsSummaryExExp.cs" />
+    <Compile Include="Models\PlanYearBsSummaryEx\PlanYearBsSummaryExRepo.cs" />
+    <Compile Include="Models\PlanYearBsSummary\IPlanYearBsSummary.cs" />
+    <Compile Include="Models\PlanYearBsSummary\PlanYearBsSummary.cs" />
+    <Compile Include="Models\PlanYearBsSummary\PlanYearBsSummaryExp.cs" />
+    <Compile Include="Models\PlanYearBsSummary\PlanYearBsSummaryRepo.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalEx\IPlanYearBsWCapitalExRepo.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalEx\PlanYearBsWCapitalEx.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalEx\PlanYearBsWCapitalExRepo.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalRegEx\IPlanYearBsWCapitalRegExRepo.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalRegEx\PlanYearBsWCapitalRegEx.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalRegEx\PlanYearBsWCapitalRegExRepo.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalReg\IPlanYearBsWCapitalReg.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalReg\PlanYearBsWCapitalReg.cs" />
+    <Compile Include="Models\PlanYearBsWCapitalReg\PlanYearBsWCapitalRegRepo.cs" />
+    <Compile Include="Models\PlanYearBsWCapital\IPlanYearBsWCapital.cs" />
+    <Compile Include="Models\PlanYearBsWCapital\PlanYearBsWCapital.cs" />
+    <Compile Include="Models\PlanYearBsWCapital\PlanYearBsWCapitalRepo.cs" />
+    <Compile Include="Models\PlanYearBs\IPlanYearBsRepo.cs" />
+    <Compile Include="Models\PlanYearBs\PlanYearBs.cs" />
+    <Compile Include="Models\PlanYearBs\PlanYearBsAdmin.cs" />
+    <Compile Include="Models\PlanYearBs\PlanYearBsRepo.cs" />
+    <Compile Include="Models\PlanYearCfBeCash\IPlanYearCfBeCashRepo.cs" />
+    <Compile Include="Models\PlanYearCfBeCash\PlanYearCfBeCash.cs" />
+    <Compile Include="Models\PlanYearCfBeCash\PlanYearCfBeCashRepo.cs" />
+    <Compile Include="Models\PlanYearCfFcf\IPlanYearCfFcfRepo.cs" />
+    <Compile Include="Models\PlanYearCfFcf\PlanYearCfFcf.cs" />
+    <Compile Include="Models\PlanYearCfFcf\PlanYearCfFcfRepo.cs" />
+    <Compile Include="Models\PlanYearCfFinancial\IPlanYearCfFinancialRepo.cs" />
+    <Compile Include="Models\PlanYearCfFinancial\PlanYearCfFinancial.cs" />
+    <Compile Include="Models\PlanYearCfFinancial\PlanYearCfFinancialRepo.cs" />
+    <Compile Include="Models\PlanYearCfInvestment\IPlanYearCfInvestmentRepo.cs" />
+    <Compile Include="Models\PlanYearCfInvestment\PlanYearCfInvestment.cs" />
+    <Compile Include="Models\PlanYearCfInvestment\PlanYearCfInvestmentRepo.cs" />
+    <Compile Include="Models\PlanYearCfSales\IPlanYearCfSalesRepo.cs" />
+    <Compile Include="Models\PlanYearCfSales\PlanYearCfSales.cs" />
+    <Compile Include="Models\PlanYearCfSales\PlanYearCfSalesRepo.cs" />
+    <Compile Include="Models\PlanYearCfSummary\IPlanYearCfSummaryRepo.cs" />
+    <Compile Include="Models\PlanYearCfSummary\PlanYearCfSummary.cs" />
+    <Compile Include="Models\PlanYearCfSummary\PlanYearCfSummaryExp.cs" />
+    <Compile Include="Models\PlanYearCfSummary\PlanYearCfSummaryRepo.cs" />
+    <Compile Include="Models\PlanYearCf\IPlanYearCfRepo.cs" />
+    <Compile Include="Models\PlanYearCf\PlanYearCf.cs" />
+    <Compile Include="Models\PlanYearCf\PlanYearCfAdmin.cs" />
+    <Compile Include="Models\PlanYearCf\PlanYearCfExp.cs" />
+    <Compile Include="Models\PlanYearCf\PlanYearCfRepo.cs" />
+    <Compile Include="Models\PlanYearInvestBusiness\IPlanYearInvestBusinessRepo.cs" />
+    <Compile Include="Models\PlanYearInvestBusiness\PlanYearInvestBusiness.cs" />
+    <Compile Include="Models\PlanYearInvestBusiness\PlanYearInvestBusinessRepo.cs" />
+    <Compile Include="Models\PlanYearInvestPrrsonnel\PlanYearInvestPrrsonnel.cs" />
+    <Compile Include="Models\PlanYearInvestSummary\IPlanYearInvestSummaryRepo.cs" />
+    <Compile Include="Models\PlanYearInvestSummary\PlanYearInvestSummary.cs" />
+    <Compile Include="Models\PlanYearInvestSummary\PlanYearInvestSummaryRepo.cs" />
+    <Compile Include="Models\PlanYearInvestSum\PlanYearInvestSum.cs" />
+    <Compile Include="Models\PlanYearInvest\IPlanYearInvestRepo.cs" />
+    <Compile Include="Models\PlanYearInvest\PlanYearInvest.cs" />
+    <Compile Include="Models\PlanYearInvest\PlanYearInvestAdmin.cs" />
+    <Compile Include="Models\PlanYearInvest\PlanYearInvestExp.cs" />
+    <Compile Include="Models\PlanYearInvest\PlanYearInvestRepo.cs" />
+    <Compile Include="Models\PlanYearPalBusinessSummary\IPlanYearPalBusinessSummaryRepo.cs" />
+    <Compile Include="Models\PlanYearPalBusinessSummary\PlanYearPalBusinessSummary.cs" />
+    <Compile Include="Models\PlanYearPalBusinessSummary\PlanYearPalBusinessSummaryExp.cs" />
+    <Compile Include="Models\PlanYearPalBusinessSummary\PlanYearPalBusinessSummaryRepo.cs" />
+    <Compile Include="Models\PlanYearPalBusiness\IPlanYearPalBusinessRepo.cs" />
+    <Compile Include="Models\PlanYearPalBusiness\PlanYearPalBusiness.cs" />
+    <Compile Include="Models\PlanYearPalBusiness\PlanYearPalBusinessExp.cs" />
+    <Compile Include="Models\PlanYearPalBusiness\PlanYearPalBusinessRepo.cs" />
+    <Compile Include="Models\PlanYearPal\IPlanYearPalRepo.cs" />
+    <Compile Include="Models\PlanYearPal\PlanYearPal.cs" />
+    <Compile Include="Models\PlanYearPal\PlanYearPalAdmin.cs" />
+    <Compile Include="Models\PlanYearPal\PlanYearPalExp.cs" />
+    <Compile Include="Models\PlanYearPal\PlanYearPalRepo.cs" />
+    <Compile Include="Models\PmBsBsheetEx\IPmBsBsheetExRepo.cs" />
+    <Compile Include="Models\PmBsBsheetEx\PmBsBsheetEx.cs" />
+    <Compile Include="Models\PmBsBsheetEx\PmBsBsheetExRepo.cs" />
+    <Compile Include="Models\PmBsBsheet\IPmBsBsheetRepo.cs" />
+    <Compile Include="Models\PmBsBsheet\PmBsBsheet.cs" />
+    <Compile Include="Models\PmBsBsheet\PmBsBsheetRepo.cs" />
+    <Compile Include="Models\PmBsEx\IPmBsExRepo.cs" />
+    <Compile Include="Models\PmBsEx\PmBsEx.cs" />
+    <Compile Include="Models\PmBsEx\PmBsExAdmin.cs" />
+    <Compile Include="Models\PmBsEx\PmBsExRepo.cs" />
+    <Compile Include="Models\PmBsRoicEx\IPmBsRoicExRepo.cs" />
+    <Compile Include="Models\PmBsRoicEx\PmBsRoicEx.cs" />
+    <Compile Include="Models\PmBsRoicEx\PmBsRoicExRepo.cs" />
+    <Compile Include="Models\PmBsRoic\IPmBsRoicRepo.cs" />
+    <Compile Include="Models\PmBsRoic\PmBsRoic.cs" />
+    <Compile Include="Models\PmBsRoic\PmBsRoicRepo.cs" />
+    <Compile Include="Models\PmBsSummaryEx\IPmBsSummaryExRepo.cs" />
+    <Compile Include="Models\PmBsSummaryEx\PmBsSummaryEx.cs" />
+    <Compile Include="Models\PmBsSummaryEx\PmBsSummaryExExp.cs" />
+    <Compile Include="Models\PmBsSummaryEx\PmBsSummaryExRepo.cs" />
+    <Compile Include="Models\PmBsSummary\IPmBsSummaryRepo.cs" />
+    <Compile Include="Models\PmBsSummary\PmBsSummary.cs" />
+    <Compile Include="Models\PmBsSummary\PmBsSummaryExp.cs" />
+    <Compile Include="Models\PmBsSummary\PmBsSummaryRepo.cs" />
+    <Compile Include="Models\PmBsWCapitalEx\IPmBsWCapitalExRepo.cs" />
+    <Compile Include="Models\PmBsWCapitalEx\PmBsWCapitalEx.cs" />
+    <Compile Include="Models\PmBsWCapitalEx\PmBsWCapitalExRepo.cs" />
+    <Compile Include="Models\PmBsWCapitalRegEx\IPmBsWCapitalRegExRepo.cs" />
+    <Compile Include="Models\PmBsWCapitalRegEx\PmBsWCapitalRegEx.cs" />
+    <Compile Include="Models\PmBsWCapitalRegEx\PmBsWCapitalRegExRepo.cs" />
+    <Compile Include="Models\PmBsWCapitalReg\IPmBsWCapitalRegRepo.cs" />
+    <Compile Include="Models\PmBsWCapitalReg\PmBsWCapitalReg.cs" />
+    <Compile Include="Models\PmBsWCapitalReg\PmBsWCapitalRegRepo.cs" />
+    <Compile Include="Models\PmBsWCapital\IPmBsWCapitalRepo.cs" />
+    <Compile Include="Models\PmBsWCapital\PmBsWCapital.cs" />
+    <Compile Include="Models\PmBsWCapital\PmBsWCapitalRepo.cs" />
+    <Compile Include="Models\PmBs\IPmBsRepo.cs" />
+    <Compile Include="Models\PmBs\PmBs.cs" />
+    <Compile Include="Models\PmBs\PmBsAdmin.cs" />
+    <Compile Include="Models\PmBs\PmBsExp.cs" />
+    <Compile Include="Models\PmBs\PmBsRepo.cs" />
+    <Compile Include="Models\PmCashFlowBeCash\IPmCashFlowBeCashRepo.cs" />
+    <Compile Include="Models\PmCashFlowBeCash\PmCashFlowBeCash.cs" />
+    <Compile Include="Models\PmCashFlowBeCash\PmCashFlowBeCashRepo.cs" />
+    <Compile Include="Models\PmCashFlowCumulative\IPmCashFlowCumulativeRepo.cs" />
+    <Compile Include="Models\PmCashFlowCumulative\PmCashFlowCumulative.cs" />
+    <Compile Include="Models\PmCashFlowCumulative\PmCashFlowCumulativeExcel.cs" />
+    <Compile Include="Models\PmCashFlowCumulative\PmCashFlowCumulativeExp.cs" />
+    <Compile Include="Models\PmCashFlowCumulative\PmCashFlowCumulativeRepo.cs" />
+    <Compile Include="Models\PmCashFlowCumulative\PmCashFlowCumulativeSummary.cs" />
+    <Compile Include="Models\PmCashFlowFcf\IPmCashFlowFcfRepo.cs" />
+    <Compile Include="Models\PmCashFlowFcf\PmCashFlowFcf.cs" />
+    <Compile Include="Models\PmCashFlowFcf\PmCashFlowFcfRepo.cs" />
+    <Compile Include="Models\PmCashFlowFinancial\IPmCashFlowFinancialRepo.cs" />
+    <Compile Include="Models\PmCashFlowFinancial\PmCashFlowFinancial.cs" />
+    <Compile Include="Models\PmCashFlowFinancial\PmCashFlowFinancialRepo.cs" />
+    <Compile Include="Models\PmCashFlowInvestment\IPmCashFlowInvestmentRepo.cs" />
+    <Compile Include="Models\PmCashFlowInvestment\PmCashFlowInvestment.cs" />
+    <Compile Include="Models\PmCashFlowInvestment\PmCashFlowInvestmentRepo.cs" />
+    <Compile Include="Models\PmCashFlowSales\IPmCashFlowSalesRepo.cs" />
+    <Compile Include="Models\PmCashFlowSales\PmCashFlowSales.cs" />
+    <Compile Include="Models\PmCashFlowSales\PmCashFlowSalesRepo.cs" />
+    <Compile Include="Models\PmCashFlow\IPmCashFlowRepo.cs" />
+    <Compile Include="Models\PmCashFlow\PmCashFlow.cs" />
+    <Compile Include="Models\PmCashFlow\PmCashFlowAdmin.cs" />
+    <Compile Include="Models\PmCashFlow\PmCashFlowRepo.cs" />
+    <Compile Include="Models\PmConfirmView\IPmConfirmStateViewRepo.cs" />
+    <Compile Include="Models\PmConfirmView\IPmConfirmViewRepo.cs" />
+    <Compile Include="Models\PmConfirmView\PmConfirmLog.cs" />
+    <Compile Include="Models\PmConfirmView\PmConfirmStateView.cs" />
+    <Compile Include="Models\PmConfirmView\PmConfirmStateViewRepo.cs" />
+    <Compile Include="Models\PmConfirmView\PmConfirmView.cs" />
+    <Compile Include="Models\PmConfirmView\PmConfirmViewRepo.cs" />
+    <Compile Include="Models\PmGroup\IPmGroupRepo.cs" />
+    <Compile Include="Models\PmGroup\PmGroup.cs" />
+    <Compile Include="Models\PmGroup\PmGroupRepo.cs" />
+    <Compile Include="Models\PmInvestBusiness\IPmInvestBusinessRepo.cs" />
+    <Compile Include="Models\PmInvestBusiness\PmInvestBusiness.cs" />
+    <Compile Include="Models\PmInvestBusiness\PmInvestBusinessRepo.cs" />
+    <Compile Include="Models\PmInvestSum\IPmInvestSumRepo.cs" />
+    <Compile Include="Models\PmInvestSum\PmInvestSum.cs" />
+    <Compile Include="Models\PmInvestSum\PmInvestSumRepo.cs" />
+    <Compile Include="Models\PmInvest\IPmInvestRepo.cs" />
+    <Compile Include="Models\PmInvest\PmInvest.cs" />
+    <Compile Include="Models\PmInvest\PmInvestAdmin.cs" />
+    <Compile Include="Models\PmInvest\PmInvestExp.cs" />
+    <Compile Include="Models\PmInvest\PmInvestRepo.cs" />
+    <Compile Include="Models\PmPalAnalysis\IPmPalAnalysisRepo.cs" />
+    <Compile Include="Models\PmPalAnalysis\PmPalAnalysis.cs" />
+    <Compile Include="Models\PmPalAnalysis\PmPalAnalysisRepo.cs" />
+    <Compile Include="Models\PmPalBusiness\IPmPalBusinessRepo.cs" />
+    <Compile Include="Models\PmPalBusiness\PmPalBusiness.cs" />
+    <Compile Include="Models\PmPalBusiness\PmPalBusinessExp.cs" />
+    <Compile Include="Models\PmPalBusiness\PmPalBusinessRepo.cs" />
+    <Compile Include="Models\PmPalBusiness\PmPalBusinessSummaryForPlan.cs" />
+    <Compile Include="Models\PmPalSummary\IPmPalSummaryRepo.cs" />
+    <Compile Include="Models\PmPalSummary\PmPalSummary.cs" />
+    <Compile Include="Models\PmPalSummary\PmPalSummaryExp.cs" />
+    <Compile Include="Models\PmPalSummary\PmPalSummaryRepo.cs" />
+    <Compile Include="Models\PmPalYealyAnalysis\IPmPalYealyAnalysis.cs" />
+    <Compile Include="Models\PmPalYealyAnalysis\PmPalYealyAnalysis.cs" />
+    <Compile Include="Models\PmPalYealyAnalysis\PmPalYealyAnalysisRepo.cs" />
+    <Compile Include="Models\PmPal\IPmPalRepo.cs" />
+    <Compile Include="Models\PmPal\PmPal.cs" />
+    <Compile Include="Models\PmPal\PmPalAdmin.cs" />
+    <Compile Include="Models\PmPal\PmPalExp.cs" />
+    <Compile Include="Models\PmPal\PmPalRepo.cs" />
+    <Compile Include="Models\PmQuarterPalBusinessSummary\IPmQuarterPalBusinessSummaryRepo.cs" />
+    <Compile Include="Models\PmQuarterPalBusinessSummary\PmQuarterPalBusinessSummary.cs" />
+    <Compile Include="Models\PmQuarterPalBusinessSummary\PmQuarterPalBusinessSummaryExp.cs" />
+    <Compile Include="Models\PmQuarterPalBusinessSummary\PmQuarterPalBusinessSummaryRepo.cs" />
+    <Compile Include="Models\PmQuarterPalBusiness\IPmQuarterPalBusinessRepo.cs" />
+    <Compile Include="Models\PmQuarterPalBusiness\PmQuarterPalBusiness.cs" />
+    <Compile Include="Models\PmQuarterPalBusiness\PmQuarterPalBusinessExp.cs" />
+    <Compile Include="Models\PmQuarterPalBusiness\PmQuarterPalBusinessRepo.cs" />
+    <Compile Include="Models\PmQuarterPal\IPmQuarterPalRepo.cs" />
+    <Compile Include="Models\PmQuarterPal\PmQuarterAdmin.cs" />
+    <Compile Include="Models\PmQuarterPal\PmQuarterPal.cs" />
+    <Compile Include="Models\PmQuarterPal\PmQuarterPalRepo.cs" />
+    <Compile Include="Models\reference\IReferenceRepo.cs" />
+    <Compile Include="Models\reference\Reference.cs" />
+    <Compile Include="Models\reference\ReferenceExp.cs" />
+    <Compile Include="Models\reference\ReferenceRepo.cs" />
+    <Compile Include="Models\RegistYearList\IRegistYearListRepo.cs" />
+    <Compile Include="Models\RegistYearList\RegistYear.cs" />
+    <Compile Include="Models\RegistYearList\RegistYearListRepo.cs" />
+    <Compile Include="Models\Reply\IReplyRepo.cs" />
+    <Compile Include="Models\Reply\Reply.cs" />
+    <Compile Include="Models\Reply\ReplyExp.cs" />
+    <Compile Include="Models\Reply\ReplyRepo.cs" />
+    <Compile Include="Models\SystemAuth\ISystemAuthRepo.cs" />
+    <Compile Include="Models\SystemAuth\SystemAuth.cs" />
+    <Compile Include="Models\SystemAuth\SystemAuthRepo.cs" />
+    <Compile Include="Models\SystemMenuAuth\ISystemMenuAuthRepo.cs" />
+    <Compile Include="Models\SystemMenuAuth\SystemMenuAuth.cs" />
+    <Compile Include="Models\SystemMenuAuth\SystemMenuAuthRepo.cs" />
+    <Compile Include="Models\SystemOrgAuth\ISystemOrgAuthRepo.cs" />
+    <Compile Include="Models\SystemOrgAuth\SystemOrgAuth.cs" />
+    <Compile Include="Models\SystemOrgAuth\SystemOrgAuthExp.cs" />
+    <Compile Include="Models\SystemOrgAuth\SystemOrgAuthRepo.cs" />
+    <Compile Include="Models\TbOrgCompany\ITbOrgCompanyRepo.cs" />
+    <Compile Include="Models\TbOrgCompany\TbOrgCompany.cs" />
+    <Compile Include="Models\TbOrgCompany\TbOrgCompanyExp.cs" />
+    <Compile Include="Models\TbOrgCompany\TbOrgCompanyRepo.cs" />
+    <Compile Include="Models\TbPlanMonthlyPalBusiness\ITbPlanMonthlyPalBusinessRepo.cs" />
+    <Compile Include="Models\TbPlanMonthlyPalBusiness\TbPlanMonthlyPalBusiness.cs" />
+    <Compile Include="Models\TbPlanMonthlyPalBusiness\TbPlanMonthlyPalBusinessRepo.cs" />
+    <Compile Include="Models\TbPlanMonthlyPal\ITbPlanMonthlyPalRepo.cs" />
+    <Compile Include="Models\TbPlanMonthlyPal\TbPlanMonthlyPal.cs" />
+    <Compile Include="Models\TbPlanMonthlyPal\TbPlanMonthlyPalExp.cs" />
+    <Compile Include="Models\TbPlanMonthlyPal\TbPlanMonthlyPalRepo.cs" />
+    <Compile Include="Models\TbPlanYearBs\ITbPlanYearBsRepo.cs" />
+    <Compile Include="Models\TbPlanYearBs\TbPlanYearBs.cs" />
+    <Compile Include="Models\TbPlanYearBs\TbPlanYearBsExp.cs" />
+    <Compile Include="Models\TbPlanYearBs\TbPlanYearBsRepo.cs" />
+    <Compile Include="Models\TopFrame\TopFrame.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\Base64EncryptUtil.cs" />
+    <Compile Include="Util\clsReturnValues.cs" />
+    <Compile Include="Util\ExcelUtil.cs" />
+    <Compile Include="Util\FileUtil.cs" />
+    <Compile Include="Util\HttpUtil.cs" />
+    <Compile Include="Util\LogUtil.cs" />
+    <Compile Include="Util\MailUtil.cs" />
+    <Compile Include="Util\MailUtilNew.cs" />
+    <Compile Include="Util\Paging.cs" />
+    <Compile Include="Util\Search.cs" />
+    <Compile Include="Util\SHA256EncryptUtil.cs" />
+    <Compile Include="Util\SSOUtil.cs" />
+    <Compile Include="Util\TypeDictionary.cs" />
+    <Compile Include="Util\WebUtil.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\web.config" />
+    <Content Include="packages.config" />
+    <Content Include="ApplicationInsights.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutSiteMng.cshtml" />
+    <Content Include="Views\SiteMngHome\Index.cshtml" />
+    <Content Include="Fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="Fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="Fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="Views\SiteMngHome\LoginAccessTemp.cshtml" />
+    <Content Include="scripts\jquery-2.2.4.min.map" />
+    <Content Include="Views\Main\Main.cshtml" />
+    <Content Include="Views\Org\Index.cshtml" />
+    <Content Include="Views\Plan\Monthly_Pal\Index.cshtml" />
+    <Content Include="Views\Plan\Year_Pal\Index.cshtml" />
+    <Content Include="Views\Plan\Year_Cf\Index.cshtml" />
+    <Content Include="Views\Plan\Year_Bs\Index.cshtml" />
+    <Content Include="Views\Trend_Analysis\Cash_Flow\Index.cshtml" />
+    <Content Include="Views\Trend_Analysis\Pal\Index.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Org\List.cshtml" />
+    <Content Include="Views\SiteMngHome\ViewGuideOrg.cshtml" />
+    <Content Include="Views\SiteMngHome\ViewGuideList.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Org\Union_Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Org\Company_Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Schedule\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Pal\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Pal\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Pal\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Admin_Auth\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Admin_Auth\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Admin_Auth\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Admin_Auth\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Pal\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\System_Auth\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\System_Auth\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\System_Auth\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\System_Auth\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Admin_Access_Log\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Schedule\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Schedule\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Schedule\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Pal\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Pal\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Pal\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Pal\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Bs\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Cf\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Cf\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Cf\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Cf\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Invest\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Invest\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Invest\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Year_Invest\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Group\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Cash_Flow\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Cash_Flow\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Cash_Flow\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Cash_Flow\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Pal\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Pal\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Pal\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Pal\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Quarter_Pal\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Quarter_Pal\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Quarter_Pal\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Quarter_Pal\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Bs\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Bs\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Bs\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Bs\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Invest\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Invest\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Invest\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Invest\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Performance\Group\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Info\Notice\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Info\Notice\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Info\Notice\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Info\Notice\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Info\Reference\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Info\Reference\List.cshtml" />
+    <Content Include="Views\SiteMngHome\Info\Reference\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Info\Reference\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Notice_Mng\View.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Notice_Mng\List.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Notice_Mng\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Notice_Mng\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Reference_Mng\View.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Reference_Mng\List.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Reference_Mng\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Reference_Mng\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Performance\List.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Performance\Write.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Performance\Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\MngInfo\Performance\View.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Org\Business_Write.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Org\Union_Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Org\Company_Edit.cshtml" />
+    <Content Include="Views\SiteMngHome\Admin\Org\Business_Edit.cshtml" />
+    <Content Include="Views\Performance\Index.cshtml" />
+    <Content Include="Views\Trend_Analysis\Financial\Index.cshtml" />
+    <Content Include="Views\Trend_Analysis\Invest\Index.cshtml" />
+    <Content Include="Views\Home\LogOut.cshtml" />
+    <Content Include="Views\SiteMngHome\Plan\Monthly_Pal\Excel.cshtml" />
+    <Content Include="Views\Org\Company.cshtml" />
+    <Content Include="Views\Home\LoginAccessTemp.cshtml" />
+    <Content Include="Views\SiteMngHome\LogOut.cshtml" />
+    <Content Include="Views\Plan\Year_Pal\Index_excel.cshtml" />
+    <Content Include="Views\Plan\Monthly_Pal\Index_excel.cshtml" />
+    <Content Include="Views\Plan\Year_Cf\Index_excel.cshtml" />
+    <Content Include="Views\Plan\Year_Bs\Index_excel.cshtml" />
+    <Content Include="Views\Plan\Year_Invest\Index_excel.cshtml" />
+    <Content Include="Views\Performance\ExcelDownPal.cshtml" />
+    <Content Include="Views\Performance\ExcelDownCashFlow.cshtml" />
+    <Content Include="Views\Shared\PartialReply.cshtml" />
+    <Content Include="Views\Performance\ExcelDownBs.cshtml" />
+    <Content Include="Views\Performance\ExcelDownQuarterPal.cshtml" />
+    <Content Include="Views\Plan\Year_Pal\NewIndex.cshtml" />
+    <Content Include="Views\Plan\Year_Pal\NewIndex_excel.cshtml" />
+    <Content Include="Views\Plan\Monthly_Pal\NewIndex.cshtml" />
+    <Content Include="Views\Plan\Monthly_Pal\NewIndex_excel.cshtml" />
+    <Content Include="Views\Plan\Year_Cf\NewIndex.cshtml" />
+    <Content Include="Views\Plan\Year_Cf\NewIndex_excel.cshtml" />
+    <Content Include="Views\Plan\Year_Bs\NewIndex_excel.cshtml" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Contents\user\Common\img\images\" />
+    <Folder Include="Views\AdminReply\" />
+    <Folder Include="Views\Api\" />
+    <Folder Include="Views\ReplayMng\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>51797</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:51797/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

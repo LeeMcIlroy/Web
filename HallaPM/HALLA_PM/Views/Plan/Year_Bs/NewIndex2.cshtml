@@ -1,0 +1,253 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "NewIndex";
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    // 2019.02.18 만도는 안 보이게 변경
+    lvCompany = lvCompany.Where(w => w.id != "3").ToList();
+
+    List<PmBsSummaryExp> pm = Model.pm;
+    List<PlanYearBsSummaryExp> pn = Model.pn;
+    List<PlanGroupdataBsSummary> pnRoic = Model.pnRoic;
+
+    var groupPm = pm.GroupBy(g => new { g.BsYear })
+        .Select(cl => new PmBsSummaryExp
+        {
+            BsYear = cl.First().BsYear,
+            AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+            PainInCapital = cl.Sum(c => c.PainInCapital)
+        }).ToList();
+
+    var groupPn = pn.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearBsSummaryExp
+        {
+            YearlyYear = cl.First().YearlyYear,
+            AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+            PainInCapital = cl.Sum(c => c.PainInCapital)
+        }).ToList();
+
+    string groupPmYear = groupPm.Count() == 0 ? (Convert.ToInt32(groupPn.First().YearlyYear) - 1).ToString() : groupPm.First().BsYear;
+    decimal groupPmAfterTaxOperationProfit = groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().AfterTaxOperationProfit, MidpointRounding.AwayFromZero);
+    decimal groupPmPainInCapital = groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().PainInCapital, MidpointRounding.AwayFromZero);
+    decimal groupPmRoic = WebUtil.NumberRound(groupPmAfterTaxOperationProfit, groupPmPainInCapital, 100, 1);
+
+    var year = SessionManager.GetMemberSession().planYear.First().RegistYear;
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = year;
+    commentList.CommentMonth = "99";
+    commentList.AttachTableName = "PLAN_YEAR_BS";
+    commentList.AttachTableSeq = 0;
+    commentList.UserKey = SessionManager.GetMemberSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetMemberSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetMemberSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Deptkorname;
+}
+<form name="frmForm" method="post">
+    <div class="plan_wrap">
+        <div class="top_wrap">
+            <h2>중기 B/S</h2>
+            @*<a href="/Plan/Year_bs_Finance/NewIndex_excel" class="btn_download" target="_blank">DOWNLOAD</a>*@
+            @*2019.01.24 분기*@
+            <a href="javascript:;" onclick="goDownOrView();" class="btn_download">DOWNLOAD</a>
+        </div><!--//top_wrap-->
+        @if (lvGroup.Count() > 0)
+        {
+            string gRoicText = "";
+            gRoicText += "{";
+            gRoicText += "x:" + groupPmYear + ",";
+            gRoicText += "y:" + groupPmRoic + "}";
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+            <div class="box">
+                <div class="chart_box chart_box4">
+                    <p class="p_title">ROIC</p>
+                    <span class="p_unit">(단위 : %)</span>
+                    <div class="chart chart_type11" id="chart1"></div>
+              @{/*foreach (var s in groupPn)
+                {
+                    gRoicText += ",{";
+                    gRoicText += "x:" + s.YearlyYear + ",";
+                    gRoicText += "y:" + (s.PainInCapital == 0 ? 0 : Math.Round(s.AfterTaxOperationProfit / s.PainInCapital * 100, 1, MidpointRounding.AwayFromZero)) + "}";
+                }*/
+
+                   foreach (var s in pnRoic)
+                    {
+                        gRoicText += ",{";
+                        gRoicText += "x:" + s.GroupdataMonth + ",";
+                        gRoicText += "y:" + (s.PainInCapital == 0 ? 0 : Math.Round(s.AfterTaxOperationProfit / s.PainInCapital * 100, 1, MidpointRounding.AwayFromZero)) + "}";
+                    }
+                        }
+                    <script>
+                  ( function(){
+                    var data = [
+                      { key: "ROIC", values: [ @gRoicText ] }
+                    ];
+                    data.map( function( obj, i ) {
+                    	obj.color = [ '#009de4' ][ i ];
+                    	obj.pointShape = [ 'diamond2' ][ i ];
+                    	obj.strokeWidth = 1;
+                    	return obj;
+                    } );
+
+                    MYAPP.graph.type11( data, '#chart1' );
+                  } )();
+                    </script>
+                </div>
+                <!-- chart_box -->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+
+    </div><!--//con_wrap-->
+    }
+        <div class="tab_wrap">
+            <div class="type_tab2">
+                <ul>
+
+                    @foreach (var company in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+                {
+                <li><a href="#yearpal_@company.id">@company.txt</a></li>
+                }
+                    <!--
+                    <li><a href="#yearpal01">한라홀딩스</a></li>
+                    <li><a href="#yearpal02">JJ한라</a></li>
+                    <li><a href="#yearpal03">만도</a></li>
+                    <li><a href="#yearpal04">만도헬라</a></li>
+                    <li><a href="#yearpal05">만도브로제</a></li>
+                    <li><a href="#yearpal06">㈜한라</a></li>
+                        -->
+                </ul>
+            </div><!--//type_tab-->
+
+            @foreach (var company in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+        {
+            PmBsSummaryExp pmRow = pm.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).FirstOrDefault() == null ? new PmBsSummaryExp() : pm.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).FirstOrDefault();
+            List<PlanYearBsSummaryExp> pnRow = pn.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).ToList();
+            string roicText = "";
+            /*
+             * AFTER_TAX_OPERATION_PROFIT / PAIN_IN_CAPITAL	AS [ROIC]
+             * LIABILITIES / CAPITAL							As [부채비율]
+            */
+            roicText += "{";
+            roicText += "x:" + (Convert.ToInt32(pnRow.First().YearlyYear) - 1) + ",";
+            roicText += "y:" + (pmRow.PainInCapital == 0 ? 0 : Math.Round(pmRow.AfterTaxOperationProfit / pmRow.PainInCapital * 100, 1, MidpointRounding.AwayFromZero)) + "}";
+
+            string liabilitiesRateText = "";
+            /*
+             * AFTER_TAX_OPERATION_PROFIT / PAIN_IN_CAPITAL	AS [ROIC]
+             * LIABILITIES / CAPITAL							As [부채비율]
+            */
+            liabilitiesRateText += "{";
+            liabilitiesRateText += "x:" + (Convert.ToInt32(pnRow.First().YearlyYear) - 1) + ",";
+            liabilitiesRateText += "y:" + (pmRow.Capital == 0 ? 0 : Math.Round(pmRow.Liabilities / pmRow.Capital * 100, 1, MidpointRounding.AwayFromZero)) + "}";
+
+    <div class="type_tab_con" id="yearpal_@company.id">
+        <div class="con_wrap">
+
+            <div class="graph_box">
+                <div class="box">
+                    <div class="box_col_wrap">
+                        <div class="col2 fl graph">
+                            <div class="chart_box chart_box4">
+                                <p class="p_title">ROIC</p>
+                                <span class="p_unit">(단위 : %)</span>
+                                <div class="chart chart_type11" id="chart_@company.id"></div>
+                                @foreach (var s in pnRow)
+                                        {
+                                            roicText += ",{";
+                                            roicText += "x:" + s.YearlyYear + ",";
+                                            roicText += "y:" + Math.Round(s.Roic, 1, MidpointRounding.AwayFromZero) + "}";
+                                        }
+                                <script>
+                                            (function () {
+                                                var data = [
+                                                  { key: "ROIC", values: [ @roicText] }
+                                                ];
+                                                data.map(function (obj, i) {
+                                                    obj.color = ['#009de4'][i];
+                                                    obj.pointShape = ['diamond2'][i];
+                                                    obj.strokeWidth = 1;
+                                                    return obj;
+                                                });
+
+                                                MYAPP.graph.type11(data, '#chart_@company.id');
+                                            })();
+                                </script>
+                            </div>
+                            <!-- chart_box -->
+                        </div>
+
+                        <div class="col2 fr graph">
+                            <div class="chart_box chart_box4">
+                                <p class="p_title">부채비율</p>
+                                <span class="p_unit">(단위 : %)</span>
+                                <div class="chart chart_type11" id="chart99_@company.id"></div>
+                                @foreach (var s in pnRow)
+                                        {
+                                            liabilitiesRateText += ",{";
+                                            liabilitiesRateText += "x:" + s.YearlyYear + ",";
+                                            liabilitiesRateText += "y:" + (Math.Round(s.LiabilitiesRate, 1, MidpointRounding.AwayFromZero)) + "}";
+                                            //liabilitiesRateText += "y:" + (s.Capital == 0 ? 0 : Math.Round(s.Liabilities / s.Capital * 100, 1, MidpointRounding.AwayFromZero)) + "}";
+                                        }
+                                <script>
+                                            (function () {
+                                                var data = [
+                                                  { key: "부채비율", values: [ @liabilitiesRateText] }
+                                                ];
+                                                data.map(function (obj, i) {
+                                                    obj.color = ['#ff520d'][i];
+                                                    obj.pointShape = ['square'][i];
+                                                    obj.strokeWidth = 1;
+                                                    return obj;
+                                                });
+
+                                                MYAPP.graph.type11(data, '#chart99_@company.id', '%');
+                                            })();
+                                </script>
+                            </div>
+                            <!-- chart_box -->
+                        </div>
+                    </div><!--//box_col_wrap-->
+                </div><!--//box-->
+            </div><!--//graph_box-->
+        </div><!--//con_wrap-->
+    </div><!--//type_tab_con-->
+        }
+        </div><!--//tab_wrap-->
+    </div><!--//plan_wrap-->
+    <script>
+        $(function () {
+            /*탭*/
+            MYAPP.tab.init($(".type_tab2"));
+        });
+
+        function goDownOrView() {
+            var f = document.frmForm;
+            // 웹 모바일 분기
+            var filter = "win16|win32|win64|mac";
+
+            if (navigator.platform) {
+
+                if (0 > filter.indexOf(navigator.platform.toLowerCase())) {
+                    // Mobile
+                    f.action = "ViewYearBs";
+                    f.target = "_Blank";
+                    f.submit();
+                } else {
+                    // Pc
+                    f.action = "ExcelYearBs_New";
+                    //f.action = "ViewYearBs";
+                    //f.target = "_Blank";
+                    f.submit();
+                }
+
+            }
+
+        }
+    </script>
+</form>
+@Html.Partial("~/Views/Shared/PartialReply.cshtml", commentList)

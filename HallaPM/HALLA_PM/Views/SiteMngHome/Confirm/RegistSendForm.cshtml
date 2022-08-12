@@ -1,0 +1,213 @@
+﻿@using HALLA_PM.Models; 
+@using HALLA_PM.Util
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "RegistSendForm";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PmConfirmLog objLog = Model.pmconfirmLog;
+    string DETAIL_URL_CASH_FLOW = "PagePath/?orgCompanySeq=" + objLog.orgCompanySeq + "&pmYear=" + objLog.pmYear + "&monthly=" + objLog.monthly + "&strPageType=CASH_FLOW&strTableName=PM_CASH_FLOW";
+    string DETAIL_URL_PAL = "PagePath/?orgCompanySeq=" + objLog.orgCompanySeq + "&pmYear=" + objLog.pmYear + "&monthly=" + objLog.monthly + "&strPageType=PAL&strTableName=PM_PAL";
+    string DETAIL_URL_QUARTER_PAL = "PagePath/?orgCompanySeq=" + objLog.orgCompanySeq + "&pmYear=" + objLog.pmYear + "&monthly=" + objLog.monthly + "&strPageType=QUARTER_PAL&strTableName=PM_QUARTER_PAL";
+    string DETAIL_URL_BS = "PagePath/?orgCompanySeq=" + objLog.orgCompanySeq + "&pmYear=" + objLog.pmYear + "&monthly=" + objLog.monthly + "&strPageType=BS&strTableName=PM_BS";
+    string DETAIL_URL_BS_EX = "PagePath/?orgCompanySeq=" + objLog.orgCompanySeq + "&pmYear=" + objLog.pmYear + "&monthly=" + objLog.monthly + "&strPageType=BS_EX&strTableName=PM_BS_EX";
+    string DETAIL_URL_INVEST = "PagePath/?orgCompanySeq=" + objLog.orgCompanySeq + "&pmYear=" + objLog.pmYear + "&monthly=" + objLog.monthly + "&strPageType=INVEST&strTableName=PM_INVEST";
+    string strShowEx = Model.BsExcount;
+    string strConfirmMessage = "";
+    if(objLog.preStatus == 3)
+    {
+        strConfirmMessage = strConfirmMessage  + " 승인요청이 등록되었습니다";
+    }
+    else if (objLog.preStatus == 6)
+    {
+        strConfirmMessage = strConfirmMessage + " 1차 승인이 완료되었습니다.";
+    }
+    else if (objLog.preStatus == 8)
+    {
+        strConfirmMessage = strConfirmMessage + " 2차 승인이 완료되었습니다.";
+    }
+ }
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>통합승인</span>
+        <strong>통합승인처리</strong>
+    </div>
+    <div>
+        <table border="0" cellpadding="0" cellspacing="0" style="font-family:'NotoSanskr_Regular', '돋움';">
+            <tr>
+                <td><img src="/Contents/SiteMngHome/Mail/img/header.gif" border="0" style="display: block;"></td>
+            </tr>
+            <tr>
+                <td bgcolor="#e7ebee" style="background: #e7ebee url('/Contents/SiteMngHome/Mail/img/bg.gif') repeat-y;" align="center">
+                    <table width="553" border="0" align="center" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td bgcolor="#ffffff" align="center">
+                                <table width="472" border="0" align="center" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td>
+                                            <table width="472" border="0" align="center" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td height="10" align="center"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="padding: 5px 0; color: #333333; font-size: 20px;" align="center">@objLog.strCompnayName</th>
+                                                </tr>
+                                                <tr>
+                                                    <th style="padding: 5px 0; color: #333333; font-size: 20px;" align="center">@(objLog.pmYear)년 @(objLog.monthly)월 <span style="color: #00a0db;">통합승인처리</span></th>
+                                                </tr>
+                                                <tr>
+                                                    <th style="padding: 5px 0; color: #014099; font-size: 20px;" align="center">@strConfirmMessage</th>
+                                                </tr>
+                                                <tr>
+                                                    <td height="10" align="center"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="padding: 5px 0; color: #014099; font-size: 20px;" align="center">
+                                                        [자세히보기] 버튼을 클릭하시어 <br/>한라 실적 보고 시스템 관리자에서 확인하시기 바랍니다.
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <td height="10" align="center"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td align="center">
+                                                        <table width="450">
+                                                            <tr>
+                                                                <th>년</th>
+                                                                <th>월</th>
+                                                                <th>회사</th>
+                                                                <th>실적구분</th>
+                                                                <th>실적확인</th>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>@(objLog.pmYear)</td>
+                                                                <td>@(objLog.monthly)</td>
+                                                                <td >@(objLog.strCompnayName)</td>
+                                                                <td>Cash Flow</td>
+                                                                <td><a href="@DETAIL_URL_CASH_FLOW" style="display:inline-block; padding: 10px; background:#00a0db; color: #fff; font-size: 14px;" target="_blank">자세히 보기</a></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>@(objLog.pmYear)</td>
+                                                                <td>@(objLog.monthly)</td>
+                                                                <td>@(objLog.strCompnayName)</td>
+                                                                <td>손익</td>
+                                                                <td><a href="@DETAIL_URL_PAL" style="display:inline-block; padding: 10px; background:#00a0db; color: #fff; font-size: 14px;" target="_blank">자세히 보기</a></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>@(objLog.pmYear)</td>
+                                                                <td>@(objLog.monthly)</td>
+                                                                <td>@(objLog.strCompnayName)</td>
+                                                                <td>분기별 손익</td>
+                                                                <td><a href="@DETAIL_URL_QUARTER_PAL" style="display:inline-block; padding: 10px; background:#00a0db; color: #fff; font-size: 14px;" target="_blank">자세히 보기</a></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>@(objLog.pmYear)</td>
+                                                                <td>@(objLog.monthly)</td>
+                                                                <td>@(objLog.strCompnayName)</td>
+                                                                <td>BS</td>
+                                                                <td><a href="@DETAIL_URL_BS" style="display:inline-block; padding: 10px; background:#00a0db; color: #fff; font-size: 14px;" target="_blank">자세히 보기</a></td>
+                                                            </tr>
+                                                            <tr style="display:@strShowEx">
+                                                                <td>@(objLog.pmYear)</td>
+                                                                <td>@(objLog.monthly)</td>
+                                                                <td>@(objLog.strCompnayName)</td>
+                                                                <td>BS – ㈜한라 별도</td>
+                                                                <td><a href="@DETAIL_URL_BS_EX" style="display:inline-block; padding: 10px; background:#00a0db; color: #fff; font-size: 14px;" target="_blank">자세히 보기</a></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>@(objLog.pmYear)</td>
+                                                                <td>@(objLog.monthly)</td>
+                                                                <td>@(objLog.strCompnayName)</td>
+                                                                <td>투자·인원</td>
+                                                                <td><a href="@DETAIL_URL_INVEST" style="display:inline-block; padding: 10px; background:#00a0db; color: #fff; font-size: 14px;" target="_blank">자세히 보기</a></td>
+                                                            </tr>
+                                                        </table>
+
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td align="center"> 
+                                                        <form name="frmMain" id="frmMain" method="post">
+                                                            <!--// con_box -->
+                                                            <div>
+                                                                <textarea id="strComment" rows="5" cols="50"></textarea>
+                                                            </div>
+                                                            <div>
+                                                                <input type="button" value="통합승인" onclick="onSave()"  style="display:inline-block; padding: 10px; background:#0027a9; color: #fff; font-size: 20px;"/>&nbsp;<input type="button" value="취소" onclick="onMain()" style="display:inline-block; padding: 10px; background:#0027a9; color: #fff; font-size: 20px;" />
+                                                            </div>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td><img src="/Contents/SiteMngHome/Mail/img/footer.gif" border="0" style="display:;"></td>
+            </tr>
+        </table>
+
+    </div>
+    
+</div>
+
+<script type="text/javascript">
+    function onSave() {
+        var strSendValues = '{"seq":@objLog.seq'
+                            + ',"orgCompanySeq":@objLog.orgCompanySeq'
+                            + ',"pmYear":"@objLog.pmYear"'
+                            + ',"monthly":"@(objLog.monthly)"'
+                            + ',"userIp":""'
+                            + ',"userKey":""'
+                            + ',"preStatus":@objLog.preStatus'
+                            + ',"confirmStatus":@objLog.confirmStatus'
+                            + ',"confirmComment":"' + escape($("#strComment").val()) + '"}';
+        //$('#txtContents').html(strSendValues);
+        if(confirm("통합 승인 버튼을 클릭하시면 반려할 수 없습니다.\n승인하시겠습니까?")) {
+            funSendData(strSendValues);
+        }
+        else
+        {
+            onMain();
+        }
+    }
+
+    function funSendData(str) {
+        var strUrl = "RegistStatusAllChange";
+        var json_data = funJsonReplace(str);
+       //alert(json_data);
+        var request = $.ajax({
+            url: strUrl,
+            type: 'post',
+            data: json_data,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) { 
+                alert(data.resultMsg); 
+                onMain();
+            },
+            error: function (request, status, error) {
+                alert("[에러][관리자에게 문의하세요]\n" + "error:" + request.responseText);
+            }
+        });
+    }
+    function funJsonReplace(objValue) {
+        return objValue.replace(/\r/g, '').replace(/\\/g, "").replace(/\n/g, '').replace('"[', '[').replace(']"', ']');
+    }
+
+    function onMain() {
+        var f = document.frmMain;
+        f.action = "../Performance/Cash_Flow/List";
+        f.submit();
+    }
+    function funSetComment() {
+        $("#strComment").val(unescape('@objLog.confirmComment'));
+    }
+    funSetComment();
+</script>
+
+

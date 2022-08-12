@@ -1,0 +1,465 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+using System.Data;
+using Dapper;
+using HALLA_PM.Util;
+
+namespace HALLA_PM.Models
+{
+    public class PlanGroupRepo : DbCon, IPlanGroupRepo
+    {
+        public int count(object param)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int count(object param, string where)
+        {
+            using (IDbConnection con = GetHallaDb())
+            {
+                try
+                {
+                    con.Open();
+                     
+                    string query = @"
+;WITH CTE_PLAN_MONTHLY_PAL AS
+(
+	SELECT	PLAN_YEAR
+			, '손익월별계획'			AS MENU_NAME
+			, 'PLAN_MONTHLY_PAL'		AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	MONTHLY_PAL_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_MONTHLY_PAL
+	GROUP BY MONTHLY_PAL_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_PAL AS
+(
+	SELECT	PLAN_YEAR
+			, '손익중기계획'			AS MENU_NAME
+			, 'PLAN_YEAR_PAL'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_PAL_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_PAL
+	GROUP BY YEAR_PAL_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_BS AS
+(
+	SELECT	PLAN_YEAR
+			, '중기BS'					AS MENU_NAME
+			, 'PLAN_YEAR_BS'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_BS_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_BS
+	GROUP BY YEAR_BS_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_CF AS
+(
+	SELECT	PLAN_YEAR
+			, '중기CF'				AS MENU_NAME
+			, 'PLAN_YEAR_CF'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_CF_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_CF
+	GROUP BY YEAR_CF_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_INVEST AS
+(
+	SELECT	PLAN_YEAR
+			, '중기투자인원계획'			AS MENU_NAME
+			, 'PLAN_YEAR_INVEST'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	( 
+	SELECT	YEAR_INVEST_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_INVEST
+	GROUP BY YEAR_INVEST_YEAR
+	)			A
+)
+SELECT	COUNT(*)
+FROM	(
+SELECT	*
+FROM	CTE_PLAN_MONTHLY_PAL
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_PAL
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_BS
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_CF
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_INVEST
+)			A
+" + where;
+                    return con.Query<int>(query, param).First();
+                }
+                catch (Exception e)
+                {
+                    LogUtil.MngError(e.ToString());
+                    return -1;
+                }
+            }
+        }
+
+        public int delete(object key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int insert(PlanGroup entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int save(PlanGroup entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<PlanGroup> selectList(object param)
+        {
+            Search search = (Search)param;
+            using (IDbConnection con = GetHallaDb())
+            {
+                try
+                {
+                    con.Open();
+
+                    string where = " WHERE 1 = 1 ";
+
+                    if (!string.IsNullOrEmpty(search.searchYear))
+                    {
+                        where += " AND PLAN_YEAR = @searchYear ";
+                    }
+
+                    if (!string.IsNullOrEmpty(search.searchBusType))
+                    {
+                        where += " AND MENU_NAME = @searchBusType ";
+                    }
+                    string query = @"
+;WITH CTE_PLAN_MONTHLY_PAL AS
+(
+	SELECT	PLAN_YEAR
+			, '손익월별계획'			AS MENU_NAME
+			, 'PLAN_MONTHLY_PAL'		AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	MONTHLY_PAL_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_MONTHLY_PAL
+	GROUP BY MONTHLY_PAL_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_PAL AS
+(
+	SELECT	PLAN_YEAR
+			, '손익중기계획'			AS MENU_NAME
+			, 'PLAN_YEAR_PAL'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_PAL_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_PAL
+	GROUP BY YEAR_PAL_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_BS AS
+(
+	SELECT	PLAN_YEAR
+			, '중기BS'					AS MENU_NAME
+			, 'PLAN_YEAR_BS'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_BS_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_BS
+	GROUP BY YEAR_BS_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_CF AS
+(
+	SELECT	PLAN_YEAR
+			, '중기CF'				AS MENU_NAME
+			, 'PLAN_YEAR_CF'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_CF_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_CF
+	GROUP BY YEAR_CF_YEAR
+	)			A
+)
+, CTE_PLAN_MONTHLY_INVEST AS
+(
+	SELECT	PLAN_YEAR
+			, '월별투자인원계획'			AS MENU_NAME
+			, 'PLAN_MONTHLY_INVEST'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+		SELECT	MONTHLY_INVEST_YEAR			AS PLAN_YEAR
+				, COUNT(*)					AS TOTAL_COMPANY
+				, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+                , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+		FROM	PLAN_MONTHLY_INVEST
+		GROUP BY MONTHLY_INVEST_YEAR
+	)		A
+)
+, CTE_PLAN_YEAR_INVEST AS
+(
+	SELECT	PLAN_YEAR
+			, '중기투자인원계획'			AS MENU_NAME
+			, 'PLAN_YEAR_INVEST'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_INVEST_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_INVEST
+	GROUP BY YEAR_INVEST_YEAR
+	)			A
+)
+SELECT	ROW_NUMBER() OVER (ORDER BY PLAN_YEAR ASC, MENU_NAME ASC) AS ROW_NUM, *
+FROM	(
+SELECT	*
+FROM	CTE_PLAN_MONTHLY_PAL
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_PAL
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_BS
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_CF
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_MONTHLY_INVEST
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_INVEST
+)			A " + where + @"
+ORDER BY PLAN_YEAR DESC, MENU_NAME DESC
+OFFSET @PageCount * (@PageIndex -1)  ROWS FETCH NEXT @PageCount ROW ONLY ";
+
+                    search.TotalCount = count(search, where);
+                    search.MakePaging();
+
+                    return con.Query<PlanGroup>(query, param).ToList();
+
+                }
+                catch (Exception e)
+                {
+                    LogUtil.MngError(e.ToString());
+                    return null;
+                }
+            }
+        }
+
+        public IEnumerable<PlanGroup> selectListAll(object param)
+        {
+            //Search search = (Search)param;
+            using (IDbConnection con = GetHallaDb())
+            {
+                try
+                {
+                    con.Open();
+
+                    string where = " WHERE 1 = 1 ";
+
+                    string query = @"
+;WITH CTE_PLAN_MONTHLY_PAL AS
+(
+	SELECT	PLAN_YEAR
+			, '손익월별계획'			AS MENU_NAME
+			, 'PLAN_MONTHLY_PAL'		AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	MONTHLY_PAL_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_MONTHLY_PAL
+	GROUP BY MONTHLY_PAL_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_PAL AS
+(
+	SELECT	PLAN_YEAR
+			, '손익중기계획'			AS MENU_NAME
+			, 'PLAN_YEAR_PAL'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_PAL_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_PAL
+	GROUP BY YEAR_PAL_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_BS AS
+(
+	SELECT	PLAN_YEAR
+			, '중기BS'					AS MENU_NAME
+			, 'PLAN_YEAR_BS'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_BS_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_BS
+	GROUP BY YEAR_BS_YEAR
+	)			A
+)
+, CTE_PLAN_YEAR_CF AS
+(
+	SELECT	PLAN_YEAR
+			, '중기CF'				AS MENU_NAME
+			, 'PLAN_YEAR_CF'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_CF_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_CF
+	GROUP BY YEAR_CF_YEAR
+	)			A
+)
+, CTE_PLAN_MONTHLY_INVEST AS
+(
+	SELECT	PLAN_YEAR
+			, '월별투자인원계획'			AS MENU_NAME
+			, 'PLAN_MONTHLY_INVEST'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+		SELECT	MONTHLY_INVEST_YEAR			AS PLAN_YEAR
+				, COUNT(*)					AS TOTAL_COMPANY
+				, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+                , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+		FROM	PLAN_MONTHLY_INVEST
+		GROUP BY MONTHLY_INVEST_YEAR
+	)		A
+)
+, CTE_PLAN_YEAR_INVEST AS
+(
+	SELECT	PLAN_YEAR
+			, '중기투자인원계획'			AS MENU_NAME
+			, 'PLAN_YEAR_INVEST'			AS TABLE_NAME
+			, CASE WHEN TOTAL_COMPANY = REGIST_COMPANY THEN 'Y' ELSE 'N' END AS REGIST_TYPE
+            , CASE WHEN TOTAL_COMPANY = FINISH_COMPANY THEN 'Y' ELSE 'N' END AS FINISH_TYPE
+	FROM	(
+	SELECT	YEAR_INVEST_YEAR			AS PLAN_YEAR
+			, COUNT(*)					AS TOTAL_COMPANY
+			, SUM(CASE WHEN REGIST_STATUS != 1 THEN 1 ELSE 0 END) AS REGIST_COMPANY
+            , SUM(CASE WHEN REGIST_STATUS = 7 THEN 1 ELSE 0 END) AS FINISH_COMPANY
+	FROM	PLAN_YEAR_INVEST
+	GROUP BY YEAR_INVEST_YEAR
+	)			A
+)
+SELECT	*
+FROM	(
+SELECT	*
+FROM	CTE_PLAN_MONTHLY_PAL
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_PAL
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_BS
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_CF
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_MONTHLY_INVEST
+UNION ALL
+SELECT	*
+FROM	CTE_PLAN_YEAR_INVEST
+)			A " + where + @"
+ORDER BY PLAN_YEAR DESC, MENU_NAME DESC
+";
+
+                    //search.TotalCount = count(search, where);
+                    //search.MakePaging();
+
+                    return con.Query<PlanGroup>(query, param).ToList();
+
+                }
+                catch (Exception e)
+                {
+                    LogUtil.MngError(e.ToString());
+                    return null;
+                }
+            }
+        }
+
+        public PlanGroup selectOne(object param)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int update(PlanGroup entity)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

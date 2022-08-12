@@ -1,0 +1,377 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    List<OrgCompany> list = Model.orgList;
+    AdminAuth edit = Model.edit;
+    InsaUserV insa = Model.CompInfo;
+    List<AdminOrgAuth> orgAuth = Model.orgAuth;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>관리자 관리</span>
+        <strong>관리자 권한관리</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="AuthUserKey" id="AuthUserKey" value="@edit.AuthUserKey" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchType" value="@(search.searchType)" />
+        <input type="hidden" name="searchText" value="@(search.searchText)" />
+        <input type="hidden" name="message" value="수정" />
+        <div class="con_box search">
+            <h3 class="mt0">관리자 권한관리</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 구성원 검색 시 이름, 사번은 자동으로 입력됩니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 조직관리 및 메뉴는 한 명이 여러 개를 관리할 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">이름</th>
+                        <td>
+                            <input type="text" name="AuthUserKorName" id="AuthUserKorName" style="width:40%;" readonly value="@edit.AuthUserKorName" />
+                            <!--<button class="btn small full_gray" onclick="javascript: MYAPP.layerControl.layerShow($('#mem_search_layer')); return false;">구성원 검색</button>-->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">사번</th>
+                        <td>
+                            <input type="text" name="AuthEmpNo" id="AuthEmpNo" style="width:40%;" readonly value="@edit.AuthEmpNo" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">회사명</th>
+                        <td>
+                            <input type="text" name="CompKorName" id="CompKorName" style="width:40%;" readonly value="@(insa.CompKorName == null ? "퇴직자" : insa.CompKorName)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">직위</th>
+                        <td>
+                            <input type="text" name="LevelKorName" id="LevelKorName" style="width:40%;" readonly value="@(insa.levelKorName == null ? "-" : insa.levelKorName)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>마스터권한</th>
+                        <td>
+                            @{
+                                foreach (var item in Define.AUTH_LEVEL)
+                                {
+                                    <div class="style_radio">
+                                        <label>
+                                            <input type="radio" name="AuthLevel" value="@item.Key" @(item.Key == edit.AuthLevel ? " checked" : "")><i></i>
+                                            <strong>@item.Value</strong>
+                                        </label>
+                                    </div>
+                                }
+                            }
+                                        <!--
+                        <div class="style_radio">
+                            <label>
+                                <input type="radio" name="radio1" checked><i></i>
+                                <strong>최종 관리자</strong>
+                            </label>
+                        </div>
+                        <div class="style_radio">
+                            <label>
+                                <input type="radio" name="radio1"><i></i>
+                                <strong>중간 관리자</strong>
+                            </label>
+                        </div>
+                        <div class="style_radio">
+                            <label>
+                                <input type="radio" name="radio1"><i></i>
+                                <strong>실적 담당자</strong>
+                            </label>
+                        </div>
+                        -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>공시권한</th>
+                        <td>
+                            @{
+                                foreach (var item in Define.IS_DISCLOSURE)
+                                {
+                                    <div class="style_radio">
+                                        <label>
+                                            <input type="radio" name="IsDisclosure" value="@item.Key" @(item.Key == edit.IsDisclosure ? " checked" : "")><i></i>
+                                            <strong>@item.Value</strong>
+                                        </label>
+                                    </div>
+                                }
+                            }
+                                            <!--
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="Y" checked><i></i>
+                                    <strong>사용</strong>
+                                </label>
+                            </div>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="N"><i></i>
+                                    <strong>미사용</strong>
+                                </label>
+                            </div>
+                            -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>사용여부</th>
+                        <td>
+                            @{
+                                foreach (var item in Define.IS_USE)
+                                {
+                                    <div class="style_radio">
+                                        <label>
+                                            <input type="radio" name="IsUse" value="@item.Key" @(item.Key == edit.IsUse ? " checked" : "")><i></i>
+                                            <strong>@item.Value</strong>
+                                        </label>
+                                    </div>
+                                }
+                            }
+                            <!--
+            <div class="style_radio">
+                <label>
+                    <input type="radio" name="IsUse" value="Y" checked><i></i>
+                    <strong>사용</strong>
+                </label>
+            </div>
+            <div class="style_radio">
+                <label>
+                    <input type="radio" name="IsUse" value="N"><i></i>
+                    <strong>미사용</strong>
+                </label>
+            </div>
+            -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>조직권한</th>
+                        <td>
+                            <div class="style_check bl"><label><input type="checkbox" name="OrgCompanySeqAll" value=""><i></i> <strong>전체 선택</strong></label></div>
+                            @{
+                                var query = from OrgCompany in list
+                                            join AdminOrgAuth in orgAuth on OrgCompany.Seq equals AdminOrgAuth.OrgCompanySeq into org
+                                            from p in org.DefaultIfEmpty()
+                                            select new { OrgCompany, check = p == null ? "" : " checked" };
+                                foreach (var item in query)
+                                {
+                                    <div class="style_check bl"><label><input type="checkbox" name="OrgCompanySeq" value="@item.OrgCompany.Seq" @(item.check)><i></i> <strong>@item.OrgCompany.UnionName > @item.OrgCompany.CompanyName </strong></label></div>
+                                }
+                            }
+
+                        </td>
+                    </tr>
+                    <!--
+    <tr>
+        <th>메뉴권한</th>
+        <td>
+            <div class="style_check bl"><label><input type="checkbox" name="" value=""><i></i> <strong>전체 선택</strong></label></div>
+            <div class="style_check bl"><label><input type="checkbox" name="" value=""><i></i> <strong>관리자 관리 > 조직관리</strong></label></div>
+            <div class="style_check bl"><label><input type="checkbox" name="" value=""><i></i> <strong>관리자 관리 > 관리자 권한관리</strong></label></div>
+            <div class="style_check bl"><label><input type="checkbox" name="" value=""><i></i> <strong>관리자 관리 > …</strong></label></div>
+            <div class="style_check bl"><label><input type="checkbox" name="" value=""><i></i> <strong>일정관리 > 등록일정계획</strong></label></div>
+            <div class="style_check bl"><label><input type="checkbox" name="" value=""><i></i> <strong>계획관리 > 손익월별계획</strong></label></div>
+        </td>
+    </tr>
+        -->
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                <!--<button class="btn full_green" type="button" onclick="onDelete();">삭제</button>-->
+                <button class="btn full_green" type="button" onclick="onWrite();">수정</button>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+
+
+        <div id="mem_search_layer" class="input_layer search">
+            <div class="layer_in">
+                <h4>구성원 검색</h4>
+                <div class="layer_des">
+                    <div class="search_box">
+                        <span class="name"><label for="search_name">이름</label></span><input type="text" name="Userkorname" id="Userkorname" style="width:60%;" onkeypress="onSearch(); return false" />
+                        <button class="btn small full_gray" type="button" onclick="onSearch();">검색</button>
+                    </div><!--//search_box-->
+
+                    <div class="search_result_box">
+                        <!--<p style="display:;">검색결과가 없습니다.</p>-->
+
+                        <table>
+                            <caption></caption>
+                            <colgroup>
+                                <col width="15%" />
+                                <col width="15%" />
+                                <col width="/" />
+                            </colgroup>
+                            <tbody id="searchList">
+                                <!--
+                                <tr>
+                                    <td colspan="3" style="text-align:center;">검색결과가 없습니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>0000000</td>
+                                    <td>김한라</td>
+                                    <td>한라홀딩스</td>
+                                </tr>
+                                -->
+                            </tbody>
+                        </table>
+                    </div><!--//search_result_box-->
+                </div><!--//layer_des-->
+                <a href="javascript:;" onclick="javascript: MYAPP.layerControl.layerHide($('#mem_search_layer')); return false;" class="btn_layer_close"></a>
+            </div>
+        </div>
+        <!--//mem_search_layer-->
+    </form>
+</div><!--//container-->
+<script type="text/javascript">
+    $(function () {
+        $("#frmMain").validate({
+            rules: {
+                AuthUserKorName: {
+                    required: true,
+                },
+                AuthEmpNo: {
+                    required: true,
+                },
+                AuthLevel: {
+                    required: true,
+                },
+                /*OrgCompanySeq: {
+                    required: true,
+                },*/
+            },
+            messages: {
+                AuthUserKorName: {
+                    required: "관리자이름을 선택하세요.",
+                },
+                AuthEmpNo: {
+                    required: "관리자사번을 선택하세요.",
+                },
+                AuthLevel: {
+                    required: "관리자권한을 선택하세요.",
+                },
+                /*OrgCompanySeq: {
+                    required: "조직권한을 선택하세요.",
+                },*/
+            }, errorPlacement: function (error, element) {
+                // do nothing
+            },
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    alert(validator.errorList[0].message);
+                    validator.errorList[0].element.focus();
+                }
+            }
+        });
+
+        $("input:checkbox[name=OrgCompanySeqAll]").click(function (e) {
+            if ($("input:checkbox[name=OrgCompanySeqAll]").is(":checked")) {
+                $("input:checkbox[name=OrgCompanySeq]").prop("checked", true);
+            }
+            else {
+                $("input:checkbox[name=OrgCompanySeq]").prop("checked", false);
+            }
+        });
+
+        $("input:checkbox[name=OrgCompanySeq]").click(function (e) {
+            var leng = $("input:checkbox[name=OrgCompanySeq]:checked").length;
+            if (leng == 0) {
+                $("input:checkbox[name=OrgCompanySeqAll]").prop("checked", false);
+            }
+        });
+    });
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.method = "POST";
+        f.submit();
+    }
+
+    function onWrite() {
+        var f = document.frmMain;
+
+        if ($(f).valid()) {
+
+            if (confirm("수정하시겠습니까?")) {
+                f.action = "Write_Action";
+                f.submit();
+            }
+        }
+    }
+
+    function onDelete() {
+        var f = document.frmMain;
+
+        if (confirm("삭제하시겠습니까?")) {
+            f.action = "Delete_Action";
+            f.submit();
+        }
+    }
+
+    // $("input[name=Userkorname]).val();
+
+    function onSearch() {
+        $("#searchList").html("");
+        $.ajax({
+            url: "Insa_Search_Ajax",
+            type: "post",
+            data: { Userkorname: $("#Userkorname").val() },
+            dataType: "json",
+            success: function (res) {
+                var html = "";
+                if (res.success == true) {
+                    res.list.forEach(function (v, i) {
+                        html += "<tr>";
+                        html += "<td>" + v.empNo + "</td>";
+                        html += "<td><a href='javascript:;' onclick='onRegist(\"" + v.userKey + "\", \"" + v.empNo + "\", \"" + v.userKorName + "\");'>" + v.userKorName + "</a></td>";
+                        html += "<td>" + v.CompKorName + "</td>";
+                        html += "</tr>";
+                    });
+                }
+                else {
+                    html = "<tr><td colspan='3' style='text-align:center;'>검색결과가 없습니다.</td></tr>";
+                }
+                $("#searchList").html(html);
+            },
+            error: function (res, status, err) {
+                console.log("Err");
+                console.log(err);
+            }
+        })
+    }
+
+    function onRegist(userKey, empNo, userKorName) {
+        $("#AuthUserKey").val(userKey);
+        $("#AuthEmpNo").val(empNo);
+        $("#AuthUserKorName").val(userKorName);
+        MYAPP.layerControl.layerHide($('#mem_search_layer'));
+    }
+</script>
+
+

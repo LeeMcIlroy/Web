@@ -1,0 +1,324 @@
+﻿﻿ @{ ViewBag.Title = "Index"; }
+
+<section class="trend_wrap">
+  <form>
+    <div class="trend_setting_wrap" id="trend_level">
+      <h2>Level</h2>
+      <div class="trend_setting p_level">
+        <div class="p_top">
+          <div class="p_depth1">
+            <ul>
+              <li v-for="(item, k) in depth1" v-bind:key="k" v-bind:style="{ width: item.width }">
+                <a class="bt" v-bind:class="{ on: item.isOn }" href="#" v-on:click.prevent="clickDepth1(k);">
+                  <i v-bind:class="item.ico"></i>{{ item.txt }}
+                </a>
+              </li>
+              <!-- <li><a class="bt" href="#"><i class="ico ico_sector"></i>부문</a></li> -->
+            </ul>
+          </div>
+          <!-- //p_depth1 -->
+        </div>
+        <transition name="ani">
+        <div class="p_bottom" v-if="group">
+          <div class="p_depth2">
+            <transition-group name="ani" tag="ul">
+              <li v-for="(item, k) in depth2" v-bind:key="k">
+                <a class="bt" v-bind:class="{ on: item.isOn }" href="#" v-on:click.prevent="clickDepth2(k);">{{ item.txt }}</a>
+              </li>
+              <!-- <li><a class="bt" href="#">한라홀딩스(지주)</a></li> -->
+            </transition-group>
+
+            <div class="p_depth3">
+              <transition-group name="ani" tag="ul">
+                <li v-for="(item, k) in depth3" v-bind:key="k">
+                  <a class="bt" v-bind:class="{ on: item.isOn }" href="#" v-on:click.prevent="clickDepth3(k);">{{ item.txt }}</a>
+                </li>
+                <!-- <li><a class="bt on" href="#">국내</a></li> -->
+              </transition-group>
+            </div>
+            <!-- //p_depth3 -->
+          </div>
+          <!-- //p_depth2 -->
+        </div>
+        </transition>
+      </div>
+    </div>
+    <!-- //trend_setting_wrap -->
+
+    <div class="trend_setting_wrap" id="trend_period">
+      <h2>분석 기간 설정</h2>
+      <div class="trend_setting p_period">
+        <div class="p_top">
+          <div class="p_depth1">
+            <div class="style_radio">
+              <label><input type="radio" name="yearType" v-model="type" value="year"><i></i><strong>년도</strong></label>
+            </div>
+            <div class="style_radio">
+              <label><input type="radio" name="yearType" v-model="type" value="quater"><i></i><strong>분기</strong></label>
+            </div>
+            <div class="style_radio">
+              <label><input type="radio" name="yearType" v-model="type" value="month_period"><i></i><strong>월(기간)</strong></label>
+            </div>
+            <div class="style_radio">
+              <label><input type="radio" name="yearType" v-model="type" value="month_select"><i></i><strong>월(선택)</strong></label>
+            </div>
+          </div>
+          <!-- //p_depth1 -->
+        </div>
+        <div class="p_bottom">
+          <div class="p_depth2" v-show="type == 'year'">
+            <table>
+              <tr>
+                <th>년도 선택</th>
+                <td>
+                  <div class="style_select">
+                    <label>
+                      <!-- <span key="year-span0">{{ select.year[ 0 ].text }}</span> -->
+                      <span></span>
+                      <select name="year_y_from">
+                        <option v-for="(item, k) in select.year" v-bind:key="k" v-bind:value="item.value" v-once>{{ item.text }}</option>
+                        <!-- <option value="2008" selected>2008년</option> -->
+                      </select>
+                    </label>
+                  </div>
+                  <span class="style_select_span">-</span>
+                  <div class="style_select">
+                    <label>
+                      <!-- <span key="year-span1">{{ select.year[ select.year.length - 1 ].text }}</span> -->
+                      <span></span>
+                      <select name="year_y_to">
+                        <option v-for="(item, k) in select.year" v-bind:key="k" v-bind:value="item.value" v-bind:selected="true" v-once>{{ item.text }}</option>
+                        <!-- <option value="2008">2008년</option> -->
+                      </select>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- //p_depth2 -->
+          <div class="p_depth2" v-show="type == 'quater'">
+            <table>
+              <tr>
+                <th>년도 선택</th>
+                <td>
+                  <div class="style_select">
+                    <label>
+                      <!-- <span key="quater-span0">{{ select.quater[ 0 ].text }}</span> -->
+                      <span></span>
+                      <select name="quater_y_from">
+                        <option v-for="(item, k) in select.quater" v-bind:key="k" v-bind:value="item.value" v-once>{{ item.text }}</option>
+                        <!-- <option value="2016" selected>2016년</option> -->
+                      </select>
+                    </label>
+                  </div>
+                  <span class="style_select_span">-</span>
+                  <div class="style_select">
+                    <label>
+                      <!-- <span key="quater-span1">{{ select.quater[ select.quater.length - 1 ].text }}</span> -->
+                      <span></span>
+                      <select name="quater_y_to">
+                        <option v-for="(item, k) in select.quater" v-bind:key="k" v-bind:value="item.value" v-bind:selected="true" v-once>{{ item.text }}</option>
+                        <!-- <option value="2016">2016년</option> -->
+                      </select>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>분기 선택</th>
+                <td>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="quater" value="1" checked /><i></i><strong>1Q</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="quater" value="2" checked /><i></i><strong>2Q</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="quater" value="3" checked /><i></i><strong>3Q</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="quater" value="4" checked /><i></i><strong>4Q</strong></label>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- //p_depth2 -->
+          <div class="p_depth2" v-show="type == 'month_period'">
+            <table>
+              <tr>
+                <th>기간 선택</th>
+                <td>
+                  <div class="style_select">
+                    <label>
+                      <!-- <span key="month_period-span0">{{ select.month_period[ 0 ].text }}</span> -->
+                      <span></span>
+                      <select name="month_period_y_from">
+                        <option v-for="(item, k) in select.month_period" v-bind:key="k" v-bind:value="item.value" v-once>{{ item.text }}</option>
+                        <!-- <option value="2016" selected>2016년</option> -->
+                      </select>
+                    </label>
+                  </div>
+                  <div class="style_select">
+                    <label>
+                      <span>1월</span>
+                      <select name="month_period_m_from">
+                        <option value="01" selected>1월</option>
+                        <option value="02">2월</option>
+                        <option value="03">3월</option>
+                        <option value="04">4월</option>
+                        <option value="05">5월</option>
+                        <option value="06">6월</option>
+                        <option value="07">7월</option>
+                        <option value="08">8월</option>
+                        <option value="09">9월</option>
+                        <option value="10">10월</option>
+                        <option value="11">11월</option>
+                        <option value="12">12월</option>
+                      </select>
+                    </label>
+                  </div>
+                  <span class="style_select_span">-</span>
+                  <div class="style_select">
+                    <label>
+                      <!-- <span key="month_period-span1">{{ select.month_period[ select.month_period.length - 1 ].text }}</span> -->
+                      <span></span>
+                      <select name="month_period_y_to">
+                        <option v-for="(item, k) in select.month_period" v-bind:key="k" v-bind:value="item.value" v-bind:selected="true" v-once>{{ item.text }}</option>
+                        <!-- <option value="2016">2016년</option> -->
+                      </select>
+                    </label>
+                  </div>
+                  <div class="style_select">
+                    <label>
+                      <span>12월</span>
+                      <select name="month_period_m_to">
+                        <option value="01">1월</option>
+                        <option value="02">2월</option>
+                        <option value="03">3월</option>
+                        <option value="04">4월</option>
+                        <option value="05">5월</option>
+                        <option value="06">6월</option>
+                        <option value="07">7월</option>
+                        <option value="08">8월</option>
+                        <option value="09">9월</option>
+                        <option value="10">10월</option>
+                        <option value="11">11월</option>
+                        <option value="12"selected>12월</option>
+                      </select>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- //p_depth2 -->
+          <div class="p_depth2" v-show="type == 'month_select'">
+            <table>
+              <tr>
+                <th>기간 선택</th>
+                <td>
+                  <div class="style_select">
+                    <label>
+                      <!-- <span key="month_select-span0">{{ select.month_select[ 0 ].text }}</span> -->
+                      <span></span>
+                      <select name="month_select_y_from">
+                        <option v-for="(item, k) in select.month_select" v-bind:key="k" v-bind:value="item.value" v-once>{{ item.text }}</option>
+                        <!-- <option value="2016" selected>2016년</option> -->
+                      </select>
+                    </label>
+                  </div>
+                  <span class="style_select_span">-</span>
+                  <div class="style_select">
+                    <label>
+                      <!-- <span key="month_select-span1">{{ select.month_select[ select.month_select.length - 1 ].text }}</span> -->
+                      <span></span>
+                      <select name="month_select_y_to">
+                        <option v-for="(item, k) in select.month_select" v-bind:key="k" v-bind:value="item.value" v-bind:selected="true" v-once>{{ item.text }}</option>
+                        <!-- <option value="2016">2016년</option> -->
+                      </select>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>월 선택</th>
+                <td>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="01" checked /><i></i><strong>1월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="02" checked /><i></i><strong>2월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="03" checked /><i></i><strong>3월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="04" checked /><i></i><strong>4월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="05" checked /><i></i><strong>5월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="06" checked /><i></i><strong>6월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="07" checked /><i></i><strong>7월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="08" checked /><i></i><strong>8월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="09" checked /><i></i><strong>9월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="10" checked /><i></i><strong>10월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="11" checked /><i></i><strong>11월</strong></label>
+                  </div>
+                  <div class="style_check">
+                    <label><input type="checkbox" name="month_select_m" value="12" checked /><i></i><strong>12월</strong></label>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- //p_depth2 -->
+          <div class="p_bt">
+            <a class="bt" href="#" v-on:click.prevent="okClick();">OK</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- //trend_setting_wrap -->
+  </form>
+
+  <div class="trend_graph_box">
+    <h3>Sales</h3>
+    <div class="chart_box chart_box6">
+      <span class="p_unit">(단위 : 억원)</span>
+      <div class="chart chart_type13" id="chart1"></div>
+    </div>
+    <!-- chart_box -->
+  </div>
+  <!-- //trend_graph_box -->
+
+  <div class="trend_graph_box">
+    <h3>EBIT(%) 및 PBT</h3>
+    <div class="chart_box chart_box6">
+      <span class="p_unit">(단위 : 억원,%)</span>
+      <div class="chart chart_type13" id="chart2"></div>
+    </div>
+    <!-- chart_box -->
+  </div>
+  <!-- //trend_graph_box -->
+
+</section>
+<!--//trend_wrap-->
+<script>
+  $(function () {
+		MYAPP.trendSetting.init( 'pal', MYAPP.trendPal );
+  });
+</script>

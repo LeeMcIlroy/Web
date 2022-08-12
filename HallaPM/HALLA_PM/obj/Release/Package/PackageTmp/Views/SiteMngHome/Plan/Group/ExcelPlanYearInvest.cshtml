@@ -1,0 +1,211 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+
+    PlanGroup chk = Model.chk;
+    List<PmInvestBusiness> pmLastYearBu = Model.pmLastYearBu;
+    List<PmInvestSum> pmLastYearCom = Model.pmLastYearCom;
+    List<PlanYearInvestBusiness> pnThisYearBu = Model.pnThisYearBu;
+    List<PlanYearInvestSummary> pnThisYearCom = Model.pnThisYearCom;
+
+    var groupPn = pnThisYearCom.GroupBy(g => g.YearlyYear)
+        .Select(cl => new PlanYearInvestSummary
+        {
+            YearlyYear = cl.First().YearlyYear,
+            Investment = cl.Sum(c => c.Investment),
+            Personnel = cl.Sum(c => c.Personnel),
+            DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+            OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+        }).ToList();
+
+    var groupPm = pmLastYearCom.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+        .Where(w => w.Monthly == "12")
+        .GroupBy(g => g.investYear)
+        .Select(cl => new PmInvestSum
+        {
+            investYear = cl.First().investYear,
+            Investment = cl.Sum(c => c.Investment),
+            Personnel = cl.Sum(c => c.Personnel),
+            DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+            OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+        }).ToList();
+
+    var pmLastYearBuWhere = pmLastYearBu.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).Where(w => w.Monthly == "12").ToList();
+
+    var businessList = pnThisYearBu.GroupBy(g => new { g.OrgCompanySeq, g.OrgBusinessSeq })
+        .Select(cl => new PlanYearInvestBusiness
+        {
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+            BusinessName = cl.First().BusinessName
+        }).ToList();
+
+    var companyList = pnThisYearCom.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PlanYearInvestSummary
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        }).ToList();
+
+    string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>중기 투자, 인원</h2>
+        <h3>한라 그룹</h3>
+    </div><!--//top_wrap-->
+
+    <div class="con_wrap">
+        <div class="graph_box">
+            <div class="box">
+
+                <table class="tbl tbl_type01" border="1">
+                    <colgroup>
+                        <col width="10%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="7" class="rbd lbd0" style="text-align:right;">
+                                (단위 : 투자 억원, 인원 명)
+                            </th>
+                        </tr>
+                        <tr>
+                            <th scope="col" class="rbd lbd0">
+                                구분
+                            </th>
+                            <th scope="col">@(Convert.ToInt32(groupPn.First().YearlyYear) - 1) 년</th>
+                            @foreach (var summary in groupPn)
+                            {
+                                <th scope="col">@summary.YearlyYear 년</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="lbd0">투자</th>
+                            <th style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : groupPm.First().Investment)</th>
+                            @foreach (var summary in groupPn)
+                            {
+                                <td style="mso-number-format:\#\,\#\#0\.00">@summary.Investment</td>
+                            }
+                        </tr>
+
+                        <tr>
+                            <th scope="row" class="lbd0">인원</th>
+                            <th style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : groupPm.First().Personnel)</th>
+                            @foreach (var summary in groupPn)
+                            {
+                                <td style="mso-number-format:\#\,\#\#0\.00">@summary.Personnel</td>
+                            }
+                        </tr>
+                        <tr>
+                            <th scope="row" class="lbd0">국내인원</th>
+                            <th style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : groupPm.First().DomesticPersonnel)</th>
+                            @foreach (var summary in groupPn)
+                            {
+                                <td style="mso-number-format:\#\,\#\#0\.00">@summary.DomesticPersonnel</td>
+                            }
+                        </tr>
+
+                        <tr>
+                            <th scope="row" class="lbd0">해외인원</th>
+                            <th style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : groupPm.First().OverseasPersonnel)</th>
+                            @foreach (var summary in groupPn)
+                            {
+                                <td style="mso-number-format:\#\,\#\#0\.00">@summary.OverseasPersonnel</td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div><!--//box-->
+        </div><!--//graph_box-->
+
+    </div><!--//con_wrap-->
+
+    <div class="tab_wrap">
+        @foreach (var item in companyList.OrderBy(o => o.OrgUnionSeq).ThenBy(t => t.OrgCompanySeq))
+        {
+            var pmLastYearComWhere = pmLastYearCom.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+            .Where(w => w.Monthly == "12")
+            .Where(w => w.OrgCompanySeq == item.OrgCompanySeq).ToList();
+            var pnThisYearComWhere = pnThisYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).ToList();
+
+            <div class="type_tab_con" id="yearpal_@item.OrgCompanySeq">
+                <div class="con_wrap">
+                    <h3>@item.CompanyName</h3>
+                    <div class="graph_box">
+                        <div class="box">
+
+                            <table class="tbl tbl_type01" border="1">
+                                <colgroup>
+                                    <col width="10%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="7" class="rbd lbd0" style="text-align:right;">
+                                            (단위 : 투자 억원, 인원 명)
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col">@(Convert.ToInt32(pnThisYearComWhere.First().YearlyYear) - 1)년</th>
+                                        @foreach (var summary in pnThisYearComWhere)
+                                        {
+                                            <th scope="col">@summary.YearlyYear 년</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="lbd0">투자</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmLastYearComWhere.Count() == 0 ? 0 : pmLastYearComWhere.First().Investment)</td>
+                                        @foreach (var summary in pnThisYearComWhere)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@summary.Investment</td>
+                                        }
+                                    </tr>
+
+                                    <tr>
+                                        <th scope="row" class="lbd0">인원</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmLastYearComWhere.Count() == 0 ? 0 : pmLastYearComWhere.First().Personnel)</td>
+                                        @foreach (var summary in pnThisYearComWhere)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@summary.Personnel</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">국내인원</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmLastYearComWhere.Count() == 0 ? 0 : pmLastYearComWhere.First().DomesticPersonnel)</td>
+                                        @foreach (var summary in pnThisYearComWhere)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@summary.DomesticPersonnel</td>
+                                        }
+                                    </tr>
+
+                                    <tr>
+                                        <th scope="row" class="lbd0">해외인원</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmLastYearComWhere.Count() == 0 ? 0 : pmLastYearComWhere.First().OverseasPersonnel)</td>
+                                        @foreach (var summary in pnThisYearComWhere)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@summary.OverseasPersonnel</td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div><!--//box-->
+                    </div><!--//graph_box-->
+                </div><!--//con_wrap-->
+            </div><!--//type_tab_con-->
+        }
+    </div><!--//tab_wrap-->
+</div><!--//plan_wrap-->

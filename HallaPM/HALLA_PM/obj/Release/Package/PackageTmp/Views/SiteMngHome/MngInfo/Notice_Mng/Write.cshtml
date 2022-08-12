@@ -1,0 +1,186 @@
+﻿
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>안내/알림관리</span>
+        <strong>공지사항 관리</strong>
+    </div>
+
+    <form name="writeForm" id="writeForm" enctype="multipart/form-data">
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+
+        <div class="con_box search">
+            <h3 class="mt0">공지사항 관리</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 공지사항을 관리할 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+
+            <table class="tbl th_ver ta_left" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>                
+                <tbody>
+                    <tr>
+                        <th scope="row">제목</th>
+                        <td><input type="text" name="title" /></td>
+                    </tr>        
+                    <tr>
+                        <th scope="row">등록일</th>
+                        <td>
+                            <span class="datepicker">
+                                <input type="text" id="inputRegDate" name="inputRegDate" style="width:15%;" />
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>첨부파일 1</th>
+                        <td class="filebox">
+                            <input class="upload-name" id="fileName1" name="fileName[]" style="width:400px;" value="파일선택" disabled="disabled" />
+                            <label for="uploadFile1">업로드</label>
+                            <input type="file" id="uploadFile1" name="uploadFile1" class="upload-hidden">
+                        </td>
+                    </tr>    
+                    <tr>
+                        <th>첨부파일 2</th>
+                        <td class="filebox">
+                            <input class="upload-name" id="fileName2" name="fileName[]" style="width:400px;" value="파일선택" disabled="disabled" />
+                            <label for="uploadFile2">업로드</label>
+                            <input type="file" id="uploadFile2" name="uploadFile2" class="upload-hidden">
+                        </td>
+                    </tr>                           
+                    <tr>
+                        <th>첨부파일 3</th>
+                        <td class="filebox">
+                            <input class="upload-name" id="fileName3" name="fileName[]" style="width:400px;" value="파일선택" disabled="disabled" />
+                            <label for="uploadFile3">업로드</label>
+                            <input type="file" id="uploadFile3" name="uploadFile3" class="upload-hidden">
+                        </td>
+                    </tr>    
+                    <tr>
+                        <th>첨부파일 4</th>
+                        <td class="filebox">
+                            <input class="upload-name" id="fileName4" name="fileName[]" style="width:400px;" value="파일선택" disabled="disabled" />
+                            <label for="uploadFile4">업로드</label>
+                            <input type="file" id="uploadFile4" name="uploadFile4" class="upload-hidden">
+                        </td>
+                    </tr>    
+                    <tr>
+                        <th>첨부파일 5</th>
+                        <td class="filebox">
+                            <input class="upload-name" id="fileName5" name="fileName[]" style="width:400px;" value="파일선택" disabled="disabled" />
+                            <label for="uploadFile5">업로드</label>
+                            <input type="file" id="uploadFile5" name="uploadFile5" class="upload-hidden">
+                        </td>
+                    </tr>    
+                    <tr>
+                        <th>내용</th>
+                        <td>
+                            <div class="editerBox">
+                                <textarea id="editor" rows="10" cols="100"></textarea>
+                                <input type="hidden" id="contents" name="contents" />
+                            </div>
+                        </td>
+                    </tr>     
+                    <tr>
+                        <th>사용여부</th>
+                        <td>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="isUse" value="Y" checked><i></i>
+                                    <strong>사용</strong>
+                                </label>
+                            </div>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="isUse" value="N"><i></i>
+                                    <strong>미사용</strong>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>       
+                </tbody>
+            </table>
+
+            <div class="btn_area align_left_right">
+                <a href="javascript:;" onclick="onSearch(document.writeForm)" class="btn full_green left">목록</a>
+                <a href="#" onclick="onWrite(document.writeForm); return false;" class="btn full_green">저장</a>
+                <a href="#" onclick="onCancel();" class="btn full_green">취소</a>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+
+
+<script type="text/javascript" src="/Contents/SiteMngHome/Common/se/js/HuskyEZCreator.js" charset="utf-8"></script>
+<script>
+    var obj = [];
+    setNhnSmartEditor(obj, "editor", "notice"); // 에디트 세팅
+
+    $(function () {
+        MYAPP.fileStyle.init();
+        MYAPP.form.datePicker("#inputRegDate");
+    });
+
+    function onWrite(form) {
+        // 에디트 정보 세팅
+        obj.getById["editor"].exec("UPDATE_CONTENTS_FIELD", []);
+        $("input[name=contents]").val($("#editor").val());
+
+        if (form.title.value == "" || form.title.value == null) {
+            alert("제목은 필수입니다.");
+            return false;
+        }
+        if (form.inputRegDate.value == "" || form.inputRegDate.value == null) {
+            alert("등록일은 필수입니다.");
+            return false;
+        }
+        if ($("input[name=contents]").val() == "" || $("input[name=contents]").val()  == null) {
+            alert("내용은 필수입니다.");
+            return false;
+        }
+
+        // 정보 체크 후, 해당 폼 SUBMIT;
+        form.method = "POST";
+        form.action = "writeAction";
+        form.submit();
+        
+    }
+
+    function onCancel() {
+        if (confirm("작성 된 내용을 취소하시겠습니까?")) {
+            location.reload();
+        }
+    }
+
+    function onSearch(form) {
+        form.action = "/SiteMngHome/MngInfo/Notice_Mng/List";
+        form.method = "POST";
+        form.submit();
+    }
+
+    // history back observed
+    window.onload = function () {
+        if (typeof history.pushState === "function") {
+            history.pushState("halla", null, null);
+            window.onpopstate = function () {
+                location.href = "list";
+            };
+        }
+    };
+</script>
+

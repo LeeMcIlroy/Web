@@ -1,0 +1,315 @@
+﻿@using HALLA_PM.Models;
+@{
+    ViewBag.Title = "Company_Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    List<OrgUnion> UnionList = Model.UnionList;
+    OrgCompany org = Model.org;
+    List<PlanSchedule> YearList = Model.YearList;
+}
+
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>관리자관리</span>
+        <span>조직관리</span>
+        <strong>회사 등록</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="Seq" value="@org.Seq" />
+        <input type="hidden" name="hCheck" id="hCheck" value="N" />
+        <input type="hidden" name="message" value="수정" />
+        <input type="hidden" name="oldCompanyName" id="oldCompanyName" value="@org.CompanyName" />
+        <input type="hidden" name="oldOrgUnionSeq" id="oldOrgUnionSeq" value="@org.OrgUnionSeq" />
+        <div class="con_box search">
+            <h3 class="mt0">회사 등록</h3>
+            <div class="bg_gray">
+                수정 삭제 시 하위 조직까지 일괄 반영되므로 신중히 작업해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">조직레벨</th>
+                        <td>회사</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">부문</th>
+                        <td>
+                            <!--@org.UnionName-->
+                            <div class="style_select" style="width:30%;">
+                                <label>
+                                    <span></span>
+                                    <select name="OrgUnionSeq" id="OrgUnionSeq">
+                                        <option value="">선택하세요.</option>
+                                        @foreach (var item in UnionList)
+                                        {
+                                            if(item.Seq == org.OrgUnionSeq)
+                                            {
+                                                <option value="@item.Seq" selected>@item.UnionName</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@item.Seq">@item.UnionName</option>
+                                            }                                            
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">회사명</th>
+                        <td>
+                            <input type="text" name="CompanyName" id="CompanyName" style="width:30%;" value="@org.CompanyName" />
+                            <button class="btn full_green" type="button" onclick="onDuplicateAllowCompany();">중복확인</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">사용여부</th>
+                        <td>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="Y" @(org.IsUse == "Y" ? " checked" : "") onchange="onChange();"><i></i>
+                                    <strong>사용</strong>
+                                </label>
+                            </div>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="N" @(org.IsUse == "Y" ? " " : " checked") onchange="onChange();"><i></i>
+                                    <strong>미사용</strong>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="useDate">
+                        <th scope="row"><span id="useDateName">@(org.IsUse == "Y" ? "사용시작년월" : "사용종료년월")</span></th>
+                        <td>
+                            <div class="style_select" style="width:30%;">
+                                <label>
+                                    <span></span>
+                                    <select name="UseYear" id="UseYear">
+                                        <option value="">선택하세요.</option>
+                                        @foreach (var item in YearList)
+                                        {
+                                            if (org.UseYear != null && org.UseYear == item.ScheduleYear)
+                                            {
+                                                <option value="@item.ScheduleYear" selected>@item.ScheduleYear</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@item.ScheduleYear">@item.ScheduleYear</option>
+                                            }
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="style_select" style="width:30%;">
+                                <label>
+                                    <span></span>
+                                    <select name="UseMonth" id="UseMonth">
+                                        <option value="">선택하세요.</option>
+                                        @for (int i = 1; i <= 12; i++)
+                                        {
+                                            if (org.UseMonth != null && org.UseMonth == i.ToString().PadLeft(2, '0'))
+                                            {
+                                                <option value="@(i.ToString().PadLeft(2, '0'))" selected>@(i.ToString().PadLeft(2, '0'))</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@(i.ToString().PadLeft(2, '0'))">@(i.ToString().PadLeft(2, '0'))</option>
+                                            }
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                            <div id="useDateDes">
+                                @(org.IsUse == "Y" ? "※ 사용시작년월부터 데이터 입력이 가능합니다." + Environment.NewLine + "이미 존재하는 데이터는 영향을 받지 않습니다." : "※ 사용종료년월부터 데이터 입력이 불가능합니다." + Environment.NewLine + "또한 사용종료년월 이후에 데이터가 있으면 삭제 됩니다.")
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="btn_area2">
+                <div class="left">
+                    <button class="btn full_blue" type="button" onclick="onList();">목록</button>
+                </div>
+                <div class="right">
+                    <button class="btn full_green" type="button" onclick="onDelete();">삭제</button>
+                    <button class="btn full_green" type="button" onclick="onWrite();">수정</button>
+                </div>
+            </div>
+        </div>
+        <!--// con_box -->
+    </form>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $("#frmMain").validate({
+            rules: {
+                OrgUnionSeq: {
+                    required: true,
+                },
+                CompanyName: {
+                    required: true,
+                }
+            },
+            messages: {
+                OrgUnionSeq: {
+                    required: "부문을 선택하세요.",
+                },
+                CompanyName: {
+                    required: "회사명을 입력하세요.",
+                }
+            }, errorPlacement: function (error, element) {
+                // do nothing
+            },
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    alert(validator.errorList[0].message);
+                    validator.errorList[0].element.focus();
+                }
+            }
+        });
+    });
+
+    function onChange() {
+        var d = $("input[name=IsUse]:checked").val();
+        //alert(d);
+        if (d == "Y") {
+            $("#useDateName").html('사용시작년월');
+            $("#useDateDes").html('※ 사용시작년월부터 데이터 입력이 가능합니다.<br />이미 존재하는 데이터는 영향을 받지 않습니다.');
+
+        }
+        else {
+            $("#useDateName").html('사용종료년월');
+            $("#useDateDes").html('※ 사용종료년월부터 데이터 입력이 불가능합니다.<br />또한 사용종료년월 이후에 데이터가 있으면 삭제 됩니다.');
+        }
+        //
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onWrite() {
+        var f = document.frmMain;
+
+
+        if ($("#OrgUnionSeq").val() == "") {
+            alert('부문을 선택하세요.');
+            return;
+        }
+
+        if (f.UseYear.value == "") {
+            alert('년도를 선택하세요.');
+            return
+        }
+        if (f.UseMonth.value == "") {
+            alert('월를 선택하세요.');
+            return
+        }
+
+        if ($(f).valid()) {
+            $.ajax({
+                url: "Company_Duplicate_Ajax",
+                type: "post",
+                data: { CompanyName: $("#CompanyName").val(), OrgUnionSeq: $("#OrgUnionSeq").val() },
+                dataType: "json",
+                success: function (res) {
+                    //
+                    if (res.success == true) {
+                        $("#hCheck").val("Y");
+                    }
+                    else {
+                        $("#hCheck").val("N");
+                    }
+                    
+                    if (f.oldCompanyName.value == f.CompanyName.value && f.oldOrgUnionSeq.value == f.OrgUnionSeq.value) {
+                    }
+                    else {
+                        if (f.hCheck.value == "N") {
+                            alert("중복 확인을 눌러주세요.");
+                            return false;
+                        }
+                    }
+
+                    if (confirm("수정하시겠습니까?")) {
+                        f.action = "Company_Write_Action";
+                        f.submit();
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+    }
+
+    function onDelete() {
+        var f = document.frmMain;
+
+        if (f.UseYear.value == "") {
+            alert('종료년도를 선택하세요.');
+            return
+        }
+        if (f.UseMonth.value == "") {
+            alert('종료월를 선택하세요.');
+            return
+        }
+
+        if (confirm("삭제 시 하위 조직도 같이 삭제됩니다.\n삭제하시겠습니까?")) {
+            f.action = "Company_Delete_Action";
+            f.submit();
+        }
+    }
+
+    function onDuplicateAllowCompany() {
+
+        if ($("#OrgUnionSeq").val() == "") {
+            alert('부문을 선택하세요.');
+            return;
+        }
+    
+        var f = document.frmMain;
+        
+        if ($(f).valid()) {
+            $.ajax({
+                url: "Company_Duplicate_Ajax",
+                type: "post",
+                data: { CompanyName: $("#CompanyName").val(), OrgUnionSeq: $("#OrgUnionSeq").val() },
+                dataType: "json",
+                success: function (res) {
+                    //
+                    if (res.success == true) {
+                        alert("등록 가능합니다.");
+                        $("#hCheck").val("Y");
+                    }
+                    else {
+                        alert("조직명이 중복되었습니다.\n다시 입력해주세요");
+                        $("#hCheck").val("N");
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+    }
+</script>
+

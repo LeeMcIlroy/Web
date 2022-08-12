@@ -1,0 +1,171 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "list";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    int disclosureItemCount = Model.disclosureItemCount;
+    int disclosureDetailCount = Model.disclosureDetailCount;
+    List<DisclosureTitle> list = Model.list;
+    Search search = ViewBag.Search;
+
+    string detailLink = "javascript: alert('공시항목을 먼저 등록하세요.'); return false";
+    string titleLink = "javascript: alert('세부항목을 먼저 등록하세요.'); return false";
+
+    if (disclosureItemCount > 0)
+    {
+        detailLink = "javascript: onRegist('DisclosureDetail_Write'); ";
+    }
+    if (disclosureDetailCount > 0)
+    {
+        titleLink = "javascript: onRegist('DisclosureTitle_Write'); ";
+    }
+}
+
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>관리자관리</span>
+        <span>공시관리</span>
+        <strong>리스트</strong>
+    </div>
+
+    <form name="frmMain" method="post">
+        <input type="hidden" name="seq" />
+        <input type="hidden" name="disItemSeq" />
+
+        <div class="con_box search">
+            <h3 class="mt0">공시관리</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> Level은 공시항목 > 세부항목 > 공시제목으로 구분됩니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 삭제 시 계획 및 공시 데이터가 손실될 수 있으므로 유의해주세요.
+            </div>
+            <div class="btn_area">
+                <button class="btn full_green" onclick="javascript: onRegist('DisclosureItem_Write');">공시항목등록</button>
+                <button class="btn full_green" onclick="@detailLink">세부항목등록</button>
+                <button class="btn full_green" onclick="@titleLink">공시제목등록</button>
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box danzi_list">
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:25%" />
+                    <col style="width:25%" />
+                    <col style="width:25%" />
+                    <col style="width:25%" />
+                    <col style="width:25%" />
+
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="row">Level1 공시항목</th>
+                        <th scope="row">Level2 세부항목</th>
+                        <th scope="row">Level3 공시제목</th>
+                        <th scope="row">공시코드</th>
+                        <th scope="row">사용여부</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (list == null || list.Count <= 0)
+                        {
+                            <tr><td colspan='5'>데이터가 없습니다.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var item in list)
+                            {
+                                <tr>
+                                    <td>
+                                        @{
+                                            if (item.DetailSeq == 0)
+                                            {
+                                                <a href="javascript:;" onclick="onEdit('DisclosureItem_Edit', @item.DisItemSeq);">@item.DisName</a>
+                                            }
+                                            else
+                                            {
+                                                @item.DisName
+                                            }
+
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            if (item.DetailSeq != 0 && item.Seq == 0)
+                                            {
+                                                <a href="javascript:;" onclick="onEdit('DisclosureDetail_Edit', @item.DetailSeq);">@item.DetailName</a>
+                                            }
+                                            else if (item.DetailSeq != 0 && item.Seq != 0)
+                                            {
+                                                @item.DetailName
+                                            }
+                                            else
+                                            {
+                                                <label>-</label>
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            if (item.Seq != 0)
+                                            {
+                                                <a href="javascript:;" onclick="onTitleEdit('DisclosureTitle_Edit', @item.Seq , @item.DisItemSeq);">@item.Title</a>
+                                            }
+                                            else
+                                            {
+                                                <label>-</label>
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            if (item.DisCode != null)
+                                            {
+                                                @item.DisCode
+                                            }
+                                            else
+                                            {
+                                                <label>-</label>
+                                            }
+                                         }
+                                     </td>
+                                    <td>@item.IsUse</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+            <!--// paging-->
+            <!--// btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+    <script>
+        function onRegist(actionName) {
+            var f = document.frmMain;
+
+            f.action = actionName;
+            f.submit();
+        }
+
+        function onEdit(actionName, seq) {
+            var f = document.frmMain;
+            f.seq.value = seq;
+            f.action = actionName;
+            f.submit();
+        }
+        function onTitleEdit(actionName, seq, disItemSeq) {
+            var f = document.frmMain;
+            console.log(f);
+            f.seq.value = seq;
+            f.disItemSeq.value = disItemSeq;
+            f.action = actionName;
+            f.submit();
+        }
+    </script>
+</div>

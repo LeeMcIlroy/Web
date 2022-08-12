@@ -1,0 +1,178 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit2";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PlanMonthlyInvest planMonthlyInvest = Model.planMonthlyInvest;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<PlanMonthlyInvestSummary> pSummaryList = Model.pSummaryList;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>사업계획</span>
+        <strong>월별투자인원계획</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="Seq" value="@planMonthlyInvest.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@planMonthlyInvest.OrgCompanySeq" />
+        <input type="hidden" name="RegistStatus" value="@planMonthlyInvest.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+
+        <div class="con_box search">
+            <h3 class="mt0">월별투자인원계획 작성</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등이 계산되어 저장됩니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@(planMonthlyInvest.MonthlyInvestYear)</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = planMonthlyInvest.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <h3>월별 투자인원 요약</h3>
+            <table class="tbl th_ver ta_right">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row" rowspan="2">구분</th>
+                        <th colspan="4">@(Convert.ToInt32(planMonthlyInvest.MonthlyInvestYear) - 1)년</th>
+                        <th colspan="4">@(planMonthlyInvest.MonthlyInvestYear)년</th>
+                    </tr>
+                    <tr>
+                        <th>투자</th>
+                        <th>인원</th>
+                        <th>국내인원</th>
+                        <th>해외인원</th>
+                        <th>투자</th>
+                        <th>인원</th>
+                        <th>국내인원</th>
+                        <th>해외인원</th>
+                    </tr>
+                    @foreach (var item2 in pSummaryList)
+                    {
+                        <tr>
+                            <th scope="row">
+                                <label>@(Convert.ToInt32(item2.Monthly))월</label>
+                            </th>
+                            <td>@WebUtil.NCommaRound(item2.BeforeInvestment, 0)</td>
+                            <td>@WebUtil.NCommaRound(item2.BeforePersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(item2.BeforeDomesticPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(item2.BeforeOverseasPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(item2.Investment, 0)</td>
+                            <td>@WebUtil.NCommaRound(item2.Personnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(item2.DomesticPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(item2.OverseasPersonnel, 0)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+            </div><!--//btn_area-->
+
+        </div>
+        <!--// con_box -->
+    </form>
+</div>
+<script>
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Edit";
+            f.submit();
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+        onRegistStatusChange(afterRegistStatus);
+        //var f = document.frmMain;
+        //f.afterRegistStatus.value = afterRegistStatus;
+        //MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+</script>
+

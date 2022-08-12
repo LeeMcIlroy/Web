@@ -1,0 +1,418 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+
+    List<PmBsSummaryExp> pmThisYearCom = Model.pmThisYearCom;
+    List<PmBsSummaryExp> pmLastYearCom = Model.pmLastYearCom;
+    List<PmBsSummaryExp> pnThisYearCom = Model.pnThisYearCom;
+
+    List<PmBsSummaryEx> pmThisYearComEx = Model.pmThisYearComEx;
+    List<PmBsSummaryEx> pmLastYearComEx = Model.pmLastYearComEx;
+    List<PmBsSummaryEx> pnThisYearComEx = Model.pnThisYearComEx;
+
+    string companyName = "ExcelDownBs";
+    string year = "";
+    string mm = "";
+    if (pmThisYearCom.Count() > 0)
+    {
+        companyName = pmThisYearCom.First().CompanyName;
+        year = pmThisYearCom.First().BsYear;
+        mm = pmThisYearCom.First().Monthly;
+    }
+
+    decimal month = Convert.ToDecimal(mm);
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>ViewingBs</title>
+    <style>
+        .mytable {
+            table-layout: fixed;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+            .mytable th, .mytable td {
+                padding: 5px 20px;
+                border: 1px solid black;
+                white-space: nowrap;
+                text-align: center;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format: \#\,\#\#0\.00;
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\.00;
+        }
+
+        .MsoNOne {
+            mso-number-format: \#\,\#\#0\.00;
+        }
+
+        .MsoNOnePer {
+            mso-number-format: \#\,\#\#0\.00%;
+        }
+    </style>
+</head>
+<body>
+    <h3>@(year)년 BS 관리지표(@(mm)월 누계)</h3>
+    <br />
+    <table>
+        <tr>
+            <th style="text-align:right" colspan="9">(단위 : 억원)</th>
+        </tr>
+    </table>
+    <table class="mytable">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="3" colspan="4">구분</th>
+                <th>@(Convert.ToInt32(year) - 1)년</th>
+                <th colspan="4">@(year)년</th>
+            </tr>
+            <tr class="buLevel">
+                <th>기말</th>
+                <th colspan="4">@(mm)월 누계</th>
+            </tr>
+            <tr class="buLevel">
+                <th>실적</th>
+                <th>계획</th>
+                <th>실적</th>
+                <th>계획대비</th>
+                <th>전년대비</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in pmThisYearCom)
+            {
+                PmBsSummaryExp comLastYearPm = pmLastYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                PmBsSummaryExp comThisYearPn = pnThisYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+
+                // 한라 예외의 경우 예외 추가
+                int unionCnt = 15;
+                if (pmThisYearCom.First().OrgCompanySeq == 6)
+                {
+                    unionCnt += 15;
+                }
+
+                if (comLastYearPm == null) { comLastYearPm = new PmBsSummaryExp(); }
+                if (comThisYearPn == null) { comThisYearPn = new PmBsSummaryExp(); }
+                <tr>
+                    <th class="ComLevel" rowspan="@(unionCnt)">@item.UnionName</th>
+                    <th class="ComLevel" rowspan="15">@item.CompanyName</th>
+                    <th class="ComLevel" rowspan="6">B/S</th>
+                    <th class="ComLevel">자산</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Assets, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Assets, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Assets, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Assets - comThisYearPn.Assets, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Assets - comLastYearPm.Assets, 0))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">부채</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Liabilities, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Liabilities, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Liabilities, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Liabilities - comThisYearPn.Liabilities, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Liabilities - comLastYearPm.Liabilities, 0))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">자본</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Capital, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Capital, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Capital, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Capital - comThisYearPn.Capital, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Capital - comLastYearPm.Capital, 0))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">현금</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Cash, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Cash, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Cash, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Cash - comThisYearPn.Cash, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Cash - comLastYearPm.Cash, 0))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">차입금</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Loan, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Loan, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Loan, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Loan - comThisYearPn.Loan, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Loan - comLastYearPm.Loan, 0))</th>
+                </tr>
+                comLastYearPm.LiabilitiesRate = WebUtil.NumberRound(comLastYearPm.Liabilities, comLastYearPm.Capital, 100, 0);
+                comThisYearPn.LiabilitiesRate = WebUtil.NumberRound(comThisYearPn.Liabilities, comThisYearPn.Capital, 100, 0);
+                item.LiabilitiesRate = WebUtil.NumberRound(item.Liabilities, item.Capital, 100, 0);
+                <tr>
+                    <th class="ComLevel">부채비율</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.LiabilitiesRate, 0)) %</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.LiabilitiesRate, 0)) %</th>
+                    <th>@(WebUtil.NCommaRound(item.LiabilitiesRate, 0)) %</th>
+                    <th>@(WebUtil.NCommaRound(item.LiabilitiesRate - comThisYearPn.LiabilitiesRate, 0)) %</th>
+                    <th>@(WebUtil.NCommaRound(item.LiabilitiesRate - comLastYearPm.LiabilitiesRate, 0)) %</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel" rowspan="3">ROIC</th>
+                    <th class="ComLevel">세후 영업이익</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.AfterTaxOperationProfit, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.AfterTaxOperationProfit, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.AfterTaxOperationProfit - comThisYearPn.AfterTaxOperationProfit, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.AfterTaxOperationProfit - comLastYearPm.AfterTaxOperationProfit, 0))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">투하자본</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.PainInCapital, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.PainInCapital, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.PainInCapital, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.PainInCapital - comThisYearPn.PainInCapital, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.PainInCapital - comLastYearPm.PainInCapital, 0))</th>
+                </tr>
+                comLastYearPm.Roic = WebUtil.NumberRound(comLastYearPm.AfterTaxOperationProfit, comLastYearPm.PainInCapital, 100, 1);
+                comThisYearPn.Roic = WebUtil.NewRoic(WebUtil.NumberRound(comThisYearPn.AfterTaxOperationProfit, comThisYearPn.PainInCapital, 100, 8), month);
+                item.Roic = WebUtil.NewRoic(WebUtil.NumberRound(item.AfterTaxOperationProfit, item.PainInCapital, 100, 8), month);
+                <tr>
+                    <th class="ComLevel">ROIC</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Roic, 1))%</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Roic, 1))%</th>
+                    <th>@(WebUtil.NCommaRound(item.Roic, 1))%</th>
+                    <th>@(WebUtil.NCommaRound(item.Roic - comThisYearPn.Roic, 1))%</th>
+                    <th>@(WebUtil.NCommaRound(item.Roic - comLastYearPm.Roic, 1))%</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel" rowspan="6">W/C</th>
+                    <th class="ComLevel">A/R</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Ar, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Ar, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Ar, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Ar - comThisYearPn.Ar, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Ar - comLastYearPm.Ar, 0))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">T/O days</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.ArToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.ArToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.ArToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.ArToDays - comThisYearPn.ArToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.ArToDays - comLastYearPm.ArToDays, 1))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">A/P</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Ap, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Ap, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Ap, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Ap - comThisYearPn.Ap, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Ap - comLastYearPm.Ap, 0))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">T/O days</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.ApToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.ApToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.ApToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.ApToDays - comThisYearPn.ApToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.ApToDays - comLastYearPm.ApToDays, 1))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">Inventory</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.Inventory, 0))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.Inventory, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Inventory, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Inventory - comThisYearPn.Inventory, 0))</th>
+                    <th>@(WebUtil.NCommaRound(item.Inventory - comLastYearPm.Inventory, 0))</th>
+                </tr>
+                <tr>
+                    <th class="ComLevel">T/O days</th>
+                    <th>@(WebUtil.NCommaRound(comLastYearPm.InventoryToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(comThisYearPn.InventoryToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.InventoryToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.InventoryToDays - comThisYearPn.InventoryToDays, 1))</th>
+                    <th>@(WebUtil.NCommaRound(item.InventoryToDays - comLastYearPm.InventoryToDays, 1))</th>
+                </tr>
+                if (pmThisYearCom.First().OrgCompanySeq == 6)
+                {
+                    PmBsSummaryEx comThisYearPmEx = pmThisYearComEx.FirstOrDefault();
+                    PmBsSummaryEx comLastYearPmEx = pmLastYearComEx.FirstOrDefault();
+                    PmBsSummaryEx comThisYearPnEx = pnThisYearComEx.FirstOrDefault();
+
+                    if (comThisYearPmEx == null) { comThisYearPmEx = new PmBsSummaryEx(); }
+                    if (comLastYearPmEx == null) { comLastYearPmEx = new PmBsSummaryEx(); }
+                    if (comThisYearPnEx == null) { comThisYearPnEx = new PmBsSummaryEx(); }
+                    <tr>
+                        <th class="ComLevel" rowspan="15">(주)한라별도</th>
+                        <th class="ComLevel" rowspan="6">B/S</th>
+                        <th class="ComLevel">자산</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Assets, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Assets, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Assets, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Assets - comThisYearPnEx.Assets, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Assets - comLastYearPmEx.Assets, 0))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">부채</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Liabilities, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Liabilities, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Liabilities, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Liabilities - comThisYearPnEx.Liabilities, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Liabilities - comLastYearPmEx.Liabilities, 0))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">자본</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Capital, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Capital, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Capital, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Capital - comThisYearPnEx.Capital, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Capital - comLastYearPmEx.Capital, 0))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">현금</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Cash, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Cash, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Cash, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Cash - comThisYearPnEx.Cash, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Cash - comLastYearPmEx.Cash, 0))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">차입금</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Loan, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Loan, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Loan, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Loan - comThisYearPnEx.Loan, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Loan - comLastYearPmEx.Loan, 0))</th>
+                    </tr>
+                    comLastYearPmEx.LiabilitiesRate = WebUtil.NumberRound(comLastYearPmEx.Liabilities, comLastYearPmEx.Capital, 100, 0);
+                    comThisYearPnEx.LiabilitiesRate = WebUtil.NumberRound(comThisYearPnEx.Liabilities, comThisYearPnEx.Capital, 100, 0);
+                    comThisYearPmEx.LiabilitiesRate = WebUtil.NumberRound(comThisYearPmEx.Liabilities, comThisYearPmEx.Capital, 100, 0);
+                    <tr>
+                        <th class="ComLevel">부채비율</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.LiabilitiesRate, 0)) %</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.LiabilitiesRate, 0)) %</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.LiabilitiesRate, 0)) %</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.LiabilitiesRate - comThisYearPnEx.LiabilitiesRate, 0)) %</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.LiabilitiesRate - comLastYearPmEx.LiabilitiesRate, 0)) %</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel" rowspan="3">ROIC</th>
+                        <th class="ComLevel">세후 영업이익</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.AfterTaxOperationProfit, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.AfterTaxOperationProfit, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.AfterTaxOperationProfit, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.AfterTaxOperationProfit - comThisYearPnEx.AfterTaxOperationProfit, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.AfterTaxOperationProfit - comLastYearPmEx.AfterTaxOperationProfit, 0))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">투하자본</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.PainInCapital, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.PainInCapital, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.PainInCapital, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.PainInCapital - comThisYearPnEx.PainInCapital, 0))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.PainInCapital - comLastYearPmEx.PainInCapital, 0))</th>
+                    </tr>
+                    comLastYearPmEx.Roic = WebUtil.NumberRound(comLastYearPm.AfterTaxOperationProfit, comLastYearPm.PainInCapital, 100, 1);
+                    comThisYearPnEx.Roic = WebUtil.NewRoic(WebUtil.NumberRound(comThisYearPn.AfterTaxOperationProfit, comThisYearPn.PainInCapital, 100, 8), month);
+                    comThisYearPmEx.Roic = WebUtil.NewRoic(WebUtil.NumberRound(comThisYearPmEx.AfterTaxOperationProfit, comThisYearPmEx.PainInCapital, 100, 8), month);
+                    <tr>
+                        <th class="ComLevel">ROIC</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Roic, 1))%</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Roic, 1))%</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Roic, 1))%</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Roic - comThisYearPnEx.Roic, 1))%</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Roic - comLastYearPmEx.Roic, 1))%</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel" rowspan="6">W/C</th>
+                        <th class="ComLevel">A/R</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Ar, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Ar))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Ar, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Ar - comThisYearPnEx.Ar, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Ar - comLastYearPmEx.Ar, 1))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">T/O days</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.ArToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.ArToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.ArToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.ArToDays - comThisYearPnEx.ArToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.ArToDays - comLastYearPmEx.ArToDays, 1))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">A/P</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Ap, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Ap, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Ap, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Ap - comThisYearPnEx.Ap, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Ap - comLastYearPmEx.Ap, 1))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">T/O days</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.ArToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.ArToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.ArToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.ArToDays - comThisYearPnEx.ArToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.ArToDays - comLastYearPmEx.ArToDays, 1))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">Inventory</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.Inventory, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.Inventory, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Inventory, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Inventory - comThisYearPnEx.Inventory, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.Inventory - comLastYearPmEx.Inventory, 1))</th>
+                    </tr>
+                    <tr>
+                        <th class="ComLevel">T/O days</th>
+                        <th>@(WebUtil.NCommaRound(comLastYearPmEx.InventoryToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPnEx.InventoryToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.InventoryToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.InventoryToDays - comThisYearPnEx.InventoryToDays, 1))</th>
+                        <th>@(WebUtil.NCommaRound(comThisYearPmEx.InventoryToDays - comLastYearPmEx.InventoryToDays, 1))</th>
+                    </tr>
+
+                }
+            }
+        </tbody>
+    </table>
+    <div class="btn_area align_left_right">
+        <button class="btn full_green left" type="button" onclick="javascript: window.close();">닫기</button>
+    </div>
+</body>
+</html>

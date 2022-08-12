@@ -1,0 +1,372 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    string excel = Model.excel;
+    PmBs pmBs = Model.pmBs;
+    OrgCompany orgCompany = Model.orgCompany;
+    PmBsBsheet pmBsBsheet = Model.pmBsBsheet;
+    PlanYearBsBsheet planYearBsSheet = Model.planYearBsSheet;
+    PmBsRoic pmBsRoic = Model.pmBsRoic;
+    PlanYearBsRoic planYearBsRoic = Model.planYearBsRoic;
+
+    PmBsBsheet uploadedPmBsBsheet = Model.uploadedPmBsBsheet;
+    PmBsRoic uploadedPmBsRoic = Model.uploadedPmBsRoic;
+    PmBsWCapital uploadedPmBsWCapital = Model.uploadedPmBsWCapital;
+
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>BS</strong>
+    </div>
+
+    <form name="writeForm" id="writeForm" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" id="Seq" value="@pmBs.Seq"/>
+        <input type="hidden" name="PmBsSeq" id="PmBsSeq" value="@pmBs.Seq" />
+        <input type="hidden" name="OrgCompanySeq" id="OrgCompanySeq" value="@orgCompany.Seq" />
+        <input type="hidden" name="isEdit" id="isEdit" value="N" />
+        <div class="con_box search">
+            <h3 class="mt0">BS 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@pmBs.BsYear 년 &nbsp;&nbsp; @pmBs.Monthly 월</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">회사</th>
+                        <td class="align_left_right mt0">
+                            @orgCompany.UnionName > @orgCompany.CompanyName
+
+                            <!-- <button class="btn small full_green right">승인요청</button>-->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">업로드</th>
+                        <td class="align_left_right mt0">
+                            <div class="style_file" style="width:60%;">
+                                <label>
+                                    <span></span>
+                                    <input type="file" name="ExcelFile" id="ExcelFile">
+                                    <button type="button" class="btn full_gray">파일찾기</button>
+                                </label>
+                            </div>
+                            <a href="javascript: uploadExcel(document.writeForm);" class="btn small full_gray">엑셀 반영</a>
+                            <a href="javascript: onExcelDown(document.writeForm);" class="btn small full_gray right">양식다운로드</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <h3>B/Sheet</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="3">구분</th>
+                        <th scope="col">총자산<br/>(유동자산)</th>
+                        <th scope="col">총부채<br/>(유동부채)</th>
+                        <th scope="col">총자본</th>
+                        <th scope="col">현금</th>
+                        <th scope="col">차입금</th>
+                        <th scope="col">부채비율</th>
+                        <th scope="col">유동비율</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">@(Convert.ToInt32(pmBs.BsYear) - 1)년</th>
+                        <th scope="row" colspan="2">실적</th>
+                        <td>@(pmBsBsheet.Assets > 0 ? String.Format("{0:#,###}", pmBsBsheet.Assets) : "0")<br/>(@(pmBsBsheet.CurrentAssets > 0 ? String.Format("{0:#,###}", pmBsBsheet.CurrentAssets) : "0"))</td>
+                        <td>@(pmBsBsheet.Liabilities > 0 ? String.Format("{0:#,###}", pmBsBsheet.Liabilities) : "0")<br/>(@(pmBsBsheet.CurrentLiabilities > 0 ? String.Format("{0:#,###}", pmBsBsheet.CurrentLiabilities) : "0"))</td>
+                        <td>@(pmBsBsheet.Capital > 0 ? String.Format("{0:#,###}", pmBsBsheet.Capital) : "0")</td>
+                        <td>@(pmBsBsheet.Cash > 0 ? String.Format("{0:#,###}", pmBsBsheet.Cash) : "0")</td>
+                        <td>@(pmBsBsheet.Loan > 0 ? String.Format("{0:#,###}", pmBsBsheet.Loan) : "0")</td>
+                        <td>@(pmBsBsheet.LiabilitiesRate > 0 ? String.Format("{0:#,###}", pmBsBsheet.LiabilitiesRate) : "0")%</td>
+                        <td>@(pmBsBsheet.CurrentRate > 0 ? String.Format("{0:#,###}", pmBsBsheet.CurrentRate) : "0")%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">@pmBs.BsYear</th>
+                        <th scope="row" rowspan="4">[@pmBs.Monthly 월]</th>
+                        <th scope="row">계획</th>
+                        <td>@(planYearBsSheet.Assets > 0 ? String.Format("{0:#,###}", planYearBsSheet.Assets) : "0")<br />(@(planYearBsSheet.CurrentAssets > 0 ? String.Format("{0:#,###}", planYearBsSheet.CurrentAssets) : "0"))</td>
+                        <td>@(planYearBsSheet.Liabilities > 0 ? String.Format("{0:#,###}", planYearBsSheet.Liabilities) : "0")<br />(@(planYearBsSheet.CurrentLiabilities > 0 ? String.Format("{0:#,###}", planYearBsSheet.CurrentLiabilities) : "0"))</td>
+                        <td>@(planYearBsSheet.Capital > 0 ? String.Format("{0:#,###}", planYearBsSheet.Capital) : "0")</td>
+                        <td>@(planYearBsSheet.Cash > 0 ? String.Format("{0:#,###}", planYearBsSheet.Cash) : "0")</td>
+                        <td>@(planYearBsSheet.Loan > 0 ? String.Format("{0:#,###}", planYearBsSheet.Loan) : "0")</td>
+                        <td>@(planYearBsSheet.LiabilitiesRate > 0 ? String.Format("{0:#,###}", planYearBsSheet.LiabilitiesRate) : "0")%</td>
+                        <td>@(planYearBsSheet.CurrentRate > 0 ? String.Format("{0:#,###}", planYearBsSheet.CurrentRate) : "0")%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">실적</th>
+                        <td><input type="text" name="Assets" value="@uploadedPmBsBsheet.Assets"/><br /><br /><input type="text" name="CurrentAssets" value="@uploadedPmBsBsheet.CurrentAssets"/></td>
+                        <td><input type="text" name="Liabilities" value="@uploadedPmBsBsheet.Liabilities"/><br /><br /><input type="text" name="currentLiabilities" value="@uploadedPmBsBsheet.CurrentLiabilities"/></td>
+                        <td><input type="text" name="capital" value="@uploadedPmBsBsheet.Capital"/><br /><br /><input type="text" name="" style="visibility:hidden;"/></td>
+                        <td><input type="text" name="Cash" value="@uploadedPmBsBsheet.Cash"/><br /><br /><input type="text" name="" style="visibility:hidden;" /></td>
+                        <td><input type="text" name="Loan" value="@uploadedPmBsBsheet.Loan"/><br /><br /><input type="text" name="" style="visibility:hidden;" /></td>
+                        <td class="bg_blue">
+                            @if (excel.Equals("Y"))
+                            {
+                                <p>@uploadedPmBsBsheet.LiabilitiesRate %</p>
+                            }
+                        </td>
+                        <td class="bg_blue">
+                            @if (excel.Equals("Y"))
+                            {
+                                <p>@uploadedPmBsBsheet.CurrentRate %</p>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">계획대비</th>
+                        @if (excel.Equals("Y"))
+                        {
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Assets - planYearBsSheet.Assets)<br/>(@(uploadedPmBsBsheet.CurrentAssets - planYearBsSheet.CurrentAssets))</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Liabilities - planYearBsSheet.Liabilities)<br />(@(uploadedPmBsBsheet.CurrentLiabilities - planYearBsSheet.CurrentLiabilities))</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Capital - planYearBsSheet.Capital)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Cash - planYearBsSheet.Cash)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Loan - planYearBsSheet.Loan)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.LiabilitiesRate - planYearBsSheet.LiabilitiesRate)%</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.CurrentRate - planYearBsSheet.CurrentRate)%</td>
+                        }
+                        else
+                        {
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                        }
+
+                    </tr>
+                    <tr>
+                        <th scope="row">전년대비</th>
+                        @if (excel.Equals("Y"))
+                        {
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Assets - pmBsBsheet.Assets)<br />(@(uploadedPmBsBsheet.CurrentAssets - pmBsBsheet.CurrentAssets))</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Liabilities - pmBsBsheet.Liabilities)<br />(@(uploadedPmBsBsheet.CurrentLiabilities - pmBsBsheet.CurrentLiabilities))</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Capital - pmBsBsheet.Capital)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Cash - pmBsBsheet.Cash)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Loan - pmBsBsheet.Loan)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.LiabilitiesRate - pmBsBsheet.LiabilitiesRate)%</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.CurrentRate - pmBsBsheet.CurrentRate)%</td>
+                        }
+                        else
+                        {
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <h3>ROIC</h3>
+            <p class="caption"><span>(단위 : 억원,%)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="3">구분</th>
+                        <th scope="col">세후 영업이익</th>
+                        <th scope="col">투하자본</th>
+                        <th scope="col">ROIC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">@(Convert.ToInt32(pmBs.BsYear) -1)년</th>
+                        <th scope="row" colspan="2">실적</th>
+                        <td>@(pmBsRoic.AfterTaxOperationProfit > 0 ? String.Format("{0:#,###}", pmBsRoic.AfterTaxOperationProfit) : "0")</td>
+                        <td>@(pmBsRoic.PainInCapital > 0 ? String.Format("{0:#,###}", pmBsRoic.PainInCapital) : "0")</td>
+                        <td>@(pmBsRoic.Roic > 0 ? String.Format("{0:#,###}", pmBsRoic.Roic) : "0")%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">@pmBs.BsYear</th>
+                        <th scope="row" rowspan="4">[@pmBs.Monthly 월]</th>
+                        <th scope="row">계획</th>
+                        <td>@(planYearBsRoic.AfterTaxOperationProfit > 0 ? String.Format("{0:#,###}", planYearBsRoic.AfterTaxOperationProfit) : "0")</td>
+                        <td>@(planYearBsRoic.PainInCapital > 0 ? String.Format("{0:#,###}", planYearBsRoic.PainInCapital) : "0")</td>
+                        <td>@(planYearBsRoic.Roic > 0 ? String.Format("{0:#,###}", planYearBsRoic.Roic) : "0")%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">실적</th>
+                        <td><input type="text" name="AfterTaxOperationProfit" value="@uploadedPmBsRoic.AfterTaxOperationProfit"/></td>
+                        <td><input type="text" name="PainInCapital" value="@uploadedPmBsRoic.PainInCapital"/></td>
+                        <td class="bg_blue">
+                            @if (excel.Equals("Y"))
+                            {
+                                <p>@uploadedPmBsRoic.Roic %</p>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">계획대비</th>
+                        @if (excel.Equals("Y"))
+                        {
+                            <td class="bg_blue">@(uploadedPmBsRoic.AfterTaxOperationProfit - planYearBsRoic.AfterTaxOperationProfit)</td>
+                            <td class="bg_blue">@(uploadedPmBsRoic.PainInCapital - planYearBsRoic.PainInCapital)</td>
+                            <td class="bg_blue">@(uploadedPmBsRoic.Roic - planYearBsRoic.Roic)%</td>
+                        }
+                        else
+                        {
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                        }
+                        
+                    </tr>
+                    <tr>
+                        <th scope="row">전년대비</th>
+                        @if (excel.Equals("Y"))
+                        {
+                            <td class="bg_blue">@(uploadedPmBsRoic.AfterTaxOperationProfit - pmBsRoic.AfterTaxOperationProfit)</td>
+                            <td class="bg_blue">@(uploadedPmBsRoic.PainInCapital - pmBsRoic.PainInCapital)</td>
+                            <td class="bg_blue">@(uploadedPmBsRoic.Roic - pmBsRoic.Roic)%</td>
+                        }
+                        else
+                        {
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                        }
+
+                    </tr>
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <h3>W/Capital</h3>
+            <p class="caption"><span>(단위 : 억원)</span></p>
+            <table class="tbl th_ver">
+                <caption></caption>
+                <colgroup>
+                    <col width="12%" />
+                    <col width="22%" />
+                    <col width="12%" />
+                    <col width="21%" />
+                    <col width="12%" />
+                    <col width="21%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">연간 매출액</th>
+                        <td><input type="text" name="AnnualSales" value="@uploadedPmBsWCapital.AnnualSales"/></td>
+                        <th scope="row">연간매출원가(AP)</th>
+                        <td><input type="text" name="AnnualSalesCost" value="@uploadedPmBsWCapital.AnnualSalesCost" /></td>
+                        <th scope="row">연간매출원가(Inv)</th>
+                        <td><input type="text" name="InventoryCost" value="@uploadedPmBsWCapital.InventoryCost" /></td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <div class="btn_area">
+                <a href="javascript:onWrite(document.writeForm);" class="btn full_green">매출액 등록</a>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+
+    </form>
+
+</div><!--//container-->
+<script>
+    function uploadExcel(form) {
+
+        var excelFilePath = form.ExcelFile.value;
+        var excelFileExt = excelFilePath.slice(excelFilePath.indexOf(".") + 1).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert("업로드 할 파일을 첨부하세요.");
+            return;
+        }
+
+        if (excelFileExt != "xls" && excelFileExt != "xlsx") {
+            alert("엑셀 파일만 업로드 가능합니다.");
+            form.ExcelFile.value = "";
+            return;
+        }
+
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Bs/Excel";
+        form.submit();
+    }
+
+    function onWrite(form) {
+        // B/SHEET
+        if (!onCheckMultipleNameDoubleValues("Assets", "총자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CurrentAssets", "유동자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Liabilities", "총부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("currentLiabilities", "유동부채" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("capital", "총자본" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Cash", "현금" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Loan", "차입금" + "@Message.MSG_001")) return false;
+
+        // ROIC
+        if (!onCheckMultipleNameDoubleValues("AfterTaxOperationProfit", "세후 영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("PainInCapital", "투하자본" + "@Message.MSG_001")) return false;
+
+        // W/CAPITAL
+        if (!onCheckMultipleNameDoubleValues("AnnualSales", "연간 매출액" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AnnualSalesCost", "연간매출원가(AP)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InventoryCost", "연간매출원가(Inv)" + "@Message.MSG_001")) return false;
+
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Bs/WriteAction";
+        form.submit();
+    }
+    function onExcelDown(form) {
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Bs/ExcelDownAction";
+        form.submit();
+    }
+
+    // history back observed
+    window.onload = function () {
+        if (typeof history.pushState === "function") {
+            history.pushState("halla", null, null);
+            window.onpopstate = function () {
+                location.href = "list";
+            };
+        }
+    };
+</script>

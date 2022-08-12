@@ -1,0 +1,375 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "NewIndex2";
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    // 2019.02.18 만도는 안 보이게 변경
+    lvCompany = lvCompany.Where(w => w.id != "3").ToList();
+
+    List<PlanMonthlyPalBusinessExp> pnBu = Model.pnBu;
+    List<PlanMonthlyPalBusinessMonthlySumExp> pnCom = Model.pnCom;
+
+    List<PlanGroupdataPalMonth> pnGroupMonthData = Model.pnGroupMonthData;
+
+    var groupTable = pnCom.GroupBy(g => new { g.MonthlyPalYear, g.Monthly })
+        .Select(cl => new PlanMonthlyPalBusinessMonthlySumExp
+        {
+            MonthlyPalYear = cl.First().MonthlyPalYear,
+            Monthly = cl.First().Monthly,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    // 그룹으로 묶음 :" 회사에서 합계는 제외 : 99
+    //var groupGraph = groupTable.Where(w => w.Monthly != "99").ToList();
+     var groupGraph = pnGroupMonthData.Where(w => w.GroupdataMonth  != "99").ToList();
+
+    var businessList = pnBu.GroupBy(g => new { g.OrgCompanySeq, g.OrgBusinessSeq })
+.Select(cl => new PlanMonthlyPalBusinessExp
+{
+    OrgCompanySeq = cl.First().OrgCompanySeq,
+    CompanyName = cl.First().CompanyName,
+    OrgBusinessSeq = cl.First().OrgBusinessSeq,
+    BusinessName = cl.First().BusinessName
+}).ToList();
+
+    var year = SessionManager.GetMemberSession().planYear.First().RegistYear;
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = year;
+    commentList.CommentMonth = "99";
+    commentList.AttachTableName = "PLAN_MONTHLY_PAL";
+    commentList.AttachTableSeq = 0;
+    commentList.UserKey = SessionManager.GetMemberSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetMemberSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetMemberSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Deptkorname;
+}
+<form name="frmForm" method="post">
+    <div class="plan_wrap">
+        <div class="top_wrap">
+            <h2>@(year)년 월별 손익</h2>
+            @*<a href="/Plan/Monthly_Pal/NewIndex_excel" class="btn_download" target="_blank">DOWNLOAD</a>*@
+            @*2019.01.24 분기*@
+            <a href="javascript:;" onclick="goDownOrView();" class="btn_download" ">DOWNLOAD</a>
+        </div><!--//top_wrap-->
+
+        @if (lvGroup.Count() > 0)
+        {
+            string gSalesText = "";
+            string gEbitRateText = "";
+            <div class="con_wrap">
+                <div class="graph_box">
+                    <h3>한라 그룹</h3>
+                    <div class="box">
+                        <div class="chart_box chart_box6">
+                            <span class="p_unit">(단위 : 억원, %)</span>
+                            <div class="chart chart_type9" id="chart1"></div>
+                            @foreach (var s in groupGraph)
+                            {
+                                gSalesText += "{";
+                                gSalesText += "x:" + s.GroupdataMonth + ",";
+                                gSalesText += "y:" + Math.Round(s.Sales, MidpointRounding.AwayFromZero) + "},";
+
+                                gEbitRateText += "{";
+                                gEbitRateText += "x:" + s.GroupdataMonth + ",";
+                                gEbitRateText += "y:" + Math.Round(s.Ebit, MidpointRounding.AwayFromZero) + ",";
+                                gEbitRateText += "p:" + (s.Sales == 0 ? 0 : Math.Round(s.Ebit / s.Sales * 100, 1, MidpointRounding.AwayFromZero)) + "},";
+                            }
+                            @if (gSalesText.Length > 0)
+                            {
+                                gSalesText = gSalesText.Substring(0, gSalesText.Length - 1);
+                            }
+                            @if (gEbitRateText.Length > 0)
+                            {
+                                gEbitRateText = gEbitRateText.Substring(0, gEbitRateText.Length - 1);
+                            }
+                            <script>
+                  ( function(){
+                    var data = [
+                      { key: "Sales", values: [ @gSalesText ] },
+                    	{ key: "EBIT (%)", values: [ @gEbitRateText ] }
+                    ];
+                    data[0].bar = true;
+
+                    MYAPP.graph.type9( data, '#chart1' );
+                  } )();
+                            </script>
+                        </div>
+                        <!-- chart_box -->
+                    </div><!--//box-->
+
+                    <div class="box">
+                        <div class="graph">
+                            <table class="tbl tbl_type01">
+                                <colgroup>
+                                    <col width="7%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col">1월</th>
+                                        <th scope="col">2월</th>
+                                        <th scope="col">3월</th>
+                                        <th scope="col">4월</th>
+                                        <th scope="col">5월</th>
+                                        <th scope="col">6월</th>
+                                        <th scope="col">7월</th>
+                                        <th scope="col">8월</th>
+                                        <th scope="col">9월</th>
+                                        <th scope="col">10월</th>
+                                        <th scope="col">11월</th>
+                                        <th scope="col">12월</th>
+                                        <th scope="col">계</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">Sales</th>
+                                        @foreach (var summary in pnGroupMonthData)
+                                        {
+                                            <td>@WebUtil.NCommaRound(summary.Sales)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">EBIT</th>
+                                        @foreach (var summary in pnGroupMonthData)
+                                        {
+                                            <td>@WebUtil.NCommaRound(summary.Ebit)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">%</th>
+                                        @foreach (var summary in pnGroupMonthData)
+                                        {
+                                            <td>@(summary.Sales == 0 ? 0 : Math.Round(summary.Ebit / summary.Sales * 100, 1, MidpointRounding.AwayFromZero)) %</td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div><!--//graph-->
+                    </div><!--//box-->
+                </div><!--//graph_box-->
+
+            </div><!--//con_wrap-->
+        }
+
+        <div class="tab_wrap">
+            <div class="type_tab2">
+                <ul>
+                    @foreach (var company in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+                    {
+                        <li><a href="#yearpal_@company.id">@company.txt</a></li>
+                    }
+                    <!--
+                    <li><a href="#yearpal01">한라홀딩스</a></li>
+                    <li><a href="#yearpal02">JJ한라</a></li>
+                    <li><a href="#yearpal03">만도</a></li>
+                    <li><a href="#yearpal04">만도헬라</a></li>
+                    <li><a href="#yearpal05">만도브로제</a></li>
+                    <li><a href="#yearpal06">㈜한라</a></li>
+                        -->
+                </ul>
+            </div><!--//type_tab-->
+
+            @foreach (var company in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+            {
+                List<PlanMonthlyPalBusinessMonthlySumExp> pnComRow = pnCom.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).ToList();
+                List<PlanMonthlyPalBusinessExp> pnCompanyBuList = businessList.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).ToList();
+                string salesText = "";
+                string ebitRateText = "";
+
+                if (pnComRow != null)
+                {
+                    foreach (var s in pnComRow)
+                    {
+                        if (!s.Monthly.Equals("99"))
+                        {
+                            salesText += "{";
+                            salesText += "x:" + s.Monthly + ",";
+                            salesText += "y:" + Math.Round(s.Sales, MidpointRounding.AwayFromZero) + "},";
+
+                            ebitRateText += "{";
+                            ebitRateText += "x:" + s.Monthly + ",";
+                            ebitRateText += "y:" + Math.Round(s.Ebit, MidpointRounding.AwayFromZero) + ",";
+                            ebitRateText += "p:" + (s.Sales == 0 ? 0 : Math.Round(s.Ebit / s.Sales * 100, 1, MidpointRounding.AwayFromZero)) + "},";
+                        }
+                    }
+                    if (salesText.Length > 0)
+                    {
+                        salesText = salesText.Substring(0, salesText.Length - 1);
+                    }
+                    if (ebitRateText.Length > 0)
+                    {
+                        ebitRateText = ebitRateText.Substring(0, ebitRateText.Length - 1);
+                    }
+                }
+
+                <div class="type_tab_con" id="yearpal_@company.id">
+                    <div class="con_wrap">
+
+                        <div class="graph_box">
+                            <div class="box">
+                                <div class="chart_box chart_box6">
+                                    <span class="p_unit">(단위 : 억원, %)</span>
+                                    <div class="chart chart_type9" id="chart_@company.id"></div>
+                                    <script>
+                                    (function () {
+                                        var data = [
+                                            { key: "Sales", values: [ @salesText] },
+                                            { key: "EBIT (%)", values: [ @ebitRateText] }
+                                        ];
+                                        data[0].bar = true;
+
+                                        MYAPP.graph.type9(data, '#chart_@company.id');
+                                    })();
+                                    </script>
+                                </div>
+                                <!-- chart_box -->
+                            </div><!--//box-->
+
+                            <div class="box">
+                                <div class="graph">
+                                    <table class="tbl tbl_type01">
+                                        <colgroup>
+                                            <col width="7%" />
+                                            <col width="7%" />
+                                            <col width="/" />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" colspan="2" class="rbd lbd0">
+                                                    구분
+                                                </th>
+                                                <th scope="col">1월</th>
+                                                <th scope="col">2월</th>
+                                                <th scope="col">3월</th>
+                                                <th scope="col">4월</th>
+                                                <th scope="col">5월</th>
+                                                <th scope="col">6월</th>
+                                                <th scope="col">7월</th>
+                                                <th scope="col">8월</th>
+                                                <th scope="col">9월</th>
+                                                <th scope="col">10월</th>
+                                                <th scope="col">11월</th>
+                                                <th scope="col">12월</th>
+                                                <th scope="col">계</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            @if (pnCompanyBuList != null)
+                                            {
+                                                foreach (var business in pnCompanyBuList)
+                                                {
+                                                    var bu = pnBu.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).ToList();
+                                                    <tr>
+                                                        <th scope="row" rowspan="3" class="lbd0">
+                                                            @business.BusinessName
+                                                        </th>
+                                                        <th scope="row">Sales</th>
+                                                        @foreach (var data in bu)
+                                                        {
+                                                            <td>@WebUtil.NCommaRound(data.Sales)</td>
+                                                        }
+                                                    </tr>
+                                                    <tr>
+                                                        <th scope="row" class="lbd0">EBIT</th>
+                                                        @foreach (var data in bu)
+                                                        {
+                                                            <td>@WebUtil.NCommaRound(data.Ebit)</td>
+                                                        }
+                                                    </tr>
+                                                    <tr>
+                                                        <th scope="row">%</th>
+                                                        @foreach (var data in bu)
+                                                        {
+                                                            <td>@(data.Sales == 0 ? 0 : Math.Round(data.Ebit / data.Sales * 100, 1, MidpointRounding.AwayFromZero)) %</td>
+                                                        }
+                                                    </tr>
+                                                }
+                                            }
+                                            <tr class="total">
+                                                <th scope="row" rowspan="3" class="lbd0">
+                                                    합계
+                                                </th>
+                                                <th scope="row">Sales</th>
+                                                @if (pnComRow != null)
+                                                {
+                                                    foreach (var total in pnComRow)
+                                                    {
+                                                        <td>@WebUtil.NCommaRound(total.Sales)</td>
+                                                    }
+                                                }
+                                            </tr>
+                                            <tr class="total">
+                                                <th scope="row">EBIT</th>
+                                                @if (pnComRow != null)
+                                                {
+                                                    foreach (var total in pnComRow)
+                                                    {
+                                                        <td>@WebUtil.NCommaRound(total.Ebit)</td>
+                                                    }
+                                                }
+                                            </tr>
+                                            <tr class="total">
+                                                <th scope="row">%</th>
+                                                @if (pnComRow != null)
+                                                {
+                                                    foreach (var total in pnComRow)
+                                                    {
+                                                        <td>@(total.Sales == 0 ? 0 : Math.Round(total.Ebit / total.Sales * 100, 1, MidpointRounding.AwayFromZero)) %</td>
+                                                    }
+                                                }
+                                            </tr>
+                                        </tbody>
+                                    </table><!--// tbl-->
+                                </div><!--//graph-->
+                            </div><!--//box-->
+                        </div><!--//graph_box-->
+                    </div><!--//con_wrap-->
+                </div><!--//type_tab_con-->
+            }
+
+        </div><!--//tab_wrap-->
+    </div><!--//plan_wrap-->
+
+    <script>
+        $(function () {
+            /*탭*/
+            MYAPP.tab.init($(".type_tab2"));
+        })
+
+        function goDownOrView() {
+            var f = document.frmForm;
+            // 웹 모바일 분기
+            var filter = "win16|win32|win64|mac";
+
+            if (navigator.platform) {
+
+                if (0 > filter.indexOf(navigator.platform.toLowerCase())) {
+                    // Mobile
+                    f.action = "ViewMonthlyPal";
+                    f.target = "_Blank";
+                    f.submit();
+                } else {
+                    // Pc
+                    f.action = "ExcelMonthlyPal_New";
+                    //f.action = "ViewMonthlyPal";
+                    //f.target = "_Blank";
+                    f.submit();
+                }
+
+            }
+
+        }
+    </script>
+</form>
+@Html.Partial("~/Views/Shared/PartialReply.cshtml", commentList)

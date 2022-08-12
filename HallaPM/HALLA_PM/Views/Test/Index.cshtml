@@ -1,0 +1,50 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>SendPush</h2>
+
+<div style="margin-top:10px;">
+    <label style="display:inline-block; width:70px;">type</label><input type="text" id="type" value="1" style="width:300px;" /><br />
+    <label style="display:inline-block; width:70px;">title</label><input type="text" id="title" value="실적알림" style="width:300px;" /><br />
+    <label style="display:inline-block; width:70px;">contents</label><input type="text" id="contents" value="한라그룹 실적Bs가 최종승인되었습니다." style="width:300px;" /><br />
+    <label style="display:inline-block; width:70px;">link</label><input type="text" id="link" style="width:300px;" /><br />
+    <label style="display:inline-block; width:70px;">userKey</label><input type="text" id="userKey" value="H0000077029" style="width:300px;" /> <span>( , 로 구분)</span>
+</div>
+
+<div style="margin-top:10px;">
+    <button type="button" onclick="sendPush();" style="padding:5px;">send</button>
+</div>
+
+<div id="message" style="margin-top:10px;">
+</div>
+
+<script type="text/javascript">
+    function sendPush() {
+        var users = [];
+        $.each($('#userKey').val().split(','), function (index, value) {
+            users.push({ userKey: $.trim(value) });
+        });
+
+        var params = {
+            Type: $.trim($('#type').val()),
+            Title: $.trim($('#title').val()),
+            Contents: $.trim($('#contents').val()),
+            Link: $.trim($('#link').val()),
+            users: users
+        };
+        $.post('/Api/SendPush', params, function (data) {
+            if (data) {
+                var message = '';
+                if (data.result) {
+                    message = data.message;
+                }
+                else {
+                    message = data.errorMessage;
+                }
+                $('#message').html(message)
+            }
+        });
+    }
+</script>

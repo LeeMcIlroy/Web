@@ -1,0 +1,360 @@
+﻿@using HALLA_PM.Models;
+@{
+    ViewBag.Title = "Index";
+
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    List<OrgUnionExp> orgUnionList = Model.orgUnionList;
+    List<TbOrgCompanyExp> tbOrgCompanyList = Model.tbOrgCompanyList;
+    List<PlanYearPalBusinessSummary> groupTotalSummary = Model.groupTotalSummary;
+    List<PlanYearPalExp> planYearPalList = Model.planYearPalList;
+    List<String> yearList = Model.yearList;
+    List<OrgUnionExp> procedOrgUnionList = new List<OrgUnionExp>();
+    foreach(var union in orgUnionList)
+    {
+        if (union.planYearPalBusinessSummaryList != null && union.planYearPalBusinessSummaryList.Count() > 0)
+        {
+            procedOrgUnionList.Add(union);
+        }
+    }
+}
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>중기 손익</h2>
+        <a href="/Plan/Year_Pal/Index_excel" class="btn_download">DOWNLOAD</a>
+    </div><!--//top_wrap-->
+
+    @if (lvGroup.Count() > 0)
+    {
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+
+            <div class="box">
+              <div class="chart_box chart_box6">
+                <span class="p_unit">(단위 : 억원, %)</span>
+                <div class="chart chart_type9" id="chart1"></div>
+                @{
+                    string gSalesText = "";
+                    string gEbitRateText = "";
+                    foreach (var s in groupTotalSummary)
+                    {
+                        gSalesText += "{";
+                        gSalesText += "x:" + s.yearlyYear + ",";
+                        gSalesText += "y:" + Math.Round(s.sales, MidpointRounding.AwayFromZero) + "},";
+
+                        gEbitRateText += "{";
+                        gEbitRateText += "x:" + s.yearlyYear + ",";
+                        gEbitRateText += "y:" + Math.Round(s.ebit, MidpointRounding.AwayFromZero) + ",";
+                        gEbitRateText += "p:" + Math.Round(s.rate, 1, MidpointRounding.AwayFromZero) + "},";
+                    }
+                    if (gSalesText.Length > 0)
+                    {
+                        gSalesText = gSalesText.Substring(0, gSalesText.Length - 1);
+                    }
+                    if (gEbitRateText.Length > 0)
+                    {
+                        gEbitRateText = gEbitRateText.Substring(0, gEbitRateText.Length - 1);
+                    }
+                }
+                <script>
+                    (function () {
+                        var data = [
+                          { key: "Sales", values: [ @gSalesText ] },
+                            { key: "EBIT (%)", values: [ @gEbitRateText ] }
+                        ];
+                        data[0].bar = true;
+
+                        MYAPP.graph.type9(data, '#chart1', 1);
+                    })();
+                </script>
+              </div>
+              <!-- chart_box -->
+            </div><!--//box-->
+
+            <div class="box">
+                <div class="graph">
+                    <table class="tbl tbl_type01">
+                        <colgroup>
+                            <col width="7%" />
+                            <col width="7%" />
+                            <col width="/" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="2" class="rbd lbd0">
+                                    구분
+                                </th>
+                                @foreach (var year in yearList)
+                                {
+                                    var y = year + "년";
+                                    <th scope="col">@y</th>
+                                }
+                                <!--
+                                <th scope="col">'17년</th>
+                                <th scope="col">'18년</th>
+                                <th scope="col">'19년</th>
+                                <th scope="col">'20년</th>
+                                <th scope="col">'21년</th>
+                                <th scope="col">'22년</th>
+                                    -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var union in procedOrgUnionList)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="3" class="lbd0">
+                                        @union.UnionName
+                                    </th>
+                                    <th scope="row">Sales</th>
+                                    <td>@Math.Round(union.pmPalBusinessSummary.sales, MidpointRounding.AwayFromZero)</td>
+                                    @foreach (var summary in union.planYearPalBusinessSummaryList)
+                                    {
+                                        <td>@Math.Round(summary.sales, MidpointRounding.AwayFromZero)</td>
+                                    }
+                                    <!-- <td>88,270</td><td>92,858</td><td>101,446 </td><td>113,877 </td><td>125,186 </td><td>133,979 </td>-->
+                                </tr>
+                                <tr>
+                                    <th scope="row">EBIT</th>
+                                    <td>@Math.Round(union.pmPalBusinessSummary.ebit, MidpointRounding.AwayFromZero)</td>
+                                    @foreach (var summary in union.planYearPalBusinessSummaryList)
+                                    {
+                                        <td>@Math.Round(summary.ebit, MidpointRounding.AwayFromZero)</td>
+                                    }
+                                    <!-- <td>4,528</td><td>4,815 </td><td>5,712 </td><td>7,014 </td><td>8,067 </td><td>8,989 </td>-->
+                                </tr>
+                                <tr>
+                                    <th scope="row">%</th>
+                                    <td>@Math.Round(union.pmPalBusinessSummary.rate, 1, MidpointRounding.AwayFromZero) %</td>
+                                    @foreach (var summary in union.planYearPalBusinessSummaryList)
+                                    {
+                                        <td>@Math.Round(summary.rate, 1, MidpointRounding.AwayFromZero) %</td>
+                                    }
+                                    <!-- <td>5.1%</td><td>5.2%</td><td>5.6%</td><td>6.2%</td><td>6.4%</td><td>6.7%</td>-->
+                                </tr>
+                            }
+                        </tbody>
+                    </table><!--// tbl-->
+                </div><!--//graph-->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+    </div><!--//con_wrap-->
+    }
+
+    <div class="tab_wrap">
+        <div class="type_tab2">
+            <ul>
+
+                @foreach (var item in tbOrgCompanyList)
+                {
+                    if (lvCompany.Where(w => w.id == item.seq.ToString()).Count() > 0)
+                    {
+                        <li><a href="#yearpal01_@item.seq">@item.companyName</a></li>
+                    }
+                }
+                <!--
+                    <li><a href="#yearpal01">한라홀딩스</a></li>
+                    <li><a href="#yearpal02">JJ한라</a></li>
+                    <li><a href="#yearpal03">만도</a></li>
+                    <li><a href="#yearpal04">만도헬라</a></li>
+                    <li><a href="#yearpal05">만도브로제</a></li>
+                    <li><a href="#yearpal06">㈜한라</a></li>
+                -->
+            </ul>
+        </div><!--//type_tab-->
+
+        @foreach (var item in tbOrgCompanyList)
+        {
+            if (lvCompany.Where(w => w.id == item.seq.ToString()).Count() > 0)
+            {
+                List<PlanYearPalBusinessSummary> totalPlanYearPalBusinessSummaryList = item.totalPlanYearPalBusinessSummaryList;
+                string salesText = "";
+                string ebitRateText = "";
+
+                salesText += "{";
+                salesText += "x:" + item.totalPmPalBusinessSummary.yearlyYear + ",";
+                salesText += "y:" + item.totalPmPalBusinessSummary.sales + "},";
+
+                ebitRateText += "{";
+                ebitRateText += "x:" + item.totalPmPalBusinessSummary.yearlyYear + ",";
+                ebitRateText += "y:" + item.totalPmPalBusinessSummary.ebit + ",";
+                ebitRateText += "p:" + item.totalPmPalBusinessSummary.rate + "},";
+
+                if (totalPlanYearPalBusinessSummaryList != null)
+                {
+                    foreach (var s in totalPlanYearPalBusinessSummaryList)
+                    {
+                        salesText += "{";
+                        salesText += "x:" + s.yearlyYear + ",";
+                        salesText += "y:" + Math.Round(s.sales, MidpointRounding.AwayFromZero) + "},";
+
+                        ebitRateText += "{";
+                        ebitRateText += "x:" + s.yearlyYear + ",";
+                        ebitRateText += "y:" + Math.Round(s.ebit, MidpointRounding.AwayFromZero) + ",";
+                        ebitRateText += "p:" + Math.Round(s.rate, 1, MidpointRounding.AwayFromZero) + "},";
+                    }
+                    if (salesText.Length > 0)
+                    {
+                        salesText = salesText.Substring(0, salesText.Length - 1);
+                    }
+                    if (ebitRateText.Length > 0)
+                    {
+                        ebitRateText = ebitRateText.Substring(0, ebitRateText.Length - 1);
+                    }
+                }
+
+            <div class="type_tab_con" id="yearpal01_@item.seq">
+                <div class="con_wrap">
+                    <div class="graph_box">
+                        <div class="box">
+                            <div class="chart_box chart_box6">
+                                <span class="p_unit">(단위 : 억원, %)</span>
+                                <div class="chart chart_type9" id="chart_@item.seq"></div>
+                                <script>
+                                    (function () {
+                                        var data = [
+                                            { key: "Sales", values: [ @salesText ] },
+                            	            { key: "EBIT (%)", values: [ @ebitRateText ] }
+                                        ];
+                                        data[0].bar = true;
+
+                                        MYAPP.graph.type9( data, '#chart_@item.seq', 1 );
+                                    } )();
+                                </script>
+                            </div>
+                            <!-- chart_box -->
+                        </div><!--//box-->
+
+                        <div class="box">
+                            <div class="graph">
+                                <table class="tbl tbl_type01">
+                                    <colgroup>
+                                        <col width="7%" />
+                                        <col width="7%" />
+                                        <col width="/" />
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" colspan="2" class="rbd lbd0">
+                                                구분
+                                            </th>
+                                            @foreach (var year in yearList)
+                                            {
+                                                var y = year + "년";
+                                                <th scope="col">@y</th>
+                                            }
+                                            <!--
+                                            <th scope="col">'17년</th>
+                                            <th scope="col">'18년</th>
+                                            <th scope="col">'19년</th>
+                                            <th scope="col">'20년</th>
+                                            <th scope="col">'21년</th>
+                                            <th scope="col">'22년</th>
+                                            -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (item.orgBusinessList != null)
+                                        {
+                                            foreach (var business in item.orgBusinessList)
+                                            {
+                                                if (business.planYearPalBusinessSummaryList != null)
+                                                {
+                                                    var summaryList = business.planYearPalBusinessSummaryList;
+                                                    var prevData = business.pmPalBusinessSummary;
+
+                                                    <tr>
+                                                        <th scope="row" rowspan="3" class="lbd0">
+                                                            @business.BusinessName
+                                                        </th>
+                                                        <th scope="row">Sales</th>
+                                                        <td>@(prevData == null ? 0 : Math.Round(prevData.sales, MidpointRounding.AwayFromZero))</td>
+
+                                                        @foreach (var data in summaryList)
+                                                        {
+                                                            <td>@Math.Round(data.sales, MidpointRounding.AwayFromZero)</td>
+                                                        }
+                                                        <!-- <td>5,706 </td><td>6,311 </td><td>6,873 </td><td>7,816 </td><td>9,027 </td><td>9,941 </td>-->
+                                                    </tr>
+
+                                                    <tr>
+                                                        <th scope="row" class="lbd0">EBIT</th>
+                                                        <td>@(prevData == null ? 0 : Math.Round(prevData.ebit, MidpointRounding.AwayFromZero))</td>
+                                                        @foreach (var data in summaryList)
+                                                        {
+                                                            <td>@Math.Round(data.ebit, MidpointRounding.AwayFromZero)</td>
+                                                        }
+                                                        <!-- <td>242 </td><td>236 </td><td>260 </td><td>309</td><td>390</td><td>454 </td>-->
+                                                    </tr>
+
+                                                    <tr>
+                                                        <th scope="row">%</th>
+                                                        <td>@(prevData == null ? 0 : Math.Round(prevData.rate, 1, MidpointRounding.AwayFromZero)) %</td>
+                                                        @foreach (var data in summaryList)
+                                                        {
+                                                            <td>@Math.Round(data.rate, 1, MidpointRounding.AwayFromZero) %</td>
+                                                        }
+                                                        <!-- <td>4.2%</td><td>3.7%</td><td>3.8%</td><td>4.0%</td><td>4.3%</td><td>4.6%</td>-->
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                        <tr class="total">
+                                            <th scope="row" rowspan="3" class="lbd0">
+                                                합계
+                                            </th>
+                                            <th scope="row">Sales</th>
+                                            <td>@Math.Round(item.totalPmPalBusinessSummary.sales, MidpointRounding.AwayFromZero)</td>
+                                            @if (totalPlanYearPalBusinessSummaryList != null)
+                                            {
+                                                foreach (var total in totalPlanYearPalBusinessSummaryList)
+                                                {
+                                                    <td>@Math.Round(total.sales, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            }
+                                            <!-- <td>8,908</td><td>9,755</td><td>10,452</td><td>11,735</td><td>13,609</td><td>15,001</td>-->
+                                        </tr>
+                                        <tr class="total">
+                                            <th scope="row">EBIT</th>
+                                            <td>@Math.Round(item.totalPmPalBusinessSummary.ebit, MidpointRounding.AwayFromZero)</td>
+                                            @if (totalPlanYearPalBusinessSummaryList != null)
+                                            {
+                                                foreach (var total in totalPlanYearPalBusinessSummaryList)
+                                                {
+                                                    <td>@Math.Round(total.ebit, MidpointRounding.AwayFromZero)</td>
+                                                }
+                                            }
+                                            <!-- <td>632</td><td>856</td><td>675</td><td>790</td><td>975</td><td>1,185</td>-->
+                                        </tr>
+                                        <tr class="total">
+                                            <th scope="row">%</th>
+                                            <td>@Math.Round(item.totalPmPalBusinessSummary.rate, 1, MidpointRounding.AwayFromZero) %</td>
+                                            @if (totalPlanYearPalBusinessSummaryList != null)
+                                            {
+                                                foreach (var total in totalPlanYearPalBusinessSummaryList)
+                                                {
+                                                    <td>@Math.Round(total.rate, 1, MidpointRounding.AwayFromZero) %</td>
+                                                }
+
+                                            }
+                                            <!-- <td>7.1%</td><td>8.8%</td><td>6.5%</td><td>6.7%</td><td>7.2%</td><td>7.9%</td>-->
+                                        </tr>
+                                    </tbody>
+                                </table><!--// tbl-->
+                            </div><!--//graph-->
+                        </div><!--//box-->
+                    </div><!--//graph_box-->
+                </div><!--//con_wrap-->
+            </div><!--//type_tab_con-->
+            }
+        }
+    </div><!--//tab_wrap-->
+</div><!--//plan_wrap-->
+<script>
+    $(function () {
+        /*탭*/
+        MYAPP.tab.init($(".type_tab2"));
+    })
+</script>

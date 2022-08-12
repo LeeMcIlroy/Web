@@ -1,0 +1,309 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+
+    PlanGroup chk = Model.chk;
+
+    List<PmCashFlowCumulativeExp> pmLastYear = Model.pmLastYear;
+    List<PlanYearCfSummaryExp> pnThisYear = Model.pnThisYear;
+
+    var groupPm = pmLastYear.GroupBy(g => new { g.CashFlowYear })
+        .Select(cl => new PmCashFlowCumulativeExp
+        {
+            CashFlowYear = cl.First().CashFlowYear,
+            CfSales = cl.Sum(c => c.CfSales),
+            CfInvestment = cl.Sum(c => c.CfInvestment),
+            CfFinancial = cl.Sum(c => c.CfFinancial),
+            CfEndingCash = cl.Sum(c => c.CfEndingCash),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            CfAvailableCash = cl.Sum(c => c.CfAvailableCash)
+        }).ToList();
+
+    var groupPn = pnThisYear.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearCfSummaryExp
+        {
+            YearlyYear = cl.First().YearlyYear,
+            CfSales = cl.Sum(c => c.CfSales),
+            CfInvestment = cl.Sum(c => c.CfInvestment),
+            CfFinancial = cl.Sum(c => c.CfFinancial),
+            CfEndingCash = cl.Sum(c => c.CfEndingCash),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            CfAvailableCash = cl.Sum(c => c.CfAvailableCash)
+        }).ToList();
+
+    var companyList = pnThisYear.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PlanYearBsSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        }).ToList();
+
+    string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+    <div class="plan_wrap">
+        <div class="top_wrap">
+            <h2>중기 C/F</h2>
+        </div><!--//top_wrap-->
+
+        <div class="con_wrap">
+            <div class="graph_box">
+                <h3>한라 그룹</h3>
+
+                <div class="box">
+                    <div class="graph">
+                        <table class="tbl tbl_type01" border="1">
+                            <colgroup>
+                                <col width="10%" />
+                                <col width="/" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th scope="col" colspan="7" class="rbd lbd0" style="text-align:right;">
+                                        (단위 : 억원)
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th scope="col" class="rbd lbd0">
+                                        구분
+                                    </th>
+                                    <th scope="col">@(Convert.ToInt32(groupPn.First().YearlyYear) - 1)년</th>
+                                    @foreach (var summary in groupPn)
+                                    {
+                                        <th scope="col">@summary.YearlyYear 년</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row" class="lbd0">영업활동</th>
+                                    <th scope="col" style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupPm.Count() == 0 ? 0 : groupPm.First().CfSales, 2, MidpointRounding.AwayFromZero)</th>
+                                    @foreach (var summary in groupPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="lbd0">투자활동</th>
+                                    <th scope="col" style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupPm.Count() == 0 ? 0 : groupPm.First().CfInvestment, 2, MidpointRounding.AwayFromZero)</th>
+                                    @foreach (var summary in groupPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="lbd0">재무활동</th>
+                                    <th scope="col" style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupPm.Count() == 0 ? 0 : groupPm.First().CfFinancial, 2, MidpointRounding.AwayFromZero)</th>
+                                    @foreach (var summary in groupPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                    }
+                                </tr>
+                                
+                                <tr>
+                                    <th scope="row" class="lbd0">Ending cash</th>
+                                    <th scope="col" style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupPm.Count() == 0 ? 0 : groupPm.First().CfEndingCash, 2, MidpointRounding.AwayFromZero)</th>
+                                    @foreach (var summary in groupPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="lbd0">가용현금</th>
+                                    <th scope="col" style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupPm.Count() == 0 ? 0 : groupPm.First().CfAvailableCash, 2, MidpointRounding.AwayFromZero)</th>
+                                    @foreach (var summary in groupPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="lbd0">FCF</th>
+                                    <th scope="col" style="mso-number-format:\#\,\#\#0\.00">@Math.Round(groupPm.Count() == 0 ? 0 : groupPm.First().Fcf2, 2, MidpointRounding.AwayFromZero)</th>
+                                    @foreach (var summary in groupPn)
+                                    {
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(summary.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                    }
+                                </tr>
+                            </tbody>
+                        </table><!--// tbl-->
+                    </div><!--//graph-->
+                </div><!--//box-->
+            </div><!--//graph_box-->
+
+        </div><!--//con_wrap-->
+
+        <div class="tab_wrap">
+
+            @foreach (var company in companyList.OrderBy(o => o.OrgUnionSeq).ThenBy(t => t.OrgCompanySeq))
+            {
+                int toYear = Convert.ToInt32(chk.PlanYear) + 4;
+                PmCashFlowCumulativeExp pmLastYearRow = pmLastYear.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.OrgCompanySeq)).FirstOrDefault() == null ? new PmCashFlowCumulativeExp() : pmLastYear.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.OrgCompanySeq)).FirstOrDefault();
+                List<PlanYearCfSummaryExp> pnThisYearRow = pnThisYear.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.OrgCompanySeq)).ToList();
+                PlanYearCfSummaryExp pnRowThisYear0 = pnThisYearRow.Where(w => w.YearlyYear == chk.PlanYear).FirstOrDefault();
+                PlanYearCfSummaryExp pnRowThisYear1 = pnThisYearRow.Where(w => w.YearlyYear == (Convert.ToInt32(chk.PlanYear) + 1).ToString()).FirstOrDefault();
+                PlanYearCfSummaryExp pnRowThisYear2 = pnThisYearRow.Where(w => w.YearlyYear == (Convert.ToInt32(chk.PlanYear) + 2).ToString()).FirstOrDefault();
+                PlanYearCfSummaryExp pnRowThisYear3 = pnThisYearRow.Where(w => w.YearlyYear == (Convert.ToInt32(chk.PlanYear) + 3).ToString()).FirstOrDefault();
+                PlanYearCfSummaryExp pnRowThisYear4 = pnThisYearRow.Where(w => w.YearlyYear == (Convert.ToInt32(chk.PlanYear) + 4).ToString()).FirstOrDefault();
+                <div class="type_tab_con" id="yearpal_@company.OrgCompanySeq">
+                    <div class="con_wrap">
+
+                        <div class="graph_box">
+                            <h3>@company.CompanyName</h3>
+
+                            <div class="box">
+                                <div class="graph">
+                                    <table class="tbl tbl_type01" border="1">
+                                        <colgroup>
+                                            <col width="10%" />
+                                            <col width="/" />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" colspan="12" class="rbd lbd0" style="text-align:right;">
+                                                    (단위 : 억원)
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th scope="col" rowspan="2" class="rbd lbd0">
+                                                    구분
+                                                </th>
+                                                <th scope="col" colspan="6" class="rbd">@chk.PlanYear 년 중기계획</th>
+                                                <th scope="col" colspan="5">전년대비</th>
+                                            </tr>
+                                            <tr>
+                                                <th scope="col">@(Convert.ToInt32(chk.PlanYear) - 1) 년</th>
+                                                @for (int i = Convert.ToInt32(chk.PlanYear); i <= toYear; i++)
+                                                {
+                                                    <th scope="col" @(i == toYear ? "class=rbd" : "")>@i 년</th>
+                                                }
+                                                @for (int i = Convert.ToInt32(chk.PlanYear); i <= toYear; i++)
+                                                {
+                                                    <th scope="col">@i 년</th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    영업활동
+                                                </th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearRow.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00" class="rbd">@Math.Round(pnRowThisYear4.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfSales - pmLastYearRow.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfSales - pnRowThisYear0.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfSales - pnRowThisYear1.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfSales - pnRowThisYear2.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear4.CfSales - pnRowThisYear3.CfSales, 2, MidpointRounding.AwayFromZero)</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    투자활동
+                                                </th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearRow.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00" class="rbd">@Math.Round(pnRowThisYear4.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfInvestment - pmLastYearRow.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfInvestment - pnRowThisYear0.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfInvestment - pnRowThisYear1.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfInvestment - pnRowThisYear2.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear4.CfInvestment - pnRowThisYear3.CfInvestment, 2, MidpointRounding.AwayFromZero)</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    재무활동
+                                                </th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearRow.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00" class="rbd">@Math.Round(pnRowThisYear4.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfFinancial - pmLastYearRow.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfFinancial - pnRowThisYear0.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfFinancial - pnRowThisYear1.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfFinancial - pnRowThisYear2.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear4.CfFinancial - pnRowThisYear3.CfFinancial, 2, MidpointRounding.AwayFromZero)</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    Ending cash
+                                                </th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearRow.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00" class="rbd">@Math.Round(pnRowThisYear4.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfEndingCash - pmLastYearRow.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfEndingCash - pnRowThisYear0.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfEndingCash - pnRowThisYear1.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfEndingCash - pnRowThisYear2.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear4.CfEndingCash - pnRowThisYear3.CfEndingCash, 2, MidpointRounding.AwayFromZero)</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    가용현금
+                                                </th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearRow.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00" class="rbd">@Math.Round(pnRowThisYear4.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.CfAvailableCash - pmLastYearRow.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.CfAvailableCash - pnRowThisYear0.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.CfAvailableCash - pnRowThisYear1.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.CfAvailableCash - pnRowThisYear2.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear4.CfAvailableCash - pnRowThisYear3.CfAvailableCash, 2, MidpointRounding.AwayFromZero)</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    FCF
+                                                </th>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pmLastYearRow.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00" class="rbd">@Math.Round(pnRowThisYear4.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear0.Fcf2 - pmLastYearRow.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear1.Fcf2 - pnRowThisYear0.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear2.Fcf2 - pnRowThisYear1.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear3.Fcf2 - pnRowThisYear2.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                                <td style="mso-number-format:\#\,\#\#0\.00">@Math.Round(pnRowThisYear4.Fcf2 - pnRowThisYear3.Fcf2, 2, MidpointRounding.AwayFromZero)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table><!--// tbl-->
+                                </div><!--//graph-->
+                            </div><!--//box-->
+
+                        </div><!--//graph_box-->
+                    </div><!--//con_wrap-->
+
+                </div><!--//type_tab_con-->
+            }
+
+        </div><!--//tab_wrap-->
+    </div><!--//plan_wrap-->

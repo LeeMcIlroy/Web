@@ -1,0 +1,229 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "DisclosureDraftWrite";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    DisclosureDraft disclosureDraft = Model.disclosureDraft;
+    DisclosureDraftExp info = Model.fileInfo;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>공시관리</span>
+        <strong>공시초안 내용</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="Seq" value="@disclosureDraft.Seq" />
+        <input type="hidden" name="CompanySeq" value="@disclosureDraft.CompanySeq" />
+        <input type="hidden" name="Year" value="@disclosureDraft.Year" />
+        <input type="hidden" name="Month" value="@disclosureDraft.Month" />
+        <input type="hidden" name="RegistStatus" value="@disclosureDraft.RegistStatus" />
+        <input type="hidden" name="fileInfoSeq" value="" />
+        <input type="hidden" id="inputName" name="inputName" value="" />
+
+        <div class="con_box search">
+            <h3 class="mt0">공시초안 내용</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 월별 공시항목을 등록 관리합니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 본인에게 할당된 회사만 등록 및 관리가 가능합니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+
+            <table class="tbl th_ver ta_left" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(disclosureDraft.Year)년 @(disclosureDraft.Month)월</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">회사</th>
+                        <td>@orgCompanyName.CompanyName</td>
+                    </tr>
+
+
+                    <tr>
+
+                        <th scope="row">첨부파일</th>
+                        @if (info == null)
+                        {
+
+                            <td class="filebox">
+                                <input class="upload-name" id="fileName1" name="fileName[]" style="width:400px;" value="파일선택" disabled="disabled" />
+                                <label for="uploadFile1">업로드</label>
+                                <input type="file" id="uploadFile1" name="uploadFile1" class="upload-hidden">
+                            </td>
+
+                        }
+                        else
+                        {   
+
+                                if(info.fileInfoList != null)
+                                {
+
+                                    foreach (var item in info.fileInfoList)
+                                    {
+                                    <td class="filebox">
+                                        <a href="javascript: onFileDownload('@item.seq', document.frmMain)">@item.fileOrgName</a> 
+                                        <label class="uploadFile del1" for="ex_filename" onclick="onDeleteFile(document.frmMain, 1); return false;">삭제</label>
+
+                                    </td>
+                                    }
+                                }
+                        }
+                            @*<td class="filebox">
+                                <input class="upload-name fileName1" id="fileName1" style="width:400px;" value="@info.fileInfoList.Where(x => x.fileInputName == "uploadFile1").First().fileOrgName" disabled="disabled">
+                                <label for="uploadFile1">업로드</label>
+                                <input type="file" id="uploadFile1" name="uploadFile1" class="upload-hidden">
+                                <label class="uploadFile del1" for="ex_filename" onclick="onDeleteFile(document.frmMain, 1); return false;">삭제</label>
+                           </td>*@
+                        
+
+                    </tr>
+                    @*<tr>
+                        <th scope="row">다운로드</th>
+                        <td>
+                            @if(info != null)
+                            {
+                            }
+                            </td>
+                        </tr>*@
+
+                    </tbody>
+                </table>
+            <div class="btn_area align_left_right">
+                <a href="javascript:;" onclick="onList()" class="btn full_green left">목록</a>
+                <a href="#" onclick="onWrite(document.frmMain); return false;" class="btn full_green">저장</a>
+                <a href="#" onclick="onCancel();" class="btn full_green">취소</a>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+
+
+
+<script type="text/javascript" src="/Contents/SiteMngHome/Common/se/js/HuskyEZCreator.js" charset="utf-8"></script>
+<script>
+
+    $(function () {
+        MYAPP.fileStyle.init();
+    });
+    function onList() {
+        var f = document.frmMain;
+        f.action = "DisclosureDraftList";
+        f.submit();
+    }
+    function onFileDownload(seq, form) {
+        console.log(form)
+        form.fileInfoSeq.value = seq;
+        form.action = "FileDownload";
+        form.submit();
+    }
+    function onWrite(form) {
+
+        if (form.fileName1.value == "" || form.fileName1.value == null) {
+            alert("첨부파일은 필수입니다.");
+            return false;
+        }
+
+        var ext = getExtensionOfFilename($("#fileName1").val());
+        //if (ext.indexOf("pdf") > -1) {
+        //} else {
+        //    alert("PDF파일만 등록 가능합니다.");
+        //    return false;
+        //}
+
+        // 정보 체크 후, 해당 폼 SUBMIT;
+        form.method = "POST";
+        form.action = "writeAction";
+        form.submit();
+
+    }
+    function onDeleteFile(form, type) {
+        if (type == 1) {
+            inputName = "uploadFile1";
+            inputId = "fileName1";
+        }
+        $("#inputName").val(inputName);
+        var f = document.frmMain;
+
+        // ajax 분기 처리 할 것
+
+        var param = $("#frmMain").serialize();
+        console.log(param)
+        $.ajax({
+            url: "/SiteMngHome/Disclosure/deleteFileAction",
+            type: "post",
+            dataType: "json",
+            data: param,
+            success: function (res) {
+                if (res.success) {
+                    alert("파일이 삭제되었습니다.");
+                    $("." + inputName).css({ "display": "none" });
+                    $("." + inputId).val("");
+                    $(".del" + type).css({ "display": "none" });
+                 
+                    f.action = "DisclosureDraftWrite";
+                    f.submit();
+                } else {
+                    alert("파일 삭제가 실패되었습니다.");
+                }
+            },
+            error: function (request, status, error) {
+                alert("파일 삭제가 실패되었습니다.");
+            }
+        });
+    }
+
+    function onDelete(form) {
+        if (confirm("삭제하시겠습니까?")) {
+            form.method = "POST";
+            form.action = "deleteAction";
+            form.submit();
+        }
+    }
+
+    function onCancel() {
+        if (confirm("작성 된 내용을 취소하시겠습니까?")) {
+            location.reload();
+        }
+    }
+
+    function getExtensionOfFilename(filename) {
+        var _fileLen = filename.length;
+        var _lastDot = filename.lastIndexOf('.');
+        var _fileExt = filename.substring(_lastDot, _fileLen).toLowerCase();
+        return _fileExt;
+    }
+
+ 
+
+    //// history back observed
+    //window.onload = function () {
+    //    if (typeof history.pushState === "function") {
+    //        history.pushState("halla", null, null);
+    //        window.onpopstate = function () {
+    //            location.href = "list";
+    //        };
+    //    }
+    //};
+</script>
+

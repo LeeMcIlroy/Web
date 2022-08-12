@@ -1,0 +1,145 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    List<Notice> list = Model.list;
+    int totalCount = Model.totalCount;
+    Search search = ViewBag.Search;
+}
+
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>안내센터</span>
+        <strong>공지사항</strong>
+    </div>
+
+    <form name="frmMain" method="post">
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="rowNum" value="" />
+        <input type="hidden" name="seq" value="" />
+        <div class="con_box search">
+            <h3 class="mt0">공지사항</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 새로운 소식을 확인할 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+        <div class="con_box search">
+            <div class="bg_gray">
+                <div class="style_select" style="width:20%;">
+                    <label>
+                        <span></span>
+                        <select name="searchType">
+                            @foreach (var item in Define.NOTICE_SEARCH_TYPE)
+                            {
+                                <option value="@item.Key" @(ViewBag.Search.searchType == item.Key ? "selected" : "")>@item.Value</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <input type="text" name="searchText" value="@ViewBag.Search.searchText" style="width:50%;" />
+                <a href="javascript: onSearch(document.frmMain);" class="btn small full_green" style="width:9%;">검색</a>
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+
+            @if (!string.IsNullOrEmpty(ViewBag.Search.searchText))
+            {
+                <p class="tblinfo">@ViewBag.Search.searchText 에 대한 총 <strong class="number">@totalCount</strong>개의 글이 있습니다.</p>
+            }
+            else
+            {
+                <p class="tblinfo">총 <strong class="number">@totalCount</strong>개의 글이 있습니다.</p>
+            }
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="5%" />
+                    <col width="/" />
+                    <col width="10%" />
+                    <col width="10%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>
+                        <th scope="col">제목</th>
+                        <th scope="col">등록일</th>
+                        <th scope="col">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (list.Count() > 0)
+                    {
+                        foreach (var item in list)
+                        {
+
+                            <tr>
+                                <td>@item.rowNum</td>
+                                @*<td class="ta_left"><a href="/SiteMngHome/Info/Notice/View?rowNum=@item.rowNum&seq=@item.seq&=PageIndex=@search.PageIndex">@item.title</a></td>*@
+                                <td class="ta_left"><a href="javascript:;" onclick="onView(document.frmMain, @item.rowNum, @item.seq)">@item.title</a></td>
+                                <td>@item.inputRegDate</td>
+                                <td>@item.viewCnt</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+
+                        <tr>
+                            <td colspan="4">등록된 공지사항이 없습니다.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="paging">
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.FirstPageIndex)" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.PrevPageIndex)" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                <span>
+                    @for (int i = ViewBag.Search.StartPageIndex; i <= ViewBag.Search.EndPageIndex; i++)
+                    {
+                        if (ViewBag.Search.PageIndex == i)
+                        {
+                            <strong>@i</strong>
+                        }
+                        else
+                        {
+                            <a href="#" onclick="onPaging(document.frmMain, @i)">@i</a>
+                        }
+                    }
+                </span>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.NextPageIndex)" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.FinalPageIndex)" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+            </div>
+            <!--// con_box-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+    function onSearch(form) {
+        form.action = "/SiteMngHome/Info/Notice/List";
+        form.method = "POST";
+        form.submit();
+    }
+
+    function onView(form, rowNum, seq) {
+        form.rowNum.value = rowNum;
+        form.seq.value = seq;
+        
+        form.action = "/SiteMngHome/Info/Notice/View";
+        form.method = "POST";
+        form.submit();
+
+    }
+</script>
+
+

@@ -1,0 +1,717 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PmQuarterPal pmQuarterPal = Model.pmQuarterPal;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<OrgBusiness> orgBusinessList = Model.orgBusinessList;
+
+    //작년 실적
+    List<PmQuarterPalBusiness> QuarterResultLastYearList = Model.QuarterResultLastYearList;
+    //작년 계획
+    List<PmQuarterPalBusiness> QuarterPlanLastYearList = Model.QuarterPlanLastYearList;
+    //당해 예상
+    List<PmQuarterPalBusiness> QuarterExpectThisYearList = Model.QuarterExpectThisYearList;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>분기별 손익</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@pmQuarterPal.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@pmQuarterPal.OrgCompanySeq" />
+        <input type="hidden" name="QuarterPalYear" value="@pmQuarterPal.QuarterPalYear" />
+        <input type="hidden" name="Monthly" value="@pmQuarterPal.Monthly" />
+        <input type="hidden" name="Seq" value="@pmQuarterPal.Seq" />
+        <input type="hidden" name="RegistStatus" value="@pmQuarterPal.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchMonth" value="@(search.searchMonth)" />
+        <div class="con_box search">
+            <h3 class="mt0">분기별 손익 작성</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(pmQuarterPal.QuarterPalYear)년 @(pmQuarterPal.Monthly)월</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = pmQuarterPal.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            @foreach (var item in orgBusinessList)
+            {
+                //분기별 손익 - 전년도실적
+                var query = from p in QuarterResultLastYearList
+                            where p.OrgBusinessSeq == item.Seq
+                            select new { p };
+
+                <h3>@item.BusinessName</h3>
+                <p class="caption"><span>(단위 : 억원,%)</span></p>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="2">구분</th>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!--전년실적-->
+                        @if (QuarterResultLastYearList == null || QuarterResultLastYearList.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="4">@(Convert.ToInt32(pmQuarterPal.QuarterPalYear) - 1)년 실적</th>
+                                <th scope="row">1분기</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2분기</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3분기</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">4분기</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            var count = 0;
+                            foreach (var resultQuarter in QuarterResultLastYearList)
+                            {
+                                if (resultQuarter.OrgBusinessSeq == item.Seq)
+                                {
+                                    if (count == 0)
+                                    {
+                                        <tr>
+                                            <th scope="row" rowspan="@(QuarterResultLastYearList.Count() > 4 ? 4 : QuarterResultLastYearList.Count())">@(Convert.ToInt32(pmQuarterPal.QuarterPalYear) - 1)년 실적</th>
+                                            <th scope="row">@(resultQuarter.BusinessQuarter)분기</th>
+                                            <td>@WebUtil.NCommaRound(resultQuarter.Sales, 2)</td>
+                                            <td>@WebUtil.NCommaRound(resultQuarter.Ebit, 2)</td>
+                                            <td>@WebUtil.NCommaRound(WebUtil.NumberRound(resultQuarter.Ebit, resultQuarter.Sales, 100, 2), 2)%</td>
+                                            <td>@WebUtil.NCommaRound(resultQuarter.Pbt, 2)</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <th scope="row">@(resultQuarter.BusinessQuarter)분기</th>
+                                            <td>@WebUtil.NCommaRound(resultQuarter.Sales, 2)</td>
+                                            <td>@WebUtil.NCommaRound(resultQuarter.Ebit, 2)</td>
+                                            <td>@WebUtil.NumberRound(resultQuarter.Ebit, resultQuarter.Sales, 100, 2)%</td>
+                                            <td>@WebUtil.NCommaRound(resultQuarter.Pbt, 2)</td>
+                                        </tr>
+                                    }
+                                    count++;
+                                }
+                            }
+                        }
+
+                        <!--당해계획-->
+                        @if (QuarterPlanLastYearList == null || QuarterPlanLastYearList.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="4">@(pmQuarterPal.QuarterPalYear)년 계획</th>
+                                <th scope="row">1분기</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2분기</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3분기</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">4분기</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            var count = 0;
+                            foreach (var planQuarter in QuarterPlanLastYearList)
+                            {
+                                if (planQuarter.OrgBusinessSeq == item.Seq)
+                                {
+                                    if (count == 0)
+                                    {
+                                        <tr>
+                                            <th scope="row" rowspan="4">@(pmQuarterPal.QuarterPalYear)년 계획</th>
+                                            <th scope="row">@(planQuarter.BusinessQuarter)분기</th>
+                                            <td>@(WebUtil.NCommaRound(planQuarter.Sales, 2))</td>
+                                            <td>@(WebUtil.NCommaRound(planQuarter.Ebit, 2))</td>
+                                            <td>@WebUtil.NCommaRound(WebUtil.NumberRound(planQuarter.Ebit, planQuarter.Sales, 100, 2), 2)%</td>
+                                            <td>@(WebUtil.NCommaRound(planQuarter.Pbt, 2))</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <th scope="row">@(planQuarter.BusinessQuarter)분기</th>
+                                            <td>@(WebUtil.NCommaRound(planQuarter.Sales, 2))</td>
+                                            <td>@(WebUtil.NCommaRound(planQuarter.Ebit, 2))</td>
+                                            <td>@WebUtil.NCommaRound(WebUtil.NumberRound(planQuarter.Ebit, planQuarter.Sales, 100, 2), 2)%</td>
+                                            <td>@(WebUtil.NCommaRound(planQuarter.Pbt, 2))</td>
+                                        </tr>
+                                    }
+
+                                    count++;
+                                }
+                            }
+                        }
+
+                        <!--당해예상-->
+                        @if (QuarterExpectThisYearList == null || QuarterExpectThisYearList.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="4">@(pmQuarterPal.QuarterPalYear)년 예상</th>
+                                <th scope="row">1분기</th>
+                                <td><input type="text" name="Sales" value="0"/></td>
+                                <td><input type="text" name="Ebit" value="0"/></td>
+                                <td class="bg_blue" name="EbitRate">0</td>
+                                <td><input type="text" name="Pbt" value="0"/></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2분기</th>
+                                <td><input type="text" name="Sales" value="0"/></td>
+                                <td><input type="text" name="Ebit" value="0"/></td>
+                                <td class="bg_blue" name="EbitRate">0%</td>
+                                <td><input type="text" name="Pbt" value="0"/></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3분기</th>
+                                <td><input type="text" name="Sales" value="0"/></td>
+                                <td><input type="text" name="Ebit" value="0"/></td>
+                                <td class="bg_blue" name="EbitRate">0%</td>
+                                <td><input type="text" name="Pbt" value="0"/></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">4분기</th>
+                                <td><input type="text" name="Sales" value="0"/></td>
+                                <td><input type="text" name="Ebit" value="0"/></td>
+                                <td class="bg_blue" name="EbitRate">0</td>
+                                <td><input type="text" name="Pbt" value="0"/></td>
+                            </tr>
+                        }
+                        else
+                        {
+                            var count = 0;
+                            foreach (var QuarterExpect in QuarterExpectThisYearList)
+                            {
+                                if (QuarterExpect.OrgBusinessSeq == item.Seq)
+                                {
+                                    if (count == 0)
+                                    {
+                                        <tr>
+                                            <th scope="row" rowspan="4">@(pmQuarterPal.QuarterPalYear)년 예상</th>
+                                            <th scope="row">
+                                                @(QuarterExpect.BusinessQuarter)분기
+                                                <input type="hidden" name="BusinessQuarter" value="@QuarterExpect.BusinessQuarter" />
+                                                <input type="hidden" name="PmQuarterPalBusinessSeq" value="@QuarterExpect.PmQuarterPalBusinessSeq" />
+                                            </th>
+                                            <td><input type="text" name="Sales" value="@(QuarterExpect.Sales)"/></td>
+                                            <td><input type="text" name="Ebit" value="@(QuarterExpect.Ebit)"/></td>
+                                            <td class="bg_blue" name="EbitRate">@WebUtil.NCommaRound(WebUtil.NumberRound(QuarterExpect.Ebit, QuarterExpect.Sales, 100, 2), 2)%</td>
+                                            <td><input type="text" name="Pbt" value="@(QuarterExpect.Pbt)"/></td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <th scope="row">
+                                                @(QuarterExpect.BusinessQuarter)분기
+                                                <input type="hidden" name="BusinessQuarter" value="@QuarterExpect.BusinessQuarter" />
+                                                <input type="hidden" name="PmQuarterPalBusinessSeq" value="@QuarterExpect.PmQuarterPalBusinessSeq" />
+                                            </th>
+                                            <td><input type="text" name="Sales" value="@(QuarterExpect.Sales)"/></td>
+                                            <td><input type="text" name="Ebit" value="@(QuarterExpect.Ebit)"/></td>
+                                            <td class="bg_blue" name="EbitRate">@WebUtil.NCommaRound(WebUtil.NumberRound(QuarterExpect.Ebit, QuarterExpect.Sales, 100, 2), 2)%</td>
+                                            <td><input type="text" name="Pbt" value="@(QuarterExpect.Pbt)"/></td>
+                                        </tr>
+                                    }
+                                    count++;
+                                }
+                            }
+                        }
+                        
+                        @if (QuarterExpectThisYearList == null || QuarterExpectThisYearList.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="4">계획대비</th>
+                                <th scope="row">1분기</th>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2분기</th>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">3분기</th>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">4분기</th>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                                <td class="bg_blue">0%</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            var count = 0;
+                            foreach (var QuarterplanContrast in QuarterExpectThisYearList)
+                            {
+                                if (QuarterplanContrast.OrgBusinessSeq == item.Seq)
+                                {
+                                    var planBussiness = QuarterPlanLastYearList.Where(w => w.OrgBusinessSeq == item.Seq)
+                                        .Where(w => w.BusinessQuarter == QuarterplanContrast.BusinessQuarter).FirstOrDefault();
+                                    if (planBussiness == null) { planBussiness = new PmQuarterPalBusiness(); }
+
+                                    //계획대비
+                                    decimal planContrastSales = 0;
+                                    decimal planContrastEbit = 0;
+                                    decimal planContrastEbitRate = 0;
+                                    decimal planContrastPbt = 0;
+
+                                    QuarterplanContrast.EbitRate = WebUtil.NumberRound(QuarterplanContrast.Ebit, QuarterplanContrast.Sales, 100, 2);
+                                    planBussiness.EbitRate = WebUtil.NumberRound(planBussiness.Ebit, planBussiness.Sales, 100, 2);
+
+                                    planContrastSales = WebUtil.NumberRound(QuarterplanContrast.Sales, planBussiness.Sales, 100, 2);
+                                    planContrastEbit = WebUtil.NumberRound(QuarterplanContrast.Ebit, planBussiness.Ebit, 100, 2);
+                                    planContrastEbitRate = QuarterplanContrast.EbitRate - planBussiness.EbitRate;
+                                    planContrastPbt = WebUtil.NumberRound(QuarterplanContrast.Pbt, planBussiness.Pbt, 100, 2);
+
+                                    if (count == 0)
+                                    {
+                                        <tr>
+                                            <th scope="row" rowspan="4">계획대비</th>
+                                            <th scope="row">@(QuarterplanContrast.BusinessQuarter)분기</th>
+                                            <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(QuarterplanContrast.Sales, planContrastSales))</td>
+                                            <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(QuarterplanContrast.Ebit, planContrastEbit))</td>
+                                            <td class="bg_blue">@WebUtil.NCommaRound(planContrastEbitRate, 2)%</td>
+                                            <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(QuarterplanContrast.Pbt, planContrastPbt))</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <th scope="row">@(QuarterplanContrast.BusinessQuarter)분기</th>
+                                            <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(QuarterplanContrast.Sales, planContrastSales))</td>
+                                            <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(QuarterplanContrast.Ebit, planContrastEbit))</td>
+                                            <td class="bg_blue">@WebUtil.NCommaRound(planContrastEbitRate, 2)%</td>
+                                            <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(QuarterplanContrast.Pbt, planContrastPbt))</td>
+                                        </tr>
+                                    }
+                                    count++;
+                                }
+                            }
+                        }
+                        @*<tr>
+                            <th scope="row" rowspan="4">계획대비</th>
+                            <th scope="row">1분기</th>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">2분기</th>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">3분기</th>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">4분기</th>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                            <td class="bg_blue"></td>
+                        </tr>*@
+                    </tbody>
+                </table>
+            }
+
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                <button class="btn full_green" type="button" onclick="onReset();">초기화</button>
+                <button class="btn full_green" type="button" onclick="onCalculationAction();">계산하기</button>
+            </div><!--//btn_area-->
+            @*<h3>[xx]월 분기별 손익 요약</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2">구분</th>
+                        <th scope="col">Sales</th>
+                        <th scope="col">EBIT</th>
+                        <th scope="col">EBIT%</th>
+                        <th scope="col">PBT</th>
+                        <th scope="col">당기순이익</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row" rowspan="4">2017년 실적</th>
+                        <th scope="row">1분기</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2분기</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3분기</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">4분기</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">2018년 계획</th>
+                        <th scope="row">1분기</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2분기</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3분기</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">4분기</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">2018년 예상</th>
+                        <th scope="row">1분기</th>
+                        <td><input type="text" name="" /></td>
+                        <td><input type="text" name="" /></td>
+                        <td class="bg_blue"></td>
+                        <td><input type="text" name="" /></td>
+                        <td><input type="text" name="" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2분기</th>
+                        <td><input type="text" name="" /></td>
+                        <td><input type="text" name="" /></td>
+                        <td class="bg_blue"></td>
+                        <td><input type="text" name="" /></td>
+                        <td><input type="text" name="" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3분기</th>
+                        <td><input type="text" name="" /></td>
+                        <td><input type="text" name="" /></td>
+                        <td class="bg_blue"></td>
+                        <td><input type="text" name="" /></td>
+                        <td><input type="text" name="" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">4분기</th>
+                        <td><input type="text" name="" /></td>
+                        <td><input type="text" name="" /></td>
+                        <td class="bg_blue"></td>
+                        <td><input type="text" name="" /></td>
+                        <td><input type="text" name="" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">계획대비</th>
+                        <th scope="row">1분기</th>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2분기</th>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3분기</th>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">4분기</th>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                        <td class="bg_blue"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left">목록</button>
+                <button class="btn full_green">저장하기</button>
+            </div><!--//btn_area-->*@
+        </div>
+        <!--// con_box -->
+
+    </form>
+
+</div><!--//container-->
+<script>
+    $(function () {
+        MYAPP.tblControl.init();
+    });
+
+    function onCalculationAction() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Sales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ebit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Pbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        //if (confirm("@Message.MSG_002_Q")) {
+           // f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Action";
+            f.submit();
+        //}
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Write";
+            f.submit();
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down2";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+        var orgCpyName = "@(orgCompanyName.CompanyName)";
+        var excelFileName = excelFilePath.substring(excelFilePath.lastIndexOf('\\') + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+        if (excelFileName.indexOf('분기별손익') < 0 || excelFileName.indexOf(orgCpyName.toLowerCase()) < 0) {
+            alert('' + orgCpyName + ' - [분기별손익] 파일이 아닙니다. \n파일을 확인해주세요');
+            return;
+        }
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            //url: "Excel_Upload",
+            url: "Excel_Upload3",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.action = "Edit";
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+    }
+    onCalculationAction();
+</script>

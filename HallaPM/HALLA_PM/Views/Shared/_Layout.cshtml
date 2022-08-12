@@ -1,0 +1,323 @@
+﻿@using HALLA_PM.Util;
+@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    string message = TempData["alert"] == null ? string.Empty : TempData["alert"].ToString();
+
+    var session = (MemberSession)Session[Define.MEMBER_SESSION_NAME];
+    string url = Request.Url.PathAndQuery.ToString(); // Request.Url.ToString();
+    string rawUrl = Request.RawUrl.ToString();
+    /*
+    if (session == null)
+    {
+        Response.Redirect(Define.SYSTEM_ERROR_PAGE_URL);
+        return;
+    }
+    */
+
+
+    var query = from t in session.systemOrgAuth
+                where t.OrgCompanySeq == 0
+                select new { t };
+
+
+    var query2 = from t in session.systemOrgAuth
+                 where t.OrgCompanySeq != 0
+                 select new { t };
+
+   
+
+    var menuAuth = session.systemMenuAuth;
+
+}
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <!-- <meta name="viewport" content="width=device-width,user-scalable=yes,initial-scale=1.0,maximum-scale=1.0,minimum-scale=0.3,target-densitydpi=medium-dpi,shrink-to-fit=no" /> -->
+
+    <title>Halla Performance Reporting System</title>
+
+    <link rel="stylesheet" href="~/Contents/user/Common/css/style.css" />
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/TweenMax.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/vue.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/d3.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/nv.d3.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/nv.d3.plugin.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/front.js"></script>
+    <!--[if lt IE 9]>
+        <script type="text/javascript"  src="~/Contents/user/Common/js/libs/html5shiv.js"></script>
+        <script type="text/javascript" src="~/Contents/user/Common/js/libs/IE9.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="wrap">
+        <header id="header">
+            <div class="header_in">
+                <h1><a href="/Main/Main"><img src="~/Contents/user/Common/img/logo.png" alt="HALLA" /></a></h1>
+                <div class="login_wrap">
+                    <p class="login_info">@(session.insaDeptV == null ? "" : session.insaDeptV.Compkorname) / @(session.insaDeptV == null ? "" : session.insaDeptV.Deptkorname) / <span class="tc_b">@(session.insaUserV.userKorName)</span></p>
+                    @if (session.adminAuth != null)
+                    {
+                        @*<a href="/SiteMngHome/ssoLoginTempProc?empNo=@(session.adminAuth.AuthUserKey)" target="_blank" class="btn_admin">관리자</a>
+                        <a href="/SiteMngHome/Performance/Cash_Flow/List" target="_blank" class="btn_admin">관리자</a>*@
+                        <a href="/SiteMngHome/webToAdmin" target="_blank" class="btn_admin">관리자</a>
+
+                    }
+                    <a href="/Home/LogOut" class="btn_logout">로그아웃</a>
+                </div><!--//login_wrap-->
+            </div>
+        </header><!--//header-->
+
+        <nav id="lnb">
+            @if (session != null)
+            {
+            <ul class="ico_navi">
+                @if (session.systemOrgAuth.Count > 0)
+                {
+                    if (query.Count() > 0)
+                    {
+                        <li><a href="/Org/Index">그룹</a></li>
+                    }
+                    else
+                    {
+                        // 2019.02.15 만도는 화면 리스트에 보이지 않게 수정
+                        if (query2.Count() > 0)
+                        {
+                            if (query2.First().t.OrgCompanySeq != 3)
+                            {
+                                <li><a href="/Org/Company?Seq=@(query2.First().t.OrgCompanySeq)">- @(query2.First().t.CompanyName)</a></li>
+                            }
+                        }
+                    }
+                }
+
+                @if (menuAuth.Count() > 0 && menuAuth.Where(w => w.MenuType == Define.MENU_TYPE.GetKey("경영실적")).Count() > 0)
+                {
+                    <li><a href="/Performance/Index">경영실적</a></li>
+                }
+                @if (menuAuth.Count() > 0 && menuAuth.Where(w => w.MenuType == Define.MENU_TYPE.GetKey("사업계획")).Count() > 0)
+                {
+                    <li><a href="/Plan/Year_Pal/Index">사업계획</a></li>
+                }
+                @if (menuAuth.Count() > 0 && menuAuth.Where(w => w.MenuType == Define.MENU_TYPE.GetKey("트렌드분석")).Count() > 0)
+                {
+                    <li><a href="/Trend_Analysis/Cash_Flow/Index">실적 트렌드 분석</a></li>
+                }   
+                @if (menuAuth.Count() > 0 && menuAuth.Where(w => w.MenuType == Define.MENU_TYPE.GetKey("공시관리")).Count() > 0)
+                {
+                    <li><a href="/Dis/DisclosureIndex">공시현황</a></li>
+                }
+            </ul>
+            <ul class="depth1">
+                <li>
+                    <a href="#" class="@(url.IndexOf("/Org/") > 0 ? "on" : "")"><i class="ico ico_group"></i><span class="fold_hide">경영실적</span></a>
+                    <ul class="depth2">
+                        @if (query != null && query.Count() > 0)
+                        {
+                            <!--<li><a href="/Org/Index" class="@(url.IndexOf("/Org/Index") > 0 ? "on" : "")">그룹</a></li>-->
+                            <li><a href="/Org/NewIndex" class="@(url.IndexOf("/Org/NewIndex") > 0 ? "on" : "")">그룹(NEW)</a></li>
+                        }
+                        @foreach (var item in session.lv2)
+                        {
+                            <li>
+                                <a href="#" onclick="return false;">@(item.txt)</a>
+                                <ul class="depth3">
+                                    @foreach (var item2 in query2.Where(w => w.t.OrgUnionSeq == Convert.ToInt32(item.id)))
+                                    {
+                                        // 2019.02.15 만도는 화면 리스트에 보이지 않게 수정
+                                        if (item2.t.OrgCompanySeq != 3 && item2.t.OrgCompanySeq != 4 && item2.t.OrgCompanySeq != 21 && item2.t.IsUse != "N")
+                                        {
+                                            <li><a href="/Org/Company?Seq=@(item2.t.OrgCompanySeq)" class="@(url == "/Org/Company?Seq=" + item2.t.OrgCompanySeq ? "on" : "")">- @(item2.t.CompanyName)</a></li>
+                                        }
+
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </li>
+                @if (menuAuth.Count() > 0 && menuAuth.Where(w => w.MenuType == Define.MENU_TYPE.GetKey("경영실적")).Count() > 0)
+                {
+                    <li>
+                        <a href="#" class="@(url.IndexOf("/Performance/") > 0 ? "on" : "")"><i class="ico ico_record"></i><span class="fold_hide">경영실적(상세)</span></a>
+                        <ul class="depth2">
+                            <li><a href="/Performance/Index" class="@(url.IndexOf("/Performance/Index") > 0 ? "on" : "")">경영실적(상세)</a></li>
+                        </ul>
+                    </li>
+                }
+                @if (menuAuth.Count() > 0 && menuAuth.Where(w => w.MenuType == Define.MENU_TYPE.GetKey("사업계획")).Count() > 0)
+                {
+                    <!-- <li>
+            <a href="#" class="@(url.IndexOf("/Plan/") > 0 ? "on" : "")"><i class="ico ico_plan"></i><span class="fold_hide">사업계획</span></a>
+            <ul class="depth2">
+                <li><a href="/Plan/Year_Cf/NewIndex" class="@(url.IndexOf("/Plan/Year_Cf/NewIndex") > 0 ? "on" : "")">중기 C/F</a></li>
+                <li><a href="/Plan/Year_Pal/NewIndex" class="@(url.IndexOf("/Plan/Year_Pal/NewIndex") > 0 ? "on" : "")">중기 손익</a></li>
+                <li><a href="/Plan/Monthly_Pal/NewIndex" class="@(url.IndexOf("/Plan/Monthly_Pal/NewIndex") > 0 ? "on" : "")">@(session.planYear.First().RegistYear)년 월별 손익</a></li>
+                <li><a href="/Plan/Year_Bs_Finance/NewIndex" class="@(url.IndexOf("/Plan/Year_Bs_Finance/NewIndex") > 0 ? "on" : "")">중기 B/S</a></li>
+                <li><a href="/Plan/Year_Invest/Index" class="@(url.IndexOf("/Plan/Year_Invest/Index") > 0 ? "on" : "")">중기 투자, 인원</a></li>
+            </ul>
+        </li>-->
+
+                    <li>
+                        <a href="#" class="@(url.IndexOf("/Plan/") > 0 ? "on" : "")"><i class="ico ico_plan"></i><span class="fold_hide">사업계획(NEW)</span></a>
+                        <ul class="depth2">
+                            <li><a href="/Plan/Year_Cf/NewIndex2" class="@(url.IndexOf("/Plan/Year_Cf/NewIndex2") > 0 ? "on" : "")">중기 C/F</a></li>
+                            <li><a href="/Plan/Year_Pal/NewIndex2" class="@(url.IndexOf("/Plan/Year_Pal/NewIndex2") > 0 ? "on" : "")">중기 손익</a></li>
+                            <li><a href="/Plan/Monthly_Pal/NewIndex2" class="@(url.IndexOf("/Plan/Monthly_Pal/NewIndex2") > 0 ? "on" : "")">@(session.planYear.First().RegistYear)년 월별 손익</a></li>
+                            <li><a href="/Plan/Year_Bs_Finance/NewIndex2" class="@(url.IndexOf("/Plan/Year_Bs_Finance/NewIndex2") > 0 ? "on" : "")">중기 B/S</a></li>
+                            <li><a href="/Plan/Year_Invest/NewIndex" class="@(url.IndexOf("/Plan/Year_Invest/NewIndex") > 0 ? "on" : "")">중기 투자, 인원</a></li>
+                        </ul>
+                    </li>
+                }
+                @if (menuAuth.Count() > 0 && menuAuth.Where(w => w.MenuType == Define.MENU_TYPE.GetKey("트렌드분석")).Count() > 0)
+                {
+                    <li>
+                        <a href="#" class="@(url.IndexOf("/Trend_Analysis/") > 0 ? "on" : "")"><i class="ico ico_chart"></i><span class="fold_hide">실적 트렌드 분석</span></a>
+                        <ul class="depth2">
+                            <li><a href="/Trend_Analysis/Cash_Flow/Index" class="@(url.IndexOf("/Trend_Analysis/Cash_Flow/Index") > 0 ? "on" : "")">Cash Flow</a></li>
+                            <li><a href="/Trend_Analysis/Pal/Index" class="@(url.IndexOf("/Trend_Analysis/Pal/Index") > 0 ? "on" : "")">손익</a></li>
+                            <li><a href="/Trend_Analysis/Financial/Index" class="@(url.IndexOf("/Trend_Analysis/Financial/Index") > 0 ? "on" : "")">재무비율</a></li>
+                            <li><a href="/Trend_Analysis/Invest/Index" class="@(url.IndexOf("/Trend_Analysis/Invest/Index") > 0 ? "on" : "")">투자, 인원</a></li>
+                        </ul>
+                    </li>
+                }
+                @if (menuAuth.Count() > 0 && menuAuth.Where(w => w.MenuType == Define.MENU_TYPE.GetKey("공시관리")).Count() > 0)
+                {
+                    <li>
+                        <a href="#" class="@(url.IndexOf("/Dis/") > 0 ? "on" : "")"><i class="ico ico_group"></i><span class="fold_hide">공시현황</span></a>
+                        <ul class="depth2">
+                            @if (query != null && query.Count() > 0)
+                            {
+                                <li><a href="/Dis/DisclosureIndex" class="@(url.IndexOf("/Dis/DisclosureIndex") > 0 ? "on" : "")">그룹</a></li>
+                            }
+                            @foreach (var item in session.lv2)
+                            {
+                                <li>
+                                    <a href="#" onclick="return false;">@(item.txt)</a>
+                                    <ul class="depth3">
+                                        @foreach (var item2 in query2.Where(w => w.t.OrgUnionSeq == Convert.ToInt32(item.id)))
+                                        {
+                                            // 공시여부가 N 은 보이지않게
+                                            if (item2.t.IsDisclosure == "Y" )
+                                            {
+                                                <li><a href="/Dis/DisCompany?Seq=@(item2.t.OrgCompanySeq)" class="@(url == "/Dis/DisCompany?Seq=" + item2.t.OrgCompanySeq ? "on" : "")">- @(item2.t.CompanyName)</a></li>
+                                            }
+
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                }
+                </ul>
+            }
+            <a href="#" class="btn_fold"></a>
+        </nav><!--//lnb-->
+
+        <section id="container">
+            @*이 부분은 수정하면 안됩니다. 다른 페이지들의 위치*@
+            @RenderBody()
+        </section><!--//container-->
+
+        @*
+        <a href="javascript:;" class="btn_comment" onclick="javascript: MYAPP.layerControl.layerShow($('#layerComment'));">코멘트</a>
+
+        <div id="layerComment" class="layer">
+            <div class="layer_in">
+                <div class="comment_box_wrap">
+                    <textarea placeholder="최대 200자 이내로 입력해 주세요"></textarea>
+                    <button class="btn full_gray">댓글<br />등록</button>
+                </div><!--//comment_box_wrap-->
+
+
+                <div class="comment_list_wrap">
+                    <div class="comment_list_scroll">
+                        <h1>Aug 2018</h1>
+                        <!--코멘트는 최신순으로 최대 5개 노출-->
+                        <div class="comment">
+                            <dl>
+                                <dt>한라그룹 / 경영지원본부 / 이한라</dt>
+                                <dd>당월 매출은 계획 대비 8% 상승되어 상기와 같은 결과를 달성하였습니다</dd>
+                                <dd class="date">23  Aug, 2018</dd>
+                            </dl>
+                            <a href="#" class="btn_del"><span>삭제</span></a>
+                        </div><!--//comment-->
+                        <div class="comment">
+                            <dl>
+                                <dt>한라그룹 / 경영지원본부 / 이한라</dt>
+                                <dd>당월 매출은 계획 대비 8% 상승되어 상기와 같은 결과를 달성하였습니다</dd>
+                                <dd class="date">23  Aug, 2018</dd>
+                            </dl>
+                            <a href="#" class="btn_del"><span>삭제</span></a>
+                        </div><!--//comment-->
+                        <div class="comment">
+                            <dl>
+                                <dt>한라그룹 / 경영지원본부 / 이한라</dt>
+                                <dd>당월 매출은 계획 대비 8% 상승되어 상기와 같은 결과를 달성하였습니다</dd>
+                                <dd class="date">23  Aug, 2018</dd>
+                            </dl>
+                            <a href="#" class="btn_del"><span>삭제</span></a>
+                        </div><!--//comment-->
+                        <div class="comment">
+                            <dl>
+                                <dt>한라그룹 / 경영지원본부 / 이한라</dt>
+                                <dd>당월 매출은 계획 대비 8% 상승되어 상기와 같은 결과를 달성하였습니다</dd>
+                                <dd class="date">23  Aug, 2018</dd>
+                            </dl>
+                            <a href="#" class="btn_del"><span>삭제</span></a>
+                        </div><!--//comment-->
+                        <div class="comment">
+                            <dl>
+                                <dt>한라그룹 / 경영지원본부 / 이한라</dt>
+                                <dd>당월 매출은 계획 대비 8% 상승되어 상기와 같은 결과를 달성하였습니다</dd>
+                                <dd class="date">23  Aug, 2018</dd>
+                            </dl>
+                            <a href="#" class="btn_del"><span>삭제</span></a>
+                        </div><!--//comment-->
+                    </div><!--//comment_list_scroll-->
+
+                    <div class="paging">
+                        <a href="#" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                        <a href="#" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                        <span>
+                            <strong>1</strong>
+                            <a href="#">2</a>
+                            <a href="#">3</a>
+                            <a href="#">4</a>
+                            <a href="#">5</a>
+                            <a href="#">6</a>
+                            <a href="#">7</a>
+                            <a href="#">8</a>
+                            <a href="#">9</a>
+                            <a href="#">10</a>
+                        </span>
+                        <a href="#" onclick="onPaging(document.listForm, '')" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                        <a href="#" onclick="onPaging(document.listForm, '')" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+                    </div><!--//paging-->
+                </div><!--//comment_list_wrap-->
+                <a href="javascript:;" onclick="javascript: MYAPP.layerControl.layerHide($('#layerComment')); return false;" class="btn_layer_close"></a>
+            </div><!--//layer_in-->
+        </div>
+        *@
+        <div id="mask"></div><!--//mask-->
+    </div><!--//wrap-->
+    <script type="text/javascript">
+    $(function(){
+        MYAPP.common.init();
+    });
+    </script>
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <script>alert('@message');</script>
+    }
+
+</body>
+</html>

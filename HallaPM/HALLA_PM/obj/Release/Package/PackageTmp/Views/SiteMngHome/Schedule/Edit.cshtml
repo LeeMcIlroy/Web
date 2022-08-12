@@ -1,0 +1,199 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PlanSchedule Schedule = Model.Schedule;
+    List<PlanSchedulePerformanceReg> SchedulePerformance = Model.SchedulePerformance;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>일정관리</span>
+        <strong>등록일정계획</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="message" value="수정" />
+        <input type="hidden" name="ApplyChk" value="@Schedule.ApplyChk" />
+        <input type="hidden" name="ScheduleYear" value="@Schedule.ScheduleYear" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+
+
+        <div class="con_box search">
+            <h3 class="mt0">등록일정계획 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 설정된 기간 동안 등록 시스템이 오픈됩니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 실적등록기간이 초과되면 계획 및 실적 입력이 불가능합니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">연도</th>
+                        <td colspan="2">
+                            @Schedule.ScheduleYear
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">계획등록</th>
+                        <td colspan="2">
+                            <span class="datepicker">
+                                <input type="text" class="start_date" name="PlanDtStart" style="width:30%;" value="@Schedule.PlanDtStart" />
+                            </span> ~
+                            <span class="datepicker">
+                                <input type="text" class="end_date" name="PlanDtEnd" style="width:30%;" value="@Schedule.PlanDtEnd" />
+                            </span>
+                        </td>
+                    </tr>
+                    @{
+                        foreach (var item in SchedulePerformance)
+                        {
+                            <tr>
+                                <th scope="row">실적등록</th>
+                                <td class="ta_center">@(Convert.ToInt32(item.RegMonth))월</td>
+                                <td>
+                                    <input type="hidden" name="RegMonth" value="@item.RegMonth" />
+                                    <span class="datepicker">
+                                        <input type="text" class="start_date" name="RegDtStart" style="width:30%;" value="@item.RegDtStart" />
+                                    </span> ~
+                                    <span class="datepicker">
+                                        <input type="text" class="end_date" name="RegDtEnd" style="width:30%;" value="@item.RegDtEnd" />
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <div class="btn_area2">
+                <div class="left">
+                    <button class="btn full_blue" type="button" onclick="onList();">목록</button>
+                </div>
+                <div class="right">
+                    @{
+                        if (Schedule.ApplyChk == "Y")
+                        {
+                            <button class="btn full_green" type="button" onclick="javascript: alert('이미 승인요청되었습니다.');">승인요청</button>
+                            <button class="btn full_green" type="button" onclick="javascript: alert('이미 승인요청되었습니다.');">수정</button>
+                        }
+                        else
+                        {
+                            <button class="btn full_green" type="button" onclick="onApply('Y', '승인요청');">승인요청</button>
+                            <button class="btn full_green" type="button" onclick="onWrite();">수정</button>
+                        }
+                    }
+                    <!--<button class="btn full_green">승인요청</button>-->
+
+                </div>
+            </div>
+        </div>
+        <!--// con_box -->
+    </form>
+</div>
+<script type="text/javascript">
+    $(function () {
+        // datepicker
+        MYAPP.form.datePicker(".start_date");
+        MYAPP.form.datePicker(".end_date");
+
+        // datepickerTime
+        //MYAPP.form.datePickerTime(".start_date");
+
+        $("#frmMain").validate({
+            rules: {
+                ScheduleYear: {
+                    required: true,
+                },
+                PlanDtStart: {
+                    required: true,
+                },
+                PlanDtEnd: {
+                    required: true,
+                },
+                /*
+                RegDtStart: {
+                    required: true,
+                },
+                RegDtEnd: {
+                    required: true,
+                },
+                */
+            },
+            messages: {
+                ScheduleYear: {
+                    required: "연도를 선택하세요.",
+                },
+                PlanDtStart: {
+                    required: "계획등록 시작일을 선택하세요.",
+                },
+                PlanDtEnd: {
+                    required: "계획등록 종료일을 선택하세요.",
+                },
+                /*
+                RegDtStart: {
+                    required: "실적등록 시작일을 선택하세요.",
+                },
+                RegDtEnd: {
+                    required: "실적등록 종료일을 선택하세요.",
+                },
+                */
+            }, errorPlacement: function (error, element) {
+                // do nothing
+                alert("errorPlacement");
+            },
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    alert(validator.errorList[0].message);
+                    validator.errorList[0].element.focus();
+                }
+                alert("invalidHandler");
+            }
+        });
+    });
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onWrite() {
+        var f = document.frmMain;
+
+        if ($(f).valid()) {
+
+            if (!onCheckMultipleNameBlankValues("RegDtStart", "실적등록 시작일을 선택하세요.")) return false;
+            if (!onCheckMultipleNameBlankValues("RegDtEnd", "실적등록 종료일을 선택하세요.")) return false;
+
+            if (confirm("수정하시겠습니까?")) {
+                f.action = "Write_Action";
+                f.submit();
+            }
+        }
+    }
+
+    function onApply(applyChk, message) {
+        var f = document.frmMain;
+
+        if (confirm("승인하시겠습니까?\n승인 시 더 이상의 수정이 불가능합니다.")) {
+            f.ApplyChk.value = applyChk;
+            f.message.value = message;
+            f.action = "Apply_Action";
+            f.submit();
+        }
+    }
+</script>

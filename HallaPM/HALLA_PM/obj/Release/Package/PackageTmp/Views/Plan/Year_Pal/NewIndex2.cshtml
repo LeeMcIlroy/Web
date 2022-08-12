@@ -1,0 +1,455 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "NewIndex2";
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    // 2019.02.18 만도는 안 보이게 변경
+    lvCompany = lvCompany.Where(w => w.id != "3").ToList();
+
+    List<PmPalBusinessExp> pmLastYearBu = Model.pmLastYearBu;
+    List<PmPalSummaryExp> pmLastYearCom = Model.pmLastYearCom;
+    List<PlanYearPalBusinessExp> pnThisYearBu = Model.pnThisYearBu;
+    List<PlanYearPalBusinessSummaryExp> pnThisYearCom = Model.pnThisYearCom;
+
+    List<PlanGroupdataPalSummary> pnGroupData = Model.pnGroupData;
+    var unionGroupPn = pnThisYearCom.GroupBy(g => new { g.OrgUnionSeq, g.YearlyYear })
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt),
+            IsUse = cl.First().IsUse
+        }).ToList();
+
+    var unionGroupPm = pmLastYearCom.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+        .Where(w => w.Monthly == "12")
+        .GroupBy(g => new { g.OrgUnionSeq, g.PalYear })
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            PalYear = cl.First().PalYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    var unionGroupList = unionGroupPn.GroupBy(g => g.OrgUnionSeq)
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            IsUse = cl.First().IsUse
+        }).ToList();
+
+    var pmLastYearBuWhere = pmLastYearBu.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).Where(w => w.Monthly == "12").ToList();
+
+    var businessList = pnThisYearBu.GroupBy(g => new { g.OrgCompanySeq, g.OrgBusinessSeq })
+        .Select(cl => new PlanYearPalBusinessExp
+        {
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+            BusinessName = cl.First().BusinessName
+        }).ToList();
+
+    var groupSumPn = unionGroupPn.GroupBy(g => g.YearlyYear)
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+
+        }).ToList();
+
+    var groupSumPm = unionGroupPm
+        .GroupBy(g => g.PalYear)
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            PalYear = cl.First().PalYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    string groupPmYear = groupSumPm.Count() == 0 ? (Convert.ToInt32(groupSumPn.First().YearlyYear) - 1).ToString() : groupSumPm.First().PalYear;
+    decimal groupPmSales = groupSumPm.Count() == 0 ? 0 : Math.Round(groupSumPm.First().Sales, MidpointRounding.AwayFromZero);
+    decimal groupPmEbit = groupSumPm.Count() == 0 ? 0 : Math.Round(groupSumPm.First().Ebit, MidpointRounding.AwayFromZero);
+    decimal groupPmRate = groupSumPm.Count() == 0 ? 0 : WebUtil.NumberRound(groupSumPm.First().Ebit, groupSumPm.First().Sales, 100, 1);
+
+    // 댓글 관련
+    var year = SessionManager.GetMemberSession().planYear.First().RegistYear;
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = year;
+    commentList.CommentMonth = "99";
+    commentList.AttachTableName = "PLAN_YEAR_PAL";
+    commentList.AttachTableSeq = 0;
+    commentList.UserKey = SessionManager.GetMemberSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetMemberSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetMemberSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Deptkorname;
+}
+<form name="frmForm" method="post">
+    <div class="plan_wrap">
+        <div class="top_wrap">
+            <h2>중기 손익</h2>
+            @*<a href="/Plan/Year_Pal/NewIndex_excel" class="btn_download" target="_blank">DOWNLOAD</a>*@
+            @*2019.01.24 분기*@
+            <a href="javascript:;" onclick="goDownOrView();" class="btn_download" ">DOWNLOAD</a>
+        </div><!--//top_wrap-->
+
+        @if (lvGroup.Count() > 0)
+        {
+            <div class="con_wrap">
+                <div class="graph_box">
+                    <h3>한라 그룹</h3>
+
+                    <div class="box">
+                        <div class="chart_box chart_box6">
+                            <span class="p_unit">(단위 : 억원, %)</span>
+                            <div class="chart chart_type9" id="chart1"></div>
+                            @{
+                                string gSalesText = "";
+                                string gEbitRateText = "";
+
+                                gSalesText = " { x : " + groupPmYear + ", y : " + groupPmSales + " } ";
+                                gEbitRateText = " { x : " + groupPmYear + ", y : " + groupPmEbit;
+                                gEbitRateText += ", p : " + groupPmRate + " } ";
+
+                                //foreach (var item in groupSumPn)
+                                //{
+                                //    gSalesText += " , { x : " + item.YearlyYear + ", y : " + Math.Round(item.Sales, MidpointRounding.AwayFromZero) + " } ";
+                                //    gEbitRateText += " , { x : " + item.YearlyYear + ", y : " + Math.Round(item.Ebit, MidpointRounding.AwayFromZero);
+                                //    gEbitRateText += ", p : " + (item.Sales == 0 ? 0 : Math.Round(item.Ebit / item.Sales * 100, 1, MidpointRounding.AwayFromZero)) + " } ";
+                                //}
+
+                                foreach (var item in pnGroupData)
+                                {
+                                    gSalesText += " , { x : " + item.GroupdataMonth + ", y : " + Math.Round(item.Sales, MidpointRounding.AwayFromZero) + " } ";
+                                    gEbitRateText += " , { x : " + item.GroupdataMonth + ", y : " + Math.Round(item.Ebit, MidpointRounding.AwayFromZero);
+                                    gEbitRateText += ", p : " + (item.Sales == 0 ? 0 : Math.Round(item.Ebit / item.Sales * 100, 1, MidpointRounding.AwayFromZero)) + " } ";
+                                }
+                            }
+                            <script>
+                    (function () {
+                        var data = [
+                          { key: "Sales", values: [ @gSalesText ] },
+                            { key: "EBIT (%)", values: [ @gEbitRateText ] }
+                        ];
+                        data[0].bar = true;
+
+                        MYAPP.graph.type9(data, '#chart1', 1);
+                    })();
+                            </script>
+                        </div>
+                        <!-- chart_box -->
+                    </div><!--//box-->
+
+                    <div class="box">
+                        <div class="graph">
+                            <table class="tbl tbl_type01">
+                                <colgroup>
+                                    <col width="7%" />
+                                    <col width="7%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col">@(groupPmYear)년</th>
+                                        @foreach (var item in pnGroupData)
+                                        {
+                                            var y = item.GroupdataMonth + "년";
+                                            <th scope="col">@y</th>
+                                        }
+                                        <!--
+                                        <th scope="col">'17년</th>
+                                        <th scope="col">'18년</th>
+                                        <th scope="col">'19년</th>
+                                        <th scope="col">'20년</th>
+                                        <th scope="col">'21년</th>
+                                        <th scope="col">'22년</th>
+                                            -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    @foreach (var union in unionGroupList.Where(w => w.IsUse == "Y"))
+                                    {
+                                        PmPalSummaryExp unionPmRow = unionGroupPm.Where(w => w.OrgUnionSeq == union.OrgUnionSeq).Count() == 0 ? new PmPalSummaryExp() : unionGroupPm.Where(w => w.OrgUnionSeq == union.OrgUnionSeq).First();
+                                        var unionpnRows = unionGroupPn.Where(w => w.OrgUnionSeq == union.OrgUnionSeq).ToList();
+                                        <tr>
+                                            <th scope="row" rowspan="3" class="lbd0">
+                                                @union.UnionName
+                                            </th>
+                                            <th scope="row">Sales</th>
+                                            <td>@WebUtil.NCommaRound(unionPmRow.Sales, 0).ToString()</td>
+                                            @foreach (var summary in unionpnRows)
+                                            {
+                                                <td>@WebUtil.NCommaRound(summary.Sales).ToString()</td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">EBIT</th>
+                                            <td>@WebUtil.NCommaRound(unionPmRow.Ebit, 0).ToString()</td>
+                                            @foreach (var summary in unionpnRows)
+                                            {
+                                                <td>@WebUtil.NCommaRound(summary.Ebit).ToString()</td>
+                                            }
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">%</th>
+                                            <td>@Math.Round(unionPmRow.Sales == 0 ? 0 : unionPmRow.Ebit / unionPmRow.Sales * 100, 1, MidpointRounding.AwayFromZero).ToString() %</td>
+                                            @foreach (var summary in unionpnRows)
+                                            {
+                                                <td>@(summary.Sales == 0 ? "0" : Math.Round(summary.Ebit / summary.Sales * 100, 1, MidpointRounding.AwayFromZero).ToString()) %</td>
+                                            }
+                                        </tr>
+                                    }
+                                    <tr>
+                                        <th scope="row" rowspan="3" class="lbd0">
+                                            합계
+                                        </th>
+                                        <th scope="row">Sales</th>
+                                        <td>@(groupSumPm.Count() == 0 ? "0" : WebUtil.NCommaRound(groupSumPm.FirstOrDefault().Sales, 0).ToString())</td>
+                                        @foreach (var summary in pnGroupData)
+                                        {
+                                            <td>@WebUtil.NCommaRound(summary.Sales).ToString()</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">EBIT</th>
+                                        <td>@(groupSumPm.Count() == 0 ? "0" : WebUtil.NCommaRound(groupSumPm.FirstOrDefault().Ebit, 0).ToString())</td>
+                                        @foreach (var summary in pnGroupData)
+                                        {
+                                            <td>@WebUtil.NCommaRound(summary.Ebit).ToString()</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">%</th>
+                                        <td>@(groupSumPm.Count() == 0 ? "0" : Math.Round(groupSumPm.FirstOrDefault().Sales == 0 ? 0 : groupSumPm.FirstOrDefault().Ebit / groupSumPm.FirstOrDefault().Sales * 100, 1, MidpointRounding.AwayFromZero).ToString()) %</td>
+                                        @foreach (var summary in pnGroupData)
+                                        {
+                                            <td>@(summary.Sales == 0 ? "0" : Math.Round(summary.Ebit / summary.Sales * 100, 1, MidpointRounding.AwayFromZero).ToString()) %</td>
+                                        }
+                                    </tr>
+
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div><!--//graph-->
+                    </div><!--//box-->
+                </div><!--//graph_box-->
+            </div><!--//con_wrap-->
+                                }
+
+        <div class="tab_wrap">
+            <div class="type_tab2">
+                <ul>
+
+                    @foreach (var item in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+                    {
+                        <li><a href="#yearpal01_@item.id">@item.txt</a></li>
+                    }
+                </ul>
+            </div><!--//type_tab-->
+
+            @foreach (var item in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+            {
+                var pmLastYearBuWhereRow = pmLastYearBuWhere.Where(w => w.OrgCompanySeq == Convert.ToInt32(item.id)).ToList();
+                var pnThisYearBuRow = pnThisYearBu.Where(w => w.OrgCompanySeq == Convert.ToInt32(item.id)).ToList();
+                var pmLastYearComRow = pmLastYearCom.Where(w => w.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계"))
+                    .Where(w => w.Monthly == "12")
+                    .Where(w => w.OrgCompanySeq == Convert.ToInt32(item.id)).ToList();
+                var pnThisYearComRow = pnThisYearCom.Where(w => w.OrgCompanySeq == Convert.ToInt32(item.id)).ToList();
+
+                string SalesText = "";
+                string EbitRateText = "";
+
+
+                string pmLastYearComRowYear = pmLastYearComRow.Count() == 0 ? (Convert.ToInt32(pnThisYearComRow.First().YearlyYear) - 1).ToString() : pmLastYearComRow.First().PalYear;
+                decimal pmLastYearComRowSales = pmLastYearComRow.Count() == 0 ? 0 : Math.Round(pmLastYearComRow.First().Sales, MidpointRounding.AwayFromZero);
+                decimal pmLastYearComRowEbit = pmLastYearComRow.Count() == 0 ? 0 : Math.Round(pmLastYearComRow.First().Ebit, MidpointRounding.AwayFromZero);
+                decimal pmLastYearComRowRate = pmLastYearComRow.Count() == 0 ? 0 : WebUtil.NumberRound(pmLastYearComRow.First().Ebit, pmLastYearComRow.First().Sales, 100, 1);
+
+                SalesText = " { x : " + pmLastYearComRowYear + ", y : " + pmLastYearComRowSales + " } ";
+                EbitRateText = " { x : " + pmLastYearComRowYear + ", y : " + pmLastYearComRowEbit;
+                EbitRateText += ", p : " + pmLastYearComRowRate + " } ";
+
+                foreach (var item2 in pnThisYearComRow)
+                {
+                    SalesText += " , { x : " + item2.YearlyYear + ", y : " + Math.Round(item2.Sales, MidpointRounding.AwayFromZero) + " } ";
+                    EbitRateText += " , { x : " + item2.YearlyYear + ", y : " + Math.Round(item2.Ebit, MidpointRounding.AwayFromZero);
+                    EbitRateText += ", p : " + (item2.Sales == 0 ? 0 : Math.Round(item2.Ebit / item2.Sales * 100, 1, MidpointRounding.AwayFromZero)) + " } ";
+                }
+
+                <div class="type_tab_con" id="yearpal01_@item.id">
+                    <div class="con_wrap">
+                        <div class="graph_box">
+                            <div class="box">
+                                <div class="chart_box chart_box6">
+                                    <span class="p_unit">(단위 : 억원, %)</span>
+                                    <div class="chart chart_type9" id="chart_@item.id"></div>
+                                    <script>
+                                        (function () {
+                                            var data = [
+                                                { key: "Sales", values: [ @SalesText] },
+                                                { key: "EBIT (%)", values: [ @EbitRateText] }
+                                            ];
+                                            data[0].bar = true;
+
+                                            MYAPP.graph.type9(data, '#chart_@item.id', 1);
+                                        })();
+                                    </script>
+                                </div>
+                                <!-- chart_box -->
+                            </div><!--//box-->
+
+                            <div class="box">
+                                <div class="graph">
+                                    <table class="tbl tbl_type01">
+                                        <colgroup>
+                                            <col width="7%" />
+                                            <col width="7%" />
+                                            <col width="/" />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" colspan="2" class="rbd lbd0">
+                                                    구분
+                                                </th>
+                                                <th scope="col">@(groupPmYear)년</th>
+                                                @foreach (var years in groupSumPn)
+                                                {
+                                                    var y = years.YearlyYear + "년";
+                                                    <th scope="col">@y</th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var business in businessList.Where(w => w.OrgCompanySeq == Convert.ToInt32(item.id)).ToList())
+                                            {
+
+                                                PmPalBusinessExp buPm = pmLastYearBuWhereRow.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).FirstOrDefault() == null ? new PmPalBusinessExp() : pmLastYearBuWhereRow.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).FirstOrDefault();
+                                                var buPn = pnThisYearBuRow.Where(w => w.OrgBusinessSeq == business.OrgBusinessSeq).ToList();
+
+                                                if (buPn != null)
+                                                {
+                                                    <tr>
+                                                        <th scope="row" rowspan="3" class="lbd0">
+                                                            @business.BusinessName
+                                                        </th>
+                                                        <th scope="row">Sales</th>
+                                                        <td>@(buPm == null ? "0" : WebUtil.NCommaRound(buPm.Sales))</td>
+
+                                                        @foreach (var data in buPn)
+                                                        {
+                                                            <td>@WebUtil.NCommaRound(data.Sales)</td>
+                                                        }
+                                                        <!-- <td>5,706 </td><td>6,311 </td><td>6,873 </td><td>7,816 </td><td>9,027 </td><td>9,941 </td>-->
+                                                    </tr>
+
+                                                    <tr>
+                                                        <th scope="row" class="lbd0">EBIT</th>
+                                                        <td>@(buPm == null ? "0" : WebUtil.NCommaRound(buPm.Ebit))</td>
+                                                        @foreach (var data in buPn)
+                                                        {
+                                                            <td>@WebUtil.NCommaRound(data.Ebit)</td>
+                                                        }
+                                                        <!-- <td>242 </td><td>236 </td><td>260 </td><td>309</td><td>390</td><td>454 </td>-->
+                                                    </tr>
+
+                                                    <tr>
+                                                        <th scope="row">%</th>
+                                                        <td>@(buPm == null ? 0 : (buPm.Sales == 0 ? 0 : Math.Round(buPm.Ebit / buPm.Sales * 100, 1, MidpointRounding.AwayFromZero))) %</td>
+                                                        @foreach (var data in buPn)
+                                                        {
+                                                            <td>@(data == null ? 0 : (data.Sales == 0 ? 0 : Math.Round(data.Ebit / data.Sales * 100, 1, MidpointRounding.AwayFromZero))) %</td>
+                                                        }
+                                                        <!-- <td>4.2%</td><td>3.7%</td><td>3.8%</td><td>4.0%</td><td>4.3%</td><td>4.6%</td>-->
+                                                    </tr>
+                                                }
+                                            }
+                                            <tr class="total">
+                                                <th scope="row" rowspan="3" class="lbd0">
+                                                    합계
+                                                </th>
+                                                <th scope="row">Sales</th>
+                                                <td>@WebUtil.NCommaRound(pmLastYearComRow.Count() == 0 ? 0 : pmLastYearComRow.First().Sales)</td>
+                                                @foreach (var total in pnThisYearComRow)
+                                                {
+                                                    <td>@WebUtil.NCommaRound(total.Sales)</td>
+                                                }
+                                                <!-- <td>8,908</td><td>9,755</td><td>10,452</td><td>11,735</td><td>13,609</td><td>15,001</td>-->
+                                            </tr>
+                                            <tr class="total">
+                                                <th scope="row">EBIT</th>
+                                                <td>@WebUtil.NCommaRound(pmLastYearComRow.Count() == 0 ? 0 : pmLastYearComRow.First().Ebit)</td>
+                                                @foreach (var total in pnThisYearComRow)
+                                                {
+                                                    <td>@WebUtil.NCommaRound(total.Ebit)</td>
+                                                }
+                                                <!-- <td>632</td><td>856</td><td>675</td><td>790</td><td>975</td><td>1,185</td>-->
+                                            </tr>
+                                            <tr class="total">
+                                                <th scope="row">%</th>
+                                                <td>@(pmLastYearComRow.Count() == 0 ? 0 : (pmLastYearComRow.First().Sales == 0 ? 0 : Math.Round(pmLastYearComRow.First().Ebit / pmLastYearComRow.First().Sales * 100, 1, MidpointRounding.AwayFromZero))) %</td>
+                                                @foreach (var data in pnThisYearComRow)
+                                                {
+                                                    <td>@(data == null ? 0 : (data.Sales == 0 ? 0 : Math.Round(data.Ebit / data.Sales * 100, 1, MidpointRounding.AwayFromZero))) %</td>
+                                                }
+                                                <!-- <td>7.1%</td><td>8.8%</td><td>6.5%</td><td>6.7%</td><td>7.2%</td><td>7.9%</td>-->
+                                            </tr>
+                                        </tbody>
+                                    </table><!--// tbl-->
+                                </div><!--//graph-->
+                            </div><!--//box-->
+                        </div><!--//graph_box-->
+                    </div><!--//con_wrap-->
+                </div><!--//type_tab_con-->
+            }
+        </div><!--//tab_wrap-->
+    </div><!--//plan_wrap-->
+    <script>
+        $(function () {
+            /*탭*/
+            MYAPP.tab.init($(".type_tab2"));
+        })
+
+        function goDownOrView() {
+            var f = document.frmForm;
+            // 웹 모바일 분기
+            var filter = "win16|win32|win64|mac";
+
+            if (navigator.platform) {
+
+                if (0 > filter.indexOf(navigator.platform.toLowerCase())) {
+                    // Mobile
+                    f.action = "ViewYearPal";
+                    f.target = "_Blank";
+                    f.submit();
+                } else {
+                    // Pc
+                    f.action = "ExcelYearPal_New";
+                    //f.action = "ViewYearPal";
+                    //f.target = "_Blank";
+                    f.submit();
+                }
+
+            }
+        }
+    </script>
+</form>
+@Html.Partial("~/Views/Shared/PartialReply.cshtml", commentList)

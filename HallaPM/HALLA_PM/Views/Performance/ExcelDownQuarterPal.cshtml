@@ -1,0 +1,585 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+
+    List<PmQuarterPalBusinessExp> pmThisYearBuCom = Model.pmThisYearBuCom;
+    List<PmQuarterPalBusinessExp> pmLastYearBuCom = Model.pmLastYearBuCom;
+    List<PmQuarterPalBusinessExp> pnThisYearBuCom = Model.pnThisYearBuCom;
+    List<PmQuarterPalBusinessSummaryExp> pmThisYearCom = Model.pmThisYearCom;
+    List<PmQuarterPalBusinessSummaryExp> pmLastYearCom = Model.pmLastYearCom;
+    List<PmQuarterPalBusinessSummaryExp> pnThisYearCom = Model.pnThisYearCom;
+
+    string companyName = "ExcelDownBs";
+    string year = "";
+    string mm = "";
+    if (pmThisYearCom.Count() > 0)
+    {
+        companyName = pmThisYearBuCom.First().CompanyName;
+        year = pmThisYearBuCom.First().QuarterPalYear;
+        mm = pmThisYearBuCom.First().Monthly;
+    }
+
+    var groupCompany = pmThisYearBuCom.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PmQuarterPalBusinessExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        });
+
+
+    string fileName = companyName + "_" + year + "_" + mm + "_분기별손익";
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+
+    bool isFirst = false;
+    bool isSecond = false;
+}
+<style>
+    .mytable {
+        border-collapse: collapse;
+    }
+
+        .mytable th, .mytable td {
+            border: 1px solid black;
+        }
+
+    .buLevel {
+        background-color: #f2f2f2;
+    }
+
+        .buLevel th, .buLevel td {
+            background-color: #f2f2f2;
+        }
+
+    .ComLevel {
+        background-color: #fff2cc;
+    }
+
+        .ComLevel th, .ComLevel td {
+            background-color: #fff2cc;
+        }
+
+    .UniLevel {
+        background-color: #d0cece;
+    }
+
+        .UniLevel th, .UniLevel td {
+            background-color: #d0cece;
+        }
+
+    .GrpLevel {
+        background-color: #bdd7ee;
+    }
+
+        .GrpLevel th, .GrpLevel td {
+            background-color: #bdd7ee;
+        }
+
+    .MsoNTwo {
+        mso-number-format: \#\,\#\#0\
+    }
+
+    .MsoNTwoPer {
+        mso-number-format: \#\,\#\#0\.0%
+    }
+</style>
+
+<h3>@(year)년 @(mm)월 분기별 손익 요약</h3>
+<br />
+<table>
+    <tr>
+        <th style="text-align:right" colspan="20">(단위 : 억원)</th>
+    </tr>
+</table>
+<table class="mytable" border="1">
+    <thead>
+        <tr class="buLevel">
+            <th rowspan="2" colspan="4">구분</th>
+            <th colspan="4">@(Convert.ToInt32(year) - 1)년 실적</th>
+            <th colspan="4">@(year)년 계획</th>
+            <th colspan="4">@(year)년 예상</th>
+            <th colspan="4">계획대비</th>
+        </tr>
+        <tr class="buLevel">
+            <th>1분기</th>
+            <th>2분기</th>
+            <th>3분기</th>
+            <th>4분기</th>
+
+            <th>1분기</th>
+            <th>2분기</th>
+            <th>3분기</th>
+            <th>4분기</th>
+
+            <th>1분기</th>
+            <th>2분기</th>
+            <th>3분기</th>
+            <th>4분기</th>
+
+            <th>1분기</th>
+            <th>2분기</th>
+            <th>3분기</th>
+            <th>4분기</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in groupCompany)
+        {
+            var buCount = pmThisYearBuCom.GroupBy(g => new { g.OrgBusinessSeq }).Count();
+            var groupBusiness = pmThisYearBuCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq)
+                .GroupBy(g => g.OrgBusinessSeq)
+                .Select(cl => new PmQuarterPalBusinessExp
+                {
+                    OrgBusinessSeq = cl.First().OrgBusinessSeq,
+                    BusinessName = cl.First().BusinessName
+                });
+            foreach (var item2 in groupBusiness)
+            {
+                // 계획, 전년 실적 가져오기
+                var thisYearPmBuRow = pmThisYearBuCom.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).ToList();
+                var lastYearPmBuRow = pmLastYearBuCom.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).ToList();
+                var thisYearPnBuRow = pnThisYearBuCom.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).ToList();
+
+                #region 분기별로 데이터 나누기
+                // 1분기
+                var thisPmBuRowQ1 = thisYearPmBuRow.Where(w => w.BusinessQuarter == 1).FirstOrDefault() as PmQuarterPalBusinessExp;
+                var lastPmBuRowQ1 = lastYearPmBuRow.Where(w => w.BusinessQuarter == 1).FirstOrDefault() as PmQuarterPalBusinessExp;
+                var thisPnBuRowQ1 = thisYearPnBuRow.Where(w => w.BusinessQuarter == 1).FirstOrDefault() as PmQuarterPalBusinessExp;
+
+                // 2분기
+                var thisPmBuRowQ2 = thisYearPmBuRow.Where(w => w.BusinessQuarter == 2).FirstOrDefault() as PmQuarterPalBusinessExp;
+                var lastPmBuRowQ2 = lastYearPmBuRow.Where(w => w.BusinessQuarter == 2).FirstOrDefault() as PmQuarterPalBusinessExp;
+                var thisPnBuRowQ2 = thisYearPnBuRow.Where(w => w.BusinessQuarter == 2).FirstOrDefault() as PmQuarterPalBusinessExp;
+
+                // 3분기
+                var thisPmBuRowQ3 = thisYearPmBuRow.Where(w => w.BusinessQuarter == 3).FirstOrDefault() as PmQuarterPalBusinessExp;
+                var lastPmBuRowQ3 = lastYearPmBuRow.Where(w => w.BusinessQuarter == 3).FirstOrDefault() as PmQuarterPalBusinessExp;
+                var thisPnBuRowQ3 = thisYearPnBuRow.Where(w => w.BusinessQuarter == 3).FirstOrDefault() as PmQuarterPalBusinessExp;
+
+                // 4분기
+                var thisPmBuRowQ4 = thisYearPmBuRow.Where(w => w.BusinessQuarter == 4).FirstOrDefault() as PmQuarterPalBusinessExp;
+                var lastPmBuRowQ4 = lastYearPmBuRow.Where(w => w.BusinessQuarter == 4).FirstOrDefault() as PmQuarterPalBusinessExp;
+                var thisPnBuRowQ4 = thisYearPnBuRow.Where(w => w.BusinessQuarter == 4).FirstOrDefault() as PmQuarterPalBusinessExp;
+                #endregion
+
+                // ------------------------------------------------------------------- 매출액 시작
+                decimal lastPmQ1Sales = lastPmBuRowQ1 == null ? 0 : lastPmBuRowQ1.Sales;
+                decimal lastPmQ2Sales = lastPmBuRowQ2 == null ? 0 : lastPmBuRowQ2.Sales;
+                decimal lastPmQ3Sales = lastPmBuRowQ3 == null ? 0 : lastPmBuRowQ3.Sales;
+                decimal lastPmQ4Sales = lastPmBuRowQ4 == null ? 0 : lastPmBuRowQ4.Sales;
+
+                decimal thisPnQ1Sales = thisPnBuRowQ1 == null ? 0 : thisPnBuRowQ1.Sales;
+                decimal thisPnQ2Sales = thisPnBuRowQ2 == null ? 0 : thisPnBuRowQ2.Sales;
+                decimal thisPnQ3Sales = thisPnBuRowQ3 == null ? 0 : thisPnBuRowQ3.Sales;
+                decimal thisPnQ4Sales = thisPnBuRowQ4 == null ? 0 : thisPnBuRowQ4.Sales;
+
+                decimal thisPmQ1Sales = thisPmBuRowQ1 == null ? 0 : thisPmBuRowQ1.Sales;
+                decimal thisPmQ2Sales = thisPmBuRowQ2 == null ? 0 : thisPmBuRowQ2.Sales;
+                decimal thisPmQ3Sales = thisPmBuRowQ3 == null ? 0 : thisPmBuRowQ3.Sales;
+                decimal thisPmQ4Sales = thisPmBuRowQ4 == null ? 0 : thisPmBuRowQ4.Sales;
+
+                string pmToPlan1Sales = WebUtil.DivPmValue(thisPmQ1Sales, thisPnQ1Sales, 1);
+                string pmToPlan2Sales = WebUtil.DivPmValue(thisPmQ2Sales, thisPnQ2Sales, 1);
+                string pmToPlan3Sales = WebUtil.DivPmValue(thisPmQ3Sales, thisPnQ3Sales, 1);
+                string pmToPlan4Sales = WebUtil.DivPmValue(thisPmQ4Sales, thisPnQ4Sales, 1);
+
+                <tr>
+                    @if (!isFirst)
+                    {
+                    <th class="buLevel" rowspan="@(buCount * 4)">@item.UnionName</th>
+                    <th class="buLevel" rowspan="@(buCount * 4)">@item.CompanyName</th>
+                    <th class="buLevel" rowspan="4">@item2.BusinessName</th>
+                        isFirst = true;
+                    }
+                    else
+                    {
+                        <th class="buLevel" rowspan="4">@item2.BusinessName</th>
+                    }
+                    <th class="buLevel">매출액</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ1Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ2Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ3Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ4Sales)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ1Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ2Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ3Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ4Sales)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ1Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ2Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ3Sales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ4Sales)</th>
+
+                    <th style="mso-number-format:0\.0%">@(pmToPlan1Sales)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan2Sales)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan3Sales)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan4Sales)</th>
+                </tr>
+                // ------------------------------------------------------------------- 매출액 끝
+
+                // ------------------------------------------------------------------- 영업이익 시작
+                decimal lastPmQ1Ebit = lastPmBuRowQ1 == null ? 0 : lastPmBuRowQ1.Ebit;
+                decimal lastPmQ2Ebit = lastPmBuRowQ2 == null ? 0 : lastPmBuRowQ2.Ebit;
+                decimal lastPmQ3Ebit = lastPmBuRowQ3 == null ? 0 : lastPmBuRowQ3.Ebit;
+                decimal lastPmQ4Ebit = lastPmBuRowQ4 == null ? 0 : lastPmBuRowQ4.Ebit;
+
+                decimal thisPnQ1Ebit = thisPnBuRowQ1 == null ? 0 : thisPnBuRowQ1.Ebit;
+                decimal thisPnQ2Ebit = thisPnBuRowQ2 == null ? 0 : thisPnBuRowQ2.Ebit;
+                decimal thisPnQ3Ebit = thisPnBuRowQ3 == null ? 0 : thisPnBuRowQ3.Ebit;
+                decimal thisPnQ4Ebit = thisPnBuRowQ4 == null ? 0 : thisPnBuRowQ4.Ebit;
+
+                decimal thisPmQ1Ebit = thisPmBuRowQ1 == null ? 0 : thisPmBuRowQ1.Ebit;
+                decimal thisPmQ2Ebit = thisPmBuRowQ2 == null ? 0 : thisPmBuRowQ2.Ebit;
+                decimal thisPmQ3Ebit = thisPmBuRowQ3 == null ? 0 : thisPmBuRowQ3.Ebit;
+                decimal thisPmQ4Ebit = thisPmBuRowQ4 == null ? 0 : thisPmBuRowQ4.Ebit;
+
+                string pmToPlan1Ebit = WebUtil.DivPmValue(thisPmQ1Ebit, thisPnQ1Ebit, 1);
+                string pmToPlan2Ebit = WebUtil.DivPmValue(thisPmQ2Ebit, thisPnQ2Ebit, 1);
+                string pmToPlan3Ebit = WebUtil.DivPmValue(thisPmQ3Ebit, thisPnQ3Ebit, 1);
+                string pmToPlan4Ebit = WebUtil.DivPmValue(thisPmQ4Ebit, thisPnQ4Ebit, 1);
+
+                <tr>
+                    <th class="buLevel">영업이익</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ1Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ2Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ3Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ4Ebit)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ1Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ2Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ3Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ4Ebit)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ1Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ2Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ3Ebit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ4Ebit)</th>
+
+                    <th style="mso-number-format:0\.0%">@(pmToPlan1Ebit)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan2Ebit)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan3Ebit)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan4Ebit)</th>
+                </tr>
+                // ------------------------------------------------------------------- 영업이익 끝
+
+                // ------------------------------------------------------------------- EbitRate (%) Start
+
+                decimal lastPmQ1EbitRate = lastPmQ1Sales == 0 ? 0 : Math.Round(lastPmQ1Ebit / lastPmQ1Sales, 3, MidpointRounding.AwayFromZero);
+                decimal lastPmQ2EbitRate = lastPmQ2Sales == 0 ? 0 : Math.Round(lastPmQ2Ebit / lastPmQ2Sales, 3, MidpointRounding.AwayFromZero);
+                decimal lastPmQ3EbitRate = lastPmQ3Sales == 0 ? 0 : Math.Round(lastPmQ3Ebit / lastPmQ3Sales, 3, MidpointRounding.AwayFromZero);
+                decimal lastPmQ4EbitRate = lastPmQ4Sales == 0 ? 0 : Math.Round(lastPmQ4Ebit / lastPmQ4Sales, 3, MidpointRounding.AwayFromZero);
+
+                decimal thisPnQ1EbitRate = thisPnQ1Sales == 0 ? 0 : Math.Round(thisPnQ1Ebit / thisPnQ1Sales, 3, MidpointRounding.AwayFromZero);
+                decimal thisPnQ2EbitRate = thisPnQ2Sales == 0 ? 0 : Math.Round(thisPnQ2Ebit / thisPnQ2Sales, 3, MidpointRounding.AwayFromZero);
+                decimal thisPnQ3EbitRate = thisPnQ3Sales == 0 ? 0 : Math.Round(thisPnQ3Ebit / thisPnQ3Sales, 3, MidpointRounding.AwayFromZero);
+                decimal thisPnQ4EbitRate = thisPnQ4Sales == 0 ? 0 : Math.Round(thisPnQ4Ebit / thisPnQ4Sales, 3, MidpointRounding.AwayFromZero);
+
+                decimal thisPmQ1EbitRate = thisPmQ1Sales == 0 ? 0 : Math.Round(thisPmQ1Ebit / thisPmQ1Sales, 3, MidpointRounding.AwayFromZero);
+                decimal thisPmQ2EbitRate = thisPmQ2Sales == 0 ? 0 : Math.Round(thisPmQ2Ebit / thisPmQ2Sales, 3, MidpointRounding.AwayFromZero);
+                decimal thisPmQ3EbitRate = thisPmQ3Sales == 0 ? 0 : Math.Round(thisPmQ3Ebit / thisPmQ3Sales, 3, MidpointRounding.AwayFromZero);
+                decimal thisPmQ4EbitRate = thisPmQ4Sales == 0 ? 0 : Math.Round(thisPmQ4Ebit / thisPmQ4Sales, 3, MidpointRounding.AwayFromZero);
+
+                // 예상 - 계획
+                decimal pmToPlan1EbitRate = Math.Round(thisPmQ1EbitRate - thisPnQ1EbitRate, 3, MidpointRounding.AwayFromZero);
+                decimal pmToPlan2EbitRate = Math.Round(thisPmQ2EbitRate - thisPnQ2EbitRate, 3, MidpointRounding.AwayFromZero);
+                decimal pmToPlan3EbitRate = Math.Round(thisPmQ3EbitRate - thisPnQ3EbitRate, 3, MidpointRounding.AwayFromZero);
+                decimal pmToPlan4EbitRate = Math.Round(thisPmQ4EbitRate - thisPnQ4EbitRate, 3, MidpointRounding.AwayFromZero);
+
+                <tr>
+                    <th class="buLevel">(%)</th>
+                    <th style="mso-number-format:0.0%">@(lastPmQ1EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(lastPmQ2EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(lastPmQ3EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(lastPmQ4EbitRate)</th>
+
+                    <th style="mso-number-format:0.0%">@(thisPnQ1EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(thisPnQ2EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(thisPnQ3EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(thisPnQ4EbitRate)</th>
+
+                    <th style="mso-number-format:0.0%">@(thisPmQ1EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(thisPmQ2EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(thisPmQ3EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(thisPmQ4EbitRate)</th>
+
+                    <th style="mso-number-format:0.0%">@(pmToPlan1EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmToPlan2EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmToPlan3EbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmToPlan4EbitRate)</th>
+                </tr>
+
+                // ------------------------------------------------------------------- EbitRate (%) End
+
+                // ------------------------------------------------------------------- 경상이익 시작
+                decimal lastPmQ1Pbt = lastPmBuRowQ1 == null ? 0 : lastPmBuRowQ1.Pbt;
+                decimal lastPmQ2Pbt = lastPmBuRowQ2 == null ? 0 : lastPmBuRowQ2.Pbt;
+                decimal lastPmQ3Pbt = lastPmBuRowQ3 == null ? 0 : lastPmBuRowQ3.Pbt;
+                decimal lastPmQ4Pbt = lastPmBuRowQ4 == null ? 0 : lastPmBuRowQ4.Pbt;
+
+                decimal thisPnQ1Pbt = thisPnBuRowQ1 == null ? 0 : thisPnBuRowQ1.Pbt;
+                decimal thisPnQ2Pbt = thisPnBuRowQ2 == null ? 0 : thisPnBuRowQ2.Pbt;
+                decimal thisPnQ3Pbt = thisPnBuRowQ3 == null ? 0 : thisPnBuRowQ3.Pbt;
+                decimal thisPnQ4Pbt = thisPnBuRowQ4 == null ? 0 : thisPnBuRowQ4.Pbt;
+
+                decimal thisPmQ1Pbt = thisPmBuRowQ1 == null ? 0 : thisPmBuRowQ1.Pbt;
+                decimal thisPmQ2Pbt = thisPmBuRowQ2 == null ? 0 : thisPmBuRowQ2.Pbt;
+                decimal thisPmQ3Pbt = thisPmBuRowQ3 == null ? 0 : thisPmBuRowQ3.Pbt;
+                decimal thisPmQ4Pbt = thisPmBuRowQ4 == null ? 0 : thisPmBuRowQ4.Pbt;
+
+                string pmToPlan1Pbt = WebUtil.DivPmValue(thisPmQ1Pbt, thisPnQ1Pbt, 1);
+                string pmToPlan2Pbt = WebUtil.DivPmValue(thisPmQ2Pbt, thisPnQ2Pbt, 1);
+                string pmToPlan3Pbt = WebUtil.DivPmValue(thisPmQ3Pbt, thisPnQ3Pbt, 1);
+                string pmToPlan4Pbt = WebUtil.DivPmValue(thisPmQ4Pbt, thisPnQ4Pbt, 1);
+
+                <tr>
+                    <th class="buLevel">경상이익</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ1Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ2Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ3Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(lastPmQ4Pbt)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ1Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ2Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ3Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPnQ4Pbt)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ1Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ2Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ3Pbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(thisPmQ4Pbt)</th>
+
+                    <th style="mso-number-format:0\.0%">@(pmToPlan1Pbt)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan2Pbt)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan3Pbt)</th>
+                    <th style="mso-number-format:0\.0%">@(pmToPlan4Pbt)</th>
+                </tr>
+                // ------------------------------------------------------------------- 경상이익 끝
+
+                //if (!isSecond)
+                //{
+
+                //}
+                //isSecond = false;
+            }
+            isFirst = false;
+
+            // 계획, 전년 실적 가져오기
+            var thisYearPmRow = pmThisYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).ToList();
+            var lastYearPmRow = pmLastYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).ToList();
+            var thisYearPnRow = pnThisYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).ToList();
+
+            #region 분기별로 데이터 나누기
+            // 1분기
+            var thisPmRowQ1 = thisYearPmRow.Where(w => w.BusinessQuarter == 1).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            var lastPmRowQ1 = lastYearPmRow.Where(w => w.BusinessQuarter == 1).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            var thisPnRowQ1 = thisYearPnRow.Where(w => w.BusinessQuarter == 1).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+
+            // 2분기
+            var thisPmRowQ2 = thisYearPmRow.Where(w => w.BusinessQuarter == 2).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            var lastPmRowQ2 = lastYearPmRow.Where(w => w.BusinessQuarter == 2).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            var thisPnRowQ2 = thisYearPnRow.Where(w => w.BusinessQuarter == 2).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+
+            // 3분기
+            var thisPmRowQ3 = thisYearPmRow.Where(w => w.BusinessQuarter == 3).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            var lastPmRowQ3 = lastYearPmRow.Where(w => w.BusinessQuarter == 3).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            var thisPnRowQ3 = thisYearPnRow.Where(w => w.BusinessQuarter == 3).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+
+            // 4분기
+            var thisPmRowQ4 = thisYearPmRow.Where(w => w.BusinessQuarter == 4).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            var lastPmRowQ4 = lastYearPmRow.Where(w => w.BusinessQuarter == 4).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            var thisPnRowQ4 = thisYearPnRow.Where(w => w.BusinessQuarter == 4).FirstOrDefault() as PmQuarterPalBusinessSummaryExp;
+            #endregion
+
+
+            // ------------------------------------------------------------------- 매출액 시작
+            decimal lastPmComQ1Sales = lastPmRowQ1 == null ? 0 : lastPmRowQ1.Sales;
+            decimal lastPmComQ2Sales = lastPmRowQ2 == null ? 0 : lastPmRowQ2.Sales;
+            decimal lastPmComQ3Sales = lastPmRowQ3 == null ? 0 : lastPmRowQ3.Sales;
+            decimal lastPmComQ4Sales = lastPmRowQ4 == null ? 0 : lastPmRowQ4.Sales;
+
+            decimal thisPnComQ1Sales = thisPnRowQ1 == null ? 0 : thisPnRowQ1.Sales;
+            decimal thisPnComQ2Sales = thisPnRowQ2 == null ? 0 : thisPnRowQ2.Sales;
+            decimal thisPnComQ3Sales = thisPnRowQ3 == null ? 0 : thisPnRowQ3.Sales;
+            decimal thisPnComQ4Sales = thisPnRowQ4 == null ? 0 : thisPnRowQ4.Sales;
+
+            decimal thisPmComQ1Sales = thisPmRowQ1 == null ? 0 : thisPmRowQ1.Sales;
+            decimal thisPmComQ2Sales = thisPmRowQ2 == null ? 0 : thisPmRowQ2.Sales;
+            decimal thisPmComQ3Sales = thisPmRowQ3 == null ? 0 : thisPmRowQ3.Sales;
+            decimal thisPmComQ4Sales = thisPmRowQ4 == null ? 0 : thisPmRowQ4.Sales;
+
+            string pmToPlanCom1Sales = WebUtil.DivPmValue(thisPmComQ1Sales, thisPnComQ1Sales, 1);
+            string pmToPlanCom2Sales = WebUtil.DivPmValue(thisPmComQ2Sales, thisPnComQ2Sales, 1);
+            string pmToPlanCom3Sales = WebUtil.DivPmValue(thisPmComQ3Sales, thisPnComQ3Sales, 1);
+            string pmToPlanCom4Sales = WebUtil.DivPmValue(thisPmComQ4Sales, thisPnComQ4Sales, 1);
+
+            <tr class="ComLevel">
+                <th rowspan="4" colspan="3">@item.CompanyName</th>
+                <th>매출액</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ1Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ2Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ3Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ4Sales)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ1Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ2Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ3Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ4Sales)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ1Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ2Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ3Sales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ4Sales)</th>
+
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom1Sales)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom2Sales)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom3Sales)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom4Sales)</th>
+            </tr>
+            // ------------------------------------------------------------------- 매출액 끝
+
+            // ------------------------------------------------------------------- 영업이익 시작
+            decimal lastPmComQ1Ebit = lastPmRowQ1 == null ? 0 : lastPmRowQ1.Ebit;
+            decimal lastPmComQ2Ebit = lastPmRowQ2 == null ? 0 : lastPmRowQ2.Ebit;
+            decimal lastPmComQ3Ebit = lastPmRowQ3 == null ? 0 : lastPmRowQ3.Ebit;
+            decimal lastPmComQ4Ebit = lastPmRowQ4 == null ? 0 : lastPmRowQ4.Ebit;
+
+            decimal thisPnComQ1Ebit = thisPnRowQ1 == null ? 0 : thisPnRowQ1.Ebit;
+            decimal thisPnComQ2Ebit = thisPnRowQ2 == null ? 0 : thisPnRowQ2.Ebit;
+            decimal thisPnComQ3Ebit = thisPnRowQ3 == null ? 0 : thisPnRowQ3.Ebit;
+            decimal thisPnComQ4Ebit = thisPnRowQ4 == null ? 0 : thisPnRowQ4.Ebit;
+
+            decimal thisPmComQ1Ebit = thisPmRowQ1 == null ? 0 : thisPmRowQ1.Ebit;
+            decimal thisPmComQ2Ebit = thisPmRowQ2 == null ? 0 : thisPmRowQ2.Ebit;
+            decimal thisPmComQ3Ebit = thisPmRowQ3 == null ? 0 : thisPmRowQ3.Ebit;
+            decimal thisPmComQ4Ebit = thisPmRowQ4 == null ? 0 : thisPmRowQ4.Ebit;
+
+            string pmToPlanCom1Ebit = WebUtil.DivPmValue(thisPmComQ1Ebit, thisPnComQ1Ebit, 1);;
+            string pmToPlanCom2Ebit = WebUtil.DivPmValue(thisPmComQ2Ebit, thisPnComQ2Ebit, 1);;
+            string pmToPlanCom3Ebit = WebUtil.DivPmValue(thisPmComQ3Ebit, thisPnComQ3Ebit, 1);;
+            string pmToPlanCom4Ebit = WebUtil.DivPmValue(thisPmComQ4Ebit, thisPnComQ4Ebit, 1);;
+
+            <tr class="ComLevel">
+                <th>영업이익</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ1Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ2Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ3Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ4Ebit)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ1Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ2Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ3Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ4Ebit)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ1Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ2Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ3Ebit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ4Ebit)</th>
+
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom1Ebit)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom2Ebit)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom3Ebit)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom4Ebit)</th>
+            </tr>
+            // ------------------------------------------------------------------- 영업이익 끝
+
+            // ------------------------------------------------------------------- EbitRate (%) Start
+
+            decimal lastPmComQ1EbitRate = lastPmComQ1Sales == 0 ? 0 : Math.Round(lastPmComQ1Ebit / lastPmComQ1Sales, 3, MidpointRounding.AwayFromZero);
+            decimal lastPmComQ2EbitRate = lastPmComQ2Sales == 0 ? 0 : Math.Round(lastPmComQ2Ebit / lastPmComQ2Sales, 3, MidpointRounding.AwayFromZero);
+            decimal lastPmComQ3EbitRate = lastPmComQ3Sales == 0 ? 0 : Math.Round(lastPmComQ3Ebit / lastPmComQ3Sales, 3, MidpointRounding.AwayFromZero);
+            decimal lastPmComQ4EbitRate = lastPmComQ4Sales == 0 ? 0 : Math.Round(lastPmComQ4Ebit / lastPmComQ4Sales, 3, MidpointRounding.AwayFromZero);
+
+            decimal thisPnComQ1EbitRate = thisPnComQ1Sales == 0 ? 0 : Math.Round(thisPnComQ1Ebit / thisPnComQ1Sales, 3, MidpointRounding.AwayFromZero);
+            decimal thisPnComQ2EbitRate = thisPnComQ2Sales == 0 ? 0 : Math.Round(thisPnComQ2Ebit / thisPnComQ2Sales, 3, MidpointRounding.AwayFromZero);
+            decimal thisPnComQ3EbitRate = thisPnComQ3Sales == 0 ? 0 : Math.Round(thisPnComQ3Ebit / thisPnComQ3Sales, 3, MidpointRounding.AwayFromZero);
+            decimal thisPnComQ4EbitRate = thisPnComQ4Sales == 0 ? 0 : Math.Round(thisPnComQ4Ebit / thisPnComQ4Sales, 3, MidpointRounding.AwayFromZero);
+
+            decimal thisPmComQ1EbitRate = thisPmComQ1Sales == 0 ? 0 : Math.Round(thisPmComQ1Ebit / thisPmComQ1Sales, 3, MidpointRounding.AwayFromZero);
+            decimal thisPmComQ2EbitRate = thisPmComQ2Sales == 0 ? 0 : Math.Round(thisPmComQ2Ebit / thisPmComQ2Sales, 3, MidpointRounding.AwayFromZero);
+            decimal thisPmComQ3EbitRate = thisPmComQ3Sales == 0 ? 0 : Math.Round(thisPmComQ3Ebit / thisPmComQ3Sales, 3, MidpointRounding.AwayFromZero);
+            decimal thisPmComQ4EbitRate = thisPmComQ4Sales == 0 ? 0 : Math.Round(thisPmComQ4Ebit / thisPmComQ4Sales, 3, MidpointRounding.AwayFromZero);
+
+            // 예상 - 계획
+            decimal pmToPlanCom1EbitRate = Math.Round(thisPmComQ1EbitRate - thisPnComQ1EbitRate, 3, MidpointRounding.AwayFromZero);
+            decimal pmToPlanCom2EbitRate = Math.Round(thisPmComQ2EbitRate - thisPnComQ2EbitRate, 3, MidpointRounding.AwayFromZero);
+            decimal pmToPlanCom3EbitRate = Math.Round(thisPmComQ3EbitRate - thisPnComQ3EbitRate, 3, MidpointRounding.AwayFromZero);
+            decimal pmToPlanCom4EbitRate = Math.Round(thisPmComQ4EbitRate - thisPnComQ4EbitRate, 3, MidpointRounding.AwayFromZero);
+
+            <tr class="ComLevel">
+                <th>(%)</th>
+                <th style="mso-number-format:0.0%">@(lastPmComQ1EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(lastPmComQ2EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(lastPmComQ3EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(lastPmComQ4EbitRate)</th>
+
+                <th style="mso-number-format:0.0%">@(thisPnComQ1EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(thisPnComQ2EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(thisPnComQ3EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(thisPnComQ4EbitRate)</th>
+
+                <th style="mso-number-format:0.0%">@(thisPmComQ1EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(thisPmComQ2EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(thisPmComQ3EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(thisPmComQ4EbitRate)</th>
+
+                <th style="mso-number-format:0.0%">@(pmToPlanCom1EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmToPlanCom2EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmToPlanCom3EbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmToPlanCom4EbitRate)</th>
+            </tr>
+
+            // ------------------------------------------------------------------- EbitRate (%) End
+
+            // ------------------------------------------------------------------- 경상이익 시작
+            decimal lastPmComQ1Pbt = lastPmRowQ1 == null ? 0 : lastPmRowQ1.Pbt;
+            decimal lastPmComQ2Pbt = lastPmRowQ2 == null ? 0 : lastPmRowQ2.Pbt;
+            decimal lastPmComQ3Pbt = lastPmRowQ3 == null ? 0 : lastPmRowQ3.Pbt;
+            decimal lastPmComQ4Pbt = lastPmRowQ4 == null ? 0 : lastPmRowQ4.Pbt;
+
+            decimal thisPnComQ1Pbt = thisPnRowQ1 == null ? 0 : thisPnRowQ1.Pbt;
+            decimal thisPnComQ2Pbt = thisPnRowQ2 == null ? 0 : thisPnRowQ2.Pbt;
+            decimal thisPnComQ3Pbt = thisPnRowQ3 == null ? 0 : thisPnRowQ3.Pbt;
+            decimal thisPnComQ4Pbt = thisPnRowQ4 == null ? 0 : thisPnRowQ4.Pbt;
+
+            decimal thisPmComQ1Pbt = thisPmRowQ1 == null ? 0 : thisPmRowQ1.Pbt;
+            decimal thisPmComQ2Pbt = thisPmRowQ2 == null ? 0 : thisPmRowQ2.Pbt;
+            decimal thisPmComQ3Pbt = thisPmRowQ3 == null ? 0 : thisPmRowQ3.Pbt;
+            decimal thisPmComQ4Pbt = thisPmRowQ4 == null ? 0 : thisPmRowQ4.Pbt;
+
+            string pmToPlanCom1Pbt = WebUtil.DivPmValue(thisPmComQ1Pbt, thisPnComQ1Pbt, 3);
+            string pmToPlanCom2Pbt = WebUtil.DivPmValue(thisPmComQ2Pbt, thisPnComQ2Pbt, 3);
+            string pmToPlanCom3Pbt = WebUtil.DivPmValue(thisPmComQ3Pbt, thisPnComQ3Pbt, 3);
+            string pmToPlanCom4Pbt = WebUtil.DivPmValue(thisPmComQ4Pbt, thisPnComQ4Pbt, 3);
+
+            <tr class="ComLevel">
+                <th>경상이익</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ1Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ2Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ3Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(lastPmComQ4Pbt)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ1Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ2Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ3Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPnComQ4Pbt)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ1Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ2Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ3Pbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(thisPmComQ4Pbt)</th>
+
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom1Pbt)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom2Pbt)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom3Pbt)</th>
+                <th style="mso-number-format:0\.0%">@(pmToPlanCom4Pbt)</th>
+            </tr>
+            <!-- 회사 합계-->
+        }
+        
+    </tbody>
+</table>

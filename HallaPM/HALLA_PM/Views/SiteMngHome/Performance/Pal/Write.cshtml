@@ -1,0 +1,1300 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PmPal pmPal = Model.pmPal;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<OrgBusiness> orgBusinessList = Model.orgBusinessList;
+    //List<PmPalBusiness> pBusinessList = Model.pBusinessList;
+    List<PmPalBusiness> selectListLastYear = Model.selectListLastYear;
+
+    List<PmPalBusiness> selectListPlanThisYear = Model.selectListPlanThisYear;
+
+    //
+    List<PmPalBusiness> selectListPlanMonthlyThisYear = Model.selectListPlanMonthlyThisYear;
+    List<PmPalBusiness> selectListMonthlyThisYear = Model.selectListMonthlyThisYear;
+
+    //누계
+    List<PmPalBusiness> selectListMonthlyPlanThisYear = Model.selectListMonthlyPlanThisYear;
+    List<PmPalBusiness> selectListMonthlyCountThisYear = Model.selectListMonthlyCountThisYear;
+    //연간
+    List<PmPalBusiness> selectListExpectPlanThisYear = Model.selectListExpectPlanThisYear;
+    List<PmPalBusiness> selectListExpectThisYear = Model.selectListExpectThisYear;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>손익</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@pmPal.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@pmPal.OrgCompanySeq" />
+        <input type="hidden" name="PalYear" value="@pmPal.PalYear" />
+        <input type="hidden" name="Monthly" value="@pmPal.Monthly" />
+       <!-- <input type="hidden" name="Seq" value="@pmPal.Seq" />-->
+        <input type="hidden" name="RegistStatus" value="@pmPal.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchMonth" value="@(search.searchMonth)" />
+        <div class="con_box search">
+            <h3 class="mt0">손익 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(pmPal.PalYear)년 @(pmPal.Monthly)월</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = pmPal.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+            @foreach (var item in orgBusinessList)
+            {
+                //전년도
+                var query = from p in selectListLastYear
+                            where p.OrgBusinessSeq == item.Seq
+                            select new { p };
+
+                //해당년도 계획,실적
+                var monthlyList = from p in selectListMonthlyThisYear
+                                  where p.OrgBusinessSeq == item.Seq
+                                  select new { p };
+                //해당년도 누적계획
+                var monthlyCountPlanList = from p in selectListMonthlyPlanThisYear
+                                           where p.OrgBusinessSeq == item.Seq
+                                           select new { p };
+                //해당년도 누계실적
+                var monthlyCountList = from p in selectListMonthlyCountThisYear
+                                       where p.OrgBusinessSeq == item.Seq
+                                       select new { p };
+
+                //해당년도 연간계획
+                var expectPlanList = from p in selectListExpectPlanThisYear
+                                     where p.OrgBusinessSeq == item.Seq
+                                     select new { p };
+                //해당년도 연간실적
+                var expectList = from p in selectListExpectThisYear
+                                 where p.OrgBusinessSeq == item.Seq
+                                 select new { p };
+
+                //연간
+                decimal yearSales = 0;
+                decimal yearEbit = 0;
+                decimal yearEbitRate = 0;
+                decimal yearPbt = 0;
+
+                //당월
+                decimal monthlySales = 0;
+                decimal monthlyEbit = 0;
+                decimal monthlyEbitRate = 0;
+                decimal monthlyPbt = 0;
+
+                //누계
+                decimal monthlySumSales = 0;
+                decimal monthlySumEbit = 0;
+                decimal monthlySumEbitRate = 0;
+                decimal monthlySumPbt = 0;
+
+                <h3>@item.BusinessName</h3>
+                <p class="caption"><span>(단위 : 억원, %)</span></p>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="8%" />
+                        <col width="8%" />
+                        <col width="8%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="3">구분</th>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (selectListLastYear == null || selectListLastYear.Count() <= 1)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="3">@(Convert.ToInt32(pmPal.PalYear) - 1)년</th>
+                                <th scope="row" colspan="2">연간</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" rowspan="2">[@(pmPal.Monthly)]월</th>
+                                <th scope="row">당월</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">누계</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item1 in query)
+                            {
+                                if (item1.p.kind == 1)
+                                {
+                                    yearSales = item1.p.Sales;
+                                    yearEbit = item1.p.Ebit;
+                                    yearEbitRate = WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2);
+                                    yearPbt = item1.p.Pbt;
+                                }
+                                else if (item1.p.kind == 2)
+                                {
+                                    monthlySales = item1.p.Sales;
+                                    monthlyEbit = item1.p.Ebit;
+                                    monthlyEbitRate = WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2);
+                                    monthlyPbt = item1.p.Pbt;
+                                }
+                                else if (item1.p.kind == 3)
+                                {
+                                    monthlySumSales = item1.p.Sales;
+                                    monthlySumEbit = item1.p.Ebit;
+                                    monthlySumEbitRate = WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2);
+                                    monthlySumPbt = item1.p.Pbt;
+                                }
+
+                                if (item1.p.kind == 1)
+                                {
+                                    <tr>
+                                        <th scope="row" rowspan="3">@(Convert.ToInt32(pmPal.PalYear))년</th>
+                                        <th scope="row" colspan="2">연간</th>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Sales, 2))</td>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Ebit, 2))</td>
+                                        <td>@WebUtil.NCommaRound(WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2), 2)%</td>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Pbt, 2))</td>
+                                    </tr>
+                                }
+                                else if (item1.p.kind == 2)
+                                {
+                                    <tr>
+                                        <th scope="row" rowspan="2">[@(pmPal.Monthly)]월</th>
+                                        <th scope="row">당월</th>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Sales, 2))</td>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Ebit, 2))</td>
+                                        <td>@WebUtil.NCommaRound(WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2), 2)%</td>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Pbt, 2))</td>
+                                    </tr>
+                                }
+                                else if(item1.p.kind == 3)
+                                {
+                                    <tr>
+                                        <th scope="row">누계</th>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Sales, 2))</td>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Ebit, 2))</td>
+                                        <td>@WebUtil.NCommaRound(WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2), 2)%</td>
+                                        <td>@(WebUtil.NCommaRound(item1.p.Pbt, 2))</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        @if (monthlyList == null || monthlyList.Count() == 0)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="12">@(Convert.ToInt32(pmPal.PalYear))년</th>
+                                <th scope="row" rowspan="4">[@(pmPal.Monthly)]월</th>
+                                <th scope="row">계획</th>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>0%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">
+                                    실적
+                                    <input type="hidden" name="monthlyType" value="10" />
+                                </th>
+                                <td><input type="text" name="sales" value="0"/></td>
+                                <td><input type="text" name="ebit" value="0"/></td>
+                                <td class="bg_blue" name="ebitRate">0</td>
+                                <td name="pbt">0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">계획대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">전년대비</th>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                                <td class="bg_blue">0</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item1 in monthlyList)
+                            {
+                                //var planBussiness = selectListPlanThisYear.Where(w => w.OrgBusinessSeq == item.Seq)
+                                var planBussiness = selectListPlanMonthlyThisYear.Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+                                if (planBussiness == null) { planBussiness = new PmPalBusiness(); }
+
+
+                                //계획대비
+                                decimal planContrastSales = 0;
+                                decimal planContrastEbit = 0;
+                                decimal planContrastEbitRate = 0;
+                                decimal planContrastPbt = 0;
+
+                                item1.p.EbitRate = WebUtil.NumberRound(item1.p.Ebit, item1.p.Sales, 100, 2);
+                                planBussiness.EbitRate = WebUtil.NumberRound(planBussiness.Ebit, planBussiness.Sales, 100, 2);
+
+                                planContrastSales = planBussiness == null ? 0 : planBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item1.p.Sales, planBussiness.Sales, 100, 2);
+                                planContrastEbit = planBussiness == null ? 0 : planBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item1.p.Ebit, planBussiness.Ebit, 100, 2);
+                                //planContrastEbitRate = planBussiness == null ? 0 : planBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item1.p.EbitRate, planBussiness.EbitRate, 100, 2);
+                                planContrastEbitRate = item1.p.EbitRate - (planBussiness.EbitRate);
+                                planContrastPbt = planBussiness == null ? 0 : planBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item1.p.Pbt, planBussiness.Pbt, 100, 2);
+
+                                //전년대비
+                                decimal preYearContrastSales = 0;
+                                decimal preYearContrastEbit = 0;
+                                decimal preYearContrastEbitRate = 0;
+                                decimal preYearContrastPbt = 0;
+
+                                preYearContrastSales = monthlySales == 0 ? 0 : WebUtil.NumberRound(item1.p.Sales, monthlySales, 100, 2);
+                                preYearContrastEbit = monthlyEbit == 0 ? 0 : WebUtil.NumberRound(item1.p.Ebit, monthlyEbit, 100, 2);
+                                //preYearContrastEbitRate = monthlyEbitRate == 0 ? 0 : WebUtil.NumberRound(item1.p.planEbitRate, monthlyEbitRate, 100, 2);
+                                preYearContrastEbitRate = item1.p.EbitRate - (monthlyEbitRate);
+                                preYearContrastPbt = monthlyPbt == 0 ? 0 : WebUtil.NumberRound(item1.p.Pbt, monthlyPbt, 100, 2);
+
+                                <tr>
+                                    <th scope="row" rowspan="12">
+                                        @(Convert.ToInt32(pmPal.PalYear))년
+                                    </th>
+                                    <th scope="row" rowspan="4">[@(pmPal.Monthly)]월</th>
+                                    <th scope="row">계획 </th>
+                                    <td>@(WebUtil.NCommaRound(planBussiness.Sales, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(planBussiness.Ebit, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(planBussiness.Ebit, planBussiness.Sales, 100, 2), 2))%</td>
+                                    <td>@(WebUtil.NCommaRound(planBussiness.Pbt, 2))</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">
+                                        실적
+                                        <input type="hidden" name="monthlyType" value="10" />
+                                        <input type="hidden" name="PmPalBusinessSeq" value="@item1.p.PmPalBussinessSeq" />
+                                    </th>
+                                    <td><input type="text" name="sales" value="@(item1.p.Sales)" /></td>
+                                    <td><input type="text" name="ebit" value="@(item1.p.Ebit)" /></td>
+                                    <td class="bg_blue" name="ebitRate">@(WebUtil.NCommaRound(item1.p.EbitRate, 2))%</td>
+                                    <td><input type="text" name="pbt" value="@(item1.p.Pbt)" /></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planBussiness.Sales, planContrastSales))</td>
+                                    <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planBussiness.Ebit, planContrastEbit))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(planContrastEbitRate, 2))%</td>
+                                    <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planBussiness.Pbt, planContrastPbt))</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(monthlySales, preYearContrastSales))</td>
+                                    <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(monthlyEbit, preYearContrastEbit))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(preYearContrastEbitRate, 2))%</td>
+                                    <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(monthlyPbt, preYearContrastPbt))</td>
+                                </tr>
+
+                            }
+                            if (monthlyCountPlanList == null || monthlyCountPlanList.Count() == 0)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="4">누계</th>
+                                    <th scope="row">계획</th>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>0%</td>
+                                    <td>0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item2 in monthlyCountPlanList)
+                                {
+                                    <tr>
+                                        <th scope="row" rowspan="4">누계</th>
+                                        <th scope="row">계획</th>
+                                        <td>@(WebUtil.NCommaRound(item2.p.Sales, 2))</td>
+                                        <td>@(WebUtil.NCommaRound(item2.p.Ebit, 2))</td>
+                                        <td>@WebUtil.NCommaRound(WebUtil.NumberRound(item2.p.Ebit, item2.p.Sales, 100, 2), 2)%</td>
+                                        <td>@(WebUtil.NCommaRound(item2.p.Pbt, 2))</td>
+                                    </tr>
+
+                                }
+                            }
+
+                            if (monthlyCountList == null || monthlyCountList.Count() == 0)
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        실적
+                                        <input type="hidden" name="monthlyType" value="20" />
+                                    </th>
+                                    <td><input type="text" name="sales" value="0" /></td>
+                                    <td><input type="text" name="ebit" value="0" /></td>
+                                    <td class="bg_blue" name="ebitRate">0</td>
+                                    <td><input type="text" name="pbt" value="0" /></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item3 in monthlyCountList)
+                                {
+                                    var planSumBussiness = selectListMonthlyPlanThisYear.Where(w => w.OrgBusinessSeq == item.Seq).FirstOrDefault();
+                                    if (planSumBussiness == null) { planSumBussiness = new  PmPalBusiness(); }
+
+                                    <tr>
+                                        <th scope="row">
+                                            실적
+                                            <input type="hidden" name="monthlyType" value="20" />
+                                            <input type="hidden" name="PmPalBusinessSeq" value="@item3.p.PmPalBussinessSeq" />
+                                        </th>
+                                        <td><input type="text" name="sales" value="@(item3.p.Sales)" /></td>
+                                        <td><input type="text" name="ebit" value="@(item3.p.Ebit)" /></td>
+                                        <td class="bg_blue" name="ebitRate">@WebUtil.NumberRound(item3.p.Ebit, item3.p.Sales, 100, 2)%</td>
+                                        <td><input type="text" name="pbt" value="@(item3.p.Pbt)" /></td>
+                                    </tr>
+
+                                    //계획대비
+                                    decimal planContrastSumSales = 0;
+                                    decimal planContrastSumEbit = 0;
+                                    decimal planContrastSumEbitRate = 0;
+                                    decimal planContrastSumPbt = 0;
+
+                                    item3.p.EbitRate = WebUtil.NumberRound(item3.p.Ebit, item3.p.Sales, 100, 2);
+                                    planSumBussiness.EbitRate = WebUtil.NumberRound(planSumBussiness.Ebit, planSumBussiness.Sales, 100, 2);
+
+                                    planContrastSumSales = planSumBussiness == null ? 0 : planSumBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item3.p.Sales, planSumBussiness.Sales, 100, 2);
+                                    planContrastSumEbit = planSumBussiness == null ? 0 : planSumBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item3.p.Ebit, planSumBussiness.Ebit, 100, 2);
+                                    //planContrastSumEbitRate = planSumBussiness == null ? 0 : planSumBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item3.p.EbitRate, planSumBussiness.EbitRate, 100, 2);
+                                    planContrastSumEbitRate = item3.p.EbitRate - (planSumBussiness.EbitRate);
+                                    planContrastSumPbt = planSumBussiness == null ? 0 : planSumBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item3.p.Pbt, planSumBussiness.Pbt, 100, 2);
+
+                                    //전년대비
+                                    decimal preYearContrastSumSales = 0;
+                                    decimal preYearContrastSumEbit = 0;
+                                    decimal preYearContrastSumEbitRate = 0;
+                                    decimal preYearContrastSumPbt = 0;
+
+                                    preYearContrastSumSales = monthlySales == 0 ? 0 : WebUtil.NumberRound(item3.p.Sales, monthlySumSales, 100, 2);
+                                    preYearContrastSumEbit = monthlyEbit == 0 ? 0 : WebUtil.NumberRound(item3.p.Ebit, monthlySumEbit, 100, 2);
+                                    //preYearContrastSumEbitRate = monthlyEbitRate == 0 ? 0 : WebUtil.NumberRound(item3.p.planEbitRate, monthlySumEbitRate, 100, 2);
+                                    preYearContrastSumEbitRate = item3.p.EbitRate - (monthlySumEbitRate);
+                                    preYearContrastSumPbt = monthlyPbt == 0 ? 0 : WebUtil.NumberRound(item3.p.Pbt, monthlySumPbt, 100, 2);
+
+                                    <tr>
+                                        <th scope="row">계획대비</th>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planSumBussiness.Sales, planContrastSumSales))</td>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planSumBussiness.Ebit, planContrastSumEbit))</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(planContrastSumEbitRate, 2))%</td>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planSumBussiness.Pbt, planContrastSumPbt))</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">전년대비</th>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(monthlySumSales, preYearContrastSumSales))</td>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(monthlySumEbit, preYearContrastSumEbit))</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(preYearContrastSumEbitRate, 2))%</td>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(monthlySumPbt, preYearContrastSumPbt))</td>
+                                    </tr>
+                                }
+                            }
+
+                            if (expectPlanList == null || expectPlanList.Count() == 0)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="4">연간</th>
+                                    <th scope="row">계획</th>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>0%</td>
+                                    <td>0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item4 in expectPlanList)
+                                {
+                                    <tr>
+                                        <th scope="row" rowspan="4">연간</th>
+                                        <th scope="row">계획</th>
+                                        <td>@(WebUtil.NCommaRound(item4.p.Sales, 2))</td>
+                                        <td>@(WebUtil.NCommaRound(item4.p.Ebit, 2))</td>
+                                        <td>@WebUtil.NCommaRound(WebUtil.NumberRound(item4.p.Ebit, item4.p.Sales, 100, 2), 2)%</td>
+                                        <td>@(WebUtil.NCommaRound(item4.p.Pbt, 2))</td>
+                                    </tr>
+                                }
+                            }
+
+                            if (expectList == null || expectList.Count() == 0)
+                            {
+                                <tr>
+                                    <th scope="row">예상</th>
+                                    <td><input type="text" name="sales" value="0" /></td>
+                                    <td><input type="text" name="ebit" value="0" /></td>
+                                    <td class="bg_blue" name="ebitRate">0</td>
+                                    <td><input type="text" name="pbt" value="0" /></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">계획대비</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">전년대비</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item5 in expectList)
+                                {
+                                    var planYearBussiness = selectListExpectPlanThisYear.Where(w => w.OrgBusinessSeq == item.Seq)
+                                    .OrderBy(g => g.YearlyYear).FirstOrDefault();
+                                    if (planYearBussiness == null) { planYearBussiness = new PmPalBusiness(); }
+
+                                    //계획대비
+                                    decimal planContrastYearSales = 0;
+                                    decimal planContrastYearEbit = 0;
+                                    decimal planContrastYearEbitRate = 0;
+                                    decimal planContrastYearPbt = 0;
+
+                                    item5.p.EbitRate = WebUtil.NumberRound(item5.p.Ebit, item5.p.Sales, 100, 2);
+                                    planYearBussiness.EbitRate = WebUtil.NumberRound(planYearBussiness.Ebit, planYearBussiness.Sales, 100, 2);
+
+                                    planContrastYearSales = planYearBussiness.Sales == 0 ? 0 : WebUtil.NumberRound(item5.p.Sales, planYearBussiness.Sales, 100, 2);
+                                    planContrastYearEbit = planYearBussiness.Ebit == 0 ? 0 : WebUtil.NumberRound(item5.p.Ebit, planYearBussiness.Ebit, 100, 2);
+                                    //planContrastYearEbitRate = planYearBussiness.EbitRate == 0 ? 0 : WebUtil.NumberRound(item5.p.EbitRate, planYearBussiness.EbitRate, 100, 2);
+                                    planContrastYearEbitRate = item5.p.EbitRate - (planYearBussiness.EbitRate);
+                                    planContrastYearPbt = planYearBussiness.Pbt == 0 ? 0 : WebUtil.NumberRound(item5.p.Pbt, planYearBussiness.Pbt, 100, 2);
+
+                                    //전년대비
+                                    decimal preYearContrastYearSales = 0;
+                                    decimal preYearContrastYearEbit = 0;
+                                    decimal preYearContrastYearEbitRate = 0;
+                                    decimal preYearContrastYearPbt = 0;
+
+                                    preYearContrastYearSales = monthlySales == 0 ? 0 : WebUtil.NumberRound(item5.p.Sales, yearSales, 100, 2);
+                                    preYearContrastYearEbit = monthlyEbit == 0 ? 0 : WebUtil.NumberRound(item5.p.Ebit, yearEbit, 100, 2);
+                                    //preYearContrastYearEbitRate = monthlyEbitRate == 0 ? 0 : WebUtil.NumberRound(item5.p.planEbitRate, yearEbitRate, 100, 2);
+                                    preYearContrastYearEbitRate = item5.p.EbitRate - (yearEbitRate);
+                                    preYearContrastYearPbt = monthlyPbt == 0 ? 0 : WebUtil.NumberRound(item5.p.Pbt, yearPbt, 100, 2);
+
+                                    <tr>
+                                        <th scope="row">
+                                            예상
+                                            <input type="hidden" name="monthlyType" value="30" />
+                                            <input type="hidden" name="PmPalBusinessSeq" value="@item5.p.PmPalBussinessSeq" />
+                                        </th>
+                                        <td><input type="text" name="sales" value="@(item5.p.Sales)" /></td>
+                                        <td><input type="text" name="ebit" value="@(item5.p.Ebit)" /></td>
+                                        <td class="bg_blue" name="ebitRate">@WebUtil.NumberRound(item5.p.Ebit, item5.p.Sales, 100, 2)%</td>
+                                        <td><input type="text" name="pbt" value="@(item5.p.Pbt)" /></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">계획대비</th>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planYearBussiness.Sales, planContrastYearSales))</td>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planYearBussiness.Ebit, planContrastYearEbit))</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(planContrastYearEbitRate, 2))%</td>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(planYearBussiness.Pbt, planContrastYearPbt))</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">전년대비</th>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(yearSales, preYearContrastYearSales))</td>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(yearEbit, preYearContrastYearEbit))</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(preYearContrastYearEbitRate, 2))%</td>
+                                        <td class="bg_blue">@(WebUtil.ReturnNaValueOrM200(yearPbt, preYearContrastYearPbt))</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            }
+
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                <button class="btn full_green" type="button" onclick="onReset();">초기화</button>
+                <!--<button class="btn full_green" type="button" onclick="onCalculationAction();">계산하기</button>-->
+            </div>
+
+            @*<h3>[@(pmPal.PalYear)]월 손익 요약</h3>
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="8%" />
+            <col width="8%" />
+            <col width="8%" />
+            <col width="/" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th scope="col" colspan="3">구분</th>
+                <th scope="col">Sales</th>
+                <th scope="col">EBIT</th>
+                <th scope="col">EBIT%</th>
+                <th scope="col">PBT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="3">2017년</th>
+                <th scope="row" colspan="2">연간</th>
+                <td>5,707</td>
+                <td>242</td>
+                <td>4.2%</td>
+                <td>182</td>
+            </tr>
+            <tr>
+                <th scope="row" rowspan="2">[xx]월</th>
+                <th scope="row">당월</th>
+                <td>479</td>
+                <td>21</td>
+                <td>4.2%</td>
+                <td>182</td>
+            </tr>
+            <tr>
+                <th scope="row">누계</th>
+                <td>479</td>
+                <td>21</td>
+                <td>4.2%</td>
+                <td>182</td>
+            </tr>
+            <tr>
+                <th scope="row" rowspan="13">2018년</th>
+                <th scope="row" rowspan="4">[xx]월</th>
+                <th scope="row">계획</th>
+                <td>479</td>
+                <td>21</td>
+                <td>4.2%</td>
+                <td>182</td>
+            </tr>
+            <tr>
+                <th scope="row">실적</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td class="bg_blue"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th scope="row">계획대비</th>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+            </tr>
+            <tr>
+                <th scope="row">전년대비</th>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+            </tr>
+            <tr>
+                <th scope="row" rowspan="4">누계</th>
+                <th scope="row">계획</th>
+                <td>479</td>
+                <td>21</td>
+                <td>4.2%</td>
+                <td>182</td>
+            </tr>
+            <tr>
+                <th scope="row">실적</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td class="bg_blue"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th scope="row">계획대비</th>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+            </tr>
+            <tr>
+                <th scope="row">전년대비</th>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+            </tr>
+            <tr>
+                <th scope="row" rowspan="4">연간</th>
+                <th scope="row">계획</th>
+                <td>479</td>
+                <td>21</td>
+                <td>4.2%</td>
+                <td>182</td>
+            </tr>
+            <tr>
+                <th scope="row">실적</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td class="bg_blue"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th scope="row">계획대비</th>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+            </tr>
+            <tr>
+                <th scope="row">전년대비</th>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+                <td class="bg_blue"></td>
+            </tr>
+            <tr>
+                <th scope="row">부채비율</th>
+                <th scope="row">[xx]월실적</th>
+                <td colspan="4"><textarea class="w100"></textarea></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>손익 분석</h3>
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="10%" />
+            <col width="/" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th scope="col">구분</th>
+                <th scope="col">내용 입력</th>
+                <th scope="col">당월</th>
+                <th scope="col">내용입력</th>
+                <th scope="col">누계</th>
+                <th scope="col">필드 추가/삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="4">매출차이</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><a href="#none" class="addBtn"><i class="fa fa-plus-circle"></i></a></td>
+            </tr>
+            <tr class="total">
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="10%" />
+            <col width="/" />
+        </colgroup>
+        <thead style="display:none;">
+            <tr>
+                <th scope="col">구분</th>
+                <th scope="col">내용 입력</th>
+                <th scope="col">당월</th>
+                <th scope="col">내용입력</th>
+                <th scope="col">누계</th>
+                <th scope="col">필드 추가/삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="4">영업이익<br />차이</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><a href="#none" class="addBtn"><i class="fa fa-plus-circle"></i></a></td>
+            </tr>
+            <tr class="total">
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="10%" />
+            <col width="/" />
+        </colgroup>
+        <thead style="display:none;">
+            <tr>
+                <th scope="col">구분</th>
+                <th scope="col">내용 입력</th>
+                <th scope="col">당월</th>
+                <th scope="col">내용입력</th>
+                <th scope="col">누계</th>
+                <th scope="col">필드 추가/삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="4">경상이익 <br />차이</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><a href="#none" class="addBtn"><i class="fa fa-plus-circle"></i></a></td>
+            </tr>
+            <tr class="total">
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="10%" />
+            <col width="/" />
+        </colgroup>
+        <thead style="display:none;">
+            <tr>
+                <th scope="col">구분</th>
+                <th scope="col">내용 입력</th>
+                <th scope="col">당월</th>
+                <th scope="col">내용입력</th>
+                <th scope="col">누계</th>
+                <th scope="col">필드 추가/삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="4">당기순이익 <br />차이</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><a href="#none" class="addBtn"><i class="fa fa-plus-circle"></i></a></td>
+            </tr>
+            <tr class="total">
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+    <h3>연간예상분석</h3>
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="10%" />
+            <col width="/" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th scope="col">구분</th>
+                <th scope="col">내용 입력</th>
+                <th scope="col">잔여월</th>
+                <th scope="col">내용입력</th>
+                <th scope="col">연간</th>
+                <th scope="col">필드 추가/삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="4">매출차이</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><a href="#none" class="addBtn"><i class="fa fa-plus-circle"></i></a></td>
+            </tr>
+            <tr class="total">
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="10%" />
+            <col width="/" />
+        </colgroup>
+        <thead style="display:none;">
+            <tr>
+                <th scope="col">구분</th>
+                <th scope="col">내용 입력</th>
+                <th scope="col">잔여월</th>
+                <th scope="col">내용입력</th>
+                <th scope="col">연간</th>
+                <th scope="col">필드 추가/삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="4">영업이익<br />차이</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><a href="#none" class="addBtn"><i class="fa fa-plus-circle"></i></a></td>
+            </tr>
+            <tr class="total">
+
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="10%" />
+            <col width="/" />
+        </colgroup>
+        <thead style="display:none;">
+            <tr>
+                <th scope="col">구분</th>
+                <th scope="col">내용 입력</th>
+                <th scope="col">잔여월</th>
+                <th scope="col">내용입력</th>
+                <th scope="col">연간</th>
+                <th scope="col">필드 추가/삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="4">경상이익 <br />차이</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><a href="#none" class="addBtn"><i class="fa fa-plus-circle"></i></a></td>
+            </tr>
+            <tr class="total">
+
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+        <caption></caption>
+        <colgroup>
+            <col width="10%" />
+            <col width="/" />
+        </colgroup>
+        <thead style="display:none;">
+            <tr>
+                <th scope="col">구분</th>
+                <th scope="col">내용 입력</th>
+                <th scope="col">잔여월</th>
+                <th scope="col">내용입력</th>
+                <th scope="col">연간</th>
+                <th scope="col">필드 추가/삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" rowspan="4">당기순이익 <br />차이</th>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><input type="text" name="" /></td>
+                <td><a href="#none" class="addBtn"><i class="fa fa-plus-circle"></i></a></td>
+            </tr>
+            <tr class="total">
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+                <td class="bg_blue"></td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="btn_area align_left_right">
+        <button class="btn full_green left">목록</button>
+        <button class="btn full_green">저장하기</button>
+    </div>*@
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+    $(function () {
+        MYAPP.tblControl.init();
+    });
+
+    function onCalculationAction() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Sales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ebit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Pbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        //if (confirm("@Message.MSG_002_Q")) {
+           // f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Action";
+            f.submit();
+       // }
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Write";
+            f.submit();
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down2";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+        var orgCpyName = "@(orgCompanyName.CompanyName)";
+        var excelFileName = excelFilePath.substring(excelFilePath.lastIndexOf('\\') + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+        if (excelFileName.indexOf('손익') < 0 || excelFileName.indexOf('분기별') > -1
+               || excelFileName.indexOf('손익월별') > -1 || excelFileName.indexOf('손익중기') > -1 || excelFileName.indexOf(orgCpyName.toLowerCase()) < 0) {
+            alert('' + orgCpyName + ' - [손익] 파일이 아닙니다. \n파일을 확인해주세요');
+            return;
+        }
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            //url: "Excel_Upload"
+            url: "Excel_Upload3",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    //f.action = "Write";
+                    f.action = "Edit";
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+    }
+
+
+    function onUploadExcel2() {
+        var f = document.frmMain;
+
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+        var orgCpyName = "@(orgCompanyName.CompanyName)";
+        var excelFileName = excelFilePath.substring(excelFilePath.lastIndexOf('\\') + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+       
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            url: "Excel_Upload2",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.action = "Edit";
+                    f.submit();
+                    //onCalculationAction();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+    }
+    onCalculationAction();
+</script>
+
+

@@ -1,0 +1,1230 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PmInvest pmInvest = Model.pmInvest;
+    OrgCompany orgCompany = Model.orgCompany;
+    List<OrgBusiness> orgBusiness = Model.orgBusiness;
+
+    string excel = Model.excel;
+
+    // 전년도 연간 누계  -  12월 정보의 누계
+    List<PmInvestBusiness> prevPmInvestBusinessByYearly = Model.prevPmInvestBusinessByYearly;
+
+    // 전년도 당월 및 누계
+    List<PmInvestBusiness> prevPmInvestBusinessByMonthly = Model.prevPmInvestBusinessByMonthly;
+
+    // 당해년도 연간 계획 정보
+    List<PlanYearInvestBusiness> planYearInvestBusiness = Model.planYearInvestBusiness;
+
+    // 당해년도 월별 계획 정보
+    List<PlanMonthlyInvestBusiness> planMonthlyInvestBusiness = Model.planMonthlyInvestBusiness;
+
+    // 당해년도 월별 누적계획 정보
+    List<PlanMonthlyInvestBusiness> planMonthlyInvestBusinessSummary = Model.planMonthlyInvestBusinessSummary;
+
+    // excel 업로드 데이터
+    List<PmInvestBusiness> uploadedPmInvestBusiness = Model.uploadedPmInvestBusiness;
+
+    // 저장 데이터
+    List<PmInvestBusiness> currentPmInvestBusiness = Model.currentPmInvestBusiness;
+
+    // 하단 투자/인원 요약 부 데이터
+    PmInvestSum prevYearlyInfo = Model.prevYearlyInfo;
+    PmInvestSum prevMonthlyInfo = Model.prevMonthlyInfo;
+    PmInvestSum prevMonthlyInfoSummary = Model.prevMonthlyInfoSummary;
+
+    PlanYearInvestSummary planYearInvestSummary = Model.planYearInvestSummary;
+    PlanMonthlyInvestSummaryExp currentYearlyPlanInfo = Model.currentYearlyPlanInfo;
+    PlanMonthlyInvestSummaryExp currentMonthlyPlanInfo = Model.currentMonthlyPlanInfo;
+
+    List<PmInvestSum> currentPmInvestSum = Model.currentPmInvestSum;
+
+
+    // 관리자 댓글 등록
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = pmInvest.InvestYear;
+    commentList.CommentMonth = pmInvest.Monthly;
+    commentList.AttachTableName = "COMPANY";
+    commentList.AttachTableSeq = pmInvest.OrgCompanySeq;
+    commentList.UserKey = SessionManager.GetAdminSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetAdminSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetAdminSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetAdminSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetAdminSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetAdminSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetAdminSession().insaDeptV.Deptkorname;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>투자 &middot; 인원</strong>
+    </div>
+
+    <form name="editForm" id="editForm" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" id="Seq" value="@pmInvest.Seq" />
+        <input type="hidden" name="PmInvestSeq" id="PmInvestSeq" value="@pmInvest.Seq" />
+        <input type="hidden" name="OrgCompanySeq" id="OrgCompanySeq" value="@orgCompany.Seq" />
+        <input type="hidden" name="RegistStatus" id="RegistStatus" value="@pmInvest.RegistStatus" />
+        <input type="hidden" name="isEdit" id="isEdit" value="Y" />
+        <div class="con_box search">
+            <h3 class="mt0">투자 &middot; 인원 작성</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@pmInvest.InvestYear 년 &nbsp;&nbsp; @pmInvest.Monthly 월</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">회사</th>
+                        <td class="align_left_right mt0">
+                            <table class="tbl2">
+                                <tr>
+                                    <td>@orgCompany.UnionName > @orgCompany.CompanyName</td>
+                                        @if (pmInvest.RegistStatus == Define.REGIST_STATUS.GetKey("저장")
+                                            || pmInvest.RegistStatus == Define.REGIST_STATUS.GetKey("1차반려")
+                                            || pmInvest.RegistStatus == Define.REGIST_STATUS.GetKey("2차반려"))
+                                        {
+                                            <td class="ta_right">
+                                                <a href="javascript: onConfirm(document.editForm);" class="btn small full_green right">승인요청</a>
+                                            </td>
+                                        }
+                                        else if (pmInvest.RegistStatus == Define.REGIST_STATUS.GetKey("승인대기")
+                                            || pmInvest.RegistStatus == Define.REGIST_STATUS.GetKey("1차승인"))
+                                        {
+                                            <td class="ta_right">
+                                                <button class="btn small full_green" type="button" onclick="onRegistReply();">댓글등록</button>
+                                                <a href="javascript: onReject(document.editForm);" class="btn small full_gray right">반려</a>
+                                                <a href="javascript: onConfirm(document.editForm);" class="btn small full_green right">승인</a>
+                                            </td>
+                                        }
+                                        else if (pmInvest.RegistStatus == Define.REGIST_STATUS.GetKey("최종승인"))
+                                        {
+                                            <td class="ta_right">
+                                                <button class="btn small full_green" type="button" onclick="onRegistReply();">댓글등록</button>
+                                            </td>
+                                        }
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">업로드</th>
+                        <td class="align_left_right mt0">
+                            <div class="style_file" style="width:60%;">
+                                <label>
+                                    <span></span>
+                                    <input type="file" name="ExcelFile" id="ExcelFile">
+                                    <button type="button" class="btn full_gray">파일찾기</button>
+                                </label>
+                            </div>
+                            <a href="javascript: uploadExcel(document.editForm);" class="btn small full_gray">엑셀 반영</a>
+                            <a href="javascript: onExcelDown(document.editForm);" class="btn small full_gray right">양식다운로드</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            @if (currentPmInvestBusiness != null)
+            {
+
+                <h3>[@pmInvest.Monthly]월 투자,인원 요약</h3>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="3"></th>
+                            <th scope="col">투자</th>
+                            <th scope="col">인원</th>
+                            <th scope="col">국내인원</th>
+                            <th scope="col">해외인원</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" rowspan="3">@(Convert.ToInt32(pmInvest.InvestYear) - 1)년</th>
+                            <th scope="row" colspan="2">연간</th>
+                            <td>@WebUtil.NCommaRound(prevYearlyInfo.Investment, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevYearlyInfo.Personnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevYearlyInfo.DomesticPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevYearlyInfo.OverseasPersonnel, 0)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="2">[@pmInvest.Monthly]월</th>
+                            <th scope="row">당월</th>
+                            <td>@WebUtil.NCommaRound(prevMonthlyInfo.Investment, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevMonthlyInfo.Personnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevMonthlyInfo.DomesticPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevMonthlyInfo.OverseasPersonnel, 0)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">누계</th>
+                            <td>@WebUtil.NCommaRound(prevMonthlyInfoSummary.Investment, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevMonthlyInfoSummary.Personnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevMonthlyInfoSummary.DomesticPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(prevMonthlyInfoSummary.OverseasPersonnel, 0)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="9">@(pmInvest.InvestYear)년</th>
+                            <th scope="row">연간</th>
+                            <th scope="row">계획</th>
+                            <td>@WebUtil.NCommaRound(planYearInvestSummary.Investment, 0)</td>
+                            <td>@WebUtil.NCommaRound(planYearInvestSummary.Personnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(planYearInvestSummary.DomesticPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(planYearInvestSummary.OverseasPersonnel, 0)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="4">[@pmInvest.Monthly]월</th>
+                            <th scope="row">계획</th>
+                            <td>@WebUtil.NCommaRound(currentMonthlyPlanInfo.Investment, 0)</td>
+                            <td>@WebUtil.NCommaRound(currentMonthlyPlanInfo.Personnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(currentMonthlyPlanInfo.DomesticPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(currentMonthlyPlanInfo.OverseasPersonnel, 0)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            <td>@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? "0" : WebUtil.NCommaRound(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Investment, 0))</td>
+                            <td>@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? "0" : WebUtil.NCommaRound(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Personnel, 0))</td>
+                            <td>@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? "0" : WebUtil.NCommaRound(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().DomesticPersonnel, 0))</td>
+                            <td>@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? "0" : WebUtil.NCommaRound(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().OverseasPersonnel, 0))</td>
+                        </tr>
+                        @{
+                            decimal pmMonthlyInvestment = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Investment;
+                            decimal pmMonthlyPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Personnel;
+                            decimal pmMonthlyDomesticPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().DomesticPersonnel;
+                            decimal pmMonthlyOverseasPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().OverseasPersonnel;
+                        }
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                @if (pmMonthlyInvestment == 0 || currentMonthlyPlanInfo.Investment == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmMonthlyInvestment / currentMonthlyPlanInfo.Investment) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyPersonnel == 0 || currentMonthlyPlanInfo.Personnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmMonthlyPersonnel / currentMonthlyPlanInfo.Personnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyDomesticPersonnel == 0 || currentMonthlyPlanInfo.DomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmMonthlyDomesticPersonnel / currentMonthlyPlanInfo.DomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyOverseasPersonnel == 0 || currentMonthlyPlanInfo.OverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmMonthlyOverseasPersonnel / currentMonthlyPlanInfo.OverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                @if (pmMonthlyInvestment == 0 || prevMonthlyInfo.Investment == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmMonthlyInvestment / prevMonthlyInfo.Investment) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyPersonnel == 0 || prevMonthlyInfo.Personnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmMonthlyPersonnel / prevMonthlyInfo.Personnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyDomesticPersonnel == 0 || prevMonthlyInfo.DomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmMonthlyDomesticPersonnel / prevMonthlyInfo.DomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyOverseasPersonnel == 0 || prevMonthlyInfo.OverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmMonthlyOverseasPersonnel / prevMonthlyInfo.OverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="4">누계</th>
+                            <th scope="row">계획</th>
+                            <td>@WebUtil.NCommaRound(currentYearlyPlanInfo.Investment, 0)</td>
+                            <td>@WebUtil.NCommaRound(currentYearlyPlanInfo.Personnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(currentYearlyPlanInfo.DomesticPersonnel, 0)</td>
+                            <td>@WebUtil.NCommaRound(currentYearlyPlanInfo.OverseasPersonnel, 0)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            <td>@(WebUtil.NCommaRound(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Investment, 0))</td>
+                            <td>@(WebUtil.NCommaRound(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Personnel, 0))</td>
+                            <td>@(WebUtil.NCommaRound(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().DomesticPersonnel, 0))</td>
+                            <td>@(WebUtil.NCommaRound(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().OverseasPersonnel, 0))</td>
+                        </tr>
+                        @{
+                            decimal pmYearlyInvestment = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Investment;
+                            decimal pmYearlyPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Personnel;
+                            decimal pmYearlyDomesticPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().DomesticPersonnel;
+                            decimal pmYearlyOverseasPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().OverseasPersonnel;
+                        }
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                @if (pmYearlyInvestment == 0 || currentYearlyPlanInfo.Investment == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmYearlyInvestment / currentYearlyPlanInfo.Investment) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyPersonnel == 0 || currentYearlyPlanInfo.Personnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmYearlyPersonnel / currentYearlyPlanInfo.Personnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyDomesticPersonnel == 0 || currentYearlyPlanInfo.DomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmYearlyDomesticPersonnel / currentYearlyPlanInfo.DomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyOverseasPersonnel == 0 || currentYearlyPlanInfo.OverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmYearlyOverseasPersonnel / currentYearlyPlanInfo.OverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                @if (pmYearlyInvestment == 0 || prevMonthlyInfoSummary.Investment == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmYearlyInvestment / prevMonthlyInfoSummary.Investment) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyPersonnel == 0 || prevMonthlyInfoSummary.Personnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmYearlyPersonnel / prevMonthlyInfoSummary.Personnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyDomesticPersonnel == 0 || prevMonthlyInfoSummary.DomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmYearlyDomesticPersonnel / prevMonthlyInfoSummary.DomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyOverseasPersonnel == 0 || prevMonthlyInfoSummary.OverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@WebUtil.NCommaRound(Math.Round((pmYearlyOverseasPersonnel / prevMonthlyInfoSummary.OverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero), 0) %</p>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            }
+            
+            <br />
+            <hr />
+
+            @{
+                int idx = 0;
+            }
+            @foreach (var item in orgBusiness)
+            {
+                <h3>@item.BusinessName</h3>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="3"></th>
+                            <th scope="col">투자</th>
+                            <th scope="col">인원</th>
+                            <th scope="col">국내인원</th>
+                            <th scope="col">해외인원</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" rowspan="3">@(Convert.ToInt32(pmInvest.InvestYear) - 1)년</th>
+                            <th scope="row" colspan="2">연간</th>
+                            <td>@(prevPmInvestBusinessByYearly.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByYearly.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Investment) </td>
+                            <td>@(prevPmInvestBusinessByYearly.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByYearly.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Personnel)</td>
+                            <td>@(prevPmInvestBusinessByYearly.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByYearly.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnel) </td>
+                            <td>@(prevPmInvestBusinessByYearly.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByYearly.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnel)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="2">[@(pmInvest.Monthly)]월</th>
+                            <th scope="row">당월</th>
+                            <td>@(prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Investment)</td>
+                            <td>@(prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Personnel)</td>
+                            <td>@(prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().DomesticPersonnel)</td>
+                            <td>@(prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().OverseasPersonnel)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">누계</th>
+                            <td>@(prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Investment)</td>
+                            <td>@(prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Personnel)</td>
+                            <td>@(prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().DomesticPersonnel)</td>
+                            <td>@(prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().OverseasPersonnel)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="9">@(pmInvest.InvestYear)년</th>
+                            <th scope="row">연간</th>
+                            <th scope="row">계획</th>
+                            <td>@(planYearInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planYearInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Investment)</td>
+                            <td>@(planYearInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planYearInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Personnel)</td>
+                            <td>@(planYearInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planYearInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnel)</td>
+                            <td>@(planYearInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planYearInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnel)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="4">[@(pmInvest.Monthly)]월</th>
+                            <th scope="row">계획</th>
+                            <td>@(planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Investment)</td>
+                            <td>@(planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Personnel)</td>
+                            <td>@(planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnel)</td>
+                            <td>@(planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnel)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            @if (excel.Equals("Y"))
+                            {
+                                <td>
+                                    <input type="hidden" name="pmInvestBusiness[@idx].OrgBusinessSeq" value="@item.Seq" />
+                                    <input type="text" id="@(idx)_investment" name="pmInvestBusiness[@idx].Investment" value="@(uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Investment)" />
+                                </td>
+                                <td><input type="text" id="@(idx)_personnel" name="pmInvestBusiness[@idx].Personnel" value="@(uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Personnel)" /></td>
+                                <td><input type="text" id="@(idx)_domesticPersonnel" name="pmInvestBusiness[@idx].DomesticPersonnel" value="@(uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnel)" /></td>
+                                <td><input type="text" id="@(idx)_overseasPersonnel" name="pmInvestBusiness[@idx].OverseasPersonnel" value="@(uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnel)" /></td>
+                            }
+                            else
+                            {
+                                <td>
+                                    <input type="hidden" name="pmInvestBusiness[@idx].OrgBusinessSeq" value="@item.Seq" />
+                                    <input type="text" id="@(idx)_investment" name="pmInvestBusiness[@idx].Investment" value="@(currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Investment)" />
+                                </td>
+                                <td><input type="text" id="@(idx)_personnel" name="pmInvestBusiness[@idx].Personnel" value="@(currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Personnel)" /></td>
+                                <td><input type="text" id="@(idx)_domesticPersonnel" name="pmInvestBusiness[@idx].DomesticPersonnel" value="@(currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().DomesticPersonnel)" /></td>
+                                <td><input type="text" id="@(idx)_overseasPersonnel" name="pmInvestBusiness[@idx].OverseasPersonnel" value="@(currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().OverseasPersonnel)" /></td>
+
+                            }
+
+                        </tr>
+
+                        @{
+                            decimal currentInvestment = 0;
+                            decimal currentPersonnel = 0;
+                            decimal currentDomesticPersonnel = 0;
+                            decimal currentOverseasPersonnel = 0;
+
+                            decimal currentInvestmentExp = 0;
+                            decimal currentPersonnelExp = 0;
+                            decimal currentDomesticPersonnelExp = 0;
+                            decimal currentOverseasPersonnelExp = 0;
+
+                            if (excel.Equals("Y"))
+                            {
+                                currentInvestment = uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Investment;
+                                currentPersonnel = uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Personnel;
+                                currentDomesticPersonnel = uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnel;
+                                currentOverseasPersonnel = uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnel;
+
+                                currentInvestmentExp = uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().InvestmentExp;
+                                currentPersonnelExp = uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().PersonnelExp;
+                                currentDomesticPersonnelExp = uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnelExp;
+                                currentOverseasPersonnelExp = uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnelExp;
+                            }
+                            else
+                            {
+                                currentInvestment = currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Investment;
+                                currentPersonnel = currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Personnel;
+                                currentDomesticPersonnel = currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().DomesticPersonnel;
+                                currentOverseasPersonnel = currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().OverseasPersonnel;
+
+                                currentInvestmentExp = currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Investment;
+                                currentPersonnelExp = currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Personnel;
+                                currentDomesticPersonnelExp = currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().DomesticPersonnel;
+                                currentOverseasPersonnelExp = currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().OverseasPersonnel;
+                            }
+
+                            // (계획)당해년도 당월 계획
+                            var monthlyPlanInvestment = planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Investment;
+                            var monthlyPlanPersonnel = planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Personnel;
+                            var monthlyPlanDomesticPersonnel = planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnel;
+                            var monthlyPlanOverseasPersonnel = planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnel;
+
+                            // (계획)전년도 당월 계획
+                            var prevYearlyPlanInvestment = prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Investment;
+                            var prevYearlyPlanPersonnel = prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Personnel;
+                            var prevYearlyPlanDomesticPersonnel = prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().DomesticPersonnel;
+                            var prevYearlyPlanOverseasPersonnel = prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().OverseasPersonnel;
+
+                            // (계획)당해년도 당월 누계
+                            var monthlyPlanInvestmentSummary = planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Investment;
+                            var monthlyPlanPersonnelSummary = planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Personnel;
+                            var monthlyPlanDomesticPersonnelSummary = planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnel;
+                            var monthlyPlanOverseasPersonnelSummary = planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnel;
+
+                            // (계획)전년도 당월 누계
+                            var prevYearlyPlanInvestmentSummary = prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Investment;
+                            var prevYearlyPlanPersonnelSummary = prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Personnel;
+                            var prevYearlyPlanDomesticPersonnelSummary = prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().DomesticPersonnel;
+                            var prevYearlyPlanOverseasPersonnelSummary = prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : prevPmInvestBusinessByMonthly.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().OverseasPersonnel;
+
+                        }
+
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                @if (currentInvestment == 0 || monthlyPlanInvestment == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentInvestment / monthlyPlanInvestment) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentPersonnel == 0 || monthlyPlanPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentPersonnel / monthlyPlanPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentDomesticPersonnel == 0 || monthlyPlanDomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentDomesticPersonnel / monthlyPlanDomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentOverseasPersonnel == 0 || monthlyPlanOverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentOverseasPersonnel / monthlyPlanOverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                @if (currentInvestment == 0 || prevYearlyPlanInvestment == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentInvestment / prevYearlyPlanInvestment) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentPersonnel == 0 || prevYearlyPlanPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentPersonnel / prevYearlyPlanPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentDomesticPersonnel == 0 || prevYearlyPlanDomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentDomesticPersonnel / prevYearlyPlanDomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentOverseasPersonnel == 0 || prevYearlyPlanOverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentOverseasPersonnel / prevYearlyPlanOverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="4">누계</th>
+                            <th scope="row">계획</th>
+                            <td>@(planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Investment)</td>
+                            <td>@(planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().Personnel)</td>
+                            <td>@(planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnel)</td>
+                            <td>@(planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : planMonthlyInvestBusinessSummary.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnel)</td>
+                        </tr>
+                        <tr>
+                            @if (excel.Equals("Y"))
+                            {
+                                <th scope="row">실적</th>
+                                <td><input type="text" id="@(idx)_investmentExp" name="pmInvestBusiness[@idx].InvestmentExp" value="@(uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().InvestmentExp)" /></td>
+                                <td><input type="text" id="@(idx)_personnelExp" name="pmInvestBusiness[@idx].PersonnelExp" value="@(uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().PersonnelExp)" /></td>
+                                <td><input type="text" id="@(idx)_domesticPersonnelExp" name="pmInvestBusiness[@idx].DomesticPersonnelExp" value="@(uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().DomesticPersonnelExp)" /></td>
+                                <td><input type="text" id="@(idx)_overseasPersonnelExp" name="pmInvestBusiness[@idx].OverseasPersonnelExp" value="@(uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault() == null ? 0 : uploadedPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq).FirstOrDefault().OverseasPersonnelExp)" /></td>
+                            }
+                            else
+                            {
+                                <th scope="row">실적</th>
+                                <td><input type="text" id="@(idx)_investmentExp" name="pmInvestBusiness[@idx].InvestmentExp" value="@(currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Investment)" /></td>
+                                <td><input type="text" id="@(idx)_personnelExp" name="pmInvestBusiness[@idx].PersonnelExp" value="@(currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Personnel)" /></td>
+                                <td><input type="text" id="@(idx)_domesticPersonnelExp" name="pmInvestBusiness[@idx].DomesticPersonnelExp" value="@(currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().DomesticPersonnel)" /></td>
+                                <td><input type="text" id="@(idx)_overseasPersonnelExp" name="pmInvestBusiness[@idx].OverseasPersonnelExp" value="@(currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestBusiness.Where(x => x.OrgBusinessSeq == item.Seq && x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().OverseasPersonnel)" /></td>
+                            }
+                            
+                        </tr>
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                @if (currentInvestmentExp == 0 || monthlyPlanInvestmentSummary == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentInvestmentExp / monthlyPlanInvestmentSummary) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentPersonnelExp == 0 || monthlyPlanPersonnelSummary == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentPersonnelExp / monthlyPlanPersonnelSummary) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentDomesticPersonnelExp == 0 || monthlyPlanDomesticPersonnelSummary == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentDomesticPersonnelExp / monthlyPlanDomesticPersonnelSummary) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentOverseasPersonnelExp == 0 || monthlyPlanOverseasPersonnelSummary == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentOverseasPersonnelExp / monthlyPlanOverseasPersonnelSummary) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                @if (currentInvestmentExp == 0 || prevYearlyPlanInvestmentSummary == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentInvestmentExp / prevYearlyPlanInvestmentSummary) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentPersonnelExp == 0 || prevYearlyPlanPersonnelSummary == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentPersonnelExp / prevYearlyPlanPersonnelSummary) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentDomesticPersonnelExp == 0 || prevYearlyPlanDomesticPersonnelSummary == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentDomesticPersonnelExp / prevYearlyPlanDomesticPersonnelSummary) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (currentOverseasPersonnelExp == 0 || prevYearlyPlanOverseasPersonnelSummary == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((currentOverseasPersonnelExp / prevYearlyPlanOverseasPersonnelSummary) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--//tbl th_ver-->
+
+                idx++;
+            }
+
+            <div class="btn_area bd_btm">
+                <a href="javascript:onClear(document.editForm);" class="btn full_green">초기화</a>
+                <a href="javascript:onEditAction(document.editForm);" class="btn full_green">계산하기</a>
+            </div><!--//btn_area-->
+            
+            
+            @if (currentPmInvestBusiness != null)
+            {
+
+                <h3>[@pmInvest.Monthly]월 투자,인원 요약</h3>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="7%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="3"></th>
+                            <th scope="col">투자</th>
+                            <th scope="col">인원</th>
+                            <th scope="col">국내인원</th>
+                            <th scope="col">해외인원</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" rowspan="3">@(Convert.ToInt32(pmInvest.InvestYear) - 1)년</th>
+                            <th scope="row" colspan="2">연간</th>
+                            <td>@prevYearlyInfo.Investment</td>
+                            <td>@prevYearlyInfo.Personnel</td>
+                            <td>@prevYearlyInfo.DomesticPersonnel</td>
+                            <td>@prevYearlyInfo.OverseasPersonnel</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="2">[@pmInvest.Monthly]월</th>
+                            <th scope="row">당월</th>
+                            <td>@prevMonthlyInfo.Investment</td>
+                            <td>@prevMonthlyInfo.Personnel</td>
+                            <td>@prevMonthlyInfo.DomesticPersonnel</td>
+                            <td>@prevMonthlyInfo.OverseasPersonnel</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">누계</th>
+                            <td>@prevMonthlyInfoSummary.Investment</td>
+                            <td>@prevMonthlyInfoSummary.Personnel</td>
+                            <td>@prevMonthlyInfoSummary.DomesticPersonnel</td>
+                            <td>@prevMonthlyInfoSummary.OverseasPersonnel</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="9">@(pmInvest.InvestYear)년</th>
+                            <th scope="row">연간</th>
+                            <th scope="row">계획</th>
+                            <td>@planYearInvestSummary.Investment</td>
+                            <td>@planYearInvestSummary.Personnel</td>
+                            <td>@planYearInvestSummary.DomesticPersonnel</td>
+                            <td>@planYearInvestSummary.OverseasPersonnel</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="4">[@pmInvest.Monthly]월</th>
+                            <th scope="row">계획</th>
+                            <td>@currentMonthlyPlanInfo.Investment</td>
+                            <td>@currentMonthlyPlanInfo.Personnel</td>
+                            <td>@currentMonthlyPlanInfo.DomesticPersonnel</td>
+                            <td>@currentMonthlyPlanInfo.OverseasPersonnel</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            <td><input type="text" name="sumInvestment" value="@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Investment)" /></td>
+                            <td><input type="text" name="sumPersonnel" value="@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Personnel)" /></td>
+                            <td><input type="text" name="sumDomesticPersonnel" value="@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().DomesticPersonnel)" /></td>
+                            <td><input type="text" name="sumOverseasPersonnel" value="@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().OverseasPersonnel)" /></td>
+                        </tr>
+                        @{ 
+                            decimal pmMonthlyInvestment = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Investment;
+                            decimal pmMonthlyPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().Personnel;
+                            decimal pmMonthlyDomesticPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().DomesticPersonnel;
+                            decimal pmMonthlyOverseasPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("당월")).FirstOrDefault().OverseasPersonnel;
+                        }
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                @if(pmMonthlyInvestment == 0 || currentMonthlyPlanInfo.Investment == 0)
+                                {
+                                    <p>0 %</p>
+                                }else{
+                                    <p>@Math.Round((pmMonthlyInvestment / currentMonthlyPlanInfo.Investment) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyPersonnel == 0 || currentMonthlyPlanInfo.Personnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmMonthlyPersonnel / currentMonthlyPlanInfo.Personnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyDomesticPersonnel == 0 || currentMonthlyPlanInfo.DomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmMonthlyDomesticPersonnel / currentMonthlyPlanInfo.DomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyOverseasPersonnel == 0 || currentMonthlyPlanInfo.OverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmMonthlyOverseasPersonnel / currentMonthlyPlanInfo.OverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                @if (pmMonthlyInvestment == 0 || prevMonthlyInfo.Investment == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmMonthlyInvestment / prevMonthlyInfo.Investment) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyPersonnel == 0 || prevMonthlyInfo.Personnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmMonthlyPersonnel / prevMonthlyInfo.Personnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyDomesticPersonnel == 0 || prevMonthlyInfo.DomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmMonthlyDomesticPersonnel / prevMonthlyInfo.DomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+
+                                @if (pmMonthlyOverseasPersonnel == 0 || prevMonthlyInfo.OverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmMonthlyOverseasPersonnel / prevMonthlyInfo.OverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="4">누계</th>
+                            <th scope="row">계획</th>
+                            <td>@currentYearlyPlanInfo.Investment</td>
+                            <td>@currentYearlyPlanInfo.Personnel</td>
+                            <td>@currentYearlyPlanInfo.DomesticPersonnel</td>
+                            <td>@currentYearlyPlanInfo.OverseasPersonnel</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">실적</th>
+                            <td><input type="text" name="sumInvestmentExp" value="@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Investment)" /></td>
+                            <td><input type="text" name="sumPersonnelExp" value="@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Personnel)" /></td>
+                            <td><input type="text" name="sumDomesticPersonnelExp" value="@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().DomesticPersonnel)" /></td>
+                            <td><input type="text" name="sumOverseasPersonnelExp" value="@(currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().OverseasPersonnel)" /></td>
+                        </tr>
+                        @{
+                            decimal pmYearlyInvestment = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Investment;
+                            decimal pmYearlyPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().Personnel;
+                            decimal pmYearlyDomesticPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().DomesticPersonnel;
+                            decimal pmYearlyOverseasPersonnel = currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault() == null ? 0 : currentPmInvestSum.Where(x => x.MonthlyType == Define.MONTHLY_TYPE.GetKey("누계")).FirstOrDefault().OverseasPersonnel;
+                        }
+                        <tr>
+                            <th scope="row">계획대비</th>
+                            <td class="bg_blue">
+                                @if(pmYearlyInvestment == 0 || currentYearlyPlanInfo.Investment == 0)
+                                {
+                                    <p>0 %</p>
+                                }else{
+                                    <p>@Math.Round((pmYearlyInvestment / currentYearlyPlanInfo.Investment) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyPersonnel == 0 || currentYearlyPlanInfo.Personnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmYearlyPersonnel / currentYearlyPlanInfo.Personnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyDomesticPersonnel == 0 || currentYearlyPlanInfo.DomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmYearlyDomesticPersonnel / currentYearlyPlanInfo.DomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyOverseasPersonnel == 0 || currentYearlyPlanInfo.OverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmYearlyOverseasPersonnel / currentYearlyPlanInfo.OverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">전년대비</th>
+                            <td class="bg_blue">
+                                @if (pmYearlyInvestment == 0 || prevMonthlyInfoSummary.Investment == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmYearlyInvestment / prevMonthlyInfoSummary.Investment) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyPersonnel == 0 || prevMonthlyInfoSummary.Personnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmYearlyPersonnel / prevMonthlyInfoSummary.Personnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyDomesticPersonnel == 0 || prevMonthlyInfoSummary.DomesticPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmYearlyDomesticPersonnel / prevMonthlyInfoSummary.DomesticPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                            <td class="bg_blue">
+                                @if (pmYearlyOverseasPersonnel == 0 || prevMonthlyInfoSummary.OverseasPersonnel == 0)
+                                {
+                                    <p>0 %</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round((pmYearlyOverseasPersonnel / prevMonthlyInfoSummary.OverseasPersonnel) * 100, 2, MidpointRounding.AwayFromZero) %</p>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn_area align_left_right">
+                    <a href="/SiteMngHome/Performance/Invest/List" class="btn full_green left">목록</a>
+                    <a href="javascript: onLastEditAction(document.editForm);"class="btn full_green">저장하기</a>
+                </div>
+
+            }
+
+            
+        </div>
+
+    </form>
+
+</div><!--//container-->
+
+
+<script>
+    var loopIdx = @Html.Raw(idx);
+    function uploadExcel(form) {
+
+        var excelFilePath = form.ExcelFile.value;
+        var excelFileExt = excelFilePath.slice(excelFilePath.indexOf(".") + 1).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert("업로드 할 파일을 첨부하세요.");
+            return;
+        }
+
+        if (excelFileExt != "xls" && excelFileExt != "xlsx") {
+            alert("엑셀 파일만 업로드 가능합니다.");
+            form.ExcelFile.value = "";
+            return;
+        }
+
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Invest/ExcelUploadAction";
+        form.submit();
+    }
+    function onExcelDown(form) {
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Invest/ExcelDownAction";
+        form.submit();
+    }
+    function onEditAction(form) {
+
+        // 데이터 체크
+        for(var i = 0 ; i < loopIdx ; i++){
+            if (!onCheckMultipleNameDoubleValuesById(i, "investment", "당월_투자" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "personnel", "당월_인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "domesticPersonnel", "당월_국내인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "overseasPersonnel", "당월_해외인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "investmentExp", "누계_투자" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "personnelExp", "누계_인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "domesticPersonnelExp", "누계_국내인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "overseasPersonnelExp", "누계_해외인원" + "@Message.MSG_001")) return false;
+        }
+
+
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Invest/EditAction";
+        form.submit();
+    }
+
+    function onLastEditAction(form) {
+
+
+        // 데이터 체크
+        for(var i = 0 ; i < loopIdx ; i++){
+            if (!onCheckMultipleNameDoubleValuesById(i, "investment", "당월_투자" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "personnel", "당월_인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "domesticPersonnel", "당월_국내인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "overseasPersonnel", "당월_해외인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "investmentExp", "누계_투자" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "personnelExp", "누계_인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "domesticPersonnelExp", "누계_국내인원" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValuesById(i, "overseasPersonnelExp", "누계_해외인원" + "@Message.MSG_001")) return false;
+        }
+
+        if (!onCheckMultipleNameDoubleValues("sumInvestment", "요약_당월_투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("sumPersonnel", "요약_당월_인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("sumDomesticPersonnel", "요약_당월_국내인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("sumOverseasPersonnel", "요약_당월_해외인원" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("sumInvestmentExp", "요약_누계_투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("sumPersonnelExp", "요약_누계_인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("sumDomesticPersonnelExp", "요약_누계_국내인원" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("sumOverseasPersonnelExp", "요약_누계_해외인원" + "@Message.MSG_001")) return false;
+
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Invest/LastEditAction";
+        form.submit();
+    }
+
+    function onConfirm(form) {
+        // 2 : 저장
+        // 3 : 승인 대기
+        // 4 : 1차 반려
+        // 5 : 2차 반려
+        // 6 : 1차 승인
+        // 7 : 최종 승인
+        var registStatus = $("#RegistStatus").val();
+        var confirmMsg = "";
+        if (registStatus == '2' || registStatus == '4' || registStatus == '5') {
+            // 저장 -> 승인대기
+            confirmMsg = "승인을 요청하시겠습니까?";
+        } else if (registStatus == '3') {
+            // 승인 대기 -> 1차 승인
+            confirmMsg = "1차 승인을 처리 하시겠습니까?";
+        } else if (registStatus == '6') {
+            // 1차 승인 -> 최종 승인
+            confirmMsg = "최종 승인을 처리 하시겠습니까?";
+        }
+
+        if (confirm(confirmMsg)) {
+            form.method = "post";
+            form.action = "/SiteMngHome/Performance/Invest/ConfirmAction";
+            form.submit();
+        }
+    }
+
+    function onReject(form) {
+        // 2 : 저장
+        // 3 : 승인 대기
+        // 4 : 1차 반려
+        // 5 : 2차 반려
+        // 6 : 1차 승인
+        // 7 : 최종 승인
+        var registStatus = $("#RegistStatus").val();
+        var confirmMsg = "";
+        if (registStatus == '3') {
+            // 승인대기 -> 1차반려
+            confirmMsg = "반려처리 하시겠습니까?";
+        } else if (registStatus == '6') {
+            // 1차승인 -> 2차반려
+            confirmMsg = "반려처리 하시겠습니까?";
+        }
+
+        if (confirm(confirmMsg)) {
+            form.method = "post";
+            form.action = "/SiteMngHome/Performance/Invest/RejectAction";
+            form.submit();
+        }
+    }
+
+    function onClear(form) {
+        if (confirm("초기화 시 저장되지 않은 데이터는 수정 직전값으로 돌아갑니다.\n초기화하시겠습니까?")) {
+            location.reload();
+        }
+    }
+    
+    // history back observed
+    window.onload = function () {
+        if (typeof history.pushState === "function") {
+            history.pushState("halla", null, null);
+            window.onpopstate = function () {
+                location.href = "list";
+            };
+        }
+    };
+
+    function onRegistReply() {
+        MYAPP.layerControl.layerShow($('#layerComment'));
+        onAdminLoad();
+    }
+</script>
+
+@Html.Partial("~/Views/Shared/AdminReply.cshtml", commentList)
+

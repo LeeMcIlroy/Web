@@ -1,0 +1,432 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit2";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PlanYearCf planYearCf = Model.planYearCf;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<PmCashFlowCumulativeExp> lastYearSummary = Model.lastYearSummary;
+    List<PlanYearCfSummary> thisYearSummary = Model.thisYearSummary;
+    PmCashFlowCumulative lastYearSummary2 = Model.lastYearSummary2;
+    if (lastYearSummary2 == null) { lastYearSummary2 = new PmCashFlowCumulative(); }
+
+    // 당해년도
+    List<PlanYearCfSummary> thisYearSummaryThis = thisYearSummary.Where(w => w.Yearly == "THIS").ToList();
+    // 전년대비
+    List<PlanYearCfSummary> thisYearSummaryLast = thisYearSummary.Where(w => w.Yearly == "LAST").ToList();
+    bool bSummaryLast = false;
+    bool bHeadSummaryLast = false;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>사업계획</span>
+        <strong>중기CF </strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="YearCfYear" value="@planYearCf.YearCfYear" />
+        <input type="hidden" name="Seq" value="@planYearCf.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@planYearCf.OrgCompanySeq" />
+        <input type="hidden" name="RegistStatus" value="@planYearCf.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+
+        <div class="con_box search">
+            <h3 class="mt0">중기CF 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@(planYearCf.YearCfYear)</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = planYearCf.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+            <h3>중기C/F계획 요약</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup></colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2" rowspan="2"></th>
+                        <th scope="col" colspan="6">C/F</th>
+                        <th scope="col" colspan="3">FCF</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">영업활동</th>
+                        <th scope="col">투자활동</th>
+                        <th scope="col">재무활동</th>
+                        <th scope="col">계</th>
+                        <th scope="col">Ending <br />Cash</th>
+                        <th scope="col">가용현금</th>
+                        <th scope="col">FCF1</th>
+                        <th scope="col">FCF2</th>
+                        <th scope="col">FCF3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (lastYearSummary == null || lastYearSummary.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row" rowspan="6">@(planYearCf.YearCfYear)<br />중기계획</th>
+                            <th scope="row">@(Convert.ToInt32(planYearCf.YearCfYear) - 1)년</th>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var lastYearSummaryFirst = lastYearSummary.FirstOrDefault();
+                        if (lastYearSummaryFirst == null) { lastYearSummaryFirst = new PmCashFlowCumulativeExp(); }
+                        <tr>
+                            <th scope="row" rowspan="6">@(planYearCf.YearCfYear)<br />중기계획</th>
+                            <th scope="row">@(lastYearSummaryFirst.CashFlowYear)년</th>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.CfSales, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.CfInvestment, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummary2.FinancialSum, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.CfSales + lastYearSummaryFirst.CfInvestment + lastYearSummaryFirst.CfFinancial, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummary2.EndingCash, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummary2.AvailableCash, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Fcf1, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummary2.Fcf2, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Fcf3, 0)</td>
+                        </tr>
+                    }
+                    @foreach (var item in thisYearSummaryThis)
+                    {
+                        <tr>
+                            <th scope="row">
+                                @(item.YearlyYear)년
+                            </th>
+                            <td>@WebUtil.NCommaRound(item.CfSales, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.CfInvestment, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.CfFinancial, 0)</td>
+                            <td class="bg_blue">@WebUtil.NCommaRound(item.CfSales + item.CfInvestment + item.CfFinancial, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.CfEndingCash, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.CfAvailableCash, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.Fcf1, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.Fcf2, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.Fcf3, 0)</td>
+                        </tr>
+                    }
+                    @foreach (var item in thisYearSummaryLast)
+                    {
+                        if (!bHeadSummaryLast)
+                        {
+                            <tr>
+                                <th scope="row" rowspan="6">전년<br />대비</th>
+                                <th scope="row">
+                                    @(item.YearlyYear)년
+                                </th>
+                                <td>@WebUtil.NCommaRound(item.CfSales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.CfInvestment, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.CfFinancial, 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(item.CfSales + item.CfInvestment + item.CfFinancial, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.CfEndingCash, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.CfAvailableCash, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.Fcf1, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.Fcf2, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.Fcf3, 0)</td>
+                            </tr>
+                            bHeadSummaryLast = true;
+                        }
+                        else
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @(item.YearlyYear)년
+                                </th>
+                                <td>@WebUtil.NCommaRound(item.CfSales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.CfInvestment, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.CfFinancial, 0)</td>
+                                <td class="bg_blue">@WebUtil.NCommaRound(item.CfSales + item.CfInvestment + item.CfFinancial, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.CfEndingCash, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.CfAvailableCash, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.Fcf1, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.Fcf2, 0)</td>
+                                <td>@WebUtil.NCommaRound(item.Fcf3, 0)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+
+    </form>
+
+</div><!--//container-->
+<script>
+
+    function onCalculationOneAction() {
+        var f = document.frmMain;
+
+        // 영업활동
+        if (!onCheckMultipleNameDoubleValues("OperationProfit", "영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DepreciationCost", "감가비" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CorpTax", "법인세비용" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Ar", "AR변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Inv", "Inv변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ap", "AP변동" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Etc", "기타" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("InterestExpense", "이자비용" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InterestIncome", "이자수익" + "@Message.MSG_001")) return false;
+        // 투자활동
+        if (!onCheckMultipleNameDoubleValues("Assets", "유형/무형자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("EquityInvestment", "지분투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AssetsSale", "자산매각" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InvestmentEtc", "기타" + "@Message.MSG_001")) return false;
+        // 재무활동
+        if (!onCheckMultipleNameDoubleValues("Allocation", "배당" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Increase", "증자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Borrowing", "차입" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Repayment", "상환" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("FinancialEtc", "기타" + "@Message.MSG_001")) return false;
+
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_One_Action";
+            f.submit();
+        }
+    }
+
+    function onCalculationTwoAction() {
+        var f = document.frmMain;
+
+        // 영업활동
+        if (!onCheckMultipleNameDoubleValues("OperationProfit", "영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DepreciationCost", "감가비" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CorpTax", "법인세비용" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Ar", "AR변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Inv", "Inv변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ap", "AP변동" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Etc", "기타" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("InterestExpense", "이자비용" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InterestIncome", "이자수익" + "@Message.MSG_001")) return false;
+        // 투자활동
+        if (!onCheckMultipleNameDoubleValues("Assets", "유형/무형자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("EquityInvestment", "지분투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AssetsSale", "자산매각" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InvestmentEtc", "기타" + "@Message.MSG_001")) return false;
+        // 재무활동
+        if (!onCheckMultipleNameDoubleValues("Allocation", "배당" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Increase", "증자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Borrowing", "차입" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Repayment", "상환" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("FinancialEtc", "기타" + "@Message.MSG_001")) return false;
+        // FCF
+        if (!onCheckMultipleNameDoubleValues("FcfSales", "FcfSales" + "@Message.MSG_001")) return false;
+        // 기초기말현금
+        if (!onCheckMultipleNameDoubleValues("CreditLine", "CreditLine" + "@Message.MSG_001")) return false;
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Two_Action";
+            f.submit();
+        }
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Edit";
+            f.submit();
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+        onRegistStatusChange(afterRegistStatus);
+        //var f = document.frmMain;
+        //f.afterRegistStatus.value = afterRegistStatus;
+        //MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            url: "Excel_Upload",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.action = "Edit";
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+    }
+
+    function onSave() {
+        var f = document.frmMain;
+
+        // 영업활동
+        if (!onCheckMultipleNameDoubleValues("OperationProfit", "영업이익" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("DepreciationCost", "감가비" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("CorpTax", "법인세비용" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Ar", "AR변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Inv", "Inv변동" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ap", "AP변동" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("Etc", "기타" + "@Message.MSG_001")) return false;
+
+        if (!onCheckMultipleNameDoubleValues("InterestExpense", "이자비용" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InterestIncome", "이자수익" + "@Message.MSG_001")) return false;
+        // 투자활동
+        if (!onCheckMultipleNameDoubleValues("Assets", "유형/무형자산" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("EquityInvestment", "지분투자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("AssetsSale", "자산매각" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("InvestmentEtc", "기타" + "@Message.MSG_001")) return false;
+        // 재무활동
+        if (!onCheckMultipleNameDoubleValues("Allocation", "배당" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Increase", "증자" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Borrowing", "차입" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Repayment", "상환" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("FinancialEtc", "기타" + "@Message.MSG_001")) return false;
+        // FCF
+        if (!onCheckMultipleNameDoubleValues("FcfSales", "FcfSales" + "@Message.MSG_001")) return false;
+        // 기초기말현금
+        if (!onCheckMultipleNameDoubleValues("CreditLine", "CreditLine" + "@Message.MSG_001")) return false;
+        // 요약
+        if (!onCheckMultipleNameDoubleValues("SummaryCfSales", "영업활동(요약)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryCfInvestment", "투자활동(요약)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryCfFinancial", "재무활동(요약)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryCfEndingCash", "Ending Cash(요약)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryCfAvailableCash", "가용현금(요약)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryFcf1", "FCF1(요약)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryFcf2", "FCF2(요약)" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("SummaryFcf3", "FCF3(요약)" + "@Message.MSG_001")) return false;
+
+        f.action = "Edit_Action";
+        f.submit();
+    }
+</script>
+

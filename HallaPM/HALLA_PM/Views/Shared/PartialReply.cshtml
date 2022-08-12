@@ -1,0 +1,246 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    CommentList commentList = Model;
+
+    /*
+    if (string.IsNullOrWhiteSpace(c.UserKey))
+    {
+        Response.Redirect(Define.SYSTEM_ERROR_PAGE_URL);
+        return;
+    }
+    */
+}
+<a href="javascript:;" class="btn_comment" onclick="onGetReplyList();">코멘트</a>
+
+<div id="layerComment" class="layer">
+    <form name="frmReply" id="frmReply">
+        <input type="hidden" name="UserKey" id="UserKey" value="@commentList.UserKey" />
+        <input type="hidden" name="EmpNo" id="EmpNo" value="@commentList.EmpNo" />
+        <input type="hidden" name="UserKorName" id="UserKorName" value="@commentList.UserKorName" />
+        <input type="hidden" name="CompKorName" id="CompKorName" value="@commentList.CompKorName" />
+        <input type="hidden" name="DeptKorName" id="DeptKorName" value="@commentList.DeptKorName" />
+        <input type="hidden" name="AttachTableName" id="AttachTableName" value="@commentList.AttachTableName" />
+        <input type="hidden" name="AttachTableSeq" id="AttachTableSeq" value="@commentList.AttachTableSeq" />
+        <input type="hidden" name="CommentYear" id="CommentYear" value="@commentList.CommentYear" />
+        <input type="hidden" name="CommentMonth" id="CommentMonth" value="@commentList.CommentMonth" />
+        <input type="hidden" name="CompanyName" id="CompanyName" value="@commentList.CompanyName" />
+        <input type="hidden" name="PageIndex" id="PageIndex" value="1" />
+        <input type="hidden" name="Seq" id="Seq" value="" />
+
+        <div class="layer_in">
+            <div class="comment_box_wrap">
+                <textarea name="comment" id="comment"></textarea>
+                <button class="btn full_gray" type="button" onclick="onSave();">댓글<br />등록</button>
+            </div><!--//comment_box_wrap-->
+
+
+            <div class="comment_list_wrap">
+                <div class="comment_list_scroll" id="replyList">
+                    <h1>Aug 2018</h1>
+                    <!--코멘트는 최신순으로 최대 5개 노출-->
+                    <div class="comment">
+                        <dl>
+                            <dt>한라그룹 / 경영지원본부 / 이한라</dt>
+                            <dd>당월 매출은 계획 대비 8% 상승되어 상기와 같은 결과를 달성하였습니다</dd>
+                            <dd class="date">23  Aug, 2018</dd>
+                        </dl>
+                        <a href="#" class="btn_del"><span>삭제</span></a>
+                    </div><!--//comment-->
+                </div><!--//comment_list_scroll-->
+
+                <div class="paging" id="paging">
+                    <a href="javascript:;" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                    <a href="javascript:;" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                    <span id="PageList">
+                        <strong>1</strong>
+                        <a href="#">2</a>
+                        <a href="#">3</a>
+                        <a href="#">4</a>
+                        <a href="#">5</a>
+                        <a href="#">6</a>
+                        <a href="#">7</a>
+                        <a href="#">8</a>
+                        <a href="#">9</a>
+                        <a href="#">10</a>
+                    </span>
+                    <a href="javascript:;" onclick="onPaging(document.listForm, '')" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                    <a href="javascript:;" onclick="onPaging(document.listForm, '')" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+                </div><!--//paging-->
+            </div><!--//comment_list_wrap-->
+            <a href="javascript:;" onclick="javascript: MYAPP.layerControl.layerHide($('#layerComment')); return false;" class="btn_layer_close"></a>
+        </div><!--//layer_in-->
+    </form>
+</div><!--//layerComment-->
+<script type="text/javascript">
+    function onGetReplyList() {;
+        MYAPP.layerControl.layerShow($('#layerComment'));
+        onList(1);
+    }
+
+    function onSave() {
+        var f = document.frmReply;
+
+        if (f.comment.value.length > 1500) {
+            alert('1500자 이내로 입력해주세요.');
+            return;
+        }
+        if (f.comment.value.trim().length == 0) {
+            alert('코멘트를 입력해주세요.');
+            return;
+        }
+        $.ajax({
+            url: "/Reply/SetReplySave",
+            type: "post",
+            data: $("#frmReply").serialize(),
+            dataType: "json",
+            success: function (res) {
+                if (res.success == true) {
+                    // 댓글 등록 완료 후 알림 메세지
+                    // 대상자 가져오기
+                    //GetReplyListAll
+                    $.ajax({
+                        url: "/Reply/GetReplyListAll",
+                        type: "post",
+                        data: $("#frmReply").serialize(),
+                        dataType: "json",
+                        success: function (res) {
+                            //console.log(res.List);
+                            //console.log(res.PageInfo);
+
+                            if (res.List.length <= 0) {
+                            }
+                            else {
+                                var users = [];
+                                $.each(res.List, function (i, item) {
+                                    users.push({ userKey: $.trim(item.UserKey) });
+                                });
+                                // 보낸다 푸쉬
+                                var params = {
+                                    Type: "2",
+                                    Title: "-",
+                                    Contents: $('#CommentYear').val() + "년 " + $('#CommentMonth').val() + "월 " + $("#CompanyName").val() + "에 댓글이 등록되었습니다.",
+                                    Link: "",
+                                    users: users
+                                };
+                                $.post('/Api/SendPush', params, function (data) {
+                                    if (data) {
+                                        var message = '';
+                                        if (data.result) {
+                                            message = data.message;
+                                        }
+                                        else {
+                                            message = data.errorMessage;
+                                        }
+                                        //$('#message').html(message)
+                                        console.log(message);
+                                    }
+                                });
+                            }
+                         }
+                    });
+                    onList(1);
+                    $("#comment").val('');
+                }
+                else {
+                    alert("댓글 입력에 실패했습니다.");
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                alert("Error : 댓글 입력에 실패했습니다.");
+            }
+        });
+    }
+
+    function onDelete(seq) {
+        var f = document.frmReply;
+
+        f.Seq.value = seq;
+        $.ajax({
+            url: "/Reply/SetReplyDelete",
+            type: "post",
+            data: $("#frmReply").serialize(),
+            dataType: "json",
+            success: function (res) {
+                if (res.success == true) {
+                    onList(1);
+                    $("#comment").val('');
+                    alert("댓글을 삭제했습니다..");
+                }
+                else {
+                    alert("댓글 삭제에 실패했습니다.");
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                alert("Error : 댓글 삭제에 실패했습니다.");
+            }
+        });
+    }
+
+
+    function onList(pageIndex) {
+        var f = document.frmReply;
+
+        f.PageIndex.value = pageIndex;
+        $.ajax({
+            url: "/Reply/GetReplyList",
+            type: "post",
+            data: $("#frmReply").serialize(),
+            dataType: "json",
+            success: function (res) {
+                console.log(res.List);
+                console.log(res.PageInfo);
+
+                var $html = "";
+                if (res.List.length <= 0) {
+                    $html ="<p style='text-align:center;'>등록된 댓글이 없습니다.</p>";
+                }
+                else {
+                    $.each(res.List, function (i, item) {
+                        $html += "<div class='comment'>";
+                        $html += "  <dl>";
+                        // 2019.04.11 소속부서 삭제
+                        //$html += "      <dt>" + item.CompKorName + " / " + item.DeptKorName + " / " + item.UserKorName + "</dt>";
+                        $html += "      <dt>" + item.CompKorName + " / " + item.UserKorName + "</dt>";
+                        if (item.Comment == null) {
+                            $html += "      <dd></dd>";
+                        }
+                        else {
+                            $html += "      <dd>" + item.Comment == null ? "" : item.Comment.replace(/\r\n/gi, "<br />") + "</dd>";
+                        }
+                        $html += "      <dd class='date'>" + item.CreateDateToString + "</dd>";
+                        $html += "  </dl>";
+                        if ($("#UserKey").val() == item.UserKey) {
+                            $html += "  <a href='javascript:;' onClick='onDelete(" + item.Seq + ");' class='btn_del'><span>삭제</span></a>";
+                        }
+                        $html += "</div>";
+                    });
+                }
+
+                var $Page = "";
+                $Page += "<a href='javascript:;' onclick='onList(" + res.PageInfo.FirstPageIndex + ");' class='btn_first'><i class=''></i><span class='hidden'>처음으로</span></a>";
+                $Page += "<a href='javascript:;' onclick='onList(" + res.PageInfo.PrevPageIndex + ");' class='btn_prev'><i class=''></i><span class='hidden'>이전으로</span></a>";
+                $Page += "<span>";
+                for (var i = res.PageInfo.StartPageIndex; i <= res.PageInfo.EndPageIndex; i++) {
+                    if (res.PageInfo.PageIndex == i) {
+                        $Page += "<strong>" + i + "</strong>";
+                    }
+                    else {
+                        $Page += "<a href='javascript:;' onclick='onList(" + i + ");'>" + i + "</a>";
+                    }
+                }
+                $Page += "</span>";
+                $Page += "<a href='javascript:;' onclick='onList(" + res.PageInfo.NextPageIndex + ");' class='btn_next'><i class=''></i><span class='hidden'>다음으로</span></a>";
+                $Page += "<a href='javascript:;' onclick='onList(" + res.PageInfo.FinalPageIndex + ");' class='btn_last'><i class=''></i><span class='hidden'>마지막으로</span></a>";
+                // 페이징 작업
+                $("#replyList").html($html);
+                $("#paging").html($Page);
+            },
+            error: function (xhr) {
+                console.log(xhr);
+            }
+        });
+    }
+</script>

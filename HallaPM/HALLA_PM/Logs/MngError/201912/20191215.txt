@@ -1,0 +1,410 @@
+2019-12-15 17:00:45 | System.Data.SqlClient.SqlException (0x80131904): SQL Server에 연결을 설정하는 중에 네트워크 관련 또는 인스턴스 관련 오류가 발생했습니다. 서버를 찾을 수 없거나 액세스할 수 없습니다. 인스턴스 이름이 올바르고 SQL Server가 원격 연결을 허용하도록 구성되어 있는지 확인하십시오. (provider: Named Pipes Provider, error: 40 - SQL Server에 대한 연결을 열 수 없습니다.) ---> System.ComponentModel.Win32Exception (0x80004005): 네트워크 경로를 찾지 못했습니다
+   위치: System.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, DbConnectionPool pool, String accessToken, Boolean applyTransientFaultHandling, SqlAuthenticationProviderManager sqlAuthProviderManager)
+   위치: System.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   위치: System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   위치: System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   위치: System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   위치: System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   위치: System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   위치: System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   위치: System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   위치: System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   위치: System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   위치: System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   위치: System.Data.SqlClient.SqlConnection.Open()
+   위치: HALLA_PM.Models.AdminAuthRepo.selectList(Object param) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\AdminAuth\AdminAuthRepo.cs:줄 40
+ClientConnectionId:00000000-0000-0000-0000-000000000000
+Error Number:53,State:0,Class:20
+2019-12-15 17:02:16 | System.Data.SqlClient.SqlException (0x80131904): SQL Server에 연결을 설정하는 중에 네트워크 관련 또는 인스턴스 관련 오류가 발생했습니다. 서버를 찾을 수 없거나 액세스할 수 없습니다. 인스턴스 이름이 올바르고 SQL Server가 원격 연결을 허용하도록 구성되어 있는지 확인하십시오. (provider: SQL Network Interfaces, error: 25 - 연결 문자열이 잘못되었습니다.) ---> System.ComponentModel.Win32Exception (0x80004005): 매개 변수가 틀립니다
+   위치: System.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, DbConnectionPool pool, String accessToken, Boolean applyTransientFaultHandling, SqlAuthenticationProviderManager sqlAuthProviderManager)
+   위치: System.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   위치: System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   위치: System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   위치: System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   위치: System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   위치: System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   위치: System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   위치: System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   위치: System.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   위치: System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   위치: System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   위치: System.Data.SqlClient.SqlConnection.Open()
+   위치: HALLA_PM.Models.AdminAuthRepo.selectList(Object param) 파일 D:\halla\HALLA_PM_LIVE_20190219\HALLA_PM\HALLA_PM\Models\AdminAuth\AdminAuthRepo.cs:줄 40
+ClientConnectionId:00000000-0000-0000-0000-000000000000
+Error Number:87,State:0,Class:20
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '01',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 100,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '02',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '03',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '04',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '05',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '06',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '07',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '08',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '09',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '10',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '11',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '12',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2019',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2020',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2021',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2022',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2023',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:14:58 | API PlanMonthPalUpdate:{"seq":1,"MonthData":[{"Seq":35,"GroupdataYear":"2019","GroupdataMonth":"01","DataType":"01","Ebitda":100.0,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":36,"GroupdataYear":"2019","GroupdataMonth":"02","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":37,"GroupdataYear":"2019","GroupdataMonth":"03","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":38,"GroupdataYear":"2019","GroupdataMonth":"04","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":39,"GroupdataYear":"2019","GroupdataMonth":"05","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":40,"GroupdataYear":"2019","GroupdataMonth":"06","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":41,"GroupdataYear":"2019","GroupdataMonth":"07","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":42,"GroupdataYear":"2019","GroupdataMonth":"08","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":43,"GroupdataYear":"2019","GroupdataMonth":"09","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":44,"GroupdataYear":"2019","GroupdataMonth":"10","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":45,"GroupdataYear":"2019","GroupdataMonth":"11","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":46,"GroupdataYear":"2019","GroupdataMonth":"12","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":47,"GroupdataYear":"2019","GroupdataMonth":"2019","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":48,"GroupdataYear":"2019","GroupdataMonth":"2020","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":49,"GroupdataYear":"2019","GroupdataMonth":"2021","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":50,"GroupdataYear":"2019","GroupdataMonth":"2022","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":51,"GroupdataYear":"2019","GroupdataMonth":"2023","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0}],"SummaryData":null,"strComment":"%uD14C%uC2A4%uD2B8%20"} 호출자:H0000000231
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '01',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '02',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '03',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '04',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '05',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '06',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '07',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '08',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '09',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '10',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '11',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '12',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2019',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:07 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2020',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:08 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2021',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:08 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2022',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:08 |  [dbo].[USP_PLAN_GROUPDATA_CF_MONTHLY_CR_INSERT]
+                                                     @GROUPDATA_YEAR = '2019',
+		                                                @GROUPDATA_MONTH = '2023',
+		                                                @DATATYPE = '01',
+		                                                @EBITDA_CR = 0.00,
+		                                                @WC_CR = 0.00,
+		                                                @SALES_ETC_CR = 0.00,
+		                                                @NET_CAPEX_CR = 0.00,
+		                                                @FINANCIAL_COST_CR = 0.00,
+		                                                @FINANCIAL_SUM_CR =0.00,
+		                                                @CREDIT_LINE_CR = 0.00 
+2019-12-15 17:15:08 | API PlanMonthPalUpdate:{"seq":1,"MonthData":[{"Seq":35,"GroupdataYear":"2019","GroupdataMonth":"01","DataType":"01","Ebitda":0.0,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":36,"GroupdataYear":"2019","GroupdataMonth":"02","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":37,"GroupdataYear":"2019","GroupdataMonth":"03","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":38,"GroupdataYear":"2019","GroupdataMonth":"04","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":39,"GroupdataYear":"2019","GroupdataMonth":"05","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":40,"GroupdataYear":"2019","GroupdataMonth":"06","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":41,"GroupdataYear":"2019","GroupdataMonth":"07","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":42,"GroupdataYear":"2019","GroupdataMonth":"08","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":43,"GroupdataYear":"2019","GroupdataMonth":"09","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":44,"GroupdataYear":"2019","GroupdataMonth":"10","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":45,"GroupdataYear":"2019","GroupdataMonth":"11","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":46,"GroupdataYear":"2019","GroupdataMonth":"12","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":47,"GroupdataYear":"2019","GroupdataMonth":"2019","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":48,"GroupdataYear":"2019","GroupdataMonth":"2020","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":49,"GroupdataYear":"2019","GroupdataMonth":"2021","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":50,"GroupdataYear":"2019","GroupdataMonth":"2022","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0},{"Seq":51,"GroupdataYear":"2019","GroupdataMonth":"2023","DataType":"01","Ebitda":0.00,"Wc":0.00,"SalesEtc":0.00,"NetCapex":0.00,"FinancialCost":0.00,"FinancialSum":0.00,"CreditLine":0.00,"BasicCash":0.0,"Allocation":0.0,"Increase":0.0,"Borrowing":0.0,"Repayment":0.0,"Etc":0.0}],"SummaryData":null,"strComment":"%uD14C%uC2A4%uD2B8%20"} 호출자:H0000000231

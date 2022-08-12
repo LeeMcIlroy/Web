@@ -1,0 +1,203 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+
+    List<PmCashFlowCumulativeExcel> excelCom = Model.excelCom;
+
+    string companyName = "ExcelDownCashFlow";
+    string year = "";
+    string mm = "";
+    if (excelCom.Count() > 0)
+    {
+        companyName = excelCom.First().CompanyName;
+        year = excelCom.First().CashFlowYear;
+        mm = excelCom.First().Monthly;
+    }
+    var gp = excelCom.GroupBy(g => g.OrgCompanySeq).Select(cl => new PmCashFlowCumulativeExcel { OrgCompanySeq = cl.First().OrgCompanySeq, CompanyName = cl.First().CompanyName }).ToList();
+    var pn = excelCom.Where(w => w.Diff == Define.DIFF.GetKey("계획")).ToList();
+    var pm = excelCom.Where(w => w.Diff == Define.DIFF.GetKey("실적")).ToList();
+
+
+    string fileName = companyName + "_" + year + "_" + mm + "_CashFlow";
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+<style>
+    .mytable {
+        border-collapse: collapse;
+    }
+
+        .mytable th, .mytable td {
+            border: 1px solid black;
+        }
+
+    .buLevel {
+        background-color: #f2f2f2;
+    }
+
+        .buLevel th, .buLevel td {
+            background-color: #f2f2f2;
+        }
+
+    .ComLevel {
+        background-color: #fff2cc;
+    }
+
+        .ComLevel th, .ComLevel td {
+            background-color: #fff2cc;
+        }
+
+    .UniLevel {
+        background-color: #d0cece;
+    }
+
+        .UniLevel th, .UniLevel td {
+            background-color: #d0cece;
+        }
+
+    .GrpLevel {
+        background-color: #bdd7ee;
+    }
+
+        .GrpLevel th, .GrpLevel td {
+            background-color: #bdd7ee;
+        }
+
+    .MsoNTwo {
+        mso-number-format: \#\,\#\#0\
+    }
+
+    .MsoNTwoPer {
+        mso-number-format: \#\,\#\#0\.00
+    }
+
+    .MsoNOne {
+        mso-number-format: \#\,\#\#0\.00
+    }
+
+    .MsoNOnePer {
+        mso-number-format: \#\,\#\#0\.00%
+    }
+</style>
+
+<h3>@(year)년 Cash Flow 관리지표(@(mm)월 누계)</h3>
+<br />
+<table>
+    <tr>
+        <th style="text-align:right" colspan="@(1 + (gp.Count() * 3))">(단위 : 억원)</th>
+    </tr>
+</table>
+<table class="mytable" border="1">
+    <thead>
+        <tr class="buLevel">
+            <th rowspan="2">구분</th>
+            @foreach (var item in gp)
+            {
+                <th colspan="3">@(item.CompanyName)</th>
+            }            
+        </tr>
+        <tr class="buLevel">
+            @foreach (var item in gp)
+            {
+                <th>계획</th>
+                <th>실적</th>
+                <th>차이</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in gp)
+        {
+            decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Ebitda;
+            decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Ebitda;
+            <tr>
+                <th class="ComLevel">세후EBITDA</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().WcSum;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().WcSum;
+            <tr>
+                <th class="ComLevel">W/C 변동</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Etc;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Etc;
+            <tr>
+                <th class="ComLevel">영업활동 기타</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().NetCapexSum;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().NetCapexSum;
+            <tr>
+                <th class="ComLevel">Net CAPEX</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().FinancialCost;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().FinancialCost;
+            <tr>
+                <th class="ComLevel">순금융비용</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Fcf2;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Fcf2;
+            <tr>
+                <th class="ComLevel">FCF</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().FinancialSum;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().FinancialSum;
+            <tr>
+                <th class="ComLevel">재무활동</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().CashSum;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().CashSum;
+            <tr>
+                <th class="ComLevel">현금흐름 계</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().EndingCash;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().EndingCash;
+            <tr>
+                <th class="ComLevel">기말현금</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().CreditLine;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().CreditLine;
+            <tr>
+                <th class="ComLevel">Credit Line</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+            plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().AvailableCash;
+            pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().AvailableCash;
+            <tr>
+                <th class="ComLevel">가용현금</th>
+                <td class="MsoNTwo">@(plValue)</td>
+                <td class="MsoNTwo">@(pmValue)</td>
+                <td class="MsoNTwo">@(pmValue - plValue)</td>
+            </tr>
+        }
+    </tbody>
+</table>

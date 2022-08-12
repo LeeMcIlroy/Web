@@ -1,0 +1,309 @@
+﻿
+@{
+    ViewBag.Title = "ViewGuideOrg";
+}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <title>신동아종합건설</title>
+
+    <link rel="stylesheet" href="~/Contents/SiteMngHome/Common/css/style.css" />
+    <script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/libs/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/libs/TweenMax.min.js"></script>
+</head>
+<body>
+    <div class="wrap">
+        <header id="header">
+            <h1><a href="/">신동아종합건설</a></h1>
+            <div class="header_in">
+                <!--// style_select -->
+                <div class="login_info">
+                    <p><strong class="admin_name">홍길동</strong>님 로그인</p>
+                    <a href="#" class="btn circle blue logout">로그아웃</a>
+                </div>
+                <!--// login_info-->
+            </div>
+            <!--// header_in-->
+        </header>
+        <!--// header-->
+
+        <nav id="lnb">
+            <ul class="depth1">
+                <li>
+                    <a id="menu_dapth_statistics" href="#"><i class="fa fa-bar-chart"></i><span class="fold_hide">통계분석</span></a>
+                    <ul class="depth2">
+                        <li><a href="#">조건별 통계</a></li>
+                        <li><a href="#">기간별 통계</a></li>
+                        <li><a href="#">시간별 전화 통계</a></li>
+                        <li><a href="#">계수기</a></li>
+                        <li><a href="#">설문 통계</a></li>
+                        <li><a href="#">이벤트 통계</a></li>
+                        <li><a href="#">일일업무보고</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a id="menu_dapth_consult" href="#"><i class="fa fa-user"></i><span class="fold_hide">고객관리</span></a>
+                    <ul class="depth2">
+                        <li><a href="#">고객상담관리</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a id="menu_dapth_sms" href="#"><i class="fa fa-envelope-o"></i><span class="fold_hide">문자관리</span></a>
+                    <ul class="depth2">
+                        <li><a href="#">대량문자</a></li>
+                        <li><a href="#">자동문자</a></li>
+                        <li><a href="#">TM 홍보문자</a></li>
+                        <li><a href="#">개별 발송결과</a></li>
+                        <li><a href="#">대량 발송결과</a></li>
+                        <li><a href="#">수신거부</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a id="menu_dapth_setting" href="#"><i class="fa fa-cog"></i><span class="fold_hide">기본설정</span></a>
+                    <ul class="depth2">
+                        <li><a href="#">단지설정</a></li>
+                        <li><a href="#">설문환경 설정</a></li>
+                        <li><a href="#">이벤트 설정</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <a href="#" class="btn_fold"><img src="~/content/siteMngHome/common/img/btn_fold.png" alt="" /></a>
+        </nav>
+        <!--// lnb -->
+
+        <div id="container">
+            <div class="location">
+                <span class="home"><i class="fa fa-home"></i></span>
+                <span>신동아종합건설 관리자</span>
+                <strong>가이드</strong>
+            </div>
+            <!--// location-->
+
+            <div class="con_box">
+                <h3>테이블 (타이틀 세로형 - 1단)</h3>
+                <table class="tbl th_ver">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="15%" />
+                        <col width="/" />
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <th scope="row"><label for="place">M/H 위치</label></th>
+                            <td><input type="text" name="modelHouseAddr" id="locationMH" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="place">대지위치</label></th>
+                            <td><input type="text" name="address" id="place" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--// tbl th_ver -->
+                <div class="description">
+                    <ul>
+                        <li>※ &lt;table&gt;의 class의 .th_ver(타이틀 세로형) / .th_hor(타이틀 가로형)</li>
+                    </ul>
+                </div>
+
+                <h3>테이블 (타이틀 세로형 - 2단)</h3>
+                <table class="tbl th_ver">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="20%" />
+                        <col width="30%" />
+                        <col width="20%" />
+                        <col width="30%" />
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <th scope="row"><label for="codeCustomer">고객센터코드</label></th>
+                            <td><input type="text" name="csCode" id="codeCustomer" /></td>
+                            <th scope="row"><label for="codeXi">자이단지코드</label></th>
+                            <td><input type="text" name="bizCode" id="codeXi" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="numDanzi">단지대표번호</label></th>
+                            <td><input type="text" name="tel" id="numDanzi" /></td>
+                            <th scope="row"><label for="numSMS">SMS대표번호</label></th>
+                            <td><input type="text" name="smsNumber" id="numSMS" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--// tbl th_ver -->
+
+                <h3>테이블 (타이틀 가로형)</h3>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="10%" />
+                        <col width="/" />
+                        <col width="15%" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col">순서</th>
+                            <th scope="col">지역</th>
+                            <th scope="col">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>수원시 영통구</td>
+                            <td><button class="btn small blue">삭제</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--// tbl th_hor -->
+
+                <h3>탭 (탭 스크립트 기능이 필요하면 말씀주세용~!)</h3>
+                <div class="tab cols-5">
+                    <ul>
+                        <li class="on"><a href="#">분양개요</a></li>
+                        <li><a href="#">상담항목</a></li>
+                        <li><a href="#">지역관리</a></li>
+                        <li><a href="#">사용자관리</a></li>
+                        <li><a href="#">일일업무보고 설정</a></li>
+                    </ul>
+                </div>
+                <!--// tab-->
+
+                <h3>폼 요소</h3>
+                <table class="tbl th_ver ta_left">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="15%" />
+                        <col width="/" />
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <th scope="row">input[type=text]</th>
+                            <td><input type="text" name="" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">textarea</th>
+                            <td><textarea></textarea></td>
+                        </tr>
+                        <tr>
+                            <th>radio</th>
+                            <td>
+                                <div class="style_radio">
+                                    <label>
+                                        <input type="radio" name="radio" checked><i></i>
+                                        <strong>체크함</strong>
+                                    </label>
+                                </div>
+                                <div class="style_radio">
+                                    <label>
+                                        <input type="radio" name="radio"><i></i>
+                                        <strong>체크안함</strong>
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>checkbox</th>
+                            <td>
+                                <div class="style_check"><label><input type="checkbox" name="" value=""><i></i> <strong>텍스트 있음</strong></label></div>
+                                <div class="style_check no_txt">
+                                    <!-- 체크박스만 있는 경우 -->
+                                    <label><input type="checkbox" id="event_seq" name="eventSeq" value="42"><i></i></label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>selectbox</th>
+                            <td>
+                                <div class="style_select" style="width:30%;">
+                                    <label>
+                                        <span></span>
+                                        <select name="isUse">
+                                            <option value="Y">사용</option>
+                                            <option value="N">중지</option>
+                                        </select>
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>input[type=file]</th>
+                            <td>
+                                <div class="style_file" style="width:60%;">
+                                    <label>
+                                        <span></span>
+                                        <input type="file" name="uploadMms">
+                                        <button type="button">파일찾기</button>
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>datepicker</th>
+                            <td>
+                                <span class="datepicker">
+                                    <input type="text" id="end_date" style="width:30%;" />
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>datepickerTime</th>
+                            <td>
+                                <span class="datepicker">
+                                    <input type="text" id="start_date" style="width:30%;" />
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!--// tbl th_ver -->
+
+                <h3>버튼</h3>
+                <button class="btn gray">기본</button>
+                <button class="btn small gray">기본(짧은 것)</button>
+                <button class="btn long gray">기본(긴 것)</button>
+                <button class="btn gray circle">기본(동글)</button><br /><br />
+                <button class="btn blue">파랑</button>
+                <button class="btn gray">회색</button>
+                <button class="btn green">초록</button><br /><br />
+                <button class="btn full_blue">파랑</button>
+                <button class="btn full_gray">회색</button>
+                <button class="btn full_green">초록</button>
+            </div>
+        </div>
+        <!--// container-->
+
+        <footer id="footer"></footer>
+        <!--// footer-->
+
+        <div id="mask"></div>
+        <!--//mask-->
+    </div>
+    <!--// wrap-->
+
+    <script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/front.js"></script>
+    <script type="text/javascript" src="~/Contents/SiteMngHome/Common/js/libs/jquery-ui.js"></script>          <!-- datepicker 사용을 위해 넣어주세요!-->
+    <script type="text/javascript">
+$(function(){
+    MYAPP.common.init();
+
+    // selectbox
+    MYAPP.form.styleSelect($(".style_select select"));
+
+    // file
+    MYAPP.form.styleFile($(".style_file input[type=file]"));
+
+    // datepicker
+    MYAPP.form.datePicker("#end_date");
+
+    // datepickerTime
+    MYAPP.form.datePickerTime("#start_date");
+});
+    </script>
+</body>
+</html>
+

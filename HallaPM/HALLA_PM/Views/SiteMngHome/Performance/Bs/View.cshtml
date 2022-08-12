@@ -1,0 +1,682 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    string excel = Model.excel;
+
+    PmBs pmBs = Model.pmBs;
+    OrgCompany orgCompany = Model.orgCompany;
+
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    PmBsBsheet pmBsBsheet = Model.pmBsBsheet;
+    PlanYearBsBsheet planYearBsSheet = Model.planYearBsSheet;
+    PmBsRoic pmBsRoic = Model.pmBsRoic;
+    PlanYearBsRoic planYearBsRoic = Model.planYearBsRoic;
+
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    PmBsBsheet uploadedPmBsBsheet = Model.uploadedPmBsBsheet;
+    PmBsRoic uploadedPmBsRoic = Model.uploadedPmBsRoic;
+    PmBsWCapital uploadedPmBsWCapital = Model.uploadedPmBsWCapital;
+
+    PmBsBsheet currentPmBsBsheet = Model.currentPmBsBsheet;
+    PmBsRoic currentPmBsRoic = Model.currentPmBsRoic;
+    PmBsWCapital currentPmBsWCapital = Model.currentPmBsWCapital;
+    PmBsWCapitalReg currentPmBsWCapitalReg = Model.currentPmBsWCapitalReg;
+
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    PlanYearBsWCapitalReg planYearBsWCapitalReg = Model.planYearBsWCapitalReg;
+    PmBsWCapitalReg pmBsWCapitalReg = Model.pmBsWCapitalReg;
+    PmBsSummary pmBsSummary = new PmBsSummary();
+    PmBsSummary prevPmBsSummary = new PmBsSummary();
+    if (currentPmBsWCapitalReg != null && currentPmBsWCapitalReg.PmBsSeq > 0)
+    {
+        pmBsSummary = Model.pmBsSummary;
+        prevPmBsSummary = Model.prevPmBsSummary;
+    }
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>BS</strong>
+    </div>
+
+    <form name="editForm" id="editForm" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" id="Seq" value="@pmBs.Seq" />
+        <input type="hidden" name="PmBsSeq" id="PmBsSeq" value="@pmBs.Seq" />
+        <input type="hidden" name="OrgCompanySeq" id="OrgCompanySeq" value="@orgCompany.Seq" />
+        <input type="hidden" name="RegistStatus" id="RegistStatus" value="@pmBs.RegistStatus" />
+        <input type="hidden" name="isEdit" id="isEdit" value="Y" />
+        <div class="con_box search">
+            <h3 class="mt0">BS 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@pmBs.BsYear 년 &nbsp;&nbsp; @pmBs.Monthly 월</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">회사</th>
+                        <td class="align_left_right mt0">
+                            @orgCompany.UnionName > @orgCompany.CompanyName
+                            <p class="right">[@Define.REGIST_STATUS.GetValue(pmBs.RegistStatus)]</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <h3>B/Sheet</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="3">구분</th>
+                        <th scope="col">총자산<br />(유동자산)</th>
+                        <th scope="col">총부채<br />(유동부채)</th>
+                        <th scope="col">총자본</th>
+                        <th scope="col">현금</th>
+                        <th scope="col">차입금</th>
+                        <th scope="col">부채비율</th>
+                        <th scope="col">유동비율</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">@(Convert.ToInt32(pmBs.BsYear) - 1)년</th>
+                        <th scope="row" colspan="2">실적</th>
+                        <td>@(pmBsBsheet.Assets > 0 ? String.Format("{0:#,###}", pmBsBsheet.Assets) : "0")<br />(@(pmBsBsheet.CurrentAssets > 0 ? String.Format("{0:#,###}", pmBsBsheet.CurrentAssets) : "0"))</td>
+                        <td>@(pmBsBsheet.Liabilities > 0 ? String.Format("{0:#,###}", pmBsBsheet.Liabilities) : "0")<br />(@(pmBsBsheet.CurrentLiabilities > 0 ? String.Format("{0:#,###}", pmBsBsheet.CurrentLiabilities) : "0"))</td>
+                        <td>@(pmBsBsheet.Capital > 0 ? String.Format("{0:#,###}", pmBsBsheet.Capital) : "0")</td>
+                        <td>@(pmBsBsheet.Cash > 0 ? String.Format("{0:#,###}", pmBsBsheet.Cash) : "0")</td>
+                        <td>@(pmBsBsheet.Loan > 0 ? String.Format("{0:#,###}", pmBsBsheet.Loan) : "0")</td>
+                        <td>@(pmBsBsheet.LiabilitiesRate > 0 ? String.Format("{0:#,###}", pmBsBsheet.LiabilitiesRate) : "0")%</td>
+                        <td>@(pmBsBsheet.CurrentRate > 0 ? String.Format("{0:#,###}", pmBsBsheet.CurrentRate) : "0")%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">@pmBs.BsYear</th>
+                        <th scope="row" rowspan="4">[@pmBs.Monthly 월]</th>
+                        <th scope="row">계획</th>
+                        <td>@(planYearBsSheet.Assets > 0 ? String.Format("{0:#,###}", planYearBsSheet.Assets) : "0")<br />(@(planYearBsSheet.CurrentAssets > 0 ? String.Format("{0:#,###}", planYearBsSheet.CurrentAssets) : "0"))</td>
+                        <td>@(planYearBsSheet.Liabilities > 0 ? String.Format("{0:#,###}", planYearBsSheet.Liabilities) : "0")<br />(@(planYearBsSheet.CurrentLiabilities > 0 ? String.Format("{0:#,###}", planYearBsSheet.CurrentLiabilities) : "0"))</td>
+                        <td>@(planYearBsSheet.Capital > 0 ? String.Format("{0:#,###}", planYearBsSheet.Capital) : "0")</td>
+                        <td>@(planYearBsSheet.Cash > 0 ? String.Format("{0:#,###}", planYearBsSheet.Cash) : "0")</td>
+                        <td>@(planYearBsSheet.Loan > 0 ? String.Format("{0:#,###}", planYearBsSheet.Loan) : "0")</td>
+                        @*<td>@(planYearBsSheet.LiabilitiesRate > 0 ? String.Format("{0:#,###}", planYearBsSheet.LiabilitiesRate) : "0")%</td>*@
+                        <td>@(WebUtil.NumberRound(planYearBsSheet.Liabilities, planYearBsSheet.Capital, 100, 2))%</td>
+                        @*<td>@(planYearBsSheet.CurrentRate > 0 ? String.Format("{0:#,###}", planYearBsSheet.CurrentRate) : "0")%</td>*@
+                        <td>@(WebUtil.NumberRound(planYearBsSheet.CurrentAssets, planYearBsSheet.CurrentLiabilities, 100, 2))%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">실적</th>
+                        <td>@(excel == "N" ? currentPmBsBsheet.Assets : uploadedPmBsBsheet.Assets)<br /><br />@(excel == "N" ? currentPmBsBsheet.Assets : uploadedPmBsBsheet.CurrentAssets)</td>
+                        <td>@(excel == "N" ? currentPmBsBsheet.Liabilities : uploadedPmBsBsheet.Liabilities)<br /><br />@(excel == "N" ? currentPmBsBsheet.CurrentLiabilities : uploadedPmBsBsheet.CurrentLiabilities)</td>
+                        <td>@(excel == "N" ? currentPmBsBsheet.Capital : uploadedPmBsBsheet.Capital)<br /><br /><input type="text" name="" style="visibility:hidden;" /></td>
+                        <td>@(excel == "N" ? currentPmBsBsheet.Cash : uploadedPmBsBsheet.Cash)<br /><br /><input type="text" name="" style="visibility:hidden;" /></td>
+                        <td>@(excel == "N" ? currentPmBsBsheet.Loan : uploadedPmBsBsheet.Loan)<br /><br /><input type="text" name="" style="visibility:hidden;" /></td>
+                        <td class="bg_blue">
+                            @if (excel.Equals("Y"))
+                            {
+                                <p>@uploadedPmBsBsheet.LiabilitiesRate %</p>
+                            }
+                            else
+                            {
+                                // 부채비율 = 총부채 / 총자본 * 100 [ 실적은 부채비율을 저장하지 않아서 계산합니다.
+                                @*<p>@currentPmBsBsheet.LiabilitiesRate %</p>*@
+                                <p>@WebUtil.NumberRound(currentPmBsBsheet.Liabilities, currentPmBsBsheet.Capital, 100, 2) %</p>
+                            }
+                        </td>
+                        <td class="bg_blue">
+                            @if (excel.Equals("Y"))
+                            {
+                                <p>@uploadedPmBsBsheet.CurrentRate %</p>
+                            }
+                            else
+                            {
+                                <p>@currentPmBsBsheet.CurrentRate %</p>
+                            }
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">계획대비</th>
+                        @if (excel.Equals("Y"))
+                        {
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Assets - planYearBsSheet.Assets)<br />(@(uploadedPmBsBsheet.CurrentAssets - planYearBsSheet.CurrentAssets))</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Liabilities - planYearBsSheet.Liabilities)<br />(@(uploadedPmBsBsheet.CurrentLiabilities - planYearBsSheet.CurrentLiabilities))</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Capital - planYearBsSheet.Capital)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Cash - planYearBsSheet.Cash)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Loan - planYearBsSheet.Loan)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.LiabilitiesRate - planYearBsSheet.LiabilitiesRate)%</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.CurrentRate - planYearBsSheet.CurrentRate)%</td>
+                        }
+                        else
+                        {
+                            <td class="bg_blue">@(currentPmBsBsheet.Assets - planYearBsSheet.Assets)<br />(@(currentPmBsBsheet.CurrentAssets - planYearBsSheet.CurrentAssets))</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.Liabilities - planYearBsSheet.Liabilities)<br />(@(currentPmBsBsheet.CurrentLiabilities - planYearBsSheet.CurrentLiabilities))</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.Capital - planYearBsSheet.Capital)</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.Cash - planYearBsSheet.Cash)</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.Loan - planYearBsSheet.Loan)</td>
+                            @**계획대비 수정*@
+                            <td class="bg_blue">@(WebUtil.NumberRound(currentPmBsBsheet.Liabilities, currentPmBsBsheet.Capital, 100, 2) - planYearBsSheet.LiabilitiesRate)%</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.CurrentRate - planYearBsSheet.CurrentRate)%</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th scope="row">전년대비</th>
+                        @if (excel.Equals("Y"))
+                        {
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Assets - pmBsBsheet.Assets)<br />(@(uploadedPmBsBsheet.CurrentAssets - pmBsBsheet.CurrentAssets))</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Liabilities - pmBsBsheet.Liabilities)<br />(@(uploadedPmBsBsheet.CurrentLiabilities - pmBsBsheet.CurrentLiabilities))</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Capital - pmBsBsheet.Capital)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Cash - pmBsBsheet.Cash)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.Loan - pmBsBsheet.Loan)</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.LiabilitiesRate - pmBsBsheet.LiabilitiesRate)%</td>
+                            <td class="bg_blue">@(uploadedPmBsBsheet.CurrentRate - pmBsBsheet.CurrentRate)%</td>
+                        }
+                        else
+                        {
+                            <td class="bg_blue">@(currentPmBsBsheet.Assets - pmBsBsheet.Assets)<br />(@(currentPmBsBsheet.CurrentAssets - pmBsBsheet.CurrentAssets))</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.Liabilities - pmBsBsheet.Liabilities)<br />(@(currentPmBsBsheet.CurrentLiabilities - pmBsBsheet.CurrentLiabilities))</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.Capital - pmBsBsheet.Capital)</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.Cash - pmBsBsheet.Cash)</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.Loan - pmBsBsheet.Loan)</td>
+                            @**계획대비 수정*@
+                            <td class="bg_blue">@(WebUtil.NumberRound(currentPmBsBsheet.Liabilities, currentPmBsBsheet.Capital, 100, 2) - pmBsBsheet.LiabilitiesRate)%</td>
+                            <td class="bg_blue">@(currentPmBsBsheet.CurrentRate - pmBsBsheet.CurrentRate)%</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <h3>ROIC</h3>
+            <p class="caption"><span>(단위 : 억원,%)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="3">구분</th>
+                        <th scope="col">세후 영업이익</th>
+                        <th scope="col">투하자본</th>
+                        <th scope="col">ROIC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">@(Convert.ToInt32(pmBs.BsYear) - 1)년</th>
+                        <th scope="row" colspan="2">실적</th>
+                        <td>@(pmBsRoic.AfterTaxOperationProfit > 0 ? String.Format("{0:#,###}", pmBsRoic.AfterTaxOperationProfit) : "0")</td>
+                        <td>@(pmBsRoic.PainInCapital > 0 ? String.Format("{0:#,###}", pmBsRoic.PainInCapital) : "0")</td>
+                        <td>@(pmBsRoic.Roic > 0 ? String.Format("{0:#,###}", pmBsRoic.Roic) : "0")%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">@pmBs.BsYear</th>
+                        <th scope="row" rowspan="4">[@pmBs.Monthly 월]</th>
+                        <th scope="row">계획</th>
+                        <td>@(planYearBsRoic.AfterTaxOperationProfit > 0 ? String.Format("{0:#,###}", planYearBsRoic.AfterTaxOperationProfit) : "0")</td>
+                        <td>@(planYearBsRoic.PainInCapital > 0 ? String.Format("{0:#,###}", planYearBsRoic.PainInCapital) : "0")</td>
+                        <td>@(planYearBsRoic.Roic > 0 ? String.Format("{0:#,###}", planYearBsRoic.Roic) : "0")%</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">실적</th>
+                        <td>@(excel == "N" ? currentPmBsRoic.AfterTaxOperationProfit : uploadedPmBsRoic.AfterTaxOperationProfit)</td>
+                        <td>@(excel == "N" ? currentPmBsRoic.PainInCapital : uploadedPmBsRoic.PainInCapital)</td>
+                        <td class="bg_blue">
+                            @if (excel.Equals("Y"))
+                            {
+                                <p>@uploadedPmBsRoic.Roic %</p>
+                            }
+                            else
+                            {
+                                <p>@currentPmBsRoic.Roic %</p>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">계획대비</th>
+                        @if (excel.Equals("Y"))
+                        {
+                            <td class="bg_blue">@(uploadedPmBsRoic.AfterTaxOperationProfit - planYearBsRoic.AfterTaxOperationProfit)</td>
+                            <td class="bg_blue">@(uploadedPmBsRoic.PainInCapital - planYearBsRoic.PainInCapital)</td>
+                            <td class="bg_blue">@(uploadedPmBsRoic.Roic - planYearBsRoic.Roic)%</td>
+                        }
+                        else
+                        {
+                            <td class="bg_blue">@(currentPmBsRoic.AfterTaxOperationProfit - planYearBsRoic.AfterTaxOperationProfit)</td>
+                            <td class="bg_blue">@(currentPmBsRoic.PainInCapital - planYearBsRoic.PainInCapital)</td>
+                            <td class="bg_blue">@(currentPmBsRoic.Roic - planYearBsRoic.Roic)%</td>
+                        }
+                    </tr>
+                    <tr>
+                        <th scope="row">전년대비</th>
+                        @if (excel.Equals("Y"))
+                        {
+                            <td class="bg_blue">@(uploadedPmBsRoic.AfterTaxOperationProfit - pmBsRoic.AfterTaxOperationProfit)</td>
+                            <td class="bg_blue">@(uploadedPmBsRoic.PainInCapital - pmBsRoic.PainInCapital)</td>
+                            <td class="bg_blue">@(uploadedPmBsRoic.Roic - pmBsRoic.Roic)%</td>
+
+                        }
+                        else
+                        {
+                            <td class="bg_blue">@(currentPmBsRoic.AfterTaxOperationProfit - pmBsRoic.AfterTaxOperationProfit)</td>
+                            <td class="bg_blue">@(currentPmBsRoic.PainInCapital - pmBsRoic.PainInCapital)</td>
+                            <td class="bg_blue">@(currentPmBsRoic.Roic - pmBsRoic.Roic)%</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <h3>W/Capital</h3>
+            <p class="caption"><span>(단위 : 억원)</span></p>
+            <table class="tbl th_ver">
+                <caption></caption>
+                <colgroup>
+                    <col width="12%" />
+                    <col width="22%" />
+                    <col width="12%" />
+                    <col width="21%" />
+                    <col width="12%" />
+                    <col width="21%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">연간 매출액</th>
+                        <td>@(excel == "N" ? currentPmBsWCapital.AnnualSales : uploadedPmBsWCapital.AnnualSales)</td>
+                        <th scope="row">연간매출원가(AP)</th>
+                        <td>@(excel == "N" ? currentPmBsWCapital.AnnualSalesCost : uploadedPmBsWCapital.AnnualSalesCost)</td>
+                        <th scope="row">연간매출원가(Inv)</th>
+                        <td>@(excel == "N" ? currentPmBsWCapital.InventoryCost : uploadedPmBsWCapital.InventoryCost)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <!-- 
+            <div class="btn_area">
+                <a href="javascript:onWrite(document.editForm);" class="btn full_green">매출액 등록</a>
+            </div>
+            -->
+             <!--//btn_area-->
+
+
+
+            <table class="tbl th_hor mt40" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="7%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="3">구분</th>
+                        <th scope="col">A/R</th>
+                        <th scope="col">AR T/O Days</th>
+                        <th scope="col">A/P </th>
+                        <th scope="col">AP T/O Days</th>
+                        <th scope="col">Inventory</th>
+                        <th scope="col">Inventory T/O Days</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">@(Convert.ToInt32(pmBs.BsYear) - 1)년</th>
+                        <th scope="row" colspan="2">실적</th>
+                        <td>@(pmBsWCapitalReg.Ar > 0 ? String.Format("{0:#,###}", pmBsWCapitalReg.Ar) : "0")</td>
+                        <td>@(pmBsWCapitalReg.ArToDays > 0 ? String.Format("{0:#,###}", pmBsWCapitalReg.ArToDays) : "0")</td>
+                        <td>@(pmBsWCapitalReg.Ap > 0 ? String.Format("{0:#,###}", pmBsWCapitalReg.Ap) : "0")</td>
+                        <td>@(pmBsWCapitalReg.ApToDays > 0 ? String.Format("{0:#,###}", pmBsWCapitalReg.ApToDays) : "0")</td>
+                        <td>@(pmBsWCapitalReg.Inventory > 0 ? String.Format("{0:#,###}", pmBsWCapitalReg.Inventory) : "0")</td>
+                        <td>@(pmBsWCapitalReg.InventoryToDays > 0 ? String.Format("{0:#,###}", pmBsWCapitalReg.InventoryToDays) : "0")</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" rowspan="4">@pmBs.BsYear</th>
+                        <th scope="row" rowspan="4">[@pmBs.Monthly 월]</th>
+                        <th scope="row">계획</th>
+                        <td>@(planYearBsWCapitalReg.Ar > 0 ? String.Format("{0:#,###}", planYearBsWCapitalReg.Ar) : "0")</td>
+                        <td>@(planYearBsWCapitalReg.ArToDays > 0 ? String.Format("{0:#,###}", planYearBsWCapitalReg.ArToDays) : "0")</td>
+                        <td>@(planYearBsWCapitalReg.Ap > 0 ? String.Format("{0:#,###}", planYearBsWCapitalReg.Ap) : "0")</td>
+                        <td>@(planYearBsWCapitalReg.ApToDays > 0 ? String.Format("{0:#,###}", planYearBsWCapitalReg.ApToDays) : "0")</td>
+                        <td>@(planYearBsWCapitalReg.Inventory > 0 ? String.Format("{0:#,###}", planYearBsWCapitalReg.Inventory) : "0")</td>
+                        <td>@(planYearBsWCapitalReg.InventoryToDays > 0 ? String.Format("{0:#,###}", planYearBsWCapitalReg.InventoryToDays) : "0")</td>
+                    </tr>
+                    <tr>
+                        @{
+                            var baseAnnualSales = (excel == "N" ? currentPmBsWCapital.AnnualSales : uploadedPmBsWCapital.AnnualSales);
+                            var baseAnnualSalesCost = (excel == "N" ? currentPmBsWCapital.AnnualSalesCost : uploadedPmBsWCapital.AnnualSalesCost);
+                            var baseInventoryCost = (excel == "N" ? currentPmBsWCapital.InventoryCost : uploadedPmBsWCapital.InventoryCost);
+                        }
+                        <th scope="row">실적</th>
+                        <td>@currentPmBsWCapitalReg.Ar</td>
+                        <td class="bg_blue">
+                            @{
+                                decimal arToDays = 0;
+                                if (currentPmBsWCapitalReg.Ar > 0 && baseAnnualSales > 0)
+                                {
+                                    arToDays = Math.Round((currentPmBsWCapitalReg.Ar / baseAnnualSales) * 365, 2, MidpointRounding.AwayFromZero);
+                                }
+                            }
+                            <p>@arToDays</p>
+                        </td>
+                        <td>@currentPmBsWCapitalReg.Ap</td>
+                        <td class="bg_blue">
+                            @{
+                                decimal apToDays = 0;
+                                if (currentPmBsWCapitalReg.Ap > 0 && baseAnnualSalesCost > 0)
+                                {
+                                    apToDays = Math.Round((currentPmBsWCapitalReg.Ap / baseAnnualSalesCost) * 365, 2, MidpointRounding.AwayFromZero);
+                                }
+                            }
+                            <p>@apToDays</p>
+                        </td>
+                        <td>@currentPmBsWCapitalReg.Inventory</td>
+                        <td class="bg_blue">
+                            @{
+                                decimal inventoryToDays = 0;
+                                if (currentPmBsWCapitalReg.Inventory > 0 && baseInventoryCost > 0)
+                                {
+                                    inventoryToDays = @Math.Round((currentPmBsWCapitalReg.Inventory / baseInventoryCost) * 365, 2, MidpointRounding.AwayFromZero);
+                                }
+                            }
+                            <p>@inventoryToDays</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">계획대비</th>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.Ar - planYearBsWCapitalReg.Ar)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.ArToDays - arToDays)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.Ap - planYearBsWCapitalReg.Ap)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.ApToDays - apToDays)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.Inventory - planYearBsWCapitalReg.Inventory)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.InventoryToDays - inventoryToDays)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">전년대비</th>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.Ar - pmBsWCapitalReg.Ar)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.ArToDays - arToDays)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.Ap - pmBsWCapitalReg.Ap)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.ApToDays - apToDays)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.Inventory - pmBsWCapitalReg.Inventory)</td>
+                        <td class="bg_blue">@(currentPmBsWCapitalReg.InventoryToDays - inventoryToDays)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 
+            <div class="btn_area bd_btm">
+                <a href="#" class="btn full_green">초기화</a>
+                <a href="javascript:onCalculate(document.editForm);" class="btn full_green">계산하기</a>
+            </div>
+            -->
+
+            @if (pmBsSummary != null && pmBsSummary.PmBsSeq > 0)
+            {
+                <h3>[@pmBs.Monthly 월] BS 관리지표 (누계)</h3>
+                <p class="caption"><span>(단위 : 억원,%)</span></p>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup>
+                        <col width="7%" />
+                        <col width="10%" />
+                        <col width="/" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="2" rowspan="3">구분</th>
+                            <th scope="col">@(Convert.ToInt32(pmBs.BsYear) - 1)년</th>
+                            <th scope="col" colspan="4">@pmBs.BsYear 년</th>
+                        </tr>
+                        <tr>
+                            <th scope="col">기말</th>
+                            <th scope="col" colspan="4">@pmBs.Monthly 월 누계</th>
+                        </tr>
+                        <tr>
+                            <th scope="col">실적</th>
+                            <th scope="col">계획</th>
+                            <th scope="col">실적</th>
+                            <th scope="col">계획대비</th>
+                            <th scope="col">전년대비</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" rowspan="6">B/S</th>
+                            <th scope="row">총자산</th>
+                            <td>@prevPmBsSummary.Assets</td>
+                            <td>@planYearBsSheet.Assets</td>
+                            <td>@pmBsSummary.Assets</td>
+                            <td class="bg_blue">@(planYearBsSheet.Assets - pmBsSummary.Assets)</td>
+                            <td class="bg_blue">@(prevPmBsSummary.Assets - pmBsSummary.Assets)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">총부채</th>
+                            <td>@prevPmBsSummary.Liabilities</td>
+                            <td>@planYearBsSheet.Liabilities</td>
+                            <td>@pmBsSummary.Liabilities</td>
+                            <td class="bg_blue">@(planYearBsSheet.Liabilities - pmBsSummary.Liabilities)</td>
+                            <td class="bg_blue">@(prevPmBsSummary.Liabilities - pmBsSummary.Liabilities)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">총자본</th>
+                            <td>@prevPmBsSummary.Capital</td>
+                            <td>@planYearBsSheet.Capital</td>
+                            <td>@pmBsSummary.Capital</td>
+                            <td class="bg_blue">@(planYearBsSheet.Capital - pmBsSummary.Capital)</td>
+                            <td class="bg_blue">@(prevPmBsSummary.Capital - pmBsSummary.Capital)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">현금</th>
+                            <td>@prevPmBsSummary.Cash</td>
+                            <td>@planYearBsSheet.Cash</td>
+                            <td>@pmBsSummary.Cash</td>
+                            <td class="bg_blue">@(planYearBsSheet.Cash - pmBsSummary.Cash)</td>
+                            <td class="bg_blue">@(prevPmBsSummary.Cash - pmBsSummary.Cash)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">차입금</th>
+                            <td>@prevPmBsSummary.Loan</td>
+                            <td>@planYearBsSheet.Loan</td>
+                            <td>@pmBsSummary.Loan</td>
+                            <td class="bg_blue">@(planYearBsSheet.Loan - pmBsSummary.Loan)</td>
+                            <td class="bg_blue">@(prevPmBsSummary.Loan - pmBsSummary.Loan)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">부채비율</th>
+                            <td>@prevPmBsSummary.LiabilitiesRate%</td>
+                            <td>@planYearBsSheet.LiabilitiesRate%</td>
+                            <td class="bg_blue">@pmBsSummary.LiabilitiesRate%</td>
+                            <td class="bg_blue">@(planYearBsSheet.LiabilitiesRate - pmBsSummary.LiabilitiesRate)%</td>
+                            <td class="bg_blue">@(prevPmBsSummary.LiabilitiesRate - pmBsSummary.LiabilitiesRate)%</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="3">ROIC</th>
+                            <th scope="row">세후 영업이익</th>
+                            <td>@pmBsRoic.AfterTaxOperationProfit</td>
+                            <td>@planYearBsRoic.AfterTaxOperationProfit</td>
+                            <td>@pmBsSummary.AfterTaxOperationProfit</td>
+                            <td class="bg_blue">@(planYearBsRoic.AfterTaxOperationProfit - pmBsSummary.AfterTaxOperationProfit)</td>
+                            <td class="bg_blue">@(pmBsRoic.AfterTaxOperationProfit - pmBsSummary.AfterTaxOperationProfit)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">투하자본</th>
+                            <td>@pmBsRoic.PainInCapital</td>
+                            <td>@planYearBsRoic.PainInCapital</td>
+                            <td>@pmBsSummary.PainInCapital</td>
+                            <td class="bg_blue">@(planYearBsRoic.PainInCapital - pmBsSummary.PainInCapital)</td>
+                            <td class="bg_blue">@(pmBsRoic.PainInCapital - pmBsSummary.PainInCapital)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">ROIC</th>
+                            <td>@pmBsRoic.Roic%</td>
+                            <td>@planYearBsRoic.Roic%</td>
+                            <td class="bg_blue">@pmBsSummary.Roic%</td>
+                            <td class="bg_blue">@(planYearBsRoic.Roic - pmBsSummary.Roic)%</td>
+                            <td class="bg_blue">@(pmBsRoic.Roic - pmBsSummary.Roic)%</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" rowspan="6">W/C</th>
+                            <th scope="row">A/R</th>
+                            <td>@pmBsWCapitalReg.Ar</td>
+                            <td>@planYearBsWCapitalReg.Ar</td>
+                            <td>@pmBsSummary.Ar</td>
+                            <td class="bg_blue">@(planYearBsWCapitalReg.Ar - pmBsSummary.Ar)</td>
+                            <td class="bg_blue">@(pmBsWCapitalReg.Ar - pmBsSummary.Ar)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">T/O days</th>
+                            <td>@pmBsWCapitalReg.ArToDays</td>
+                            <td>@planYearBsWCapitalReg.ArToDays</td>
+                            <td>@pmBsSummary.ArToDays</td>
+                            <td class="bg_blue">@(planYearBsWCapitalReg.ArToDays - pmBsSummary.ArToDays)</td>
+                            <td class="bg_blue">@(pmBsWCapitalReg.ArToDays - pmBsSummary.ArToDays)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">A/P</th>
+                            <td>@pmBsWCapitalReg.Ap</td>
+                            <td>@planYearBsWCapitalReg.Ap</td>
+                            <td>@pmBsSummary.Ap</td>
+                            <td class="bg_blue">@(planYearBsWCapitalReg.Ap - pmBsSummary.Ap)</td>
+                            <td class="bg_blue">@(pmBsWCapitalReg.Ap - pmBsSummary.Ap)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">T/O days</th>
+                            <td>@pmBsWCapitalReg.ApToDays</td>
+                            <td>@planYearBsWCapitalReg.ApToDays</td>
+                            <td>@pmBsSummary.ApToDays</td>
+                            <td class="bg_blue">@(planYearBsWCapitalReg.ApToDays - pmBsSummary.ApToDays)</td>
+                            <td class="bg_blue">@(pmBsWCapitalReg.ApToDays - pmBsSummary.ApToDays)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Inventory</th>
+                            <td>@pmBsWCapitalReg.Inventory</td>
+                            <td>@planYearBsWCapitalReg.Inventory</td>
+                            <td>@pmBsSummary.Inventory</td>
+                            <td class="bg_blue">@(planYearBsWCapitalReg.Inventory - pmBsSummary.Inventory)</td>
+                            <td class="bg_blue">@(pmBsWCapitalReg.Inventory - pmBsSummary.Inventory)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">T/O days</th>
+                            <td>@pmBsWCapitalReg.InventoryToDays</td>
+                            <td>@planYearBsWCapitalReg.InventoryToDays</td>
+                            <td>@pmBsSummary.InventoryToDays</td>
+                            <td class="bg_blue">@(planYearBsWCapitalReg.InventoryToDays - pmBsSummary.InventoryToDays)</td>
+                            <td class="bg_blue">@(pmBsWCapitalReg.InventoryToDays - pmBsSummary.InventoryToDays)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 
+                <div class="btn_area align_left_right">
+                    <a href="/SiteMngHome/Performance/Bs/List" class="btn full_green left">목록</a>
+                    <a href="javascript:onLastWrite(document.editForm);" class="btn full_green">저장하기</a>
+                </div>
+                -->
+            }
+        </div>
+        <!--// con_box -->
+
+    </form>
+
+</div><!--//container-->
+<script>
+    function uploadExcel(form) {
+
+        var excelFilePath = form.ExcelFile.value;
+        var excelFileExt = excelFilePath.slice(excelFilePath.indexOf(".") + 1).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert("업로드 할 파일을 첨부하세요.");
+            return;
+        }
+
+        if (excelFileExt != "xls" && excelFileExt != "xlsx") {
+            alert("엑셀 파일만 업로드 가능합니다.");
+            form.ExcelFile.value = "";
+            return;
+        }
+
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Bs/Excel";
+        form.submit();
+    }
+
+    function onWrite(form) {
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Bs/WriteAction";
+        form.submit();
+    }
+
+    function onCalculate(form) {
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Bs/CalculateAction";
+        form.submit();
+    }
+
+    function onLastWrite(form) {
+        form.method = "post";
+        form.action = "/SiteMngHome/Performance/Bs/lastWriteAction";
+        form.submit();
+    }
+
+    function onConfirm(form) {
+        // 2 : 저장
+        // 3 : 승인 대기
+        // 4 : 1차 반려
+        // 5 : 2차 반려
+        // 6 : 1차 승인
+        // 7 : 최종 승인
+        var RegistStatus = $("#RegistStatus").val();
+        var confirmMsg = "";
+        if (RegistStatus == '2') {
+            // 저장 -> 승인대기
+            confirmMsg = "승인을 요청하시겠습니까?";
+        } else if (RegistStatus == '3') {
+            // 승인 대기 -> 1차 승인
+            confirmMsg = "1차 승인을 처리 하시겠습니까?";
+        } else if (RegistStatus == '6') {
+            // 1차 승인 -> 최종 승인
+            confirmMsg = "최종 승인을 처리 하시겠습니까?";
+        }
+
+        if (confirm(confirmMsg)) {
+            form.method = "post";
+            form.action = "/SiteMngHome/Performance/Bs/ConfirmAction";
+            form.submit();
+        }
+    }
+</script>

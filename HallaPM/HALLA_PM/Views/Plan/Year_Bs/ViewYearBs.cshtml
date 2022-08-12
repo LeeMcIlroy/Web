@@ -1,0 +1,740 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+    PlanGroup chk = Model.chk;
+
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvUnion = Model.lvUnion;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    // 2019.02.18 만도는 안 보이게 변경
+    lvCompany = lvCompany.Where(w => w.id != "3").ToList();
+
+    List<PmBsSummaryExp> lastPmC = Model.lastPmC;
+    List<PlanYearBsSummaryExp> thisPnC = Model.thisPnC;
+
+    List<PlanYearBsSummaryExp> UList = thisPnC.GroupBy(g => new { g.OrgUnionSeq })
+        .Select(cl => new PlanYearBsSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName
+        }).ToList();
+
+    List<PmBsSummaryExp> lastPmU = lastPmC.GroupBy(g => new { g.OrgUnionSeq, g.BsYear })
+        .Select(cl => new PmBsSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            BsYear = cl.First().BsYear,
+            Assets = cl.Sum(c => c.Assets),
+            Liabilities = cl.Sum(c => c.Liabilities),
+            Capital = cl.Sum(c => c.Capital),
+            Cash = cl.Sum(c => c.Cash),
+            Loan = cl.Sum(c => c.Loan),
+            LiabilitiesRate = cl.Sum(c => c.LiabilitiesRate), // 부채비율 계산해야한다.
+            AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+            PainInCapital = cl.Sum(c => c.PainInCapital),
+            Roic = cl.Sum(c => c.Roic), // Roic 계산해야함
+            Ar = cl.Sum(c => c.Ar),
+            ArToDays = cl.Sum(c => c.ArToDays),
+            Ap = cl.Sum(c => c.Ap),
+            ApToDays = cl.Sum(c => c.ApToDays),
+            Inventory = cl.Sum(c => c.Inventory),
+            InventoryToDays = cl.Sum(c => c.InventoryToDays)
+        }).ToList();
+
+    List<PlanYearBsSummaryExp> thisPnU = thisPnC.GroupBy(g => new { g.OrgUnionSeq, g.YearlyYear })
+        .Select(cl => new PlanYearBsSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Assets = cl.Sum(c => c.Assets),
+            Liabilities = cl.Sum(c => c.Liabilities),
+            Capital = cl.Sum(c => c.Capital),
+            Cash = cl.Sum(c => c.Cash),
+            Loan = cl.Sum(c => c.Loan),
+            LiabilitiesRate = cl.Sum(c => c.LiabilitiesRate),
+            AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+            PainInCapital = cl.Sum(c => c.PainInCapital),
+            Roic = cl.Sum(c => c.Roic),
+            Ar = cl.Sum(c => c.Ar),
+            ArToDays = cl.Sum(c => c.ArToDays),
+            Ap = cl.Sum(c => c.Ap),
+            ApToDays = cl.Sum(c => c.ApToDays),
+            Inventory = cl.Sum(c => c.Inventory),
+            InventoryToDays = cl.Sum(c => c.InventoryToDays)
+        }).ToList();
+
+    List<PmBsSummaryExp> lastPmG = lastPmC.GroupBy(g => new { g.BsYear })
+        .Select(cl => new PmBsSummaryExp
+        {
+            BsYear = cl.First().BsYear,
+            Assets = cl.Sum(c => c.Assets),
+            Liabilities = cl.Sum(c => c.Liabilities),
+            Capital = cl.Sum(c => c.Capital),
+            Cash = cl.Sum(c => c.Cash),
+            Loan = cl.Sum(c => c.Loan),
+            LiabilitiesRate = cl.Sum(c => c.LiabilitiesRate), // 부채비율 계산해야한다.
+            AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+            PainInCapital = cl.Sum(c => c.PainInCapital),
+            Roic = cl.Sum(c => c.Roic), // Roic 계산해야함
+            Ar = cl.Sum(c => c.Ar),
+            ArToDays = cl.Sum(c => c.ArToDays),
+            Ap = cl.Sum(c => c.Ap),
+            ApToDays = cl.Sum(c => c.ApToDays),
+            Inventory = cl.Sum(c => c.Inventory),
+            InventoryToDays = cl.Sum(c => c.InventoryToDays)
+        }).ToList();
+
+    List<PlanYearBsSummaryExp> thisPnG = thisPnC.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearBsSummaryExp
+        {
+            YearlyYear = cl.First().YearlyYear,
+            Assets = cl.Sum(c => c.Assets),
+            Liabilities = cl.Sum(c => c.Liabilities),
+            Capital = cl.Sum(c => c.Capital),
+            Cash = cl.Sum(c => c.Cash),
+            Loan = cl.Sum(c => c.Loan),
+            LiabilitiesRate = cl.Sum(c => c.LiabilitiesRate),
+            AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+            PainInCapital = cl.Sum(c => c.PainInCapital),
+            Roic = cl.Sum(c => c.Roic),
+            Ar = cl.Sum(c => c.Ar),
+            ArToDays = cl.Sum(c => c.ArToDays),
+            Ap = cl.Sum(c => c.Ap),
+            ApToDays = cl.Sum(c => c.ApToDays),
+            Inventory = cl.Sum(c => c.Inventory),
+            InventoryToDays = cl.Sum(c => c.InventoryToDays)
+        }).ToList();
+
+    // 작년도 계획이 없거나 회사와 Bu의 데이터가 없어 짤릴 경우를 대비
+    int lastStartYear = Convert.ToInt32(chk.PlanYear) - 1;
+    int thisStartYear = Convert.ToInt32(chk.PlanYear);
+
+    //string fileName = chk.PlanYear + "년_중기_BS";
+    //Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    //Response.ContentType = "application/vnd.ms-excel";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DownExcelPlanYearBs</title>
+    <style>
+        .mytable {
+            table-layout: fixed;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+            .mytable th, .mytable td {
+                padding: 5px 20px;
+                border: 1px solid black;
+                white-space: nowrap;
+                text-align: center;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format: \#\,\#\#0\.00;
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\.00;
+        }
+
+        .MsoNOne {
+            mso-number-format: \#\,\#\#0\.00;
+        }
+
+        .MsoNOnePer {
+            mso-number-format: \#\,\#\#0\.00%;
+        }
+    </style>
+</head>
+<body>
+    <h3>@(chk.PlanYear)년 중기 B/S</h3>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="15" style="text-align:right">(단위: 억원,%)</td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="mytable">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="2" colspan="4">구분</th>
+                <th colspan="6">@(chk.PlanYear)년 중기계획</th>
+                <th colspan="5">전년대비</th>
+            </tr>
+            <tr class="buLevel">
+                @for (int i = lastStartYear; i < lastStartYear + 6; i++)
+                {
+                    <th>@(i)년</th>
+                }
+                @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                {
+                    <th>@(i)년</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in UList)
+        {
+            var CList = thisPnC.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).GroupBy(g => new { g.OrgCompanySeq })
+                    .Select(cl => new PlanYearBsSummaryExp
+                    {
+                        UnionName = cl.First().UnionName,
+                        OrgCompanySeq = cl.First().OrgCompanySeq,
+                        CompanyName = cl.First().CompanyName
+                    }).ToList();
+            // 권한 테이블과 조인하여 권한있는 회사만 찾기
+
+            var CListJoin = from c in CList
+                            join cj in lvCompany on c.OrgCompanySeq equals Convert.ToInt32(cj.id)
+                            select new PmPalBusinessExp
+                            {
+                                UnionName = c.UnionName,
+                                OrgCompanySeq = c.OrgCompanySeq,
+                                CompanyName = c.CompanyName
+                            };
+            foreach (var item2 in CListJoin)
+            {
+                var comPm = lastPmC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).FirstOrDefault();
+                if (comPm == null) { comPm = new PmBsSummaryExp(); }
+                var comPn = thisPnC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).ToList();
+                var pn_0 = comPn.Where(w => w.YearlyYear == thisStartYear.ToString()).FirstOrDefault();
+                var pn_1 = comPn.Where(w => w.YearlyYear == (thisStartYear + 1).ToString()).FirstOrDefault();
+                var pn_2 = comPn.Where(w => w.YearlyYear == (thisStartYear + 2).ToString()).FirstOrDefault();
+                var pn_3 = comPn.Where(w => w.YearlyYear == (thisStartYear + 3).ToString()).FirstOrDefault();
+                var pn_4 = comPn.Where(w => w.YearlyYear == (thisStartYear + 4).ToString()).FirstOrDefault();
+                if (pn_0 == null) { pn_0 = new PlanYearBsSummaryExp(); }
+                if (pn_1 == null) { pn_1 = new PlanYearBsSummaryExp(); }
+                if (pn_2 == null) { pn_2 = new PlanYearBsSummaryExp(); }
+                if (pn_3 == null) { pn_3 = new PlanYearBsSummaryExp(); }
+                if (pn_4 == null) { pn_4 = new PlanYearBsSummaryExp(); }
+
+            <tr>
+                <th class="ComLevel" rowspan="15">@(item2.UnionName)</th>
+                <th class="ComLevel" rowspan="15">@(item2.CompanyName)</th>
+                <th class="ComLevel" rowspan="6">BS</th>
+                <th class="ComLevel">총자산</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Assets, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Assets - comPm.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Assets - pn_0.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Assets - pn_1.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Assets - pn_2.Assets, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Assets - pn_3.Assets, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">총부채</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Liabilities, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Liabilities - comPm.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Liabilities - pn_0.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Liabilities - pn_1.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Liabilities - pn_2.Liabilities, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Liabilities - pn_3.Liabilities, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">총자본</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Capital, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Capital - comPm.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Capital - pn_0.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Capital - pn_1.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Capital - pn_2.Capital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Capital - pn_3.Capital, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">현금</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Cash, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Cash - comPm.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Cash - pn_0.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Cash - pn_1.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Cash - pn_2.Cash, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Cash - pn_3.Cash, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">차입금</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Loan, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Loan - comPm.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Loan - pn_0.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Loan - pn_1.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Loan - pn_2.Loan, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Loan - pn_3.Loan, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">부채비율</th>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(comPm.LiabilitiesRate = WebUtil.NumberRound(comPm.Liabilities, comPm.Capital, 100, 2), 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_0.LiabilitiesRate, 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_1.LiabilitiesRate, 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_2.LiabilitiesRate, 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_3.LiabilitiesRate, 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_4.LiabilitiesRate, 0))%</td>
+
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_0.LiabilitiesRate - comPm.LiabilitiesRate, 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_1.LiabilitiesRate - pn_0.LiabilitiesRate, 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_2.LiabilitiesRate - pn_1.LiabilitiesRate, 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_3.LiabilitiesRate - pn_2.LiabilitiesRate, 0))%</td>
+                <td class="MsoNTwoPer">@(WebUtil.NCommaRound(pn_4.LiabilitiesRate - pn_3.LiabilitiesRate, 0))%</td>
+            </tr>
+            <tr>
+                <th class="ComLevel" rowspan="3">ROIC</th>
+                <th class="ComLevel">세후영업이익</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.AfterTaxOperationProfit, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.AfterTaxOperationProfit - comPm.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.AfterTaxOperationProfit - pn_0.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.AfterTaxOperationProfit - pn_1.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.AfterTaxOperationProfit - pn_2.AfterTaxOperationProfit, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.AfterTaxOperationProfit - pn_3.AfterTaxOperationProfit, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">투하자본</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.PainInCapital, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.PainInCapital - comPm.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.PainInCapital - pn_0.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.PainInCapital - pn_1.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.PainInCapital - pn_2.PainInCapital, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.PainInCapital - pn_3.PainInCapital, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">ROIC</th>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(comPm.Roic = WebUtil.NumberRound(comPm.AfterTaxOperationProfit, comPm.PainInCapital, 100, 2), 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_0.Roic, 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_1.Roic, 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_2.Roic, 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_3.Roic, 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_4.Roic, 1))%</td>
+
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_0.Roic - comPm.Roic, 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_1.Roic - pn_0.Roic, 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_2.Roic - pn_1.Roic, 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_3.Roic - pn_2.Roic, 1))%</td>
+                <td class="MsoNOnePer">@(WebUtil.NCommaRound(pn_4.Roic - pn_3.Roic, 1))%</td>
+            </tr>
+            <tr>
+                <th class="ComLevel" rowspan="6">W/C</th>
+                <th class="ComLevel">A/R</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Ar, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Ar - comPm.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Ar - pn_0.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Ar - pn_1.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Ar - pn_2.Ar, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Ar - pn_3.Ar, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O Days</th>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(comPm.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_0.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_1.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_2.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_3.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_4.ArToDays, 1))</td>
+
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_0.ArToDays - comPm.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_1.ArToDays - pn_0.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_2.ArToDays - pn_1.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_3.ArToDays - pn_2.ArToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_4.ArToDays - pn_3.ArToDays, 1))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">A/P</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Ap, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Ap - comPm.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Ap - pn_0.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Ap - pn_1.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Ap - pn_2.Ap, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Ap - pn_3.Ap, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O Days</th>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(comPm.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_0.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_1.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_2.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_3.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_4.ApToDays, 1))</td>
+
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_0.ApToDays - comPm.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_1.ApToDays - pn_0.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_2.ApToDays - pn_1.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_3.ApToDays - pn_2.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_4.ApToDays - pn_3.ApToDays, 1))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">Inv</th>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(comPm.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Inventory, 0))</td>
+
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_0.Inventory - comPm.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_1.Inventory - pn_0.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_2.Inventory - pn_1.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_3.Inventory - pn_2.Inventory, 0))</td>
+                <td class="MsoNTwo">@(WebUtil.NCommaRound(pn_4.Inventory - pn_3.Inventory, 0))</td>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O Days</th>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(comPm.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_0.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_1.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_2.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_3.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_4.ApToDays, 1))</td>
+
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_0.ApToDays - comPm.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_1.ApToDays - pn_0.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_2.ApToDays - pn_1.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_3.ApToDays - pn_2.ApToDays, 1))</td>
+                <td class="MsoNOne">@(WebUtil.NCommaRound(pn_4.ApToDays - pn_3.ApToDays, 1))</td>
+            </tr>
+                }
+            }
+            <!--그룹-->
+            @if (lvGroup.Count() > 0)
+            {
+
+                var grpPm = lastPmG.FirstOrDefault();
+                if (grpPm == null) { grpPm = new PmBsSummaryExp(); }
+                var grpPn = thisPnG.ToList();
+                var grpPn_0 = grpPn.Where(w => w.YearlyYear == thisStartYear.ToString()).FirstOrDefault();
+                var grpPn_1 = grpPn.Where(w => w.YearlyYear == (thisStartYear + 1).ToString()).FirstOrDefault();
+                var grpPn_2 = grpPn.Where(w => w.YearlyYear == (thisStartYear + 2).ToString()).FirstOrDefault();
+                var grpPn_3 = grpPn.Where(w => w.YearlyYear == (thisStartYear + 3).ToString()).FirstOrDefault();
+                var grpPn_4 = grpPn.Where(w => w.YearlyYear == (thisStartYear + 4).ToString()).FirstOrDefault();
+                if (grpPn_0 == null) { grpPn_0 = new PlanYearBsSummaryExp(); }
+                if (grpPn_1 == null) { grpPn_1 = new PlanYearBsSummaryExp(); }
+                if (grpPn_2 == null) { grpPn_2 = new PlanYearBsSummaryExp(); }
+                if (grpPn_3 == null) { grpPn_3 = new PlanYearBsSummaryExp(); }
+                if (grpPn_4 == null) { grpPn_4 = new PlanYearBsSummaryExp(); }
+
+                <tr class="GrpLevel">
+                    <th rowspan="15" colspan="2">그룹</th>
+                    <th rowspan="6">BS</th>
+                    <th>총자산</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Assets, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Assets - grpPm.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Assets - grpPn_0.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Assets - grpPn_1.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Assets - grpPn_2.Assets, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Assets - grpPn_3.Assets, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>총부채</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Liabilities, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Liabilities - grpPm.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Liabilities - grpPn_0.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Liabilities - grpPn_1.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Liabilities - grpPn_2.Liabilities, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Liabilities - grpPn_3.Liabilities, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>총자본</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Capital, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Capital - grpPm.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Capital - grpPn_0.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Capital - grpPn_1.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Capital - grpPn_2.Capital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Capital - grpPn_3.Capital, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>현금</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Cash, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Cash - grpPm.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Cash - grpPn_0.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Cash - grpPn_1.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Cash - grpPn_2.Cash, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Cash - grpPn_3.Cash, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>차입금</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Loan, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Loan - grpPm.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Loan - grpPn_0.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Loan - grpPn_1.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Loan - grpPn_2.Loan, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Loan - grpPn_3.Loan, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>부채비율</th>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPm.LiabilitiesRate = WebUtil.NumberRound(grpPm.Liabilities, grpPm.Capital, 100, 2), 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_0.LiabilitiesRate, 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_1.LiabilitiesRate, 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_2.LiabilitiesRate, 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_3.LiabilitiesRate, 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_4.LiabilitiesRate, 0))%</td>
+
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_0.LiabilitiesRate - grpPm.LiabilitiesRate, 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_1.LiabilitiesRate - grpPn_0.LiabilitiesRate, 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_2.LiabilitiesRate - grpPn_1.LiabilitiesRate, 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_3.LiabilitiesRate - grpPn_2.LiabilitiesRate, 0))%</td>
+                    <td class="MsoNTwoPer">@(WebUtil.NCommaRound(grpPn_4.LiabilitiesRate - grpPn_3.LiabilitiesRate, 0))%</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th rowspan="3">ROIC</th>
+                    <th>세후영업이익</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.AfterTaxOperationProfit, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.AfterTaxOperationProfit - grpPm.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.AfterTaxOperationProfit - grpPn_0.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.AfterTaxOperationProfit - grpPn_1.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.AfterTaxOperationProfit - grpPn_2.AfterTaxOperationProfit, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.AfterTaxOperationProfit - grpPn_3.AfterTaxOperationProfit, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>투하자본</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.PainInCapital, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.PainInCapital - grpPm.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.PainInCapital - grpPn_0.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.PainInCapital - grpPn_1.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.PainInCapital - grpPn_2.PainInCapital, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.PainInCapital - grpPn_3.PainInCapital, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>ROIC</th>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPm.Roic = WebUtil.NumberRound(grpPm.AfterTaxOperationProfit, grpPm.PainInCapital, 100, 2), 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_0.Roic, 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_1.Roic, 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_2.Roic, 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_3.Roic, 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_4.Roic, 1))%</td>
+
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_0.Roic - grpPm.Roic, 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_1.Roic - grpPn_0.Roic, 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_2.Roic - grpPn_1.Roic, 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_3.Roic - grpPn_2.Roic, 1))%</td>
+                    <td class="MsoNOnePer">@(WebUtil.NCommaRound(grpPn_4.Roic - grpPn_3.Roic, 1))%</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th rowspan="6">W/C</th>
+                    <th>A/R</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Ar, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Ar - grpPm.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Ar - grpPn_0.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Ar - grpPn_1.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Ar - grpPn_2.Ar, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Ar - grpPn_3.Ar, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th class="ComLevel">T/O Days</th>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPm.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_0.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_1.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_2.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_3.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_4.ArToDays, 1))</td>
+
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_0.ArToDays - grpPm.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_1.ArToDays - grpPn_0.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_2.ArToDays - grpPn_1.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_3.ArToDays - grpPn_2.ArToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_4.ArToDays - grpPn_3.ArToDays, 1))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th class="ComLevel">A/P</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Ap, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Ap - grpPm.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Ap - grpPn_0.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Ap - grpPn_1.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Ap - grpPn_2.Ap, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Ap - grpPn_3.Ap, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th class="ComLevel">T/O Days</th>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPm.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_0.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_1.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_2.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_3.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_4.ApToDays, 1))</td>
+
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_0.ApToDays - grpPm.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_1.ApToDays - grpPn_0.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_2.ApToDays - grpPn_1.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_3.ApToDays - grpPn_2.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_4.ApToDays - grpPn_3.ApToDays, 1))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th class="ComLevel">Inv</th>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPm.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Inventory, 0))</td>
+
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_0.Inventory - grpPm.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_1.Inventory - grpPn_0.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_2.Inventory - grpPn_1.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_3.Inventory - grpPn_2.Inventory, 0))</td>
+                    <td class="MsoNTwo">@(WebUtil.NCommaRound(grpPn_4.Inventory - grpPn_3.Inventory, 0))</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th class="ComLevel">T/O Days</th>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPm.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_0.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_1.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_2.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_3.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_4.ApToDays, 1))</td>
+
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_0.ApToDays - grpPm.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_1.ApToDays - grpPn_0.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_2.ApToDays - grpPn_1.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_3.ApToDays - grpPn_2.ApToDays, 1))</td>
+                    <td class="MsoNOne">@(WebUtil.NCommaRound(grpPn_4.ApToDays - grpPn_3.ApToDays, 1))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div>
+        <button type="button" onclick="javascript: window.close();">닫기</button>
+    </div>
+</body>
+</html>

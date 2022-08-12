@@ -1,0 +1,198 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    List<BusinessPerformance> list = Model.list;
+    int totalCount = Model.totalCount;
+
+    string thisYear = "";
+    string thisMonth = "";
+
+    Search search = ViewBag.Search;
+    if (!string.IsNullOrEmpty(search.searchText))
+    {
+        thisYear = search.searchText;
+    }
+    if (!string.IsNullOrEmpty(search.searchText1))
+    {
+        thisMonth = search.searchText1;
+    }
+
+
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>안내/알림관리</span>
+        <strong>경영실적 관리</strong>
+    </div>
+
+    <form name="frmMain" method="post">
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="seq" value="" />
+
+        <div class="con_box search">
+            <h3 class="mt0">경영실적 관리</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 실적보고 시스템의 경영실적 PDF파일을 업로드 할 수 있습니다.<br/>
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 그룹데이터만 등록 가능합니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box search">
+            <div class="bg_gray">
+                <div class="style_select" style="width:20%;">
+                    <label>
+                        <span></span>
+                        <select name="searchType">
+                            <option value="0">구분</option>
+                            @foreach (var item in Define.BUSINESS_PERFORMANCE_TYPE)
+                            {
+                                <option value="@item.Key" @(ViewBag.Search.searchType == item.Key ? "selected" : "")>@item.Value</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+
+                <div class="style_select" style="width:20%;">
+                    <label>
+                        <span></span>
+                        <select name="searchText">
+                            <option value="">년도</option>
+                            @for (int i = 2000; i <= DateTime.Now.Year + 10; i++)
+                            {
+                                <option value="@i" @(thisYear == i.ToString() ? "selected" : "")>@i</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:20%;">
+                    <label>
+                        <span></span>
+                        <select name="searchText1">
+                            <option value="">월</option>
+                            @{
+                                string mon = "";
+                            }
+                            @for (int i = 1; i < 13; i++)
+                            {
+                                if (i < 10)
+                                {
+                                    mon = "0" + i;
+                                }
+                                else
+                                {
+                                    mon = i.ToString();
+                                }
+                                <option value="@mon" @(thisMonth == mon ? "selected" : "")>@mon</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <a href="javascript: onSearch(document.frmMain);" class="btn small full_green" style="width:9%;">검색</a>
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <p class="tblinfo">총 <strong class="number">@totalCount</strong>개의 글이 있습니다.</p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="5%" />
+                    <col width="10%" />
+                    <col width="/" />
+                    <col width="10%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>
+                        <th scope="col">구분</th>
+                        <th scope="col">제목</th>
+                        <th scope="col">등록일</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @if (list.Count() > 0)
+                    {
+                        foreach (var item in list)
+                        {
+                            <tr>
+                                <td>@item.rowNum</td>
+                                <td>@Define.BUSINESS_PERFORMANCE_TYPE.GetValue(item.businessType)</td>
+                                <td class="ta_left"><a href="/SiteMngHome/MngInfo/Performance/Edit?seq=@item.seq">@item.title</a></td>
+                                @*<td class="ta_left"><a href="javascript:;" onclick="onView(document.frmMain, @item.seq)">@item.title</a></td>*@
+                                <td>@item.regDate</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4">등록된 경영실적 정보가 없습니다.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="paging">
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.FirstPageIndex)" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.PrevPageIndex)" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                <span>
+                    @for (int i = ViewBag.Search.StartPageIndex; i <= ViewBag.Search.EndPageIndex; i++)
+                    {
+                        if (ViewBag.Search.PageIndex == i)
+                        {
+                            <strong>@i</strong>
+                        }
+                        else
+                        {
+                            <a href="#" onclick="onPaging(document.frmMain, @i)">@i</a>
+                        }
+                    }
+                </span>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.NextPageIndex)" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.FinalPageIndex)" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+            </div>
+            <!--// con_box-->
+
+            <div class="btn_area">
+                <a href="javascript:;" onclick="onWrite(document.frmMain)" class="btn full_green">등록</a>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+
+<script>
+    function onSearch(form) {
+        form.action = "/SiteMngHome/MngInfo/Performance/List";
+        form.method = "POST";
+        form.submit();
+    }
+
+    function onWrite(form) {
+        
+        form.action = "/SiteMngHome/MngInfo/Performance/write";
+        form.method = "POST";
+        form.submit();
+
+    }
+
+    function onView(form, seq) {
+        form.seq.value = seq;
+        
+        form.action = "/SiteMngHome/MngInfo/Performance/Edit";
+        form.method = "POST";
+        form.submit();
+
+    }
+</script>
+

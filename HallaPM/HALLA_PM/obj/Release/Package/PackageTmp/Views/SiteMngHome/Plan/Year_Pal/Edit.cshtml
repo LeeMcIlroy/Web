@@ -1,0 +1,726 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PlanYearPal planYearPal = Model.planYearPal;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<OrgBusiness> orgBusinessList = Model.orgBusinessList;
+    List<PlanYearPalBusiness> pBusinessList = Model.pBusinessList;
+    List<PlanYearPalBusinessSummary> pYearList = Model.pYearList;
+
+    List<PmPalBusiness> lastYearBusinessPm = Model.lastYearBusinessPm;
+    List<PlanYearPalBusiness> lastYearBusinessPn = Model.lastYearBusinessPn;
+    List<PlanYearPalBusiness> thisYearBusinessPn = Model.thisYearBusinessPn;
+
+    List<PmPalSummary> lastYearSumPm = Model.lastYearSumPm;
+    List<PlanYearPalBusinessSummary> lastYearSumPn = Model.lastYearSumPn;
+    List<PlanYearPalBusinessSummary> thisYearSumPn = Model.thisYearSumPn;
+
+    int thisYear = Convert.ToInt32(planYearPal.YearPalYear);
+    int lastYear = thisYear + 4;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>사업계획</span>
+        <strong>손익중기계획</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="Seq" value="@planYearPal.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@planYearPal.OrgCompanySeq" />
+        <input type="hidden" name="RegistStatus" value="@planYearPal.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+
+        <div class="con_box search">
+            <h3 class="mt0">손익중기계획 작성</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@(planYearPal.YearPalYear)</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = planYearPal.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+
+            <h3>손익중기계획 손익 요약</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup></colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" rowspan="2">구분</th>
+                        <th scope="col" colspan="4">전년(@(Convert.ToInt32(planYearPal.YearPalYear) - 1)년)</th>
+                        <th scope="col" colspan="4">@(planYearPal.YearPalYear)년</th>
+                        <th scope="col" colspan="4">차이</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">Sales</th>
+                        <th scope="col">EBIT</th>
+                        <th scope="col">EBIT%</th>
+                        <th scope="col">PBT</th>
+                        <th scope="col">Sales</th>
+                        <th scope="col">EBIT</th>
+                        <th scope="col">EBIT%</th>
+                        <th scope="col">PBT</th>
+                        <th scope="col">Sales</th>
+                        <th scope="col">EBIT</th>
+                        <th scope="col">EBIT%</th>
+                        <th scope="col">PBT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = thisYear - 1; i <= lastYear; i++)
+                    {
+                        PmPalSummary LastSumPm = lastYearSumPm.FirstOrDefault();
+                        PlanYearPalBusinessSummary LastSumPn = lastYearSumPn.Where(w => w.yearlyYear == i.ToString()).FirstOrDefault();
+                        PlanYearPalBusinessSummary ThisSumpn = thisYearSumPn.Where(w => w.yearlyYear == i.ToString()).FirstOrDefault();
+                        PlanYearPalBusinessSummary ThisSumpnL = thisYearSumPn.Where(w => w.yearlyYear == (i - 1).ToString()).FirstOrDefault();
+
+                        if (LastSumPm == null) { LastSumPm = new PmPalSummary(); }
+                        if (LastSumPn == null) { LastSumPn = new PlanYearPalBusinessSummary(); }
+                        if (ThisSumpn == null) { ThisSumpn = new PlanYearPalBusinessSummary(); }
+                        if (ThisSumpnL == null) { ThisSumpnL = new PlanYearPalBusinessSummary(); }
+
+                        if (i == thisYear - 1)
+                        {
+                            <tr>
+                                <th scope="row">@i</th>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.sales, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.ebit, 0))</td>
+                                <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 1), 1))%</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.pbt, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.Sales, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.Ebit, 0))</td>
+                                <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPm.Ebit, LastSumPm.Sales, 100, 1), 1))%</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPm.Pbt, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(LastSumPm.Sales - LastSumPn.sales, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(LastSumPm.Ebit - LastSumPn.ebit, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPm.Ebit, LastSumPm.Sales, 100, 1) - WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 1), 1))%</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(LastSumPm.Pbt - LastSumPn.pbt, 0))</td>
+                            </tr>
+                        }
+                        else if (i == thisYear)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @i
+                                </th>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.sales, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.ebit, 0))</td>
+                                <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 1), 1))%</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.pbt, 0))</td>
+                                <td>@(WebUtil.NCommaRound(ThisSumpn.sales, 0))</td>
+                                <td>@(WebUtil.NCommaRound(ThisSumpn.ebit, 0))</td>
+                                <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisSumpn.ebit, ThisSumpn.sales, 100, 1), 1))%</td>
+                                <td>@(WebUtil.NCommaRound(ThisSumpn.pbt, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.sales - LastSumPn.sales, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.ebit - LastSumPn.ebit, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisSumpn.ebit, ThisSumpn.sales, 100, 1) - WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 1), 1))%</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.pbt - LastSumPn.pbt, 0))</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @i
+                                </th>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.sales, 0))</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.ebit, 0))</td>
+                                <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 1), 1))%</td>
+                                <td>@(WebUtil.NCommaRound(LastSumPn.pbt, 0))</td>
+                                <td>@(WebUtil.NCommaRound(ThisSumpn.sales, 0))</td>
+                                <td>@(WebUtil.NCommaRound(ThisSumpn.ebit, 0))</td>
+                                <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisSumpn.ebit, ThisSumpn.sales, 100, 1), 1))%</td>
+                                <td>@(WebUtil.NCommaRound(ThisSumpn.pbt, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.sales - LastSumPn.sales, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.ebit - LastSumPn.ebit, 0))</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisSumpn.ebit, ThisSumpn.sales, 100, 1) - WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 1), 1))%</td>
+                                <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.pbt - LastSumPn.pbt, 0))</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <br />
+            <hr />
+
+            <!--// tbl th_ver -->
+            @foreach (var item in orgBusinessList)
+            {
+                var qlastYearBusinessPm = lastYearBusinessPm.Where(w => w.OrgBusinessSeq == item.Seq);
+                var qlastYearBusinessPn = lastYearBusinessPn.Where(w => w.OrgBusinessSeq == item.Seq);
+                var qthisYearBusinessPn = thisYearBusinessPn.Where(w => w.OrgBusinessSeq == item.Seq);
+
+                <h3>@item.BusinessName</h3>
+                <p class="caption"><span>(단위 : 억원, %)</span></p>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup></colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" rowspan="2"></th>
+                            <th scope="col" colspan="4">전년(@(Convert.ToInt32(planYearPal.YearPalYear) - 1)년)</th>
+                            <th scope="col" colspan="4">@(planYearPal.YearPalYear)년</th>
+                            <th scope="col" colspan="4">차이</th>
+                        </tr>
+                        <tr>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        @for (int i = thisYear - 1; i <= lastYear; i++)
+                        {
+                            PmPalBusiness LastBusinessPm = qlastYearBusinessPm.FirstOrDefault();
+                            PlanYearPalBusiness LastBusinessPn = qlastYearBusinessPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            PlanYearPalBusiness ThisBusinessPn = qthisYearBusinessPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            PlanYearPalBusiness ThisBusinessPnL = qthisYearBusinessPn.Where(w => w.YearlyYear == (i - 1).ToString()).FirstOrDefault();
+
+                            if (LastBusinessPm == null) { LastBusinessPm = new PmPalBusiness(); }
+                            if (LastBusinessPn == null) { LastBusinessPn = new PlanYearPalBusiness(); }
+                            if (ThisBusinessPn == null) { LastBusinessPn = new PlanYearPalBusiness(); }
+                            if (ThisBusinessPnL == null) { ThisBusinessPnL = new PlanYearPalBusiness(); }
+
+                            if (i == thisYear - 1)
+                            {
+                                <tr>
+                                    <th scope="row">@i</th>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPn.Sales, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPn.Ebit, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastBusinessPn.Ebit, LastBusinessPn.Sales, 100, 2), 2))%</td>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPn.Pbt, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPm.Sales, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPm.Ebit, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastBusinessPm.Ebit, LastBusinessPm.Sales, 100, 2), 2))%</td>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPm.Pbt, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(LastBusinessPm.Sales - LastBusinessPn.Sales, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(LastBusinessPm.Ebit - LastBusinessPn.Ebit, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound((WebUtil.NumberRound(LastBusinessPm.Ebit, LastBusinessPm.Sales, 100, 2) - WebUtil.NumberRound(LastBusinessPn.Ebit, LastBusinessPn.Sales, 100, 2)), 2))%</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(LastBusinessPm.Pbt - LastBusinessPn.Pbt, 2))</td>
+                                </tr>
+                            }
+                            else if (i == thisYear)
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        @i
+                                        <input type="hidden" name="PlanYearPalBusinessSeq" value="@ThisBusinessPn.Seq" />
+                                    </th>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPn.Sales, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPn.Ebit, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastBusinessPn.Ebit, LastBusinessPn.Sales, 100, 2), 2))%</td>
+                                    <td>@(WebUtil.NCommaRound(LastBusinessPn.Pbt, 2))</td>
+                                    <td><input type="text" name="Sales" value="@ThisBusinessPn.Sales" /></td>
+                                    <td><input type="text" name="Ebit" value="@ThisBusinessPn.Ebit" /></td>
+                                    <td>@WebUtil.NCommaRound(WebUtil.NumberRound(ThisBusinessPn.Ebit, ThisBusinessPn.Sales, 100, 2), 2)%</td>
+                                    <td><input type="text" name="Pbt" value="@ThisBusinessPn.Pbt" /></td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisBusinessPn.Sales - LastBusinessPn.Sales, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisBusinessPn.Ebit - LastBusinessPn.Ebit, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisBusinessPn.Ebit, ThisBusinessPn.Sales, 100, 2) - WebUtil.NumberRound(LastBusinessPn.Ebit, LastBusinessPn.Sales, 100, 2), 2))%</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisBusinessPn.Pbt - LastBusinessPn.Pbt, 2))</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                if (i == lastYear)
+                                {
+                                    <tr>
+                                        <th scope="row">
+                                            @i
+                                            <input type="hidden" name="PlanYearPalBusinessSeq" value="@ThisBusinessPn.Seq" />
+                                        </th>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td><input type="text" name="Sales" value="@ThisBusinessPn.Sales" /></td>
+                                        <td><input type="text" name="Ebit" value="@ThisBusinessPn.Ebit" /></td>
+                                        <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisBusinessPn.Ebit, ThisBusinessPn.Sales, 100, 2), 2))%</td>
+                                        <td><input type="text" name="Pbt" value="@ThisBusinessPn.Pbt" /></td>
+                                        <td class="bg_blue">-</td>
+                                        <td class="bg_blue">-</td>
+                                        <td class="bg_blue">-</td>
+                                        <td class="bg_blue">-</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <th scope="row">
+                                            @i
+                                            <input type="hidden" name="PlanYearPalBusinessSeq" value="@ThisBusinessPn.Seq" />
+                                        </th>
+                                        <td>@(WebUtil.NCommaRound(LastBusinessPn.Sales, 2))</td>
+                                        <td>@(WebUtil.NCommaRound(LastBusinessPn.Ebit, 2))</td>
+                                        <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastBusinessPn.Ebit, LastBusinessPn.Sales, 100, 2), 2))%</td>
+                                        <td>@(WebUtil.NCommaRound(LastBusinessPn.Pbt, 2))</td>
+                                        <td><input type="text" name="Sales" value="@ThisBusinessPn.Sales" /></td>
+                                        <td><input type="text" name="Ebit" value="@ThisBusinessPn.Ebit" /></td>
+                                        <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisBusinessPn.Ebit, ThisBusinessPn.Sales, 100, 2), 2))%</td>
+                                        <td><input type="text" name="Pbt" value="@ThisBusinessPn.Pbt" /></td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(ThisBusinessPn.Sales - LastBusinessPn.Sales, 2))</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(ThisBusinessPn.Ebit - LastBusinessPn.Ebit, 2))</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisBusinessPn.Ebit, ThisBusinessPn.Sales, 100, 2) - WebUtil.NumberRound(LastBusinessPn.Ebit, LastBusinessPn.Sales, 100, 2), 2))%</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(ThisBusinessPn.Pbt - LastBusinessPn.Pbt, 2))</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                        @*@foreach (var item2 in query)
+                        {
+                            if (item2.p.YearlyYear == "99")
+                            {
+                                <tr>
+                                    <th scope="row">연간계획</th>
+                                    <td>@item2.p.BeforeSales</td>
+                                    <td>@item2.p.BeforeEbit</td>
+                                    <td>@item2.p.BeforeEbitRate</td>
+                                    <td>@item2.p.BeforePbt</td>
+                                    <td>@item2.p.Sales</td>
+                                    <td>@item2.p.Ebit</td>
+                                    <td class="ta_center">@(item2.p.EbitRate)%</td>
+                                    <td>@(item2.p.Pbt)</td>
+                                    <td>@(item2.p.BeforeSales - item2.p.Sales)</td>
+                                    <td>@(item2.p.BeforeEbit - item2.p.Ebit)</td>
+                                    <td class="ta_center">@(item2.p.BeforeEbitRate - item2.p.EbitRate)%</td>
+                                    <td>@(item2.p.BeforePbt - item2.p.Pbt)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        <input type="hidden" name="PlanYearPalBusinessSeq" value="@item2.p.PlanYearPalBusinessSeq" />
+                                        <label>@(Convert.ToInt32(item2.p.YearlyYear))</label>
+                                    </th>
+                                    <td>@item2.p.BeforeSales</td>
+                                    <td>@item2.p.BeforeEbit</td>
+                                    <td>@item2.p.BeforeEbitRate</td>
+                                    <td>@item2.p.BeforePbt</td>
+                                    <td><input type="text" name="Sales" value="@item2.p.Sales" /></td>
+                                    <td><input type="text" name="Ebit" value="@item2.p.Ebit" /></td>
+                                    <td class="ta_center">@(item2.p.EbitRate)%</td>
+                                    <td><input type="text" name="Pbt" value="@item2.p.Pbt" /></td>
+                                    <td>@(item2.p.BeforeSales - item2.p.Sales)</td>
+                                    <td>@(item2.p.BeforeEbit - item2.p.Ebit)</td>
+                                    <td>@(item2.p.BeforeEbitRate - item2.p.EbitRate)%</td>
+                                    <td>@(item2.p.BeforePbt - item2.p.Pbt)</td>
+                                </tr>
+                            }
+                        }*@
+                    </tfoot>
+                </table>
+            }
+
+            <div class="btn_area bd_btm">
+                <button class="btn full_green" type="button" onclick="onReset();">초기화</button>
+                <button class="btn full_green" type="button" onclick="onCalculationAction();">계산하기</button>
+            </div>
+
+            <h3>손익중기계획 손익 요약</h3>
+                <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                    <caption></caption>
+                    <colgroup></colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" rowspan="2">구분</th>
+                            <th scope="col" colspan="4">전년(@(Convert.ToInt32(planYearPal.YearPalYear) - 1)년)</th>
+                            <th scope="col" colspan="4">@(planYearPal.YearPalYear)년</th>
+                            <th scope="col" colspan="4">차이</th>
+                        </tr>
+                        <tr>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                            <th scope="col">Sales</th>
+                            <th scope="col">EBIT</th>
+                            <th scope="col">EBIT%</th>
+                            <th scope="col">PBT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = thisYear - 1; i <= lastYear; i++)
+                        {
+                            PmPalSummary LastSumPm = lastYearSumPm.FirstOrDefault();
+                            PlanYearPalBusinessSummary LastSumPn = lastYearSumPn.Where(w => w.yearlyYear == i.ToString()).FirstOrDefault();
+                            PlanYearPalBusinessSummary ThisSumpn = thisYearSumPn.Where(w => w.yearlyYear == i.ToString()).FirstOrDefault();
+                            PlanYearPalBusinessSummary ThisSumpnL = thisYearSumPn.Where(w => w.yearlyYear == (i - 1).ToString()).FirstOrDefault();
+
+                            if (LastSumPm == null) { LastSumPm = new PmPalSummary(); }
+                            if (LastSumPn == null) { LastSumPn = new PlanYearPalBusinessSummary(); }
+                            if (ThisSumpn == null) { ThisSumpn = new PlanYearPalBusinessSummary(); }
+                            if (ThisSumpnL == null) { ThisSumpnL = new PlanYearPalBusinessSummary(); }
+
+                            if (i == thisYear - 1)
+                            {
+                                <tr>
+                                    <th scope="row">@i</th>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.sales, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.ebit, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 2), 2))%</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.pbt, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPm.Sales, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPm.Ebit, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPm.Ebit, LastSumPm.Sales, 100, 2), 2))%</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPm.Pbt, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(LastSumPm.Sales - LastSumPn.sales, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(LastSumPm.Ebit - LastSumPn.ebit, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPm.Ebit, LastSumPm.Sales, 100, 2) - WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 2), 2))%</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(LastSumPm.Pbt - LastSumPn.pbt, 2))</td>
+                                </tr>
+                            }
+                            else if (i == thisYear)
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        @i
+                                        <input type="hidden" name="PlanYearPalBusinessSummarySeq" value="@ThisSumpn.Seq" />
+                                    </th>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.sales, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.ebit, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 2), 2))%</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.pbt, 2))</td>
+                                    <td><input type="text" name="MonthSumSales" value="@ThisSumpn.sales" /></td>
+                                    <td><input type="text" name="MonthSumEbit" value="@ThisSumpn.ebit" /></td>
+                                    <td>@WebUtil.NCommaRound(WebUtil.NumberRound(ThisSumpn.ebit, ThisSumpn.sales, 100, 2), 2)%</td>
+                                    <td><input type="text" name="MonthSumPbt" value="@ThisSumpn.pbt" /></td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.sales - LastSumPn.sales, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.ebit - LastSumPn.ebit, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisSumpn.ebit, ThisSumpn.sales, 100, 2) - WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 2), 2))%</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.pbt - LastSumPn.pbt, 2))</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <th scope="row">
+                                        @i
+                                        <input type="hidden" name="PlanYearPalBusinessSummarySeq" value="@ThisSumpn.Seq" />
+                                    </th>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.sales, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.ebit, 2))</td>
+                                    <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 2), 2))%</td>
+                                    <td>@(WebUtil.NCommaRound(LastSumPn.pbt, 2))</td>
+                                    <td><input type="text" name="MonthSumSales" value="@ThisSumpn.sales" /></td>
+                                    <td><input type="text" name="MonthSumEbit" value="@ThisSumpn.ebit" /></td>
+                                    <td>@WebUtil.NCommaRound(WebUtil.NumberRound(ThisSumpn.ebit, ThisSumpn.sales, 100, 2), 2)%</td>
+                                    <td><input type="text" name="MonthSumPbt" value="@ThisSumpn.pbt" /></td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.sales - LastSumPn.sales, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.ebit - LastSumPn.ebit, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(ThisSumpn.ebit, ThisSumpn.sales, 100, 2) - WebUtil.NumberRound(LastSumPn.ebit, LastSumPn.sales, 100, 2), 2))%</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(ThisSumpn.pbt - LastSumPn.pbt, 2))</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                    @*@foreach (var item2 in pYearList)
+                    {
+                        if (item2.yearlyYear == "99")
+                        {
+                            <tfoot>
+                                <tr>
+                                    <th scope="row">연간계획</th>
+                                    <td>@item2.BeforeSales</td>
+                                    <td>@item2.BeforeEbit</td>
+                                    <td>@item2.BeforeEbitRate%</td>
+                                    <td>@item2.BeforePbt</td>
+                                    <td class="bg_blue">@item2.sales</td>
+                                    <td class="bg_blue">@item2.ebit</td>
+                                    <td class="bg_blue">@(item2.ebitRate)%</td>
+                                    <td class="bg_blue">@item2.pbt</td>
+                                    <td class="bg_blue">@(item2.BeforeSales - item2.sales)</td>
+                                    <td class="bg_blue">@(item2.BeforeEbit - item2.ebit)</td>
+                                    <td class="bg_blue">@(item2.BeforeEbitRate - item2.ebitRate)%</td>
+                                    <td class="bg_blue">@(item2.BeforePbt - item2.pbt)</td>
+                                </tr>
+                            </tfoot>
+                        }
+                        else
+                        {
+                            <tbody>
+                                <tr>
+                                    <th scope="row">
+                                        <input type="hidden" name="PlanYearPalBusinessSummarySeq" value="@item2.PlanYearPalBusinessSummarySeq" />
+                                        <label>@(Convert.ToInt32(item2.yearlyYear))년</label>
+                                    </th>
+                                    <td>@item2.BeforeSales</td>
+                                    <td>@item2.BeforeEbit</td>
+                                    <td>@item2.BeforeEbitRate%</td>
+                                    <td>@item2.BeforePbt</td>
+                                    <td><input type="text" name="MonthSumSales" value="@item2.sales" /></td>
+                                    <td><input type="text" name="MonthSumEbit" value="@item2.ebit" /></td>
+                                    <td class="bg_blue">@(item2.ebitRate)%</td>
+                                    <td><input type="text" name="MonthSumPbt" value="@item2.pbt" /></td>
+                                    <td class="bg_blue">@(item2.BeforeSales - item2.sales)</td>
+                                    <td class="bg_blue">@(item2.BeforeEbit - item2.ebit)</td>
+                                    <td class="bg_blue">@(item2.BeforeEbitRate - item2.ebitRate)%</td>
+                                    <td class="bg_blue">@(item2.BeforePbt - item2.pbt)</td>
+                                </tr>
+                            </tbody>
+                        }
+                    }*@
+                    
+                    @*<tbody>
+                        <tr>
+                            <th scope="row">2017년</th>
+                            <td>5,475</td>
+                            <td>234</td>
+                            <td>4.3%</td>
+                            <td>204</td>
+                            <td>5,475</td>
+                            <td>234</td>
+                            <td class="bg_blue">4.3%</td>
+                            <td>204</td>
+                            <td class="bg_blue">5,475</td>
+                            <td class="bg_blue">234</td>
+                            <td class="bg_blue">4.3%</td>
+                            <td class="bg_blue">204</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">2018년</th>
+                            <td>5,475</td>
+                            <td>234</td>
+                            <td>4.3%</td>
+                            <td>204</td>
+                            <td><input type="text" name="" /></td>
+                            <td><input type="text" name="" /></td>
+                            <td class="bg_blue">4.3%</td>
+                            <td><input type="text" name="" /></td>
+                            <td>5,475</td>
+                            <td>234</td>
+                            <td>4.3%</td>
+                            <td>204</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">2019년</th>
+                            <td>5,475</td>
+                            <td>234</td>
+                            <td>4.3%</td>
+                            <td>204</td>
+                            <td><input type="text" name="" /></td>
+                            <td><input type="text" name="" /></td>
+                            <td class="bg_blue">4.3%</td>
+                            <td><input type="text" name="" /></td>
+                            <td>5,475</td>
+                            <td>234</td>
+                            <td>4.3%</td>
+                            <td>204</td>
+                        </tr>
+                    </tbody>*@
+                </table>
+                <div class="btn_area align_left_right">
+                    <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                    <button class="btn full_green" type="button" onclick="onSave();">저장하기</button>
+                </div>
+        </div>
+        <!--// con_box -->
+    </form>
+</div><!--//container-->
+<script>
+    function onCalculationAction() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Sales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ebit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Pbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        if (confirm("@Message.MSG_002_Q")) {
+            f.message.value = "@Message.MSG_002_A";
+            f.action = "Calculation_Action";
+            f.submit();
+        }
+    }
+
+    function onReset() {
+        var f = document.frmMain;
+        if (confirm("@Message.MSG_003_Q")) {
+            f.message.value = "@Message.MSG_003_A";
+            f.action = "Edit";
+            f.submit();
+        }
+    }
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onDownExcel() {
+        var f = document.frmMain;
+        f.action = "Excel_Down2";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+        onRegistStatusChange(afterRegistStatus);
+        //var f = document.frmMain;
+        //f.afterRegistStatus.value = afterRegistStatus;
+        //MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+
+    function onUploadExcel() {
+        var f = document.frmMain;
+        var excelFilePath = $("#ExcelFile").val();
+        var fileLen = excelFilePath.length;
+        var lastDot = excelFilePath.lastIndexOf('.');
+        var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+        var orgCpyName = "@(orgCompanyName.CompanyName)";
+        var excelFileName = excelFilePath.substring(excelFilePath.lastIndexOf('\\') + 1, fileLen).toLowerCase();
+
+        if (excelFileExt == "") {
+            alert('업로드할 파일을 첨부하세요.');
+            return;
+        }
+
+        if (excelFileExt != "xlsx") {
+            alert('엑셀 파일만 업로드 가능합니다.');
+            $("#ExcelFile").val('');
+            return;
+        }
+        if (excelFileName.indexOf('손익중기계획') < 0 || excelFileName.indexOf(orgCpyName.toLowerCase()) < 0) {
+            alert('' + orgCpyName + ' - [손익중기계획] 파일이 아닙니다. \n파일을 확인해주세요');
+            return;
+        }
+
+        var formData = new FormData($("#frmMain")[0]);
+
+        $.ajax({
+            type: "post",
+            //url: "Excel_Upload",
+            url: "Excel_Upload2",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.success) {
+                    alert('업로드되었습니다.');
+                    f.action = "Edit";
+                    f.submit();
+                }
+                else {
+                    $("#ExcelFile").val('');
+                    alert(res.resultMsg);
+                }
+            },
+            error: function (request, status, error) {
+                alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+            }
+        });
+    }
+
+    function onSave() {
+        var f = document.frmMain;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("Sales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Ebit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("Pbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("MonthSumSales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("MonthSumEbit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("MonthSumPbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        // 값확인
+        if (!onCheckMultipleNameDoubleValues("QuarterSumSales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("QuarterSumEbit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("QuarterSumPbt", "Pbt" + "@Message.MSG_001")) return false;
+
+        f.action = "Edit_Action";
+        f.submit();
+    }
+</script>
+

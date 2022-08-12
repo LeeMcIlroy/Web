@@ -1,0 +1,485 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+    List<PmInvestBusiness> pmLastBusYear = Model.pmLastYearBuYear;
+    List<PmInvestBusiness> pmLastBusMon = Model.pmLastYearBuMon;
+    List<PmInvestBusiness> pmLastBusCum = Model.pmLastYearBuCum;
+
+    List<PmInvestSum> pmLastComYear = Model.pmLastYearComYear;
+    List<PmInvestSum> pmLastComMon = Model.pmLastYearComMon;
+    List<PmInvestSum> pmLastComCum = Model.pmLastYearComCum;
+
+    List<PlanYearInvestBusiness> pnThisBusYear = Model.pnThisYearBuYear;
+    List<PlanMonthlyInvestBusinessExp> pnThisBusMon = Model.pnThisYearBuMon;
+    List<PlanMonthlyInvestBusinessExp> pnThisBusCum = Model.pnThisYearBuCum;
+
+    List<PlanYearInvestSummary> pnThisComYear = Model.pnThisYearComYear;
+    List<PlanMonthlyInvestSummaryExp> pnThisComMon = Model.pnThisYearComMon;
+    List<PlanMonthlyInvestSummaryExp> pnThisComCum = Model.pnThisYearComCum;
+
+    List<PmInvestBusiness> pmThisBusMon = Model.pmThisYearBuMon;
+    List<PmInvestBusiness> pmThisBusCum = Model.pmThisYearBuCum;
+
+    List<PmInvestSum> pmThisComMon = Model.pmThisYearComMon;
+    List<PmInvestSum> pmThisComCum = Model.pmThisYearComCum;
+
+
+    string companyName = "ExcelDownBs";
+    string year = "";
+    string mm = "";
+    if (pmThisComMon.Count() > 0)
+    {
+        companyName = pmThisComMon.First().CompanyName;
+        year = pmThisComMon.First().investYear;
+        mm = pmThisComMon.First().Monthly;
+    }
+
+    var groupUnion = pmThisComMon.GroupBy(g => g.OrgUnionSeq)
+        .Select(cl => new PmPalSummaryExp { OrgUnionSeq = cl.First().OrgUnionSeq, UnionName = cl.First().UnionName }).ToList();
+
+    var groupCompany = pmThisComMon.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PmQuarterPalBusinessExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        });
+
+    string fileName = companyName + "_" + year + "_" + mm + "_투자인원";
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+
+    bool isFirst = false;
+}
+<style>
+    .mytable {
+        border-collapse: collapse;
+    }
+
+        .mytable th, .mytable td {
+            border: 1px solid black;
+        }
+
+    .buLevel {
+        background-color: #f2f2f2;
+    }
+
+        .buLevel th, .buLevel td {
+            background-color: #f2f2f2;
+        }
+
+    .ComLevel {
+        background-color: #fff2cc;
+    }
+
+        .ComLevel th, .ComLevel td {
+            background-color: #fff2cc;
+        }
+
+    .UniLevel {
+        background-color: #d0cece;
+    }
+
+        .UniLevel th, .UniLevel td {
+            background-color: #d0cece;
+        }
+
+    .GrpLevel {
+        background-color: #bdd7ee;
+    }
+
+        .GrpLevel th, .GrpLevel td {
+            background-color: #bdd7ee;
+        }
+
+    .MsoNTwo {
+        mso-number-format: \#\,\#\#0\
+    }
+
+    .MsoNTwoPer {
+        mso-number-format: \#\,\#\#0\.0%
+    }
+</style>
+
+<h3>@(year)년 @(mm)월 투자, 인원 요약</h3>
+<br />
+<br />
+<table>
+    <tr>
+        <th style="text-align:right" colspan="16">(단위 : 억원)</th>
+    </tr>
+</table>
+<table class="mytable" border="1">
+    <thead>
+        <tr class="buLevel">
+            <th rowspan="3" colspan="4">구분</th>
+            <th colspan="3">@(Convert.ToInt32(year) - 1)년 실적</th>
+            <th colspan="9">@(year)년</th>
+        </tr>
+        <tr class="buLevel">
+            <th rowspan="2">연간</th>
+            <th colspan="2">@(mm)월</th>
+
+            <th>연간</th>
+            <th colspan="4">@(mm)월</th>
+
+            <th colspan="4">누계</th>
+        </tr>
+        <tr class="buLevel">
+            <th>당월</th>
+            <th>누계</th>
+
+            <th>계획</th>
+
+            <th>계획</th>
+            <th>실적</th>
+            <th>계획대비</th>
+            <th>전년대비</th>
+
+            <th>계획</th>
+            <th>실적</th>
+            <th>계획대비</th>
+            <th>전년대비</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item3 in groupUnion)
+        {
+            foreach (var item in groupCompany.Where(w => w.OrgUnionSeq == item3.OrgUnionSeq).ToList())
+            {
+                var buCount = pmThisBusMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).GroupBy(g => new { g.OrgBusinessSeq }).Count();
+                var groupBusiness = pmThisBusMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).GroupBy(g => g.OrgBusinessSeq)
+                    .Select(cl => new PmInvestBusiness
+                    {
+                        OrgBusinessSeq = cl.First().OrgBusinessSeq,
+                        BusinessName = cl.First().BusinessName
+                    });
+
+                foreach (var item2 in groupBusiness)
+                {
+                    // 전년실적
+                    var pmLastBusYearRow = pmLastBusYear.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                    var pmLastBusMonRow = pmLastBusMon.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                    var pmLastBusCumRow = pmLastBusCum.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                    // 당해계획
+                    var pnThisBusYearRow = pnThisBusYear.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                    var pnThisBusMonRow = pnThisBusMon.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                    var pnThisBusCumRow = pnThisBusCum.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                    // 당해실적
+                    var pmThisBusMonRow = pmThisBusMon.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                    var pmThisBusCumRow = pmThisBusCum.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+
+                    //------------- 투자
+
+                    decimal pmLastBusInvestYear = pmLastBusYearRow == null ? 0 : pmLastBusYearRow.Investment;                            // (전년실적 : 연간)
+                    decimal pmLastBusInvestMon = pmLastBusMonRow == null ? 0 : pmLastBusMonRow.Investment;                                  // (전년실적 : 당월)
+                    decimal pmLastBusInvestCum = pmLastBusCumRow == null ? 0 : pmLastBusCumRow.Investment;                         // (전년실적 : 누계)
+
+                    decimal pnThisBusInvestYear = pnThisBusYearRow == null ? 0 : pnThisBusYearRow.Investment;                                  // (연간 : 계획)
+                    decimal pnThisBusInvestMon = pnThisBusMonRow == null ? 0 : pnThisBusMonRow.Investment;                                  // (당월 : 계획)
+                    decimal pmThisBusInvestMon = pmThisBusMonRow == null ? 0 : pmThisBusMonRow.Investment;                                  // (당월 : 실적)
+                    decimal pmThisBusInvestMonThisPn = pnThisBusInvestMon == 0 ? 0 : Math.Round(pmThisBusInvestMon / pnThisBusInvestMon, 3, MidpointRounding.AwayFromZero);
+                    decimal pmThisBusInvestMonLastPm = pmLastBusInvestMon == 0 ? 0 : Math.Round(pmThisBusInvestMon / pmLastBusInvestMon, 3, MidpointRounding.AwayFromZero);
+
+                    decimal pnThisBusInvestCum = pnThisBusCumRow == null ? 0 : pnThisBusCumRow.Investment;
+                    decimal pmThisBusInvestCum = pmThisBusCumRow == null ? 0 : pmThisBusCumRow.Investment;
+                    decimal pmThisBusInvestCumThisPn = pnThisBusInvestCum == 0 ? 0 : Math.Round(pmThisBusInvestCum / pnThisBusInvestCum, 3, MidpointRounding.AwayFromZero);
+                    decimal pmThisBusInvestCumLastPm = pmLastBusInvestCum == 0 ? 0 : Math.Round(pmThisBusInvestCum / pmLastBusInvestCum, 3, MidpointRounding.AwayFromZero);
+
+                    <tr>
+                        @if (!isFirst)
+                        {
+                            <th class="buLevel" rowspan="@(buCount * 4)">@item.UnionName</th>
+                            <th class="buLevel" rowspan="@(buCount * 4)">@item.CompanyName</th>
+                            <th class="buLevel" rowspan="4">@item2.BusinessName</th>
+                            isFirst = true;
+                        }
+                        else
+                        {
+                            <th class="buLevel" rowspan="4">@item2.BusinessName</th>
+                        }
+                        <th class="buLevel">투자</th>
+                        <th class="MsoNTwo">@(pmLastBusInvestYear)</th>
+                        <th class="MsoNTwo">@(pmLastBusInvestMon)</th>
+                        <th class="MsoNTwo">@(pmLastBusInvestCum)</th>
+
+                        <th class="MsoNTwo">@(pnThisBusInvestYear)</th>
+                        <th class="MsoNTwo">@(pnThisBusInvestMon)</th>
+                        <th class="MsoNTwo">@(pmThisBusInvestMon)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusInvestMonThisPn)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusInvestMonLastPm)</th>
+
+                        <th class="MsoNTwo">@(pnThisBusInvestCum)</th>
+                        <th class="MsoNTwo">@(pmThisBusInvestCum)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusInvestCumThisPn)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusInvestCumLastPm)</th>
+                    </tr>
+
+                    //------------- 인원
+
+                    decimal pmLastBusPersonnelYear = pmLastBusYearRow == null ? 0 : pmLastBusYearRow.Personnel;                            // (전년실적 : 연간)
+                    decimal pmLastBusPersonnelMon = pmLastBusMonRow == null ? 0 : pmLastBusMonRow.Personnel;                                  // (전년실적 : 당월)
+                    decimal pmLastBusPersonnelCum = pmLastBusCumRow == null ? 0 : pmLastBusCumRow.Personnel;                         // (전년실적 : 누계)
+
+                    decimal pnThisBusPersonnelYear = pnThisBusYearRow == null ? 0 : pnThisBusYearRow.Personnel;                                  // (연간 : 계획)
+                    decimal pnThisBusPersonnelMon = pnThisBusMonRow == null ? 0 : pnThisBusMonRow.Personnel;                                  // (당월 : 계획)
+                    decimal pmThisBusPersonnelMon = pmThisBusMonRow == null ? 0 : pmThisBusMonRow.Personnel;                                  // (당월 : 실적)
+                    decimal pmThisBusPersonnelMonThisPn = pnThisBusPersonnelMon == 0 ? 0 : Math.Round(pmThisBusPersonnelMon / pnThisBusPersonnelMon, 3, MidpointRounding.AwayFromZero);
+                    decimal pmThisBusPersonnelMonLastPm = pmLastBusPersonnelMon == 0 ? 0 : Math.Round(pmThisBusPersonnelMon / pmLastBusPersonnelMon, 3, MidpointRounding.AwayFromZero);
+
+                    decimal pnThisBusPersonnelCum = pnThisBusCumRow == null ? 0 : pnThisBusCumRow.Personnel;
+                    decimal pmThisBusPersonnelCum = pmThisBusCumRow == null ? 0 : pmThisBusCumRow.Personnel;
+                    decimal pmThisBusPersonnelCumThisPn = pnThisBusPersonnelCum == 0 ? 0 : Math.Round(pmThisBusPersonnelCum / pnThisBusPersonnelCum, 3, MidpointRounding.AwayFromZero);
+                    decimal pmThisBusPersonnelCumLastPm = pmLastBusPersonnelCum == 0 ? 0 : Math.Round(pmThisBusPersonnelCum / pmLastBusPersonnelCum, 3, MidpointRounding.AwayFromZero);
+
+                    <tr>
+                        <th class="buLevel">인원</th>
+                        <th class="MsoNTwo">@(pmLastBusPersonnelYear)</th>
+                        <th class="MsoNTwo">@(pmLastBusPersonnelMon)</th>
+                        <th class="MsoNTwo">@(pmLastBusPersonnelCum)</th>
+
+                        <th class="MsoNTwo">@(pnThisBusPersonnelYear)</th>
+                        <th class="MsoNTwo">@(pnThisBusPersonnelMon)</th>
+                        <th class="MsoNTwo">@(pmThisBusPersonnelMon)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusPersonnelMonThisPn)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusPersonnelMonLastPm)</th>
+
+                        <th class="MsoNTwo">@(pnThisBusPersonnelCum)</th>
+                        <th class="MsoNTwo">@(pmThisBusPersonnelCum)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusPersonnelCumThisPn)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusPersonnelCumLastPm)</th>
+                    </tr>
+
+                    //------------- 국내인원
+
+                    decimal pmLastBusDomesticPersonnelYear = pmLastBusYearRow == null ? 0 : pmLastBusYearRow.DomesticPersonnel;                            // (전년실적 : 연간)
+                    decimal pmLastBusDomesticPersonnelMon = pmLastBusMonRow == null ? 0 : pmLastBusMonRow.DomesticPersonnel;                                  // (전년실적 : 당월)
+                    decimal pmLastBusDomesticPersonnelCum = pmLastBusCumRow == null ? 0 : pmLastBusCumRow.DomesticPersonnel;                         // (전년실적 : 누계)
+
+                    decimal pnThisBusDomesticPersonnelYear = pnThisBusYearRow == null ? 0 : pnThisBusYearRow.DomesticPersonnel;                                  // (연간 : 계획)
+                    decimal pnThisBusDomesticPersonnelMon = pnThisBusMonRow == null ? 0 : pnThisBusMonRow.DomesticPersonnel;                                  // (당월 : 계획)
+                    decimal pmThisBusDomesticPersonnelMon = pmThisBusMonRow == null ? 0 : pmThisBusMonRow.DomesticPersonnel;                                  // (당월 : 실적)
+                    decimal pmThisBusDomesticPersonnelMonThisPn = pnThisBusDomesticPersonnelMon == 0 ? 0 : Math.Round(pmThisBusDomesticPersonnelMon / pnThisBusDomesticPersonnelMon, 3, MidpointRounding.AwayFromZero);
+                    decimal pmThisBusDomesticPersonnelMonLastPm = pmLastBusDomesticPersonnelMon == 0 ? 0 : Math.Round(pmThisBusDomesticPersonnelMon / pmLastBusDomesticPersonnelMon, 3, MidpointRounding.AwayFromZero);
+
+                    decimal pnThisBusDomesticPersonnelCum = pnThisBusCumRow == null ? 0 : pnThisBusCumRow.DomesticPersonnel;
+                    decimal pmThisBusDomesticPersonnelCum = pmThisBusCumRow == null ? 0 : pmThisBusCumRow.DomesticPersonnel;
+                    decimal pmThisBusDomesticPersonnelCumThisPn = pnThisBusDomesticPersonnelCum == 0 ? 0 : Math.Round(pmThisBusDomesticPersonnelCum / pnThisBusDomesticPersonnelCum, 3, MidpointRounding.AwayFromZero);
+                    decimal pmThisBusDomesticPersonnelCumLastPm = pmLastBusDomesticPersonnelCum == 0 ? 0 : Math.Round(pmThisBusDomesticPersonnelCum / pmLastBusDomesticPersonnelCum, 3, MidpointRounding.AwayFromZero);
+
+                    <tr>
+                        <th class="buLevel">국내인원</th>
+                        <th class="MsoNTwo">@(pmLastBusDomesticPersonnelYear)</th>
+                        <th class="MsoNTwo">@(pmLastBusDomesticPersonnelMon)</th>
+                        <th class="MsoNTwo">@(pmLastBusDomesticPersonnelCum)</th>
+
+                        <th class="MsoNTwo">@(pnThisBusDomesticPersonnelYear)</th>
+                        <th class="MsoNTwo">@(pnThisBusDomesticPersonnelMon)</th>
+                        <th class="MsoNTwo">@(pmThisBusDomesticPersonnelMon)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusDomesticPersonnelMonThisPn)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusDomesticPersonnelMonLastPm)</th>
+
+                        <th class="MsoNTwo">@(pnThisBusDomesticPersonnelCum)</th>
+                        <th class="MsoNTwo">@(pmThisBusDomesticPersonnelCum)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusDomesticPersonnelCumThisPn)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusDomesticPersonnelCumLastPm)</th>
+                    </tr>
+
+                    //------------- 해외인원
+
+                    decimal pmLastBusOverseasPersonnelYear = pmLastBusYearRow == null ? 0 : pmLastBusYearRow.OverseasPersonnel;                            // (전년실적 : 연간)
+                    decimal pmLastBusOverseasPersonnelMon = pmLastBusMonRow == null ? 0 : pmLastBusMonRow.OverseasPersonnel;                                  // (전년실적 : 당월)
+                    decimal pmLastBusOverseasPersonnelCum = pmLastBusCumRow == null ? 0 : pmLastBusCumRow.OverseasPersonnel;                         // (전년실적 : 누계)
+
+                    decimal pnThisBusOverseasPersonnelYear = pnThisBusYearRow == null ? 0 : pnThisBusYearRow.OverseasPersonnel;                                  // (연간 : 계획)
+                    decimal pnThisBusOverseasPersonnelMon = pnThisBusMonRow == null ? 0 : pnThisBusMonRow.OverseasPersonnel;                                  // (당월 : 계획)
+                    decimal pmThisBusOverseasPersonnelMon = pmThisBusMonRow == null ? 0 : pmThisBusMonRow.OverseasPersonnel;                                  // (당월 : 실적)
+                    decimal pmThisBusOverseasPersonnelMonThisPn = pnThisBusOverseasPersonnelMon == 0 ? 0 : Math.Round(pmThisBusOverseasPersonnelMon / pnThisBusOverseasPersonnelMon, 3, MidpointRounding.AwayFromZero);
+                    decimal pmThisBusOverseasPersonnelMonLastPm = pmLastBusOverseasPersonnelMon == 0 ? 0 : Math.Round(pmThisBusOverseasPersonnelMon / pmLastBusOverseasPersonnelMon, 3, MidpointRounding.AwayFromZero);
+
+                    decimal pnThisBusOverseasPersonnelCum = pnThisBusCumRow == null ? 0 : pnThisBusCumRow.OverseasPersonnel;
+                    decimal pmThisBusOverseasPersonnelCum = pmThisBusCumRow == null ? 0 : pmThisBusCumRow.OverseasPersonnel;
+                    decimal pmThisBusOverseasPersonnelCumThisPn = pnThisBusOverseasPersonnelCum == 0 ? 0 : Math.Round(pmThisBusOverseasPersonnelCum / pnThisBusOverseasPersonnelCum, 3, MidpointRounding.AwayFromZero);
+                    decimal pmThisBusOverseasPersonnelCumLastPm = pmLastBusOverseasPersonnelCum == 0 ? 0 : Math.Round(pmThisBusOverseasPersonnelCum / pmLastBusOverseasPersonnelCum, 3, MidpointRounding.AwayFromZero);
+
+                    <tr>
+                        <th class="buLevel">해외인원</th>
+                        <th class="MsoNTwo">@(pmLastBusOverseasPersonnelYear)</th>
+                        <th class="MsoNTwo">@(pmLastBusOverseasPersonnelMon)</th>
+                        <th class="MsoNTwo">@(pmLastBusOverseasPersonnelCum)</th>
+
+                        <th class="MsoNTwo">@(pnThisBusOverseasPersonnelYear)</th>
+                        <th class="MsoNTwo">@(pnThisBusOverseasPersonnelMon)</th>
+                        <th class="MsoNTwo">@(pmThisBusOverseasPersonnelMon)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusOverseasPersonnelMonThisPn)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusOverseasPersonnelMonLastPm)</th>
+
+                        <th class="MsoNTwo">@(pnThisBusOverseasPersonnelCum)</th>
+                        <th class="MsoNTwo">@(pmThisBusOverseasPersonnelCum)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusOverseasPersonnelCumThisPn)</th>
+                        <th class="MsoNTwoPer">@(pmThisBusOverseasPersonnelCumLastPm)</th>
+                    </tr>
+
+                }
+                isFirst = false;
+
+                // ------------ 회사
+                // 전년실적
+                var pmLastComYearRow = pmLastComYear.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                var pmLastComMonRow = pmLastComMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                var pmLastComCumRow = pmLastComCum.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                // 당해계획
+                var pnThisComYearRow = pnThisComYear.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                var pnThisComMonRow = pnThisComMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                var pnThisComCumRow = pnThisComCum.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                // 당해실적
+                var pmThisComMonRow = pmThisComMon.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+                var pmThisComCumRow = pmThisComCum.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+
+                //------------- 투자
+
+                decimal pmLastComInvestYear = pmLastComYearRow == null ? 0 : pmLastComYearRow.Investment;                            // (전년실적 : 연간)
+                decimal pmLastComInvestMon = pmLastComMonRow == null ? 0 : pmLastComMonRow.Investment;                                  // (전년실적 : 당월)
+                decimal pmLastComInvestCum = pmLastComCumRow == null ? 0 : pmLastComCumRow.Investment;                         // (전년실적 : 누계)
+
+                decimal pnThisComInvestYear = pnThisComYearRow == null ? 0 : pnThisComYearRow.Investment;                                  // (연간 : 계획)
+                decimal pnThisComInvestMon = pnThisComMonRow == null ? 0 : pnThisComMonRow.Investment;                                  // (당월 : 계획)
+                decimal pmThisComInvestMon = pmThisComMonRow == null ? 0 : pmThisComMonRow.Investment;                                  // (당월 : 실적)
+                decimal pmThisComInvestMonThisPn = pnThisComInvestMon == 0 ? 0 : Math.Round(pmThisComInvestMon / pnThisComInvestMon, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisComInvestMonLastPm = pmLastComInvestMon == 0 ? 0 : Math.Round(pmThisComInvestMon / pmLastComInvestMon, 3, MidpointRounding.AwayFromZero);
+
+                decimal pnThisComInvestCum = pnThisComCumRow == null ? 0 : pnThisComCumRow.Investment;
+                decimal pmThisComInvestCum = pmThisComCumRow == null ? 0 : pmThisComCumRow.Investment;
+                decimal pmThisComInvestCumThisPn = pnThisComInvestCum == 0 ? 0 : Math.Round(pmThisComInvestCum / pnThisComInvestCum, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisComInvestCumLastPm = pmLastComInvestCum == 0 ? 0 : Math.Round(pmThisComInvestCum / pmLastComInvestCum, 3, MidpointRounding.AwayFromZero);
+
+                <tr class="ComLevel">
+                    <th rowspan="4" colspan="3">@item.CompanyName</th>
+                    <th>투자</th>
+                    <th class="MsoNTwo">@(pmLastComInvestYear)</th>
+                    <th class="MsoNTwo">@(pmLastComInvestMon)</th>
+                    <th class="MsoNTwo">@(pmLastComInvestCum)</th>
+
+                    <th class="MsoNTwo">@(pnThisComInvestYear)</th>
+                    <th class="MsoNTwo">@(pnThisComInvestMon)</th>
+                    <th class="MsoNTwo">@(pmThisComInvestMon)</th>
+                    <th class="MsoNTwoPer">@(pmThisComInvestMonThisPn)</th>
+                    <th class="MsoNTwoPer">@(pmThisComInvestMonLastPm)</th>
+
+                    <th class="MsoNTwo">@(pnThisComInvestCum)</th>
+                    <th class="MsoNTwo">@(pmThisComInvestCum)</th>
+                    <th class="MsoNTwoPer">@(pmThisComInvestCumThisPn)</th>
+                    <th class="MsoNTwoPer">@(pmThisComInvestCumLastPm)</th>
+                </tr>
+
+                //------------- 인원
+
+                decimal pmLastComPersonnelYear = pmLastComYearRow == null ? 0 : pmLastComYearRow.Personnel;                            // (전년실적 : 연간)
+                decimal pmLastComPersonnelMon = pmLastComMonRow == null ? 0 : pmLastComMonRow.Personnel;                                  // (전년실적 : 당월)
+                decimal pmLastComPersonnelCum = pmLastComCumRow == null ? 0 : pmLastComCumRow.Personnel;                         // (전년실적 : 누계)
+
+                decimal pnThisComPersonnelYear = pnThisComYearRow == null ? 0 : pnThisComYearRow.Personnel;                                  // (연간 : 계획)
+                decimal pnThisComPersonnelMon = pnThisComMonRow == null ? 0 : pnThisComMonRow.Personnel;                                  // (당월 : 계획)
+                decimal pmThisComPersonnelMon = pmThisComMonRow == null ? 0 : pmThisComMonRow.Personnel;                                  // (당월 : 실적)
+                decimal pmThisComPersonnelMonThisPn = pnThisComPersonnelMon == 0 ? 0 : Math.Round(pmThisComPersonnelMon / pnThisComPersonnelMon, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisComPersonnelMonLastPm = pmLastComPersonnelMon == 0 ? 0 : Math.Round(pmThisComPersonnelMon / pmLastComPersonnelMon, 3, MidpointRounding.AwayFromZero);
+
+                decimal pnThisComPersonnelCum = pnThisComCumRow == null ? 0 : pnThisComCumRow.Personnel;
+                decimal pmThisComPersonnelCum = pmThisComCumRow == null ? 0 : pmThisComCumRow.Personnel;
+                decimal pmThisComPersonnelCumThisPn = pnThisComPersonnelCum == 0 ? 0 : Math.Round(pmThisComPersonnelCum / pnThisComPersonnelCum, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisComPersonnelCumLastPm = pmLastComPersonnelCum == 0 ? 0 : Math.Round(pmThisComPersonnelCum / pmLastComPersonnelCum, 3, MidpointRounding.AwayFromZero);
+
+                <tr class="ComLevel">
+                    <th>인원</th>
+                    <th class="MsoNTwo">@(pmLastComPersonnelYear)</th>
+                    <th class="MsoNTwo">@(pmLastComPersonnelMon)</th>
+                    <th class="MsoNTwo">@(pmLastComPersonnelCum)</th>
+
+                    <th class="MsoNTwo">@(pnThisComPersonnelYear)</th>
+                    <th class="MsoNTwo">@(pnThisComPersonnelMon)</th>
+                    <th class="MsoNTwo">@(pmThisComPersonnelMon)</th>
+                    <th class="MsoNTwoPer">@(pmThisComPersonnelMonThisPn)</th>
+                    <th class="MsoNTwoPer">@(pmThisComPersonnelMonLastPm)</th>
+
+                    <th class="MsoNTwo">@(pnThisComPersonnelCum)</th>
+                    <th class="MsoNTwo">@(pmThisComPersonnelCum)</th>
+                    <th class="MsoNTwoPer">@(pmThisComPersonnelCumThisPn)</th>
+                    <th class="MsoNTwoPer">@(pmThisComPersonnelCumLastPm)</th>
+                </tr>
+
+                //------------- 국내인원
+
+                decimal pmLastComDomesticPersonnelYear = pmLastComYearRow == null ? 0 : pmLastComYearRow.DomesticPersonnel;                            // (전년실적 : 연간)
+                decimal pmLastComDomesticPersonnelMon = pmLastComMonRow == null ? 0 : pmLastComMonRow.DomesticPersonnel;                                  // (전년실적 : 당월)
+                decimal pmLastComDomesticPersonnelCum = pmLastComCumRow == null ? 0 : pmLastComCumRow.DomesticPersonnel;                         // (전년실적 : 누계)
+
+                decimal pnThisComDomesticPersonnelYear = pnThisComYearRow == null ? 0 : pnThisComYearRow.DomesticPersonnel;                                  // (연간 : 계획)
+                decimal pnThisComDomesticPersonnelMon = pnThisComMonRow == null ? 0 : pnThisComMonRow.DomesticPersonnel;                                  // (당월 : 계획)
+                decimal pmThisComDomesticPersonnelMon = pmThisComMonRow == null ? 0 : pmThisComMonRow.DomesticPersonnel;                                  // (당월 : 실적)
+                decimal pmThisComDomesticPersonnelMonThisPn = pnThisComDomesticPersonnelMon == 0 ? 0 : Math.Round(pmThisComDomesticPersonnelMon / pnThisComDomesticPersonnelMon, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisComDomesticPersonnelMonLastPm = pmLastComDomesticPersonnelMon == 0 ? 0 : Math.Round(pmThisComDomesticPersonnelMon / pmLastComDomesticPersonnelMon, 3, MidpointRounding.AwayFromZero);
+
+                decimal pnThisComDomesticPersonnelCum = pnThisComCumRow == null ? 0 : pnThisComCumRow.DomesticPersonnel;
+                decimal pmThisComDomesticPersonnelCum = pmThisComCumRow == null ? 0 : pmThisComCumRow.DomesticPersonnel;
+                decimal pmThisComDomesticPersonnelCumThisPn = pnThisComDomesticPersonnelCum == 0 ? 0 : Math.Round(pmThisComDomesticPersonnelCum / pnThisComDomesticPersonnelCum, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisComDomesticPersonnelCumLastPm = pmLastComDomesticPersonnelCum == 0 ? 0 : Math.Round(pmThisComDomesticPersonnelCum / pmLastComDomesticPersonnelCum, 3, MidpointRounding.AwayFromZero);
+
+                <tr class="ComLevel">
+                    <th>국내인원</th>
+                    <th class="MsoNTwo">@(pmLastComDomesticPersonnelYear)</th>
+                    <th class="MsoNTwo">@(pmLastComDomesticPersonnelMon)</th>
+                    <th class="MsoNTwo">@(pmLastComDomesticPersonnelCum)</th>
+
+                    <th class="MsoNTwo">@(pnThisComDomesticPersonnelYear)</th>
+                    <th class="MsoNTwo">@(pnThisComDomesticPersonnelMon)</th>
+                    <th class="MsoNTwo">@(pmThisComDomesticPersonnelMon)</th>
+                    <th class="MsoNTwoPer">@(pmThisComDomesticPersonnelMonThisPn)</th>
+                    <th class="MsoNTwoPer">@(pmThisComDomesticPersonnelMonLastPm)</th>
+
+                    <th class="MsoNTwo">@(pnThisComDomesticPersonnelCum)</th>
+                    <th class="MsoNTwo">@(pmThisComDomesticPersonnelCum)</th>
+                    <th class="MsoNTwoPer">@(pmThisComDomesticPersonnelCumThisPn)</th>
+                    <th class="MsoNTwoPer">@(pmThisComDomesticPersonnelCumLastPm)</th>
+                </tr>
+
+                //------------- 해외인원
+
+                decimal pmLastComOverseasPersonnelYear = pmLastComYearRow == null ? 0 : pmLastComYearRow.OverseasPersonnel;                            // (전년실적 : 연간)
+                decimal pmLastComOverseasPersonnelMon = pmLastComMonRow == null ? 0 : pmLastComMonRow.OverseasPersonnel;                                  // (전년실적 : 당월)
+                decimal pmLastComOverseasPersonnelCum = pmLastComCumRow == null ? 0 : pmLastComCumRow.OverseasPersonnel;                         // (전년실적 : 누계)
+
+                decimal pnThisComOverseasPersonnelYear = pnThisComYearRow == null ? 0 : pnThisComYearRow.OverseasPersonnel;                                  // (연간 : 계획)
+                decimal pnThisComOverseasPersonnelMon = pnThisComMonRow == null ? 0 : pnThisComMonRow.OverseasPersonnel;                                  // (당월 : 계획)
+                decimal pmThisComOverseasPersonnelMon = pmThisComMonRow == null ? 0 : pmThisComMonRow.OverseasPersonnel;                                  // (당월 : 실적)
+                decimal pmThisComOverseasPersonnelMonThisPn = pnThisComOverseasPersonnelMon == 0 ? 0 : Math.Round(pmThisComOverseasPersonnelMon / pnThisComOverseasPersonnelMon, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisComOverseasPersonnelMonLastPm = pmLastComOverseasPersonnelMon == 0 ? 0 : Math.Round(pmThisComOverseasPersonnelMon / pmLastComOverseasPersonnelMon, 3, MidpointRounding.AwayFromZero);
+
+                decimal pnThisComOverseasPersonnelCum = pnThisComCumRow == null ? 0 : pnThisComCumRow.OverseasPersonnel;
+                decimal pmThisComOverseasPersonnelCum = pmThisComCumRow == null ? 0 : pmThisComCumRow.OverseasPersonnel;
+                decimal pmThisComOverseasPersonnelCumThisPn = pnThisComOverseasPersonnelCum == 0 ? 0 : Math.Round(pmThisComOverseasPersonnelCum / pnThisComOverseasPersonnelCum, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisComOverseasPersonnelCumLastPm = pmLastComOverseasPersonnelCum == 0 ? 0 : Math.Round(pmThisComOverseasPersonnelCum / pmLastComOverseasPersonnelCum, 3, MidpointRounding.AwayFromZero);
+
+                <tr class="ComLevel">
+                    <th>해외인원</th>
+                    <th class="MsoNTwo">@(pmLastComOverseasPersonnelYear)</th>
+                    <th class="MsoNTwo">@(pmLastComOverseasPersonnelMon)</th>
+                    <th class="MsoNTwo">@(pmLastComOverseasPersonnelCum)</th>
+
+                    <th class="MsoNTwo">@(pnThisComOverseasPersonnelYear)</th>
+                    <th class="MsoNTwo">@(pnThisComOverseasPersonnelMon)</th>
+                    <th class="MsoNTwo">@(pmThisComOverseasPersonnelMon)</th>
+                    <th class="MsoNTwoPer">@(pmThisComOverseasPersonnelMonThisPn)</th>
+                    <th class="MsoNTwoPer">@(pmThisComOverseasPersonnelMonLastPm)</th>
+
+                    <th class="MsoNTwo">@(pnThisComOverseasPersonnelCum)</th>
+                    <th class="MsoNTwo">@(pmThisComOverseasPersonnelCum)</th>
+                    <th class="MsoNTwoPer">@(pmThisComOverseasPersonnelCumThisPn)</th>
+                    <th class="MsoNTwoPer">@(pmThisComOverseasPersonnelCumLastPm)</th>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

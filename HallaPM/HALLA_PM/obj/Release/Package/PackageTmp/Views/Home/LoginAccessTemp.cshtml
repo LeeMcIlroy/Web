@@ -1,0 +1,68 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "LoginAccessTemp";
+    Layout = null;
+    List<SystemAuth> systemAuthList = Model.systemAuthList;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>LoginAccessTemp</title>
+
+    <link rel="stylesheet" href="~/Contents/user/Common/css/style.css" />
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/TweenMax.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/vue.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/d3.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/libs/nv.d3.min.js"></script>
+    <script type="text/javascript" src="~/Contents/user/Common/js/nv.d3.plugin.js"></script>
+
+    <script type="text/javascript" src="~/Contents/user/Common/js/front.js"></script>
+</head>
+<body>
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>실적보고시스템</span>
+        <strong>임시로그인화면</strong>
+
+        <form name="frmMain" method="post">
+            <select name="empNo">
+                <option value="">선택하세요.</option>
+                @{
+                    foreach (var item in systemAuthList.OrderBy(o => o.AuthUserKorName))
+                    {
+                        <option value="@item.AuthUserKey" selected>@(item.AuthUserKorName) - @(item.IsUse)</option>
+                    }
+                }
+            </select>
+            @{ 
+                string serverUrl = "http://" + HttpContext.Current.Request.Url.Host + "/Home/ssoLogingTest?empNo=" + "&HPRSURL=";
+                string str = serverUrl + "1234567890";
+                string a = str.Substring(str.IndexOf("&HPRSURL=") + 9);
+                string b = str.Substring(0, str.IndexOf("&HPRSURL=") + 9);
+            }
+            @*<br />@(Request.Url.PathAndQuery.ToString())*@
+            <input type="button" onclick="onSave();" value="로그인" />
+        </form>
+        <script>
+                function onSave() {
+                    var f = document.frmMain;
+
+                    if (f.empNo.value == "") {
+                        alert('로그인할 사원을 선택하세요.');
+                        return;
+                    }
+
+                    f.action = "ssoLoginTempProc";
+                    f.submit();
+                }
+        </script>
+    </div>
+</body>
+</html>

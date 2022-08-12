@@ -1,0 +1,462 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+
+    List<PmBsSummaryExp> pmThisYearCom = Model.pmThisYearCom;
+    List<PmBsSummaryExp> pmLastYearCom = Model.pmLastYearCom;
+    List<PmBsSummaryExp> pnThisYearCom = Model.pnThisYearCom;
+
+    string companyName = "ExcelDownBs";
+    string year = "";
+    string mm = "";
+    if (pmThisYearCom.Count() > 0)
+    {
+        companyName = "GROUP";
+        year = pmThisYearCom.First().BsYear;
+        mm = pmThisYearCom.First().Monthly;
+    }
+
+    string fileName = companyName + "_" + year + "_" + mm + "_BS";
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+
+    decimal dMonth = Convert.ToDecimal(mm);
+}
+
+<style>
+    .mytable {
+        border-collapse: collapse;
+    }
+
+        .mytable th, .mytable td {
+            border: 1px solid black;
+        }
+
+    .buLevel {
+        background-color: #f2f2f2;
+    }
+
+        .buLevel th, .buLevel td {
+            background-color: #f2f2f2;
+        }
+
+    .ComLevel {
+        background-color: #fff2cc;
+    }
+
+        .ComLevel th, .ComLevel td {
+            background-color: #fff2cc;
+        }
+
+    .UniLevel {
+        background-color: #d0cece;
+    }
+
+        .UniLevel th, .UniLevel td {
+            background-color: #d0cece;
+        }
+
+    .GrpLevel {
+        background-color: #bdd7ee;
+    }
+
+        .GrpLevel th, .GrpLevel td {
+            background-color: #bdd7ee;
+        }
+
+    .MsoNTwo {
+        mso-number-format: \#\,\#\#0\.00;
+    }
+
+    .MsoNTwoPer {
+        mso-number-format: \#\,\#\#0\.00;
+    }
+
+    .MsoNOne {
+        mso-number-format: \#\,\#\#0\.00;
+    }
+
+    .MsoNOnePer {
+        mso-number-format: \#\,\#\#0\.00%;
+    }
+</style>
+
+<h3>@(year)년 BS 관리지표(@(mm)월 누계)</h3>
+<br />
+<table>
+    <tr>
+        <th style="text-align:right" colspan="9">(단위 : 억원)</th>
+    </tr>
+</table>
+<table border="1">
+    <thead>
+        <tr class="buLevel">
+            <th rowspan="3" colspan="4">구분</th>
+            <th>@(Convert.ToInt32(year) - 1)년</th>
+            <th colspan="4">@(year)년</th>
+        </tr>
+        <tr class="buLevel">
+            <th>기말</th>
+            <th colspan="4">@(mm)월 누계</th>
+        </tr>
+        <tr class="buLevel">
+            <th>실적</th>
+            <th>계획</th>
+            <th>실적</th>
+            <th>계획대비</th>
+            <th>전년대비</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in pmThisYearCom)
+        {
+            PmBsSummaryExp comLastYearPm = pmLastYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            PmBsSummaryExp comThisYearPn = pnThisYearCom.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+
+            if (comLastYearPm == null) { comLastYearPm = new PmBsSummaryExp(); }
+            if (comThisYearPn == null) { comThisYearPn = new PmBsSummaryExp(); }
+
+            <tr>
+                <th class="ComLevel" rowspan="15">@item.UnionName</th>
+                <th class="ComLevel" rowspan="15">@item.CompanyName</th>
+                <th class="ComLevel" rowspan="6">B/S</th>
+                <th class="ComLevel">자산</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.Assets)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.Assets)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.Assets</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Assets - comThisYearPn.Assets)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Assets - comLastYearPm.Assets)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">부채</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.Liabilities)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.Liabilities)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.Liabilities</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Liabilities - comThisYearPn.Liabilities)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Liabilities - comLastYearPm.Liabilities)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">자본</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.Capital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.Capital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.Capital</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Capital - comThisYearPn.Capital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Capital - comLastYearPm.Capital)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">현금</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.Cash)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.Cash)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.Cash</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Cash - comThisYearPn.Cash)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Cash - comLastYearPm.Cash)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">차입금</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.Loan)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.Loan)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.Loan</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Loan - comThisYearPn.Loan)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Loan - comLastYearPm.Loan)</th>
+            </tr>
+            decimal lastCapital = comLastYearPm.Capital;
+            decimal thisCapital = comThisYearPn.Capital;
+            decimal lastPmLR = lastCapital == 0 ? 0 : Math.Round((comLastYearPm.Liabilities / lastCapital * 100), 4, MidpointRounding.AwayFromZero);
+            decimal thisPnLR = thisCapital == 0 ? 0 : Math.Round((comThisYearPn.Liabilities / thisCapital * 100), 4, MidpointRounding.AwayFromZero);
+            //decimal thisPnLR = comThisYearPn.LiabilitiesRate;
+            decimal thisPmLR = item.Capital == 0 ? 0 : Math.Round((item.Liabilities / item.Capital * 100), 4, MidpointRounding.AwayFromZero);
+            <tr>
+                <th class="ComLevel">부채비율</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(lastPmLR)%</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(thisPnLR)%</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(thisPmLR)%</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(thisPmLR - thisPnLR)%</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(thisPmLR - lastPmLR)%</th>
+            </tr>
+            <tr>
+                <th class="ComLevel" rowspan="3">ROIC</th>
+                <th class="ComLevel">세후 영업이익</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.AfterTaxOperationProfit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.AfterTaxOperationProfit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.AfterTaxOperationProfit</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.AfterTaxOperationProfit - comThisYearPn.AfterTaxOperationProfit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.AfterTaxOperationProfit - comLastYearPm.AfterTaxOperationProfit)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">투하자본</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.PainInCapital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.PainInCapital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.PainInCapital</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.PainInCapital - comThisYearPn.PainInCapital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.PainInCapital - comLastYearPm.PainInCapital)</th>
+            </tr>
+            decimal lastPainInCapital = comLastYearPm.PainInCapital;
+            decimal thisPainInCapital = comThisYearPn.PainInCapital;
+            decimal lastPmROIC = lastPainInCapital == 0 ? 0 : Math.Round((comLastYearPm.AfterTaxOperationProfit / lastPainInCapital * 100), 4, MidpointRounding.AwayFromZero);
+            decimal thisPnROIC = thisPainInCapital == 0 ? 0 : WebUtil.NewRoic(Math.Round((comThisYearPn.AfterTaxOperationProfit / thisPainInCapital * 100), 8, MidpointRounding.AwayFromZero), dMonth, 4);
+            //decimal thisPnROIC = comThisYearPn.Roic;
+            decimal thisPmROIC = item.PainInCapital == 0 ? 0 : WebUtil.NewRoic(Math.Round((item.AfterTaxOperationProfit / item.PainInCapital* 100), 8, MidpointRounding.AwayFromZero), dMonth, 4);
+            <tr>
+                <th class="ComLevel">ROIC</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(lastPmROIC)%</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(thisPnROIC)%</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(thisPmROIC)%</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(thisPmROIC - thisPnROIC)%</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(thisPmROIC - lastPmROIC)%</th>
+            </tr>
+            <tr>
+                <th class="ComLevel" rowspan="6">W/C</th>
+                <th class="ComLevel">A/R</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.Ar)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.Ar)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.Ar</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Ar - comThisYearPn.Ar)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Ar - comLastYearPm.Ar)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(comLastYearPm.ArToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(comThisYearPn.ArToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@item.ArToDays</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(item.ArToDays - comThisYearPn.ArToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(item.ArToDays - comLastYearPm.ArToDays)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">A/P</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.Ap)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.Ap)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.Ap</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Ap - comThisYearPn.Ap)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Ap - comLastYearPm.Ap)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(comLastYearPm.ApToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(comThisYearPn.ApToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@item.ApToDays</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(item.ApToDays - comThisYearPn.ApToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(item.ApToDays - comLastYearPm.ApToDays)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">Inventory</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comLastYearPm.Inventory)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(comThisYearPn.Inventory)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@item.Inventory</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Inventory - comThisYearPn.Inventory)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(item.Inventory - comLastYearPm.Inventory)</th>
+            </tr>
+            <tr>
+                <th class="ComLevel">T/O days</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(comLastYearPm.InventoryToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(comThisYearPn.InventoryToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@item.InventoryToDays</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(item.InventoryToDays - comThisYearPn.InventoryToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(item.InventoryToDays - comLastYearPm.InventoryToDays)</th>
+            </tr>
+
+        }
+        @{
+            var groupThisYearPm = pmThisYearCom.GroupBy(g => g.BsYear)
+                .Select(cl => new PmBsSummaryExp
+                {
+                    BsYear = cl.First().BsYear,
+                    Assets = cl.Sum(c => c.Assets),
+                    Liabilities = cl.Sum(c => c.Liabilities),
+                    Capital = cl.Sum(c => c.Capital),
+                    Cash = cl.Sum(c => c.Cash),
+                    Loan = cl.Sum(c => c.Loan),
+                    AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+                    PainInCapital = cl.Sum(c => c.PainInCapital),
+                    Ar = cl.Sum(c => c.Ar),
+                    ArToDays = cl.Sum(c => c.ArToDays),
+                    Inventory = cl.Sum(c => c.Inventory),
+                    InventoryToDays = cl.Sum(c => c.InventoryToDays),
+                    Ap = cl.Sum(c => c.Ap),
+                    ApToDays = cl.Sum(c => c.ApToDays)
+                }).FirstOrDefault();
+
+            if (groupThisYearPm == null) { groupThisYearPm = new PmBsSummaryExp(); }
+
+            var groupLastYearPm = pmLastYearCom.GroupBy(g => g.BsYear)
+                .Select(cl => new PmBsSummaryExp
+                {
+                    BsYear = cl.First().BsYear,
+                    Assets = cl.Sum(c => c.Assets),
+                    Liabilities = cl.Sum(c => c.Liabilities),
+                    Capital = cl.Sum(c => c.Capital),
+                    Cash = cl.Sum(c => c.Cash),
+                    Loan = cl.Sum(c => c.Loan),
+                    AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+                    PainInCapital = cl.Sum(c => c.PainInCapital),
+                    Ar = cl.Sum(c => c.Ar),
+                    ArToDays = cl.Sum(c => c.ArToDays),
+                    Inventory = cl.Sum(c => c.Inventory),
+                    InventoryToDays = cl.Sum(c => c.InventoryToDays),
+                    Ap = cl.Sum(c => c.Ap),
+                    ApToDays = cl.Sum(c => c.ApToDays)
+                }).FirstOrDefault();
+
+            if (groupLastYearPm == null) { groupLastYearPm = new PmBsSummaryExp(); }
+
+            var groupThisYearPn = pnThisYearCom.GroupBy(g => g.BsYear)
+                .Select(cl => new PmBsSummaryExp
+                {
+                    BsYear = cl.First().BsYear,
+                    Assets = cl.Sum(c => c.Assets),
+                    Liabilities = cl.Sum(c => c.Liabilities),
+                    Capital = cl.Sum(c => c.Capital),
+                    Cash = cl.Sum(c => c.Cash),
+                    Loan = cl.Sum(c => c.Loan),
+                    AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+                    PainInCapital = cl.Sum(c => c.PainInCapital),
+                    Ar = cl.Sum(c => c.Ar),
+                    ArToDays = cl.Sum(c => c.ArToDays),
+                    Inventory = cl.Sum(c => c.Inventory),
+                    InventoryToDays = cl.Sum(c => c.InventoryToDays),
+                    Ap = cl.Sum(c => c.Ap),
+                    ApToDays = cl.Sum(c => c.ApToDays)
+                }).FirstOrDefault();
+
+            if (groupThisYearPn == null) { groupThisYearPn = new PmBsSummaryExp(); }
+
+            <tr class="GrpLevel">
+                <th rowspan="15" colspan="2">그룹 합계</th>
+                <th rowspan="6">B/S</th>
+                <th>자산</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.Assets)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.Assets)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.Assets</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Assets - groupThisYearPn.Assets)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Assets - groupLastYearPm.Assets)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>부채</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.Liabilities)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.Liabilities)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.Liabilities</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Liabilities - groupThisYearPn.Liabilities)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Liabilities - groupLastYearPm.Liabilities)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>자본</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.Capital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.Capital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.Capital</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Capital - groupThisYearPn.Capital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Capital - groupLastYearPm.Capital)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>현금</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.Cash)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.Cash)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.Cash</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Cash - groupThisYearPn.Cash)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Cash - groupLastYearPm.Cash)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>차입금</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.Loan)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.Loan)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.Loan</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Loan - groupThisYearPn.Loan)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Loan - groupLastYearPm.Loan)</th>
+            </tr>
+            decimal lastCapitalGroup = groupLastYearPm.Capital;
+            decimal thisCapitalGroup = groupThisYearPn.Capital;
+            decimal lastPmLRGroup = lastCapitalGroup == 0 ? 0 : Math.Round((groupLastYearPm.Liabilities / lastCapitalGroup), 4, MidpointRounding.AwayFromZero);
+            decimal thisPnLRGroup = thisCapitalGroup == 0 ? 0 : Math.Round((groupThisYearPn.Liabilities / thisCapitalGroup), 4, MidpointRounding.AwayFromZero);
+            decimal thisPmLRGroup = groupThisYearPm.Capital == 0 ? 0 : Math.Round((groupThisYearPm.Liabilities / groupThisYearPm.Capital), 4, MidpointRounding.AwayFromZero);
+            <tr class="GrpLevel">
+                <th>부채비율</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(lastPmLRGroup)</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(thisPnLRGroup)</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(thisPmLRGroup)</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(thisPmLRGroup - thisPnLRGroup)</th>
+                <th style="mso-number-format:\#\,\#\#0\%">@(thisPmLRGroup - lastPmLRGroup)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th rowspan="3">ROIC</th>
+                <th>세후 영업이익</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.AfterTaxOperationProfit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.AfterTaxOperationProfit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.AfterTaxOperationProfit</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.AfterTaxOperationProfit - groupThisYearPn.AfterTaxOperationProfit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.AfterTaxOperationProfit - groupLastYearPm.AfterTaxOperationProfit)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>투하자본</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.PainInCapital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.PainInCapital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.PainInCapital</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.PainInCapital - groupThisYearPn.PainInCapital)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.PainInCapital - groupLastYearPm.PainInCapital)</th>
+            </tr>
+            decimal lastPainInCapitalGroup = groupLastYearPm.PainInCapital;
+            decimal thisPainInCapitalGroup = groupThisYearPn.PainInCapital;
+            decimal lastPmROICGroup = lastPainInCapitalGroup == 0 ? 0 : Math.Round(groupLastYearPm.AfterTaxOperationProfit / lastPainInCapitalGroup, 4, MidpointRounding.AwayFromZero);
+            decimal thisPnROICGroup = thisPainInCapitalGroup == 0 ? 0 : WebUtil.NewRoic(Math.Round(groupThisYearPn.AfterTaxOperationProfit / thisPainInCapitalGroup, 8, MidpointRounding.AwayFromZero), dMonth, 4);
+            decimal thisPmROICGroup = groupThisYearPm.PainInCapital == 0 ? 0 : WebUtil.NewRoic(Math.Round(groupThisYearPm.AfterTaxOperationProfit / groupThisYearPm.PainInCapital, 8, MidpointRounding.AwayFromZero), dMonth, 4);
+            <tr class="GrpLevel">
+                <th>ROIC</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(lastPmROICGroup)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(thisPnROICGroup)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(thisPmROICGroup)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(thisPmROICGroup - thisPnROICGroup)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0%">@(thisPmROICGroup - lastPmROICGroup)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th rowspan="6">W/C</th>
+                <th>A/R</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.Ar)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.Ar)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.Ar</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Ar - groupThisYearPn.Ar)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Ar - groupLastYearPm.Ar)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>T/O days</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupLastYearPm.ArToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPn.ArToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@groupThisYearPm.ArToDays</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPm.ArToDays - groupThisYearPn.ArToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPm.ArToDays - groupLastYearPm.ArToDays)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>A/P</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.Ap)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.Ap)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.Ap</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Ap - groupThisYearPn.Ap)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Ap - groupLastYearPm.Ap)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>T/O days</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupLastYearPm.ApToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPn.ApToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@groupThisYearPm.ApToDays</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPm.ApToDays - groupThisYearPn.ApToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPm.ApToDays - groupLastYearPm.ApToDays)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>Inventory</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupLastYearPm.Inventory)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPn.Inventory)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@groupThisYearPm.Inventory</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Inventory - groupThisYearPn.Inventory)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(groupThisYearPm.Inventory - groupLastYearPm.Inventory)</th>
+            </tr>
+            <tr class="GrpLevel">
+                <th>T/O days</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupLastYearPm.InventoryToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPn.InventoryToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@groupThisYearPm.InventoryToDays</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPm.InventoryToDays - groupThisYearPn.InventoryToDays)</th>
+                <th style="mso-number-format:\#\,\#\#0\.0">@(groupThisYearPm.InventoryToDays - groupLastYearPm.InventoryToDays)</th>
+            </tr>
+        }
+    </tbody>
+</table>
+

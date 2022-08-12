@@ -1,0 +1,696 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+
+    List<PmPalBusinessExp> pmLastYearBuSumYear = Model.pmLastYearBuSumYear;
+    List<PmPalBusinessExp> pmLastYearBuMonth = Model.pmLastYearBuMonth;
+    List<PmPalBusinessExp> pmLastYearBuSumMonth = Model.pmLastYearBuSumMonth;
+
+    List<PmPalBusinessExp> pnThisYearBuSumYear = Model.pnThisYearBuSumYear;
+    List<PmPalBusinessExp> pnThisYearBuMonth = Model.pnThisYearBuMonth;
+    List<PmPalBusinessExp> pnThisYearBuSumMonth = Model.pnThisYearBuSumMonth;
+
+    List<PmPalBusinessExp> pmThisYearBuSumYear = Model.pmThisYearBuSumYear;
+    List<PmPalBusinessExp> pmThisYearBuMonth = Model.pmThisYearBuMonth;
+    List<PmPalBusinessExp> pmThisYearBuSumMonth = Model.pmThisYearBuSumMonth;
+
+    List<PmPalSummaryExp> pmLastYearComSumYear = Model.pmLastYearComSumYear;
+    List<PmPalSummaryExp> pmLastYearComMonth = Model.pmLastYearComMonth;
+    List<PmPalSummaryExp> pmLastYearComSumMonth = Model.pmLastYearComSumMonth;
+
+    List<PmPalSummaryExp> pnThisYearComSumYear = Model.pnThisYearComSumYear;
+    List<PmPalSummaryExp> pnThisYearComMonth = Model.pnThisYearComMonth;
+    List<PmPalSummaryExp> pnThisYearComSumMonth = Model.pnThisYearComSumMonth;
+
+    List<PmPalSummaryExp> pmThisYearComSumYear = Model.pmThisYearComSumYear;
+    List<PmPalSummaryExp> pmThisYearComMonth = Model.pmThisYearComMonth;
+    List<PmPalSummaryExp> pmThisYearComSumMonth = Model.pmThisYearComSumMonth;
+
+    string companyName = "ExcelDownBs";
+    string year = "";
+    string mm = "";
+    if (pmThisYearComMonth.Count() > 0)
+    {
+        companyName = pmThisYearComMonth.First().CompanyName;
+        year = pmThisYearComMonth.First().PalYear;
+        mm = pmThisYearComMonth.First().Monthly;
+    }
+
+    var groupCompany = pmThisYearComMonth.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PmQuarterPalBusinessExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        });
+
+
+    string fileName = companyName + "_" + year + "_" + mm + "_손익";
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+
+    bool isFirst = false;
+}
+<style>
+    .mytable { border-collapse:collapse; }  
+    .mytable th, .mytable td { border:1px solid black; }
+    
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format: \#\,\#\#0\
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\.0%
+        }
+</style>
+<h3>@(year)년 @(mm)월 손익 요약</h3>
+<br />
+<table>
+    <tr>
+        <th style="text-align:right" colspan="25">(단위 : 억원)</th>
+    </tr>
+</table>
+<table class="mytable" border="1">
+    <thead>
+        <tr class="buLevel">
+            <th rowspan="3" colspan="4">구분</th>
+            <th colspan="4">@(Convert.ToInt32(year) - 1)년 실적</th>
+            <th colspan="17">@(year)년</th>
+        </tr>
+        <tr class="buLevel">
+            <th rowspan="2">연간</th>
+            <th colspan="2">@(mm)월</th>
+            <th rowspan="2">잔여월</th>
+
+
+            <th colspan="4">@(mm)월</th>
+
+            <th colspan="4">누계</th>
+
+            <th colspan="4">잔여월</th>
+
+            <th colspan="4">연간</th>
+
+            <th>부채비율</th>
+        </tr>
+        <tr class="buLevel">
+            <th>당월</th>
+            <th>누계</th>
+
+            <th>계획</th>
+            <th>실적</th>
+            <th>계획대비</th>
+            <th>전년대비</th>
+
+            <th>계획</th>
+            <th>실적</th>
+            <th>계획대비</th>
+            <th>전년대비</th>
+
+            <th>계획</th>
+            <th>예상</th>
+            <th>계획대비</th>
+            <th>전년대비</th>
+
+            <th>계획</th>
+            <th>예상</th>
+            <th>계획대비</th>
+            <th>전년대비</th>
+
+            <th>@(mm)월 실적</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in groupCompany)
+        {
+            var buCount = pmThisYearBuMonth.GroupBy(g => new { g.OrgBusinessSeq }).Count();
+            var groupBusiness = pmThisYearBuMonth.GroupBy(g => g.OrgBusinessSeq)
+                .Select(cl => new PmPalBusinessExp
+                {
+                    OrgBusinessSeq = cl.First().OrgBusinessSeq,
+                    BusinessName = cl.First().BusinessName
+                });
+
+            foreach (var item2 in groupBusiness)
+            {
+                // 전년실적
+                var pmLastYearBuSumYearRow = pmLastYearBuSumYear.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                var pmLastYearBuSumMonthRow = pmLastYearBuSumMonth.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                var pmLastYearBuMonthRow = pmLastYearBuMonth.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                // 당해계획
+                var pnThisYearBuSumYearRow = pnThisYearBuSumYear.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                var pnThisYearBuSumMonthRow = pnThisYearBuSumMonth.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                var pnThisYearBuMonthRow = pnThisYearBuMonth.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                // 당해실적
+                var pmThisYearBuSumYearRow = pmThisYearBuSumYear.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                var pmThisYearBuSumMonthRow = pmThisYearBuSumMonth.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+                var pmThisYearBuMonthRow = pmThisYearBuMonth.Where(w => w.OrgBusinessSeq == item2.OrgBusinessSeq).FirstOrDefault();
+
+                //------------- 매출액
+
+                // 전년실적 Sales
+                decimal pmLastBuSumYearSales = pmLastYearBuSumYearRow == null ? 0 : pmLastYearBuSumYearRow.Sales;                            // (전년실적 : 연간)
+                decimal pmLastBuMonthSales = pmLastYearBuMonthRow == null ? 0 : pmLastYearBuMonthRow.Sales;                                  // (전년실적 : 당월)
+                decimal pmLastBuSumMonthSales = pmLastYearBuSumMonthRow == null ? 0 : pmLastYearBuSumMonthRow.Sales;                         // (전년실적 : 누계)
+                decimal pmLastBuReMonthSales = pmLastBuSumYearSales - pmLastBuSumMonthSales;                                                 // (전년실적 : 잔여월) = (전년실적 : 연간) - (전년실적 : 누계)
+
+                // 당해월 Sales
+                decimal pnThisBuMonthSales = pnThisYearBuMonthRow == null ? 0 : pnThisYearBuMonthRow.Sales;                                  // (당월 : 계획)
+                decimal pmThisBuMonthSales = pmThisYearBuMonthRow == null ? 0 : pmThisYearBuMonthRow.Sales;                                  // (당월 : 실적)
+                string monthBuPnSales = WebUtil.DivPmValue(pmThisBuMonthSales, pnThisBuMonthSales, 1);                                        // (당월 : 계획대비) = (당월 : 실적) / (당월 : 계획)
+                string monthBuPmSales = WebUtil.DivPmValue(pmThisBuMonthSales, pmLastBuMonthSales, 1);                                        // (당월 : 전년대비) = (당월 : 실적) / (전년실적 : 당월)
+
+                // 누계월 Sales
+                decimal pnThisBuSumMonthSales = pnThisYearBuSumMonthRow == null ? 0 : pnThisYearBuSumMonthRow.Sales;                         // (누계 : 계획)
+                decimal pmThisBuSumMonthSales = pmThisYearBuSumMonthRow == null ? 0 : pmThisYearBuSumMonthRow.Sales;                         // (누계 : 실적)
+                string sumMonthBuPnSales = WebUtil.DivPmValue(pmThisBuSumMonthSales, pnThisBuSumMonthSales, 1);                               // (누계 : 계획대비) = (누계 : 실적) / (누계 : 계획)
+                string sumMonthBuPmSales = WebUtil.DivPmValue(pmThisBuSumMonthSales, pmLastBuSumMonthSales, 1);                               // (누계 : 전년대비) = (누계 : 실적) / (전년실적 : 누계)
+
+                // 연간 Sales
+                decimal pnThisBuSumYearSales = pnThisYearBuSumYearRow == null ? 0 : pnThisYearBuSumYearRow.Sales;                            // (연간 : 계획)
+                decimal pmThisBuSumYearSales = pmThisYearBuSumYearRow == null ? 0 : pmThisYearBuSumYearRow.Sales;                            // (연간 : 예상)
+                string sumYearBuPnSales = WebUtil.DivPmValue(pmThisBuSumYearSales, pnThisBuSumYearSales, 1);                                  // (연간 : 계획대비) = (연간 : 예상) / (연간 : 계획)
+                string sumYearBuPmSales = WebUtil.DivPmValue(pmThisBuSumYearSales, pmLastBuSumYearSales, 1);                                  // (연간 : 전년대비) = (연간 : 예상) / (전년실적 : 연간)
+
+                // 잔여월 Sales
+                decimal pnThisBuReMonthSales = pnThisBuSumYearSales - pnThisBuSumMonthSales;                                                 // (잔여월 : 계획) = (연간 : 계획) - (누계 : 계획)
+                decimal pmThisBuReMonthSales = pmThisBuSumYearSales - pmThisBuSumMonthSales;                                                 // (잔여월 : 예상) = (연간 : 예상) - (누계 : 실적)
+                string reMonthBuPnSales = WebUtil.DivPmValue(pmThisBuReMonthSales, pnThisBuReMonthSales, 1);                                  // (잔여월 : 계획대비) = (잔여월 : 예상) / (잔여월 : 계획)
+                string reMonthBuPmSales = WebUtil.DivPmValue(pmThisBuReMonthSales, pmLastBuReMonthSales, 1);                                  // (잔여월 : 전년대비) = (잔여월 : 예상) / (전년실적 : 잔여월)
+
+                <tr>
+                    @if (!isFirst)
+                    {
+                        <th class="buLevel" rowspan="@(buCount * 4)">@item.UnionName</th>
+                        <th class="buLevel" rowspan="@(buCount * 4)">@item.CompanyName</th>
+                        <th class="buLevel" rowspan="4">@item2.BusinessName</th>
+                        isFirst = true;
+                    }
+                    else
+                    {
+                        <th class="buLevel" rowspan="4">@item2.BusinessName</th>
+                    }
+                    <th class="buLevel">매출액</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuSumYearSales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuMonthSales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuSumMonthSales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuReMonthSales)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuMonthSales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuMonthSales)</th>
+                    <th style="mso-number-format:0\.0%">@(monthBuPnSales)</th>
+                    <th style="mso-number-format:0\.0%">@(monthBuPmSales)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuSumMonthSales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuSumMonthSales)</th>
+                    <th style="mso-number-format:0\.0%">@(sumMonthBuPnSales)</th>
+                    <th style="mso-number-format:0\.0%">@(sumMonthBuPmSales)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuReMonthSales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuReMonthSales)</th>
+                    <th style="mso-number-format:0\.0%">@(reMonthBuPnSales)</th>
+                    <th style="mso-number-format:0\.0%">@(reMonthBuPmSales)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuSumYearSales)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuSumYearSales)</th>
+                    <th style="mso-number-format:0\.0%">@(sumYearBuPnSales)</th>
+                    <th style="mso-number-format:0\.0%">@(sumYearBuPmSales)</th>
+                    <th></th>
+                </tr>
+
+
+                //------------- 영업이익
+
+                // 전년실적 Ebit
+                decimal pmLastBuSumYearEbit = pmLastYearBuSumYearRow == null ? 0 : pmLastYearBuSumYearRow.Ebit;                           // (전년실적 : 연간)
+                decimal pmLastBuMonthEbit = pmLastYearBuMonthRow == null ? 0 : pmLastYearBuMonthRow.Ebit;                                 // (전년실적 : 당월)
+                decimal pmLastBuSumMonthEbit = pmLastYearBuSumMonthRow == null ? 0 : pmLastYearBuSumMonthRow.Ebit;                        // (전년실적 : 누계)
+                decimal pmLastBuReMonthEbit = pmLastBuSumYearEbit - pmLastBuSumMonthEbit;                                                 // (전년실적 : 잔여월) = (전년실적 : 연간) - (전년실적 : 누계)
+
+                // 당해월 Ebit
+                decimal pnThisBuMonthEbit = pnThisYearBuMonthRow == null ? 0 : pnThisYearBuMonthRow.Ebit;                                 // (당월 : 계획)
+                decimal pmThisBuMonthEbit = pmThisYearBuMonthRow == null ? 0 : pmThisYearBuMonthRow.Ebit;                                 // (당월 : 실적)
+                string monthBuPnEbit = WebUtil.DivPmValue(pmThisBuMonthEbit, pnThisBuMonthEbit, 1);                                        // (당월 : 계획대비) = (당월 : 실적) / (당월 : 계획)
+                string monthBuPmEbit = WebUtil.DivPmValue(pmThisBuMonthEbit, pmLastBuMonthEbit, 1);                                        // (당월 : 전년대비) = (당월 : 실적) / (전년실적 : 당월)
+
+                // 누계월 Ebit
+                decimal pnThisBuSumMonthEbit = pnThisYearBuSumMonthRow == null ? 0 : pnThisYearBuSumMonthRow.Ebit;                        // (누계 : 계획)
+                decimal pmThisBuSumMonthEbit = pmThisYearBuSumMonthRow == null ? 0 : pmThisYearBuSumMonthRow.Ebit;                        // (누계 : 실적)
+                string sumMonthBuPnEbit = WebUtil.DivPmValue(pmThisBuSumMonthEbit, pnThisBuSumMonthEbit, 1);                               // (누계 : 계획대비) = (누계 : 실적) / (누계 : 계획)
+                string sumMonthBuPmEbit = WebUtil.DivPmValue(pmThisBuSumMonthEbit, pmLastBuSumMonthEbit, 1);                               // (누계 : 전년대비) = (누계 : 실적) / (전년실적 : 누계)
+
+                // 연간 Ebit
+                decimal pnThisBuSumYearEbit = pnThisYearBuSumYearRow == null ? 0 : pnThisYearBuSumYearRow.Ebit;                           // (연간 : 계획)
+                decimal pmThisBuSumYearEbit = pmThisYearBuSumYearRow == null ? 0 : pmThisYearBuSumYearRow.Ebit;                           // (연간 : 예상)
+                string sumYearBuPnEbit = WebUtil.DivPmValue(pmThisBuSumYearEbit, pnThisBuSumYearEbit, 1);                                  // (연간 : 계획대비) = (연간 : 예상) / (연간 : 계획)
+                string sumYearBuPmEbit = WebUtil.DivPmValue(pmThisBuSumYearEbit, pmLastBuSumYearEbit, 1);                                  // (연간 : 전년대비) = (연간 : 예상) / (전년실적 : 연간)
+
+                // 잔여월 Ebit
+                decimal pnThisBuReMonthEbit = pnThisBuSumYearEbit - pnThisBuSumMonthEbit;                                                 // (잔여월 : 계획) = (연간 : 계획) - (누계 : 계획)
+                decimal pmThisBuReMonthEbit = pmThisBuSumYearEbit - pmThisBuSumMonthEbit;                                                 // (잔여월 : 예상) = (연간 : 예상) - (누계 : 실적)
+                string reMonthBuPnEbit = WebUtil.DivPmValue(pmThisBuReMonthEbit, pnThisBuReMonthEbit, 1);                                  // (잔여월 : 계획대비) = (잔여월 : 예상) / (잔여월 : 계획)
+                string reMonthBuPmEbit = WebUtil.DivPmValue(pmThisBuReMonthEbit, pmLastBuReMonthEbit, 1);                                  // (잔여월 : 전년대비) = (잔여월 : 예상) / (전년실적 : 잔여월)
+
+                <tr>
+                    <th class="buLevel">영업이익</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuSumYearEbit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuMonthEbit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuSumMonthEbit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuReMonthEbit)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuMonthEbit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuMonthEbit)</th>
+                    <th style="mso-number-format:0\.0%">@(monthBuPnEbit)</th>
+                    <th style="mso-number-format:0\.0%">@(monthBuPmEbit)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuSumMonthEbit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuSumMonthEbit)</th>
+                    <th style="mso-number-format:0\.0%">@(sumMonthBuPnEbit)</th>
+                    <th style="mso-number-format:0\.0%">@(sumMonthBuPmEbit)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuReMonthEbit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuReMonthEbit)</th>
+                    <th style="mso-number-format:0\.0%">@(reMonthBuPnEbit)</th>
+                    <th style="mso-number-format:0\.0%">@(reMonthBuPmEbit)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuSumYearEbit)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuSumYearEbit)</th>
+                    <th style="mso-number-format:0\.0%">@(sumYearBuPnEbit)</th>
+                    <th style="mso-number-format:0\.0%">@(sumYearBuPmEbit)</th>
+                    <th></th>
+                </tr>
+
+                //------------- EbitRate (%)
+                decimal pmLastBuSumYearEbitRate = pmLastBuSumYearSales == 0 ? 0 : Math.Round(pmLastBuSumYearEbit / pmLastBuSumYearSales, 3, MidpointRounding.AwayFromZero);
+                decimal pmLastBuMonthEbitRate = pmLastBuMonthSales == 0 ? 0 : Math.Round(pmLastBuMonthEbit / pmLastBuMonthSales, 3, MidpointRounding.AwayFromZero);
+                decimal pmLastBuSumMonthEbitRate = pmLastBuSumMonthSales == 0 ? 0 : Math.Round(pmLastBuSumMonthEbit / pmLastBuSumMonthSales, 3, MidpointRounding.AwayFromZero);
+                decimal pmLastBuReMonthEbitRate = pmLastBuReMonthSales == 0 ? 0 : Math.Round(pmLastBuReMonthEbit / pmLastBuReMonthSales, 3, MidpointRounding.AwayFromZero);
+
+                // 당해월 Ebit
+                decimal pnThisBuMonthEbitRate = pnThisBuMonthSales == 0 ? 0 : Math.Round(pnThisBuMonthEbit / pnThisBuMonthSales, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisBuMonthEbitRate = pmThisBuMonthSales == 0 ? 0 : Math.Round(pmThisBuMonthEbit / pmThisBuMonthSales, 3, MidpointRounding.AwayFromZero);
+                decimal monthPnBuEbitRate = Math.Round(pmThisBuMonthEbitRate - pnThisBuMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+                decimal monthPmBuEbitRate = Math.Round(pmThisBuMonthEbitRate - pmLastBuMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+
+                // 누계월 Ebit
+                decimal pnThisBuSumMonthEbitRate = pnThisBuSumMonthSales == 0 ? 0 : Math.Round(pnThisBuSumMonthEbit / pnThisBuSumMonthSales, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisBuSumMonthEbitRate = pmThisBuSumMonthSales == 0 ? 0 : Math.Round(pmThisBuSumMonthEbit / pmThisBuSumMonthSales, 3, MidpointRounding.AwayFromZero);
+                decimal sumMonthBuPnEbitRate = Math.Round(pmThisBuSumMonthEbitRate - pnThisBuSumMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+                decimal sumMonthBuPmEbitRate = Math.Round(pmThisBuSumMonthEbitRate - pmLastBuSumMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+
+                // 연간 Ebit
+                decimal pnThisBuSumYearEbitRate = pnThisBuSumYearSales == 0 ? 0 : Math.Round(pnThisBuSumYearEbit / pnThisBuSumYearSales, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisBuSumYearEbitRate = pmThisBuSumYearSales == 0 ? 0 : Math.Round(pmThisBuSumYearEbit / pmThisBuSumYearSales, 3, MidpointRounding.AwayFromZero);
+                decimal sumYearBuPnEbitRate = Math.Round(pmThisBuSumYearEbitRate - pnThisBuSumYearEbitRate, 3, MidpointRounding.AwayFromZero);
+                decimal sumYearBuPmEbitRate = Math.Round(pmThisBuSumYearEbitRate - pmLastBuSumYearEbitRate, 3, MidpointRounding.AwayFromZero);
+
+                // 잔여월 Ebit
+                decimal pnThisBuReMonthEbitRate = pnThisBuReMonthSales == 0 ? 0 : Math.Round(pnThisBuReMonthEbit / pnThisBuReMonthSales, 3, MidpointRounding.AwayFromZero);
+                decimal pmThisBuReMonthEbitRate = pmThisBuReMonthSales == 0 ? 0 : Math.Round(pmThisBuReMonthEbit / pmThisBuReMonthSales, 3, MidpointRounding.AwayFromZero);
+                decimal reMonthBuPnEbitRate = Math.Round(pmThisBuReMonthEbitRate - pnThisBuReMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+                decimal reMonthBuPmEbitRate = Math.Round(pmThisBuReMonthEbitRate - pmLastBuReMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+
+                <tr>
+                    <th class="buLevel">(%)</th>
+                    <th style="mso-number-format:0.0%">@(pmLastBuSumYearEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmLastBuMonthEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmLastBuSumMonthEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmLastBuReMonthEbitRate)</th>
+
+                    <th style="mso-number-format:0.0%">@(pnThisBuMonthEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmThisBuMonthEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(monthPnBuEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(monthPmBuEbitRate)</th>
+
+                    <th style="mso-number-format:0.0%">@(pnThisBuSumMonthEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmThisBuSumMonthEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(sumMonthBuPnEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(sumMonthBuPmEbitRate)</th>
+
+                    <th style="mso-number-format:0.0%">@(pnThisBuReMonthEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmThisBuReMonthEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(reMonthBuPnEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(reMonthBuPmEbitRate)</th>
+
+                    <th style="mso-number-format:0.0%">@(pnThisBuSumYearEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(pmThisBuSumYearEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(sumYearBuPnEbitRate)</th>
+                    <th style="mso-number-format:0.0%">@(sumYearBuPmEbitRate)</th>
+                    <th></th>
+                </tr>
+
+                //------------- 경상이익
+
+                // 전년실적 Ebit
+                decimal pmLastBuSumYearPbt = pmLastYearBuSumYearRow == null ? 0 : pmLastYearBuSumYearRow.Pbt;                          // (전년실적 : 연간)
+                decimal pmLastBuMonthPbt = pmLastYearBuMonthRow == null ? 0 : pmLastYearBuMonthRow.Pbt;                                // (전년실적 : 당월)
+                decimal pmLastBuSumMonthPbt = pmLastYearBuSumMonthRow == null ? 0 : pmLastYearBuSumMonthRow.Pbt;                       // (전년실적 : 누계)
+                decimal pmLastBuReMonthPbt = pmLastBuSumYearPbt - pmLastBuSumMonthPbt;                                                 // (전년실적 : 잔여월) = (전년실적 : 연간) - (전년실적 : 누계)
+
+                // 당해월 Pbt
+                decimal pnThisBuMonthPbt = pnThisYearBuMonthRow == null ? 0 : pnThisYearBuMonthRow.Pbt;                                // (당월 : 계획)
+                decimal pmThisBuMonthPbt = pmThisYearBuMonthRow == null ? 0 : pmThisYearBuMonthRow.Pbt;                                // (당월 : 실적)
+                string monthBuPnPbt = WebUtil.DivPmValue(pmThisBuMonthPbt, pnThisBuMonthPbt, 1);                                      // (당월 : 계획대비) = (당월 : 실적) / (당월 : 계획)
+                string monthBuPmPbt = WebUtil.DivPmValue(pmThisBuMonthPbt, pmLastBuMonthPbt, 1);                                      // (당월 : 전년대비) = (당월 : 실적) / (전년실적 : 당월)
+
+                // 누계월 Pbt
+                decimal pnThisBuSumMonthPbt = pnThisYearBuSumMonthRow == null ? 0 : pnThisYearBuSumMonthRow.Pbt;                       // (누계 : 계획)
+                decimal pmThisBuSumMonthPbt = pmThisYearBuSumMonthRow == null ? 0 : pmThisYearBuSumMonthRow.Pbt;                       // (누계 : 실적)
+                string sumMonthBuPnPbt = WebUtil.DivPmValue(pmThisBuSumMonthPbt, pnThisBuSumMonthPbt, 1);                             // (누계 : 계획대비) = (누계 : 실적) / (누계 : 계획)
+                string sumMonthBuPmPbt = WebUtil.DivPmValue(pmThisBuSumMonthPbt, pmLastBuSumMonthPbt, 1);                             // (누계 : 전년대비) = (누계 : 실적) / (전년실적 : 누계)
+
+                // 연간 Pbt
+                decimal pnThisBuSumYearPbt = pnThisYearBuSumYearRow == null ? 0 : pnThisYearBuSumYearRow.Pbt;                          // (연간 : 계획)
+                decimal pmThisBuSumYearPbt = pmThisYearBuSumYearRow == null ? 0 : pmThisYearBuSumYearRow.Pbt;                          // (연간 : 예상)
+                string sumYearBuPnPbt = WebUtil.DivPmValue(pmThisBuSumYearPbt, pnThisBuSumYearPbt, 1);                                // (연간 : 계획대비) = (연간 : 예상) / (연간 : 계획)
+                string sumYearBuPmPbt = WebUtil.DivPmValue(pmThisBuSumYearPbt, pmLastBuSumYearPbt, 1);                                // (연간 : 전년대비) = (연간 : 예상) / (전년실적 : 연간)
+
+                // 잔여월 Pbt
+                decimal pnThisBuReMonthPbt = pnThisBuSumYearPbt - pnThisBuSumMonthPbt;                                                 // (잔여월 : 계획) = (연간 : 계획) - (누계 : 계획)
+                decimal pmThisBuReMonthPbt = pmThisBuSumYearPbt - pmThisBuSumMonthPbt;                                                 // (잔여월 : 예상) = (연간 : 예상) - (누계 : 실적)
+                string reMonthBuPnPbt = WebUtil.DivPmValue(pmThisBuReMonthPbt, pnThisBuReMonthPbt, 1);                                // (잔여월 : 계획대비) = (잔여월 : 예상) / (잔여월 : 계획)
+                string reMonthBuPmPbt = WebUtil.DivPmValue(pmThisBuReMonthPbt, pmLastBuReMonthPbt, 1);                                // (잔여월 : 전년대비) = (잔여월 : 예상) / (전년실적 : 잔여월)
+
+                <tr>
+                    <th class="buLevel">경상이익</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuSumYearPbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuMonthPbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuSumMonthPbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmLastBuReMonthPbt)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuMonthPbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuMonthPbt)</th>
+                    <th style="mso-number-format:0\.0%">@(monthBuPnPbt)</th>
+                    <th style="mso-number-format:0\.0%">@(monthBuPmPbt)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuSumMonthPbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuSumMonthPbt)</th>
+                    <th style="mso-number-format:0\.0%">@(sumMonthBuPnPbt)</th>
+                    <th style="mso-number-format:0\.0%">@(sumMonthBuPmPbt)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuReMonthPbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuReMonthPbt)</th>
+                    <th style="mso-number-format:0\.0%">@(reMonthBuPnPbt)</th>
+                    <th style="mso-number-format:0\.0%">@(reMonthBuPmPbt)</th>
+
+                    <th style="mso-number-format:\#\,\#\#0\">@(pnThisBuSumYearPbt)</th>
+                    <th style="mso-number-format:\#\,\#\#0\">@(pmThisBuSumYearPbt)</th>
+                    <th style="mso-number-format:0\.0%">@(sumYearBuPnPbt)</th>
+                    <th style="mso-number-format:0\.0%">@(sumYearBuPmPbt)</th>
+                    <th></th>
+                </tr>
+            }
+            isFirst = false;
+
+            // 전년실적
+            var pmLastYearComSumYearRow = pmLastYearComSumYear.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            var pmLastYearComSumMonthRow = pmLastYearComSumMonth.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            var pmLastYearComMonthRow = pmLastYearComMonth.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            // 당해계획
+            var pnThisYearComSumYearRow = pnThisYearComSumYear.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            var pnThisYearComSumMonthRow = pnThisYearComSumMonth.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            var pnThisYearComMonthRow = pnThisYearComMonth.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            // 당해실적
+            var pmThisYearComSumYearRow = pmThisYearComSumYear.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            var pmThisYearComSumMonthRow = pmThisYearComSumMonth.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+            var pmThisYearComMonthRow = pmThisYearComMonth.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).FirstOrDefault();
+
+            //------------- 매출액
+
+            // 전년실적 Sales
+            decimal pmLastComSumYearSales = pmLastYearComSumYearRow == null ? 0 : pmLastYearComSumYearRow.Sales;                            // (전년실적 : 연간)
+            decimal pmLastComMonthSales = pmLastYearComMonthRow == null ? 0 : pmLastYearComMonthRow.Sales;                                  // (전년실적 : 당월)
+            decimal pmLastComSumMonthSales = pmLastYearComSumMonthRow == null ? 0 : pmLastYearComSumMonthRow.Sales;                         // (전년실적 : 누계)
+            decimal pmLastComReMonthSales = pmLastComSumYearSales - pmLastComSumMonthSales;                                                 // (전년실적 : 잔여월) = (전년실적 : 연간) - (전년실적 : 누계)
+
+            // 당해월 Sales
+            decimal pnThisComMonthSales = pnThisYearComMonthRow == null ? 0 : pnThisYearComMonthRow.Sales;                                  // (당월 : 계획)
+            decimal pmThisComMonthSales = pmThisYearComMonthRow == null ? 0 : pmThisYearComMonthRow.Sales;                                  // (당월 : 실적)
+            string monthComPnSales = WebUtil.DivPmValue(pmThisComMonthSales, pnThisComMonthSales, 1);                                        // (당월 : 계획대비) = (당월 : 실적) / (당월 : 계획)
+            string monthComPmSales = WebUtil.DivPmValue(pmThisComMonthSales, pmLastComMonthSales, 1);                                        // (당월 : 전년대비) = (당월 : 실적) / (전년실적 : 당월)
+
+            // 누계월 Sales
+            decimal pnThisComSumMonthSales = pnThisYearComSumMonthRow == null ? 0 : pnThisYearComSumMonthRow.Sales;                         // (누계 : 계획)
+            decimal pmThisComSumMonthSales = pmThisYearComSumMonthRow == null ? 0 : pmThisYearComSumMonthRow.Sales;                         // (누계 : 실적)
+            string sumMonthComPnSales = WebUtil.DivPmValue(pmThisComSumMonthSales, pnThisComSumMonthSales, 1);                               // (누계 : 계획대비) = (누계 : 실적) / (누계 : 계획)
+            string sumMonthComPmSales = WebUtil.DivPmValue(pmThisComSumMonthSales, pmLastComSumMonthSales, 1);                               // (누계 : 전년대비) = (누계 : 실적) / (전년실적 : 누계)
+
+            // 연간 Sales
+            decimal pnThisComSumYearSales = pnThisYearComSumYearRow == null ? 0 : pnThisYearComSumYearRow.Sales;                            // (연간 : 계획)
+            decimal pmThisComSumYearSales = pmThisYearComSumYearRow == null ? 0 : pmThisYearComSumYearRow.Sales;                            // (연간 : 예상)
+            string sumYearComPnSales = WebUtil.DivPmValue(pmThisComSumYearSales, pnThisComSumYearSales, 1);                                  // (연간 : 계획대비) = (연간 : 예상) / (연간 : 계획)
+            string sumYearComPmSales = WebUtil.DivPmValue(pmThisComSumYearSales, pmLastComSumYearSales, 1);                                  // (연간 : 전년대비) = (연간 : 예상) / (전년실적 : 연간)
+
+            // 잔여월 Sales
+            decimal pnThisComReMonthSales = pnThisComSumYearSales - pnThisComSumMonthSales;                                                 // (잔여월 : 계획) = (연간 : 계획) - (누계 : 계획)
+            decimal pmThisComReMonthSales = pmThisComSumYearSales - pmThisComSumMonthSales;                                                 // (잔여월 : 예상) = (연간 : 예상) - (누계 : 실적)
+            string reMonthComPnSales = WebUtil.DivPmValue(pmThisComReMonthSales, pnThisComReMonthSales, 1);                                  // (잔여월 : 계획대비) = (잔여월 : 예상) / (잔여월 : 계획)
+            string reMonthComPmSales = WebUtil.DivPmValue(pmThisComReMonthSales, pmLastComReMonthSales, 1);                                  // (잔여월 : 전년대비) = (잔여월 : 예상) / (전년실적 : 잔여월)
+
+            <tr class="ComLevel">
+                <th rowspan="4" colspan="3">@item.CompanyName</th>
+                <th>매출액</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComSumYearSales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComMonthSales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComSumMonthSales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComReMonthSales)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComMonthSales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComMonthSales)</th>
+                <th style="mso-number-format:0\.0%">@(monthComPnSales)</th>
+                <th style="mso-number-format:0\.0%">@(monthComPmSales)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComSumMonthSales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComSumMonthSales)</th>
+                <th style="mso-number-format:0\.0%">@(sumMonthComPnSales)</th>
+                <th style="mso-number-format:0\.0%">@(sumMonthComPmSales)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComReMonthSales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComReMonthSales)</th>
+                <th style="mso-number-format:0\.0%">@(reMonthComPnSales)</th>
+                <th style="mso-number-format:0\.0%">@(reMonthComPmSales)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComSumYearSales)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComSumYearSales)</th>
+                <th style="mso-number-format:0\.0%">@(sumYearComPnSales)</th>
+                <th style="mso-number-format:0\.0%">@(sumYearComPmSales)</th>
+                <th rowspan="4">@pmThisYearComMonthRow.LiabilitiesRateComment</th>
+            </tr>
+
+
+            //------------- 영업이익
+
+            // 전년실적 Ebit
+            decimal pmLastComSumYearEbit = pmLastYearComSumYearRow == null ? 0 : pmLastYearComSumYearRow.Ebit;                           // (전년실적 : 연간)
+            decimal pmLastComMonthEbit = pmLastYearComMonthRow == null ? 0 : pmLastYearComMonthRow.Ebit;                                 // (전년실적 : 당월)
+            decimal pmLastComSumMonthEbit = pmLastYearComSumMonthRow == null ? 0 : pmLastYearComSumMonthRow.Ebit;                        // (전년실적 : 누계)
+            decimal pmLastComReMonthEbit = pmLastComSumYearEbit - pmLastComSumMonthEbit;                                                 // (전년실적 : 잔여월) = (전년실적 : 연간) - (전년실적 : 누계)
+
+            // 당해월 Ebit
+            decimal pnThisComMonthEbit = pnThisYearComMonthRow == null ? 0 : pnThisYearComMonthRow.Ebit;                                 // (당월 : 계획)
+            decimal pmThisComMonthEbit = pmThisYearComMonthRow == null ? 0 : pmThisYearComMonthRow.Ebit;                                 // (당월 : 실적)
+            string monthComPnEbit = WebUtil.DivPmValue(pmThisComMonthEbit, pnThisComMonthEbit, 1);                                        // (당월 : 계획대비) = (당월 : 실적) / (당월 : 계획)
+            string monthComPmEbit = WebUtil.DivPmValue(pmThisComMonthEbit, pmLastComMonthEbit, 1);                                        // (당월 : 전년대비) = (당월 : 실적) / (전년실적 : 당월)
+
+            // 누계월 Ebit
+            decimal pnThisComSumMonthEbit = pnThisYearComSumMonthRow == null ? 0 : pnThisYearComSumMonthRow.Ebit;                        // (누계 : 계획)
+            decimal pmThisComSumMonthEbit = pmThisYearComSumMonthRow == null ? 0 : pmThisYearComSumMonthRow.Ebit;                        // (누계 : 실적)
+            string sumMonthComPnEbit = WebUtil.DivPmValue(pmThisComSumMonthEbit, pnThisComSumMonthEbit, 1);                               // (누계 : 계획대비) = (누계 : 실적) / (누계 : 계획)
+            string sumMonthComPmEbit = WebUtil.DivPmValue(pmThisComSumMonthEbit, pmLastComSumMonthEbit, 1);                               // (누계 : 전년대비) = (누계 : 실적) / (전년실적 : 누계)
+
+            // 연간 Ebit
+            decimal pnThisComSumYearEbit = pnThisYearComSumYearRow == null ? 0 : pnThisYearComSumYearRow.Ebit;                           // (연간 : 계획)
+            decimal pmThisComSumYearEbit = pmThisYearComSumYearRow == null ? 0 : pmThisYearComSumYearRow.Ebit;                           // (연간 : 예상)
+            string sumYearComPnEbit = WebUtil.DivPmValue(pmThisComSumYearEbit, pnThisComSumYearEbit, 1);                                  // (연간 : 계획대비) = (연간 : 예상) / (연간 : 계획)
+            string sumYearComPmEbit = WebUtil.DivPmValue(pmThisComSumYearEbit, pmLastComSumYearEbit, 1);                                  // (연간 : 전년대비) = (연간 : 예상) / (전년실적 : 연간)
+
+            // 잔여월 Ebit
+            decimal pnThisComReMonthEbit = pnThisComSumYearEbit - pnThisComSumMonthEbit;                                                 // (잔여월 : 계획) = (연간 : 계획) - (누계 : 계획)
+            decimal pmThisComReMonthEbit = pmThisComSumYearEbit - pmThisComSumMonthEbit;                                                 // (잔여월 : 예상) = (연간 : 예상) - (누계 : 실적)
+            string reMonthComPnEbit = WebUtil.DivPmValue(pmThisComReMonthEbit, pnThisComReMonthEbit, 1);                                  // (잔여월 : 계획대비) = (잔여월 : 예상) / (잔여월 : 계획)
+            string reMonthComPmEbit = WebUtil.DivPmValue(pmThisComReMonthEbit, pmLastComReMonthEbit, 1);                                  // (잔여월 : 전년대비) = (잔여월 : 예상) / (전년실적 : 잔여월)
+
+            <tr class="ComLevel">
+                <th>영업이익</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComSumYearEbit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComMonthEbit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComSumMonthEbit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComReMonthEbit)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComMonthEbit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComMonthEbit)</th>
+                <th style="mso-number-format:0\.0%">@(monthComPnEbit)</th>
+                <th style="mso-number-format:0\.0%">@(monthComPmEbit)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComSumMonthEbit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComSumMonthEbit)</th>
+                <th style="mso-number-format:0\.0%">@(sumMonthComPnEbit)</th>
+                <th style="mso-number-format:0\.0%">@(sumMonthComPmEbit)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComReMonthEbit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComReMonthEbit)</th>
+                <th style="mso-number-format:0\.0%">@(reMonthComPnEbit)</th>
+                <th style="mso-number-format:0\.0%">@(reMonthComPmEbit)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComSumYearEbit)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComSumYearEbit)</th>
+                <th style="mso-number-format:0\.0%">@(sumYearComPnEbit)</th>
+                <th style="mso-number-format:0\.0%">@(sumYearComPmEbit)</th>
+            </tr>
+
+            //------------- EbitRate (%)
+            decimal pmLastComSumYearEbitRate = pmLastComSumYearSales == 0 ? 0 : Math.Round(pmLastComSumYearEbit / pmLastComSumYearSales, 3, MidpointRounding.AwayFromZero);
+            decimal pmLastComMonthEbitRate = pmLastComMonthSales == 0 ? 0 : Math.Round(pmLastComMonthEbit / pmLastComMonthSales, 3, MidpointRounding.AwayFromZero);
+            decimal pmLastComSumMonthEbitRate = pmLastComSumMonthSales == 0 ? 0 : Math.Round(pmLastComSumMonthEbit / pmLastComSumMonthSales, 3, MidpointRounding.AwayFromZero);
+            decimal pmLastComReMonthEbitRate = pmLastComReMonthSales == 0 ? 0 : Math.Round(pmLastComReMonthEbit / pmLastComReMonthSales, 3, MidpointRounding.AwayFromZero);
+
+            // 당해월 Ebit
+            decimal pnThisComMonthEbitRate = pnThisComMonthSales == 0 ? 0 : Math.Round(pnThisComMonthEbit / pnThisComMonthSales, 3, MidpointRounding.AwayFromZero);
+            decimal pmThisComMonthEbitRate = pmThisComMonthSales == 0 ? 0 : Math.Round(pmThisComMonthEbit / pmThisComMonthSales, 3, MidpointRounding.AwayFromZero);
+            decimal monthPnComEbitRate = Math.Round(pmThisComMonthEbitRate - pnThisComMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+            decimal monthPmComEbitRate = Math.Round(pmThisComMonthEbitRate - pmLastComMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+
+            // 누계월 Ebit
+            decimal pnThisComSumMonthEbitRate = pnThisComSumMonthSales == 0 ? 0 : Math.Round(pnThisComSumMonthEbit / pnThisComSumMonthSales, 3, MidpointRounding.AwayFromZero);
+            decimal pmThisComSumMonthEbitRate = pmThisComSumMonthSales == 0 ? 0 : Math.Round(pmThisComSumMonthEbit / pmThisComSumMonthSales, 3, MidpointRounding.AwayFromZero);
+            decimal sumMonthComPnEbitRate = Math.Round(pmThisComSumMonthEbitRate - pnThisComSumMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+            decimal sumMonthComPmEbitRate = Math.Round(pmThisComSumMonthEbitRate - pmLastComSumMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+
+            // 연간 Ebit
+            decimal pnThisComSumYearEbitRate = pnThisComSumYearSales == 0 ? 0 : Math.Round(pnThisComSumYearEbit / pnThisComSumYearSales, 3, MidpointRounding.AwayFromZero);
+            decimal pmThisComSumYearEbitRate = pmThisComSumYearSales == 0 ? 0 : Math.Round(pmThisComSumYearEbit / pmThisComSumYearSales, 3, MidpointRounding.AwayFromZero);
+            decimal sumYearComPnEbitRate = Math.Round(pmThisComSumYearEbitRate - pnThisComSumYearEbitRate, 3, MidpointRounding.AwayFromZero);
+            decimal sumYearComPmEbitRate = Math.Round(pmThisComSumYearEbitRate - pmLastComSumYearEbitRate, 3, MidpointRounding.AwayFromZero);
+
+            // 잔여월 Ebit
+            decimal pnThisComReMonthEbitRate = pnThisComReMonthSales == 0 ? 0 : Math.Round(pnThisComReMonthEbit / pnThisComReMonthSales, 3, MidpointRounding.AwayFromZero);
+            decimal pmThisComReMonthEbitRate = pmThisComReMonthSales == 0 ? 0 : Math.Round(pmThisComReMonthEbit / pmThisComReMonthSales, 3, MidpointRounding.AwayFromZero);
+            decimal reMonthComPnEbitRate = Math.Round(pmThisComReMonthEbitRate - pnThisComReMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+            decimal reMonthComPmEbitRate = Math.Round(pmThisComReMonthEbitRate - pmLastComReMonthEbitRate, 3, MidpointRounding.AwayFromZero);
+
+            <tr class="ComLevel">
+                <th>(%)</th>
+                <th style="mso-number-format:0.0%">@(pmLastComSumYearEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmLastComMonthEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmLastComSumMonthEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmLastComReMonthEbitRate)</th>
+
+                <th style="mso-number-format:0.0%">@(pnThisComMonthEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmThisComMonthEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(monthPnComEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(monthPmComEbitRate)</th>
+
+                <th style="mso-number-format:0.0%">@(pnThisComSumMonthEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmThisComSumMonthEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(sumMonthComPnEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(sumMonthComPmEbitRate)</th>
+
+                <th style="mso-number-format:0.0%">@(pnThisComReMonthEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmThisComReMonthEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(reMonthComPnEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(reMonthComPmEbitRate)</th>
+
+                <th style="mso-number-format:0.0%">@(pnThisComSumYearEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(pmThisComSumYearEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(sumYearComPnEbitRate)</th>
+                <th style="mso-number-format:0.0%">@(sumYearComPmEbitRate)</th>
+            </tr>
+
+            //------------- 경상이익
+
+            // 전년실적 Ebit
+            decimal pmLastComSumYearPbt = pmLastYearComSumYearRow == null ? 0 : pmLastYearComSumYearRow.Pbt;                          // (전년실적 : 연간)
+            decimal pmLastComMonthPbt = pmLastYearComMonthRow == null ? 0 : pmLastYearComMonthRow.Pbt;                                // (전년실적 : 당월)
+            decimal pmLastComSumMonthPbt = pmLastYearComSumMonthRow == null ? 0 : pmLastYearComSumMonthRow.Pbt;                       // (전년실적 : 누계)
+            decimal pmLastComReMonthPbt = pmLastComSumYearPbt - pmLastComSumMonthPbt;                                                 // (전년실적 : 잔여월) = (전년실적 : 연간) - (전년실적 : 누계)
+
+            // 당해월 Pbt
+            decimal pnThisComMonthPbt = pnThisYearComMonthRow == null ? 0 : pnThisYearComMonthRow.Pbt;                                // (당월 : 계획)
+            decimal pmThisComMonthPbt = pmThisYearComMonthRow == null ? 0 : pmThisYearComMonthRow.Pbt;                                // (당월 : 실적)
+            string monthComPnPbt = WebUtil.DivPmValue(pmThisComMonthPbt, pnThisComMonthPbt, 1);                                      // (당월 : 계획대비) = (당월 : 실적) / (당월 : 계획)
+            string monthComPmPbt = WebUtil.DivPmValue(pmThisComMonthPbt, pmLastComMonthPbt, 1);                                      // (당월 : 전년대비) = (당월 : 실적) / (전년실적 : 당월)
+
+            // 누계월 Pbt
+            decimal pnThisComSumMonthPbt = pnThisYearComSumMonthRow == null ? 0 : pnThisYearComSumMonthRow.Pbt;                       // (누계 : 계획)
+            decimal pmThisComSumMonthPbt = pmThisYearComSumMonthRow == null ? 0 : pmThisYearComSumMonthRow.Pbt;                       // (누계 : 실적)
+            string sumMonthComPnPbt = WebUtil.DivPmValue(pmThisComSumMonthPbt, pnThisComSumMonthPbt, 1);                             // (누계 : 계획대비) = (누계 : 실적) / (누계 : 계획)
+            string sumMonthComPmPbt = WebUtil.DivPmValue(pmThisComSumMonthPbt, pmLastComSumMonthPbt, 1);                             // (누계 : 전년대비) = (누계 : 실적) / (전년실적 : 누계)
+
+            // 연간 Pbt
+            decimal pnThisComSumYearPbt = pnThisYearComSumYearRow == null ? 0 : pnThisYearComSumYearRow.Pbt;                          // (연간 : 계획)
+            decimal pmThisComSumYearPbt = pmThisYearComSumYearRow == null ? 0 : pmThisYearComSumYearRow.Pbt;                          // (연간 : 예상)
+            string sumYearComPnPbt = WebUtil.DivPmValue(pmThisComSumYearPbt, pnThisComSumYearPbt, 1);                                // (연간 : 계획대비) = (연간 : 예상) / (연간 : 계획)
+            string sumYearComPmPbt = WebUtil.DivPmValue(pmThisComSumYearPbt, pmLastComSumYearPbt, 1);                                // (연간 : 전년대비) = (연간 : 예상) / (전년실적 : 연간)
+
+            // 잔여월 Pbt
+            decimal pnThisComReMonthPbt = pnThisComSumYearPbt - pnThisComSumMonthPbt;                                                 // (잔여월 : 계획) = (연간 : 계획) - (누계 : 계획)
+            decimal pmThisComReMonthPbt = pmThisComSumYearPbt - pmThisComSumMonthPbt;                                                 // (잔여월 : 예상) = (연간 : 예상) - (누계 : 실적)
+            string reMonthComPnPbt = WebUtil.DivPmValue(pmThisComReMonthPbt, pnThisComReMonthPbt, 1);                                // (잔여월 : 계획대비) = (잔여월 : 예상) / (잔여월 : 계획)
+            string reMonthComPmPbt = WebUtil.DivPmValue(pmThisComReMonthPbt, pmLastComReMonthPbt, 1);                                // (잔여월 : 전년대비) = (잔여월 : 예상) / (전년실적 : 잔여월)
+
+            <tr class="ComLevel">
+                <th>경상이익</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComSumYearPbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComMonthPbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComSumMonthPbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmLastComReMonthPbt)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComMonthPbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComMonthPbt)</th>
+                <th style="mso-number-format:0\.0%">@(monthComPnPbt)</th>
+                <th style="mso-number-format:0\.0%">@(monthComPmPbt)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComSumMonthPbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComSumMonthPbt)</th>
+                <th style="mso-number-format:0\.0%">@(sumMonthComPnPbt)</th>
+                <th style="mso-number-format:0\.0%">@(sumMonthComPmPbt)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComReMonthPbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComReMonthPbt)</th>
+                <th style="mso-number-format:0\.0%">@(reMonthComPnPbt)</th>
+                <th style="mso-number-format:0\.0%">@(reMonthComPmPbt)</th>
+
+                <th style="mso-number-format:\#\,\#\#0\">@(pnThisComSumYearPbt)</th>
+                <th style="mso-number-format:\#\,\#\#0\">@(pmThisComSumYearPbt)</th>
+                <th style="mso-number-format:0\.0%">@(sumYearComPnPbt)</th>
+                <th style="mso-number-format:0\.0%">@(sumYearComPmPbt)</th>
+            </tr>
+        }
+    </tbody>
+</table>

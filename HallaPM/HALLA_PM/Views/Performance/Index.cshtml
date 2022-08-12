@@ -1,0 +1,221 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "Index";
+
+    List<LevelTwo> lvCompany = Model.lvCompany;
+    List<RegistYearList> registYearPm = Model.registYearPm;
+    Search search = ViewBag.search;
+
+    var y = registYearPm
+        .GroupBy(g => g.RegistYear)
+        .Select(cl => new RegistYearList
+        {
+            RegistYear = cl.First().RegistYear
+        })
+        .ToList();
+
+    if (string.IsNullOrWhiteSpace(search.year))
+    {
+        search.year = y.Last().RegistYear;
+    }
+
+    var m = registYearPm.Where(w => w.RegistYear == search.year).ToList();
+
+    if (string.IsNullOrWhiteSpace(search.mm))
+    {
+        search.mm = m.Last().RegistMonth;
+    }
+}
+
+<div class="performance_wrap">
+    <form name="frmForm" method="post">
+        <input type="hidden" name="OrgCompanySeq" value="" />
+        <input type="hidden" name="DownExcelType" value="" />
+        <div class="top_wrap">
+            <div class="style_select">
+                <label class="">
+                    <span>@(search.year)년</span>
+                    <select name="year" id="year" onchange="onChangeDate();">
+                        @foreach (var item in y)
+                    {
+                            <option value="@item.RegistYear" @(search.year == item.RegistYear ? " selected" : "")>@(item.RegistYear)년</option>
+                    }
+                    </select>
+                </label>
+            </div>
+
+            <div class="style_select">
+                <label class="">
+                    <span>@(Convert.ToInt32(search.mm))월</span>
+                    <select name="mm" id="mm" onchange='onChangeDate();'>
+                        @foreach (var item in m)
+                    {
+                            <option value="@item.RegistMonth" @(search.mm == item.RegistMonth ? " selected" : "")>@(Convert.ToInt32(item.RegistMonth))월</option>
+                    }
+                    </select>
+                </label>
+            </div>
+        </div><!--//top_wrap-->
+
+        <div class="tab_wrap">
+            <div class="type_tab">
+                <ul>
+                    @foreach (var item in lvCompany)
+                    {
+                        <li><a href="#per@(item.id)">@(item.txt)</a></li>
+                    }
+                    @*
+                        <li><a href="#per01">그룹전체</a></li>
+                        <li><a href="#per02">한라홀딩스</a></li>
+                        <li><a href="#per03">JJ한라</a></li>
+                        <li><a href="#per04">만도</a></li>
+                        <li><a href="#per05">만도헬라</a></li>
+                        <li><a href="#per06">만도브로제</a></li>
+                        <li><a href="#per07">㈜한라</a></li>
+                    *@
+                </ul>
+            </div><!--//type_tab-->
+
+            @foreach (var item in lvCompany)
+            {
+                <div class="type_tab_con" id="per@(item.id)">
+                    <ul class="download_box_list">
+                        <li>
+                            <div class="download_box down1">
+                                <dl>
+                                    <dt>Cash Flow</dt>
+                                    <dd><a href="javascript:;" onclick="onDownLoadExcel(@(item.id), 'CashFlow');" class="btn_download_big">DOWNLOAD</a></dd>
+                                </dl>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="download_box down2">
+                                <dl>
+                                    <dt>손익</dt>
+                                    <dd><a href="javascript:;" onclick="onDownLoadExcel(@(item.id), 'Pal');" class="btn_download_big">DOWNLOAD</a></dd>
+                                </dl>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="download_box down3">
+                                <dl>
+                                    <dt>분기별 손익</dt>
+                                    <dd><a href="javascript:;" onclick="onDownLoadExcel(@(item.id), 'QuarterPal');" class="btn_download_big">DOWNLOAD</a></dd>
+                                </dl>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="download_box down4">
+                                <dl>
+                                    <dt>Balance Sheet</dt>
+                                    <dd><a href="javascript:;" onclick="onDownLoadExcel(@(item.id), 'Bs');" class="btn_download_big">DOWNLOAD</a></dd>
+                                </dl>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="download_box down5">
+                                <dl>
+                                    <dt>투자, 인원</dt>
+                                    <dd><a href="javascript:;" onclick="onDownLoadExcel(@(item.id), 'Invest');" class="btn_download_big">DOWNLOAD</a></dd>
+                                </dl>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            }
+        </div><!--//tab_wrap-->
+    </form>
+</div><!--performance_wrap-->
+<script>
+    $(function () {
+        /*셀렉트박스 스타일*/
+        MYAPP.form.styleSelect($(".style_select select"));
+        /*탭*/
+        MYAPP.tab.init($(".type_tab"));
+    })
+
+    function onChangeDate() {
+        var f = document.frmForm;
+        f.action = "/Performance/Index";
+        f.submit();
+    }
+
+    
+
+    function onDownLoadExcel(seq, excelType) {
+        var f = document.frmForm;
+        f.OrgCompanySeq.value = seq;
+        f.DownExcelType.value = excelType;
+
+        if (seq == 0) {
+            //f.action = "GroupDown";
+            //f.target = "_Blank";
+            
+            $.ajax({
+                url: "GroupDownString",
+                type: "post",
+                data: { OrgCompanySeq: seq, DownExcelType: excelType, year: $("#year").val(), mm: $("#mm").val()  },
+                dataType: "json",
+                success: function (res) {
+                    if (res.success == true) {
+                        try {
+                            //모바일 파일다운로드 스크립트 bridge 호출
+                            res.data = window.location.protocol + "//" + window.location.host + res.data;
+                            
+                            if (window.webkit != undefined) {
+                                //for ios
+                                if (window.webkit.messageHandlers.appFileDownloadHandler != undefined) {
+                                    window.webkit.messageHandlers.appFileDownloadHandler.postMessage(res.data);
+                                }
+                            }
+                            else if (appFileDownloadHandler != undefined) {
+                                //for android
+                                window.appFileDownloadHandler.postMessage(res.data);
+                            } else {
+                                window.open(res.data);
+                            }
+                            
+                        } catch (e) {
+                            window.open(res.data);
+                        }                        
+                        return;
+                    }
+                    else {
+                        alert(res.data);
+                        return;
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+        else {
+            // 웹 모바일 분기
+            var filter = "win16|win32|win64|mac";
+
+            if(navigator.platform){
+
+                if(0 > filter.indexOf(navigator.platform.toLowerCase())){
+                    // Mobile
+                    //f.action = "ExcelDown" + excelType;
+                    f.action = "Viewing" + excelType;
+                    f.target = "_Blank";
+                    f.submit();
+                }else{
+                    // Pc
+                    f.action = "ExcelDown" + excelType;
+                    //f.action = "Viewing" + excelType;
+                    //f.target = "_Blank";
+                    f.submit();
+                }
+
+            }
+        }
+    }
+
+    function onDownLoadExcelGroup(seq, excelType) {
+    }
+</script>

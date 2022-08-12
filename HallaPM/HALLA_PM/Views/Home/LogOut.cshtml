@@ -1,0 +1,42 @@
+﻿
+@{
+    Layout = null;
+    string message = TempData["alert"] == null ? string.Empty : TempData["alert"].ToString();
+}
+
+    <!DOCTYPE html>
+
+    <html lang="ko">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="keywords" content="" />
+        <meta name="description" content="" />
+        <title>한라그룹 실적관리 시스템</title>
+
+        <link rel="stylesheet" href="~/Contents/user/Common/css/logout.css" />
+        <script type="text/javascript" src="~/Contents/user/Common/js/libs/jquery-1.11.3.min.js"></script>
+        <script type="text/javascript" src="~/Contents/user/Common/js/libs/TweenMax.min.js"></script>
+        <!--[if lt IE 9]>
+            <script type="text/javascript"  src="~/Contents/user/Common/js/libs/html5shiv.js"></script>
+            <script type="text/javascript" src="~/Contents/user/Common/js/libs/IE9.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div class="logout_wrap">
+            <div class="logout_con">
+                <h1><img src="~/Contents/user/Common/img/logout_logo.png" alt="한라"/></h1>
+                <span class="tit">Halla Performance Reporting System</span>
+                <div class="info">
+                    <p>로그인 세션이 <span>종료</span>되었습니다.</p>
+                    <span class="tit">한마루 또는 한마루 앱을 통해 재접속해주시기 바랍니다.</span>
+                </div>
+                <span class="copy">COPYRIGHT© 2018  HALLA CO.LTD.  ALL RIGHTS RESERVED.</span>
+            </div><!--//logout_con-->
+        </div><!--//logout_wrap-->
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <script>alert('@message');</script>
+        }
+    </body>
+</html>

@@ -1,0 +1,209 @@
+﻿
+@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    string thisYear = "";
+    string thisMonth = "";
+    List<ReplyExp> list = Model.list;
+    list = Model.list;
+    int totalCount = Model.totalCount;
+    Search search = ViewBag.Search;
+    if (!string.IsNullOrEmpty(search.searchYear))
+    {
+        thisYear = search.searchYear;
+    }
+    if (!string.IsNullOrEmpty(search.searchMonth))
+    {
+        thisMonth = search.searchMonth;
+    }
+    List<OrgCompany> OrgCpyList = Model.OrgCpyList;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>안내/알림관리</span>
+        <strong>댓글 관리</strong>
+    </div>
+
+    <form name="frmMain" method="post">
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="seq" value="" />
+
+        <div class="con_box search">
+            <h3 class="mt0">사업계획 댓글 관리</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 댓글을 관리할 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box search">
+            <div class="bg_gray">
+                <div class="style_select" style="width:20%;">
+                    <label>
+                        <span></span>
+                        <select name="searchBusType">
+                           @{  
+                               var query2 = from m in Define.BUSINESS_PLAN_REPLY_ITEM select m;
+
+                               foreach (var item in query2)
+                               {
+                                <option value="@item.Key" @(ViewBag.Search.searchBusType == item.Key ? "selected" : "")>@item.Value</option>
+                                   }
+                           }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:10%;">
+                    <label>
+                        <span></span>
+                        <select name="searchYear">
+                            <option value="">년도</option>
+                            @for (int i = 2017; i < 2040; i++)
+                            {
+                                <option value="@i" @(thisYear == i.ToString() ? "selected" : "")>@i</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:10%;display:none">
+                    <label>
+                        <span></span>
+                        <select name="searchType">
+                            @foreach (var item in Define.NOTICE_SEARCH_TYPE)
+                            {
+                                <option value="@item.Key" @(ViewBag.Search.searchType == item.Key ? "selected" : "")>@item.Value</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <input type="text" name="searchText" value="@ViewBag.Search.searchText" style="width:30%;" />
+                <a href="javascript: onSearch(document.frmMain);" class="btn small full_green" style="width:9%;">검색</a>
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+
+            @if (!string.IsNullOrEmpty(ViewBag.Search.searchText))
+            {
+                <p class="tblinfo">@ViewBag.Search.searchText 에 대한 총 <strong class="number">@totalCount</strong>개의 댓글이 있습니다.</p>
+            }
+            else
+            {
+                <p class="tblinfo">총 <strong class="number">@totalCount</strong>개의 댓글이 있습니다.</p>
+            }
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="5%" />
+                    <col width="10%" style="display:none"/>
+                    <col width="10%"  />
+                    <col width="10%" />
+                    <col width="/" />
+                    <col width="10%" />
+                    <col width="10%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>
+                        <th scope="col" style="display:none">회사</th>
+                        <th scope="col">분류</th>
+                        <th scope="col">년월</th>
+                        <th scope="col">내용</th>
+                        <th scope="col">작성자</th>
+                        <th scope="col">등록일</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @if (list.Count() > 0)
+                    {
+                        foreach (var item in list)
+                        {
+                            var strTempKey = item.attachTableName; 
+                            <tr>
+                                <td>@item.rowNum</td>
+                                <td style="display:none">@item.companyName - @strTempKey</td>
+                                @*<td class="ta_left"><a href="javascript:;" onclick="onView(document.frmMain, @item.seq)">@item.title</a></td>*@
+                                <td>@Define.BUSINESS_PLAN_REPLY_ITEM[strTempKey]</td>
+                                <td>@item.commentYear</td>
+                                <td>
+                                    <div align="left">
+                                        <textarea id="txt_@item.seq">  @item.comment </textarea>
+                                    </div>
+                                </td>
+                                <td>@item.userKorName</td>
+                                <td>@item.inputRegDate</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">등록된 댓글이 없습니다.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="paging">
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.FirstPageIndex)" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.PrevPageIndex)" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                <span>
+                    @for (int i = ViewBag.Search.StartPageIndex; i <= ViewBag.Search.EndPageIndex; i++)
+                    {
+                        if (ViewBag.Search.PageIndex == i)
+                        {
+                            <strong>@i</strong>
+                        }
+                        else
+                        {
+                            <a href="#" onclick="onPaging(document.frmMain, @i)">@i</a>
+                        }
+                    }
+                </span>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.NextPageIndex)" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.FinalPageIndex)" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+            </div>
+            <!--// con_box-->
+
+
+            <div class="btn_area" style="display:none">
+                <a href="javascript:;" onclick="onWrite(document.frmMain)" class="btn full_green">등록</a>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+    function onSearch(form) {
+        form.action = "/SiteMngHome/MngInfo/Reply/BuList";
+        form.method = "POST";
+        form.submit();
+    }
+
+    function onWrite(form) {
+
+        form.action = "/SiteMngHome/MngInfo/Reply/Buwrite";
+        form.method = "POST";
+        form.submit();
+
+    }
+
+    function onView(form, seq) {
+        form.seq.value = seq;
+
+        form.action = "/SiteMngHome/MngInfo/Reply/BuEdit";
+        form.method = "POST";
+        form.submit();
+
+    }
+</script>
+

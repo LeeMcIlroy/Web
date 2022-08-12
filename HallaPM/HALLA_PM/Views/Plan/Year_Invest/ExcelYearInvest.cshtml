@@ -1,0 +1,505 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+    PlanGroup chk = Model.chk;
+
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvUnion = Model.lvUnion;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    // 2019.02.18 만도는 안 보이게 변경
+    lvCompany = lvCompany.Where(w => w.id != "3").ToList();
+
+    List<PmInvestBusiness> lastPmB = Model.lastPmB;
+    List<PlanYearInvestBusiness> thisPnB = Model.thisPnB;
+
+    List<PmInvestSum> lastPmC = Model.lastPmC;
+    List<PlanYearInvestSummary> thisPnC = Model.thisPnC;
+
+    List<PlanYearInvestSummary> UList = thisPnC.GroupBy(g => new { g.OrgUnionSeq })
+        .Select(cl => new PlanYearInvestSummary
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName
+        }).ToList();
+
+    List<PmInvestSum> lastPmU = lastPmC.GroupBy(g => new { g.OrgUnionSeq, g.investYear })
+        .Select(cl => new PmInvestSum
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            investYear = cl.First().investYear,
+            Investment = cl.Sum(c => c.Investment),
+            Personnel = cl.Sum(c => c.Personnel),
+            DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+            OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+        }).ToList();
+
+    List<PlanYearInvestSummary> thisPnU = thisPnC.GroupBy(g => new { g.OrgUnionSeq, g.YearlyYear })
+        .Select(cl => new PlanYearInvestSummary
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Investment = cl.Sum(c => c.Investment),
+            Personnel = cl.Sum(c => c.Personnel),
+            DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+            OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+        }).ToList();
+
+    List<PmInvestSum> lastPmG = lastPmC.GroupBy(g => new { g.investYear })
+        .Select(cl => new PmInvestSum
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            investYear = cl.First().investYear,
+            Investment = cl.Sum(c => c.Investment),
+            Personnel = cl.Sum(c => c.Personnel),
+            DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+            OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+        }).ToList();
+
+    List<PlanYearInvestSummary> thisPnG = thisPnC.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearInvestSummary
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Investment = cl.Sum(c => c.Investment),
+            Personnel = cl.Sum(c => c.Personnel),
+            DomesticPersonnel = cl.Sum(c => c.DomesticPersonnel),
+            OverseasPersonnel = cl.Sum(c => c.OverseasPersonnel)
+        }).ToList();
+
+    bool isBFirst = false;
+    bool isCfirst = false;
+
+    // 작년도 계획이 없거나 회사와 Bu의 데이터가 없어 짤릴 경우를 대비
+    int lastStartYear = Convert.ToInt32(chk.PlanYear) - 1;
+    int thisStartYear = Convert.ToInt32(chk.PlanYear);
+
+    // 그룹데이터는 권한이 없어서 안 보이는 부문도 모두 합하였다
+    // 권한 테이블과 조인하여 권한 체크
+    var UListJoin = from u in UList
+                    join uj in lvUnion on u.OrgUnionSeq equals Convert.ToInt32(uj.id)
+                    select new PmPalSummaryExp
+                    {
+                        OrgUnionSeq = u.OrgUnionSeq,
+                        UnionName = u.UnionName
+                    };
+
+    string fileName = chk.PlanYear + "년_중기투자인원계획";
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DownExcelPlanYearInvest</title>
+    <style>
+        .mytable {
+            border-collapse: collapse;
+        }
+
+            .mytable th, .mytable td {
+                border: 1px solid black;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format: \#\,\#\#0\
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\.00%
+        }
+    </style>
+</head>
+<body>
+    <h3>@(chk.PlanYear)년 중기투자인원계획</h3>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="15" style="text-align:right">(단위: 억원,%)</td>
+            </tr>
+        </tbody>
+    </table>
+    <table border="1">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="2" colspan="4">구분</th>
+                <th colspan="6">@(chk.PlanYear)년 중기계획</th>
+                <th colspan="5">전년대비</th>
+            </tr>
+            <tr class="buLevel">
+                @for (int i = lastStartYear; i < lastStartYear + 6; i++)
+                {
+                    <th>@(i)년</th>
+                }
+                @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                {
+                    <th>@(i)년</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in UList)
+            {
+                var CList = thisPnC.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).GroupBy(g => new { g.OrgCompanySeq })
+                        .Select(cl => new PlanYearInvestSummary
+                        {
+                            UnionName = cl.First().UnionName,
+                            OrgCompanySeq = cl.First().OrgCompanySeq,
+                            CompanyName = cl.First().CompanyName
+                        }).ToList();
+                // 권한 테이블과 조인하여 권한있는 회사만 찾기
+
+                var CListJoin = from c in CList
+                                join cj in lvCompany on c.OrgCompanySeq equals Convert.ToInt32(cj.id)
+                                select new PmPalBusinessExp
+                                {
+                                    UnionName = c.UnionName,
+                                    OrgCompanySeq = c.OrgCompanySeq,
+                                    CompanyName = c.CompanyName
+                                };
+                foreach (var item2 in CListJoin)
+                {
+                    var BList = thisPnB.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).GroupBy(g => new { g.OrgBusinessSeq })
+                        .Select(cl => new PlanYearInvestBusiness
+                        {
+                            UnionName = cl.First().UnionName,
+                            CompanyName = cl.First().CompanyName,
+                            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+                            BusinessName = cl.First().BusinessName
+                        }).ToList();
+                    foreach (var item3 in BList)
+                    {
+                        var busPm = lastPmB.Where(w => w.OrgBusinessSeq == item3.OrgBusinessSeq).FirstOrDefault();
+                        if (busPm == null) { busPm = new PmInvestBusiness(); }
+                        var bunPnList = thisPnB.Where(w => w.OrgBusinessSeq == item3.OrgBusinessSeq).ToList();
+                        var pn_0 = bunPnList.Where(w => w.YearlyYear == thisStartYear.ToString()).FirstOrDefault();
+                        var pn_1 = bunPnList.Where(w => w.YearlyYear == (thisStartYear + 1).ToString()).FirstOrDefault();
+                        var pn_2 = bunPnList.Where(w => w.YearlyYear == (thisStartYear + 2).ToString()).FirstOrDefault();
+                        var pn_3 = bunPnList.Where(w => w.YearlyYear == (thisStartYear + 3).ToString()).FirstOrDefault();
+                        var pn_4 = bunPnList.Where(w => w.YearlyYear == (thisStartYear + 4).ToString()).FirstOrDefault();
+                        if (pn_0 == null) { pn_0 = new PlanYearInvestBusiness(); }
+                        if (pn_1 == null) { pn_1 = new PlanYearInvestBusiness(); }
+                        if (pn_2 == null) { pn_2 = new PlanYearInvestBusiness(); }
+                        if (pn_3 == null) { pn_3 = new PlanYearInvestBusiness(); }
+                        if (pn_4 == null) { pn_4 = new PlanYearInvestBusiness(); }
+                        <tr>
+                            @if (!isCfirst)
+                            {
+                                <th class="buLevel" rowspan="@(BList.Count() * 2)">@(item3.UnionName)</th>
+                                <th class="buLevel" rowspan="@(BList.Count() * 2)">@(item3.CompanyName)</th>
+                                isCfirst = true;
+                            }
+                            @if (!isBFirst)
+                            {
+                                <th class="buLevel" rowspan="2">@(item3.BusinessName)</th>
+                                isBFirst = true;
+                            }
+                            <th class="buLevel">투자</th>
+                            <td class="MsoNTwo">@(busPm.Investment)</td>
+                            <td class="MsoNTwo">@(pn_0.Investment)</td>
+                            <td class="MsoNTwo">@(pn_1.Investment)</td>
+                            <td class="MsoNTwo">@(pn_2.Investment)</td>
+                            <td class="MsoNTwo">@(pn_3.Investment)</td>
+                            <td class="MsoNTwo">@(pn_4.Investment)</td>
+
+                            <td class="MsoNTwo">@(pn_0.Investment - busPm.Investment)</td>
+                            <td class="MsoNTwo">@(pn_1.Investment - pn_0.Investment)</td>
+                            <td class="MsoNTwo">@(pn_2.Investment - pn_1.Investment)</td>
+                            <td class="MsoNTwo">@(pn_3.Investment - pn_2.Investment)</td>
+                            <td class="MsoNTwo">@(pn_4.Investment - pn_3.Investment)</td>
+                        </tr>
+                        <tr>
+                            <th class="buLevel">인원</th>
+                            <td class="MsoNTwo">@(busPm.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_0.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_1.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_2.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_3.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_4.Personnel)</td>
+
+                            <td class="MsoNTwo">@(pn_0.Personnel - busPm.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_1.Personnel - pn_0.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_2.Personnel - pn_1.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_3.Personnel - pn_2.Personnel)</td>
+                            <td class="MsoNTwo">@(pn_4.Personnel - pn_3.Personnel)</td>
+                        </tr>
+                        isBFirst = false;
+                    }
+                    isCfirst = false;
+                    var comPm = lastPmC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).FirstOrDefault();
+                    if (comPm == null) { comPm = new PmInvestSum(); }
+                    var comPnList = thisPnC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).ToList();
+                    var comPn_0 = comPnList.Where(w => w.YearlyYear == thisStartYear.ToString()).FirstOrDefault();
+                    var comPn_1 = comPnList.Where(w => w.YearlyYear == (thisStartYear + 1).ToString()).FirstOrDefault();
+                    var comPn_2 = comPnList.Where(w => w.YearlyYear == (thisStartYear + 2).ToString()).FirstOrDefault();
+                    var comPn_3 = comPnList.Where(w => w.YearlyYear == (thisStartYear + 3).ToString()).FirstOrDefault();
+                    var comPn_4 = comPnList.Where(w => w.YearlyYear == (thisStartYear + 4).ToString()).FirstOrDefault();
+                    if (comPn_0 == null) { comPn_0 = new PlanYearInvestSummary(); }
+                    if (comPn_1 == null) { comPn_1 = new PlanYearInvestSummary(); }
+                    if (comPn_2 == null) { comPn_2 = new PlanYearInvestSummary(); }
+                    if (comPn_3 == null) { comPn_3 = new PlanYearInvestSummary(); }
+                    if (comPn_4 == null) { comPn_4 = new PlanYearInvestSummary(); }
+                    <tr class="ComLevel">
+                        <th rowspan="4" colspan="3">@(item2.CompanyName)</th>
+                        <th>투자</th>
+                        <td class="MsoNTwo">@(comPm.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_0.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_1.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_2.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_3.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_4.Investment)</td>
+
+                        <td class="MsoNTwo">@(comPn_0.Investment - comPm.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_1.Investment - comPn_0.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_2.Investment - comPn_1.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_3.Investment - comPn_2.Investment)</td>
+                        <td class="MsoNTwo">@(comPn_4.Investment - comPn_3.Investment)</td>
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>인원</th>
+                        <td class="MsoNTwo">@(comPm.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_0.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_1.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_2.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_3.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_4.Personnel)</td>
+
+                        <td class="MsoNTwo">@(comPn_0.Personnel - comPm.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_1.Personnel - comPn_0.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_2.Personnel - comPn_1.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_3.Personnel - comPn_2.Personnel)</td>
+                        <td class="MsoNTwo">@(comPn_4.Personnel - comPn_3.Personnel)</td>
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>국내인원</th>
+                        <td class="MsoNTwo">@(comPm.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_0.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_1.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_2.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_3.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_4.DomesticPersonnel)</td>
+
+                        <td class="MsoNTwo">@(comPn_0.DomesticPersonnel - comPm.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_1.DomesticPersonnel - comPn_0.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_2.DomesticPersonnel - comPn_1.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_3.DomesticPersonnel - comPn_2.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_4.DomesticPersonnel - comPn_3.DomesticPersonnel)</td>
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>해외인원</th>
+                        <td class="MsoNTwo">@(comPm.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_0.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_1.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_2.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_3.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_4.OverseasPersonnel)</td>
+
+                        <td class="MsoNTwo">@(comPn_0.OverseasPersonnel - comPm.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_1.OverseasPersonnel - comPn_0.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_2.OverseasPersonnel - comPn_1.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_3.OverseasPersonnel - comPn_2.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(comPn_4.OverseasPersonnel - comPn_3.OverseasPersonnel)</td>
+                    </tr>
+                }// 부문 : 권한 있는 부문만 체크
+                var CheckUList = UListJoin.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).ToList();
+                if (CheckUList.Count() > 0)
+                {
+                    var uniPm = lastPmU.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).FirstOrDefault();
+                    if (uniPm == null) { uniPm = new PmInvestSum(); }
+                    var uniPnList = thisPnU.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).ToList();
+                    var uniPn_0 = uniPnList.Where(w => w.YearlyYear == thisStartYear.ToString()).FirstOrDefault();
+                    var uniPn_1 = uniPnList.Where(w => w.YearlyYear == (thisStartYear + 1).ToString()).FirstOrDefault();
+                    var uniPn_2 = uniPnList.Where(w => w.YearlyYear == (thisStartYear + 2).ToString()).FirstOrDefault();
+                    var uniPn_3 = uniPnList.Where(w => w.YearlyYear == (thisStartYear + 3).ToString()).FirstOrDefault();
+                    var uniPn_4 = uniPnList.Where(w => w.YearlyYear == (thisStartYear + 4).ToString()).FirstOrDefault();
+                    if (uniPn_0 == null) { uniPn_0 = new PlanYearInvestSummary(); }
+                    if (uniPn_1 == null) { uniPn_1 = new PlanYearInvestSummary(); }
+                    if (uniPn_2 == null) { uniPn_2 = new PlanYearInvestSummary(); }
+                    if (uniPn_3 == null) { uniPn_3 = new PlanYearInvestSummary(); }
+                    if (uniPn_4 == null) { uniPn_4 = new PlanYearInvestSummary(); }
+                    <tr class="UniLevel">
+                        <th rowspan="4" colspan="3">@(item.UnionName)</th>
+                        <th>투자</th>
+                        <td class="MsoNTwo">@(uniPm.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_0.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_1.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_2.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_3.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_4.Investment)</td>
+
+                        <td class="MsoNTwo">@(uniPn_0.Investment - uniPm.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_1.Investment - uniPn_0.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_2.Investment - uniPn_1.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_3.Investment - uniPn_2.Investment)</td>
+                        <td class="MsoNTwo">@(uniPn_4.Investment - uniPn_3.Investment)</td>
+                    </tr>
+                    <tr class="UniLevel">
+                        <th>인원</th>
+                        <td class="MsoNTwo">@(uniPm.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_0.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_1.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_2.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_3.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_4.Personnel)</td>
+
+                        <td class="MsoNTwo">@(uniPn_0.Personnel - uniPm.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_1.Personnel - uniPn_0.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_2.Personnel - uniPn_1.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_3.Personnel - uniPn_2.Personnel)</td>
+                        <td class="MsoNTwo">@(uniPn_4.Personnel - uniPn_3.Personnel)</td>
+                    </tr>
+                    <tr class="UniLevel">
+                        <th>국내인원</th>
+                        <td class="MsoNTwo">@(uniPm.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_0.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_1.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_2.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_3.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_4.DomesticPersonnel)</td>
+
+                        <td class="MsoNTwo">@(uniPn_0.DomesticPersonnel - uniPm.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_1.DomesticPersonnel - uniPn_0.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_2.DomesticPersonnel - uniPn_1.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_3.DomesticPersonnel - uniPn_2.DomesticPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_4.DomesticPersonnel - uniPn_3.DomesticPersonnel)</td>
+                    </tr>
+                    <tr class="UniLevel">
+                        <th>해외인원</th>
+                        <td class="MsoNTwo">@(uniPm.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_0.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_1.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_2.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_3.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_4.OverseasPersonnel)</td>
+
+                        <td class="MsoNTwo">@(uniPn_0.OverseasPersonnel - uniPm.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_1.OverseasPersonnel - uniPn_0.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_2.OverseasPersonnel - uniPn_1.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_3.OverseasPersonnel - uniPn_2.OverseasPersonnel)</td>
+                        <td class="MsoNTwo">@(uniPn_4.OverseasPersonnel - uniPn_3.OverseasPersonnel)</td>
+                    </tr>
+                }
+            }
+            <!--그룹-->
+            @if (lvGroup.Count() > 0)
+            {
+                var grpPm = lastPmG.FirstOrDefault();
+                if (grpPm == null) { grpPm = new PmInvestSum(); }
+                var grpPnList = thisPnG.ToList();
+                var grpPn_0 = grpPnList.Where(w => w.YearlyYear == thisStartYear.ToString()).FirstOrDefault();
+                var grpPn_1 = grpPnList.Where(w => w.YearlyYear == (thisStartYear + 1).ToString()).FirstOrDefault();
+                var grpPn_2 = grpPnList.Where(w => w.YearlyYear == (thisStartYear + 2).ToString()).FirstOrDefault();
+                var grpPn_3 = grpPnList.Where(w => w.YearlyYear == (thisStartYear + 3).ToString()).FirstOrDefault();
+                var grpPn_4 = grpPnList.Where(w => w.YearlyYear == (thisStartYear + 4).ToString()).FirstOrDefault();
+                if (grpPn_0 == null) { grpPn_0 = new PlanYearInvestSummary(); }
+                if (grpPn_1 == null) { grpPn_1 = new PlanYearInvestSummary(); }
+                if (grpPn_2 == null) { grpPn_2 = new PlanYearInvestSummary(); }
+                if (grpPn_3 == null) { grpPn_3 = new PlanYearInvestSummary(); }
+                if (grpPn_4 == null) { grpPn_4 = new PlanYearInvestSummary(); }
+                <tr class="GrpLevel">
+                    <th rowspan="4" colspan="3">그룹</th>
+                    <th>투자</th>
+                    <td class="MsoNTwo">@(grpPm.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_0.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Investment)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.Investment - grpPm.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Investment - grpPn_0.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Investment - grpPn_1.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Investment - grpPn_2.Investment)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Investment - grpPn_3.Investment)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>인원</th>
+                    <td class="MsoNTwo">@(grpPm.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_0.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Personnel)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.Personnel - grpPm.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_1.Personnel - grpPn_0.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_2.Personnel - grpPn_1.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_3.Personnel - grpPn_2.Personnel)</td>
+                    <td class="MsoNTwo">@(grpPn_4.Personnel - grpPn_3.Personnel)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>국내인원</th>
+                    <td class="MsoNTwo">@(grpPm.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_0.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_1.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_2.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_3.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_4.DomesticPersonnel)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.DomesticPersonnel - grpPm.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_1.DomesticPersonnel - grpPn_0.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_2.DomesticPersonnel - grpPn_1.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_3.DomesticPersonnel - grpPn_2.DomesticPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_4.DomesticPersonnel - grpPn_3.DomesticPersonnel)</td>
+                </tr>
+                <tr class="GrpLevel">
+                    <th>해외인원</th>
+                    <td class="MsoNTwo">@(grpPm.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_0.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_1.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_2.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_3.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_4.OverseasPersonnel)</td>
+
+                    <td class="MsoNTwo">@(grpPn_0.OverseasPersonnel - grpPm.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_1.OverseasPersonnel - grpPn_0.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_2.OverseasPersonnel - grpPn_1.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_3.OverseasPersonnel - grpPn_2.OverseasPersonnel)</td>
+                    <td class="MsoNTwo">@(grpPn_4.OverseasPersonnel - grpPn_3.OverseasPersonnel)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

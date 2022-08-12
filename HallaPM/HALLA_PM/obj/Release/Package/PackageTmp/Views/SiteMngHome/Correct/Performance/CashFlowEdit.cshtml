@@ -1,0 +1,294 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PmGroupdataMonth pmGroupdataMonth = Model.PmGroupdataMonth;
+    List<PmGroupdataCashflowMonth> CashflowMonthList = Model.PmCashflowMonthList;
+    List<PmGroupdataCashflowMonthCr> CashflowMonthListCr = Model.PmCashflowMonthListCr;
+
+    Search search = ViewBag.Search;
+    var PmYear = Model.PmYear;
+    var PmMonth = Model.PmMonth;
+    //orgBusinessList
+}
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>그룹데이터 조정</span>
+        <strong>실적 조정</strong>
+    </div>
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchMonth" value="@(search.searchMonth)" />
+        <input type="hidden" name="searchBusType" value="@(search.searchBusType)" />
+        <input type="hidden" name="GroupDataSeq" value="@pmGroupdataMonth.Seq" />
+        <input type="hidden" name="PmYear" value="@PmYear" />
+        <input type="hidden" name="PmMonth" value="@PmMonth" />
+        <div class="con_box search">
+            <h3 class="mt0">실적 조정 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 전체 그룹데이터에 대한 배당 조정을 하실 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(PmYear)년@(PmMonth)월</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">실적 구분</th>
+                        <td>Cash Flow</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>[@(PmMonth)]월 그룹데이터 Cash Flow 조정</h3>
+            <table class="tbl th_ver ta_right">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:20%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">구분</th>
+                        <th scope="row">Cash Flow 그룹데이터 실적 조정</th>
+                        <th scope="row">Cash Flow 그룹데이터 실적</th>
+                    </tr>
+                @if (CashflowMonthList == null || CashflowMonthList.Count() <= 0)
+                        {
+                    <tr>
+                        <td colspan="3" class="nv-noData">등록된 데이터가 없습니다.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in CashflowMonthList)
+                    {
+                        var item2 = CashflowMonthListCr.Find(x => x.MonthType == item.MonthType);
+                        var strTemp = (item.GroupdataMonth.Length < item.GroupdataYear.Length) ? item.GroupdataMonth + "월" : item.GroupdataMonth + "년";
+                        var objMonthCr = (item2 != null) ? item2 : new PmGroupdataCashflowMonthCr { };
+                     <tr> 
+                        <th scope="row">세후 EBITDA</th>
+                        <td><input type="text" name="Ebitda" value="@WebUtil.NCommaRound(objMonthCr.EbitdaCr, 0)" />
+                         <input type="hidden" name="CashflowMonthSeq" value="@item.Seq" />
+                            <input type="hidden" name="GROUPDATAYEAR" value="@item.GroupdataYear" />
+                            <input type="hidden" name="GROUPDATAMONTH" value="@item.GroupdataMonth" />
+                            <input type="hidden" name="DATATYPE" value="@item.DataType" />  
+                            <input type="hidden" name="MONTHTYPE" value="@item.MonthType" />   </td> 
+                        <td>@WebUtil.NCommaRound(item.Ebitda, 0)</td> 
+                    </tr>
+                    <tr>
+                        <th scope="row">W/C 변동</th>
+                        <td><input type="text" name="Wc" value="@WebUtil.NCommaRound(objMonthCr.WcCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Wc, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">영업활동 기타</th>
+                        <td><input type="text" name="SalesEtc" value="@WebUtil.NCommaRound(objMonthCr.SalesEtcCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.SalesEtc, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Net CAPEX</th>
+                        <td><input type="text" name="NetCapex" value="@WebUtil.NCommaRound(objMonthCr.NetCapexCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.NetCapex, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">순금융비용</th>
+                        <td><input type="text" name="FinancialCost" value="@WebUtil.NCommaRound(objMonthCr.FinancialCostCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.FinancialCost, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">FCF</th>
+                        <td>&nbsp;</td>
+                        <td>@WebUtil.NCommaRound(item.Ebitda + item.Wc + item.SalesEtc + item.NetCapex + item.FinancialCost, 0)</td>
+                    </tr> 
+                    <tr>
+                        <th scope="row">배당</th>
+                        <td><input type="text" name= "Allocation" value ="@WebUtil.NCommaRound(objMonthCr.AllocationCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Allocation, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">증자</th>
+                        <td><input type="text" name= "Increase" value ="@WebUtil.NCommaRound(objMonthCr.IncreaseCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Increase, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">차입</th>
+                        <td><input type="text" name= "Borrowing" value ="@WebUtil.NCommaRound(objMonthCr.BorrowingCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Borrowing, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">상환</th>
+                        <td><input type="text" name= "Repayment" value ="@WebUtil.NCommaRound(objMonthCr.RepaymentCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Repayment, 0)</td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">재무활동 기타</th>
+                        <td><input type="text" name= "Etc" value ="@WebUtil.NCommaRound(objMonthCr.EtcCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.Etc, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">재무활동 합계</th>
+                        <td>&nbsp;</td>
+                        <td>@WebUtil.NCommaRound(item.Allocation + item.Increase + item.Borrowing + item.Repayment + item.Etc, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">현금흐름 합계</th>
+                        <td>&nbsp;</td>
+                        <td>@WebUtil.NCommaRound(item.Ebitda + item.Wc + item.SalesEtc + item.NetCapex + item.FinancialCost + item.Allocation + item.Increase + item.Borrowing + item.Repayment + item.Etc, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Ending Cash</th>
+                        <td>&nbsp;</td>
+                        <td>@WebUtil.NCommaRound(item.Ebitda + item.Wc + item.SalesEtc + item.NetCapex + item.FinancialCost + item.Allocation + item.Increase + item.Borrowing + item.Repayment + item.Etc +item.BasicCash, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Credit Line</th>
+                        <td><input type="text" name="CreditLine" value="@WebUtil.NCommaRound(objMonthCr.CreditLineCr, 0)" /></td>
+                        <td>@WebUtil.NCommaRound(item.CreditLine, 0)</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">가용현금</th>
+                        <td>&nbsp;</td>
+                        <td>@WebUtil.NCommaRound(item.Ebitda + item.Wc + item.SalesEtc + item.NetCapex + item.FinancialCost + item.FinancialSum + item.BasicCash + item.CreditLine, 0)</td>
+                    </tr>
+                }
+                        }
+                </tbody>
+            </table>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:20%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tr>
+                    <th scope="row">Comment</th>
+                    <td colspan="3"><textarea class="w100" name="BeCashComment" id="strComment">@pmGroupdataMonth.Comment</textarea></td>
+                </tr>
+            </table>
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                <button class="btn full_green" type="button" onclick="onSave();">저장하기</button>
+            </div><!--//btn_area-->
+        </div>
+        <div id="txtContents"></div>
+        <!--// con_box -->
+    </form>
+</div>
+<script type="text/javascript">
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "PerformanceList";
+        f.submit();
+    }
+
+    function onSave() {
+        var dcmValue = 0;
+        var JsonMonthData = "";
+        var JsonSummaryData = "";
+        if (!onCheckInputTextValues("@Message.MSG_001_INT")) return false;
+
+        var GROUPDATAYEAR   = $("input:hidden[name='GROUPDATAYEAR']").val();
+        var GROUPDATAMONTH  = $("input:hidden[name='GROUPDATAMONTH']").val();
+        var DATATYPE        = $("input:hidden[name='DATATYPE']").val();
+        var MONTHTYPE       = $("input:hidden[name='MONTHTYPE']").val(); 
+        var EBITDA          =  $("input:text[name='Ebitda']").val();
+        var WC              =  $("input:text[name='Wc']").val();
+        var SALESETC        =  $("input:text[name='SalesEtc']").val();
+        var NETCAPEX        =  $("input:text[name='NetCapex']").val();
+        var FINANCIALCOST   =  $("input:text[name='FinancialCost']").val();
+       // var FINANCIALSUM    =  $("input:text[name='FinancialSum']").val();
+        var CREDITLINE      =  $("input:text[name='CreditLine']").val();
+        var Seq             =  $("input:hidden[name='CashflowMonthSeq']").val();
+
+        var ALLOCATION  = $("input:text[name='Allocation']").val();
+        var INCREASE    = $("input:text[name='Increase']").val();
+        var BORROWING   = $("input:text[name='Borrowing']").val();
+        var REPAYMENT   = $("input:text[name='Repayment']").val();
+        var ETC         = $("input:text[name='Etc']").val();
+
+        if (Seq != undefined) {
+            //if (EBITDA != dcmValue
+            //    || WC != dcmValue
+            //    || SALESETC != dcmValue
+            //    || NETCAPEX != dcmValue
+            //    || FINANCIALCOST != dcmValue 
+            //    || CREDITLINE != dcmValue
+            //    || ALLOCATION != dcmValue
+            //    || INCREASE != dcmValue
+            //    || BORROWING != dcmValue
+            //    || REPAYMENT != dcmValue
+            //    || ETC != dcmValue ) {
+                JsonMonthData += ',{"Seq":' + Seq
+                                 + ',"GROUPDATAYEAR": "' + GROUPDATAYEAR
+                                + '","GROUPDATAMONTH":"' + GROUPDATAMONTH
+                                + '","DATATYPE":"' + DATATYPE
+                                + '","EBITDA":' + (($.isNumeric(EBITDA)) ? EBITDA : 0)
+                                + ',"WC":' + (($.isNumeric(WC)) ? WC : 0)
+                                + ',"SALESETC":' + (($.isNumeric(SALESETC)) ? SALESETC : 0)
+                                + ',"NETCAPEX":' + (($.isNumeric(NETCAPEX)) ? NETCAPEX : 0)
+                                + ',"FINANCIALCOST":' + (($.isNumeric(FINANCIALCOST)) ? FINANCIALCOST : 0) 
+                                + ',"CREDITLINE":' + (($.isNumeric(CREDITLINE)) ? CREDITLINE : 0)
+                                + ',"ALLOCATION":' + (($.isNumeric(ALLOCATION)) ? ALLOCATION : 0)
+                                + ',"INCREASE":' + (($.isNumeric(INCREASE)) ? INCREASE : 0)
+                                + ',"BORROWING":' + (($.isNumeric(BORROWING)) ? BORROWING : 0)
+                                + ',"REPAYMENT":' + (($.isNumeric(REPAYMENT)) ? REPAYMENT : 0)
+                                + ',"ETC":' + (($.isNumeric(ETC)) ? ETC : 0)
+                                + ',"MONTHTYPE":' + MONTHTYPE
+                                + '}';
+          //  }
+        }
+
+        JsonMonthData = JsonMonthData.substring(1).replace("{}", "");
+        JsonSummaryData = JsonSummaryData.substring(1).replace("{}", "");
+       // $('#txtContents').html('{"seq":@pmGroupdataMonth.Seq,"MonthData":[' + JsonMonthData + '],"SummaryData":[' + JsonSummaryData + '],"strComment":"' + escape($("#strComment").val()) + '"}');
+        var strSendValues = '{"seq":@pmGroupdataMonth.Seq,"MonthData":[' + JsonMonthData + '],"SummaryData":[' + JsonSummaryData + '],"strComment":"' + escape($("#strComment").val()) + '"}';
+        funCheckVal(strSendValues);
+    }
+
+    function funCheckVal(str) {
+        var strUrl = "../../ApiCorrect/PmGroupDataCashflowUpdate";
+        var json_data = funJsonReplace(str);
+         //alert(json_data);
+        var request = $.ajax({
+            url: strUrl,
+            type: 'post',
+            data: json_data,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                alert("저장되었습니다.");
+                onReload();
+            },
+            error: function (request, status, error) {
+                alert("[에러][관리자에게 문의하세요]\n" + "error:" + request.responseText);
+            }
+        });
+    }
+    function funJsonReplace(objValue) {
+        return objValue.replace(/\r/g, '').replace(/\\/g, "").replace(/\n/g, '').replace('"[', '[').replace(']"', ']');
+    }
+
+    function onReload() {
+        var f = document.frmMain;
+        f.action = "PerformanceCashflowEdit";
+        f.submit();
+    }
+
+</script>

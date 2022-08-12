@@ -1,0 +1,175 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    List<PmQuarterPal> list = Model.list;
+    Search search = ViewBag.Search;
+    object objModel = Model;
+}
+
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>분기별 손익</strong>
+    </div>
+
+    <form name="frmMain" method="post">
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="Seq" value="" />
+        <input type="hidden" name="OrgCompanySeq" value="" />
+        <div class="con_box search">
+            <h3 class="mt0">분기별 손익</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 분기별 매출액, 영업이익, 경상이익을 등록합니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 본인에게 할당된 부서만 등록 및 관리가 가능합니다.
+            </div>
+        </div>
+
+        <!--
+    /**************************************************************************************
+    * 검색부분 시작
+    *****************************************************************************************/
+    -->
+        @Html.Partial("~/Views/Shared/SearchPmListView.cshtml", objModel)
+        <!--
+    /**************************************************************************************
+    * 검색부분 종료
+    *****************************************************************************************/
+        -->
+
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    @*<col width="10%" />*@
+                    <col width="15%" />
+                    <col width="15%" />
+                    <col width="15%" />
+                    <col width="15%" />
+                    <col width="15%" />
+                    <col width="15%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        @*<th scope="col">번호</th>*@
+                        <th scope="col">연도</th>
+                        <th scope="col">월</th>
+                        <th scope="col">부문</th>
+                        <th scope="col">사업</th>
+                        <th scope="col">등록여부</th>
+                        <th scope="col">등록완료일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (list == null || list.Count() == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="nodata">등록된 데이타가 없습니다.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in list)
+                        {
+                            <tr>
+                                @*<td>@item.RowNum</td>*@
+                                <td>@item.QuarterPalYear</td>
+                                <td>@item.Monthly</td>
+                                <td>@item.UnionName</td>
+                                <td>
+                                    @*등록 가능 일자이며 미등록이면 Write 화면
+                                      등록 가능 일자이며 그외상태이면 Edit 화면
+                                      등록가능 일자가 지나고 미등록상태이면 Alert
+                                        그 오ㅓㅣ에는 View 화면**@
+                                    @Html.Raw(WebUtil.ListGoFunction(item.WriteAble, item.RegistStatus, item.Seq, item.OrgCompanySeq, SessionManager.GetAdminSession().adminAuth.AuthLevel, item.CompanyName))
+                                </td>
+                                @if (item.RegistStatus == Define.REGIST_STATUS.GetKey("미등록"))
+                                {
+                                    <td><span class="tc_red">@Define.REGIST_STATUS.GetValue(item.RegistStatus)</span></td>
+                                }
+                                else
+                                {
+                                    <td>@Define.REGIST_STATUS.GetValue(item.RegistStatus)</td>
+                                }
+                                <td>@(item.RegistStatus == Define.REGIST_STATUS.GetKey("미등록") ? "-" : item.CreateDate.ToString())</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <div class="paging">
+                <a href="javascript:;" onclick="onPaging(document.frmMain, @search.FirstPageIndex)" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                <a href="javascript:;" onclick="onPaging(document.frmMain, @search.PrevPageIndex)" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                <span>
+                    @for (int i = search.StartPageIndex; i <= search.EndPageIndex; i++)
+                    {
+                        if (search.PageIndex == i)
+                        {
+                            <strong>@i</strong>
+                        }
+                        else
+                        {
+                            <a href="#" onclick="onPaging(document.frmMain, @i)">@i</a>
+                        }
+                    }
+                </span>
+                <a href="javascript:;" onclick="onPaging(document.frmMain, @search.NextPageIndex)" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                <a href="javascript:;" onclick="onPaging(document.frmMain, @search.FinalPageIndex)" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+            </div>
+            <!--// paging-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+    function onWrite(seq, OrgCompanySeq) {
+        var f = document.frmMain;
+        
+        f.Seq.value = seq;
+        f.OrgCompanySeq.value = OrgCompanySeq;
+        f.action = "Write";
+        f.submit();
+    }
+
+    function onEdit(seq, OrgCompanySeq) {
+        var f = document.frmMain;
+
+        f.Seq.value = seq;
+        f.OrgCompanySeq.value = OrgCompanySeq;
+        f.action = "Edit";
+        f.submit();
+    }
+
+    // 2019.01.09 중간관리자2 추가
+    function onEdit2(seq, OrgCompanySeq) {
+        var f = document.frmMain;
+
+        f.Seq.value = seq;
+        f.OrgCompanySeq.value = OrgCompanySeq;
+        f.action = "Edit2";
+        f.submit();
+    }
+
+    function onView(seq, OrgCompanySeq) {
+        var f = document.frmMain;
+
+        f.Seq.value = seq;
+        f.OrgCompanySeq.value = OrgCompanySeq;
+        f.action = "View";
+        f.submit();
+    }
+    function onSearch(form) {
+        form.action = "List";
+        form.method = "POST";
+        form.submit();
+    }
+</script>

@@ -1,0 +1,201 @@
+﻿@using HALLA_PM.Models;
+@{
+    ViewBag.Title = "Index";
+    string year = Model.year;
+    List<TbOrgCompanyExp> orgCompanyList = Model.tbOrgCompanyList;
+    List<PlanYearBsSummary> groupTotalSummaryList = Model.groupTotalSummaryList;
+}
+
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>중기 B/S</h2>
+        <a href="/Plan/Year_bs_Finance/Index_excel" class="btn_download">DOWNLOAD</a>
+    </div><!--//top_wrap-->
+
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+            <div class="box">
+              <div class="chart_box chart_box4">
+                <p class="p_title">ROIC</p>
+                <span class="p_unit">(단위 : %)</span>
+                <div class="chart chart_type11" id="chart1"></div>
+                  @{
+                      string gRoicText = "";
+                      foreach(var s in groupTotalSummaryList)
+                      {
+                          gRoicText += "{";
+                          gRoicText += "x:" + s.YearlyYear + ",";
+                          gRoicText += "y:" + Math.Round(s.Roic, 1, MidpointRounding.AwayFromZero) + "},";
+                      }
+                      if(gRoicText.Length > 0)
+                      {
+                        gRoicText = gRoicText.Substring(0, gRoicText.Length - 1);
+                      }
+                  }
+                <script>
+                  ( function(){
+                    var data = [
+                      { key: "ROIC", values: [ @gRoicText ] }
+                    ];
+                    data.map( function( obj, i ) {
+                    	obj.color = [ '#009de4' ][ i ];
+                    	obj.pointShape = [ 'diamond2' ][ i ];
+                    	obj.strokeWidth = 1;
+                    	return obj;
+                    } );
+
+                    MYAPP.graph.type11( data, '#chart1' );
+                  } )();
+                </script>
+              </div>
+              <!-- chart_box -->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+
+    </div><!--//con_wrap-->
+
+    <div class="tab_wrap">
+        <div class="type_tab2">
+            <ul>
+
+                @foreach (var company in orgCompanyList)
+                {
+                    <li><a href="#yearpal_@company.seq">@company.companyName</a></li>
+                }
+                <!--
+                <li><a href="#yearpal01">한라홀딩스</a></li>
+                <li><a href="#yearpal02">JJ한라</a></li>
+                <li><a href="#yearpal03">만도</a></li>
+                <li><a href="#yearpal04">만도헬라</a></li>
+                <li><a href="#yearpal05">만도브로제</a></li>
+                <li><a href="#yearpal06">㈜한라</a></li>
+                    -->
+            </ul>
+        </div><!--//type_tab-->
+
+        @foreach (var company in orgCompanyList)
+        {
+            <div class="type_tab_con" id="yearpal_@company.seq">
+                <div class="con_wrap">
+
+                    <div class="graph_box">
+                        <div class="box">
+                            <div class="box_col_wrap">
+                                <div class="col2 fl graph">
+                                    <div class="chart_box chart_box4">
+                                        <p class="p_title">ROIC</p>
+                                        <span class="p_unit">(단위 : %)</span>
+                                        <div class="chart chart_type11" id="chart_@company.seq"></div>
+                                        @{
+                                            string roicText = "";
+                                            /*
+                                             * AFTER_TAX_OPERATION_PROFIT / PAIN_IN_CAPITAL	AS [ROIC]
+                                             * LIABILITIES / ASSETS							As [부채비율]
+                                            */
+                                            roicText += "{";
+                                            roicText += "x:" + company.pmBsSummary.BsYear + ",";
+                                            //if(Double.IsNaN(company.pmBsSummary.AfterTaxOperationProfit / company.pmBsSummary.PainInCapital))
+                                            //{
+                                            //    roicText += "y:0},";
+                                            //}
+                                            //else
+                                            //{
+                                            //    roicText += "y:" + Math.Round(company.pmBsSummary.AfterTaxOperationProfit / company.pmBsSummary.PainInCapital, 1, MidpointRounding.AwayFromZero) + "},";
+                                            //}
+
+                                            foreach (var s in company.totalPlanYearBsSummaryList)
+                                            {
+                                                roicText += "{";
+                                                roicText += "x:" + s.YearlyYear + ",";
+                                                roicText += "y:" + Math.Round(s.Roic, 1, MidpointRounding.AwayFromZero) + "},";
+                                            }
+                                            if(roicText.Length > 0)
+                                            {
+                                                roicText = roicText.Substring(0, roicText.Length - 1);
+                                            }
+                                        }
+                                        <script>
+                                  ( function(){
+                                    var data = [
+                                      { key: "ROIC", values: [ @roicText ] }
+                                    ];
+                                    data.map( function( obj, i ) {
+                                        obj.color = [ '#009de4' ][ i ];
+                                        obj.pointShape = [ 'diamond2' ][ i ];
+                                        obj.strokeWidth = 1;
+                                        return obj;
+                                    } );
+
+                                    MYAPP.graph.type11( data, '#chart_@company.seq' );
+                                  } )();
+                                        </script>
+                                    </div>
+                                    <!-- chart_box -->
+                                </div>
+
+                                <div class="col2 fr graph">
+                                    <div class="chart_box chart_box4">
+                                        <p class="p_title">부채비율</p>
+                                        <span class="p_unit">(단위 : %)</span>
+                                        <div class="chart chart_type11" id="chart99_@company.seq"></div>
+                                        @{
+                                            string liabilitiesRateText = "";
+                                            /*
+                                             * AFTER_TAX_OPERATION_PROFIT / PAIN_IN_CAPITAL	AS [ROIC]
+                                             * LIABILITIES / ASSETS							As [부채비율]
+                                            */
+                                            liabilitiesRateText += "{";
+                                            liabilitiesRateText += "x:" + company.pmBsSummary.BsYear + ",";
+                                            //if (Double.IsNaN(company.pmBsSummary.Liabilities / company.pmBsSummary.Assets))
+                                            //{
+                                            //    liabilitiesRateText += "y:0},";
+                                            //}else
+                                            //{
+                                            //    liabilitiesRateText += "y:" + Math.Round(company.pmBsSummary.Liabilities / company.pmBsSummary.Assets, MidpointRounding.AwayFromZero) + "},";
+                                            //}
+                                            foreach (var s in company.totalPlanYearBsSummaryList)
+                                            {
+                                                liabilitiesRateText += "{";
+                                                liabilitiesRateText += "x:" + s.YearlyYear + ",";
+                                                liabilitiesRateText += "y:" + Math.Round(s.LiabilitiesRate, MidpointRounding.AwayFromZero) + "},";
+                                            }
+                                            if(liabilitiesRateText.Length > 0)
+                                            {
+                                                liabilitiesRateText = liabilitiesRateText.Substring(0, liabilitiesRateText.Length - 1);
+                                            }
+                                        }
+                                        <script>
+                                  ( function(){
+                                    var data = [
+                                      { key: "부채비율", values: [ @liabilitiesRateText ] }
+                                    ];
+                                    data.map( function( obj, i ) {
+                                        obj.color = [ '#ff520d' ][ i ];
+                                        obj.pointShape = [ 'square' ][ i ];
+                                        obj.strokeWidth = 1;
+                                        return obj;
+                                    } );
+
+                                    MYAPP.graph.type11( data, '#chart99_@company.seq', ',.0f' );
+                                  } )();
+                                        </script>
+                                    </div>
+                                    <!-- chart_box -->
+                                </div>
+                            </div><!--//box_col_wrap-->
+                            </div><!--//box-->
+                            </div><!--//graph_box-->
+                            </div><!--//con_wrap-->
+                            </div><!--//type_tab_con-->
+
+                            }
+
+                            </div><!--//tab_wrap-->
+                            </div><!--//plan_wrap-->
+                            <script>
+                            $(function () {
+                            /*탭*/
+                                            MYAPP.tab.init($(".type_tab2"));
+    })
+</script>

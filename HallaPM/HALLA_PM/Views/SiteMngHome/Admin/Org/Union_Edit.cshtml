@@ -1,0 +1,190 @@
+﻿@using HALLA_PM.Models;
+@{
+    ViewBag.Title = "Union_Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    OrgUnion org = Model.org;
+}
+
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>관리자관리</span>
+        <span>조직관리</span>
+        <strong>부문 등록</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="Seq" value="@org.Seq" />
+        <input type="hidden" name="hCheck" id="hCheck" value="N" />
+        <input type="hidden" name="message" value="수정" />
+        <input type="hidden" name="oldUnionName" id="oldUnionName" value="@org.UnionName" />
+        <div class="con_box search">
+            <h3 class="mt0">부문 등록</h3>
+            <div class="bg_gray">
+                수정 삭제 시 하위 조직까지 일괄 반영되므로 신중히 작업해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">조직레벨</th>
+                        <td>부문</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">부문명</th>
+                        <td>
+                            <input type="text" name="UnionName" id="UnionName" style="width:200px;" value="@org.UnionName" />
+                            <button class="btn full_green" type="button" onclick="onDuplicateAllowUnion();">중복확인</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">사용여부</th>
+                        <td>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="Y" @(org.IsUse == "Y" ? " checked" : "")><i></i>
+                                    <strong>사용</strong>
+                                </label>
+                            </div>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="N" @(org.IsUse == "Y" ? " " : " checked")><i></i>
+                                    <strong>미사용</strong>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="btn_area2">
+                <div class="left">
+                    <button class="btn full_blue" type="button" onclick="onList();">목록</button>
+                </div>
+                <div class="right">
+                    <button class="btn full_green" type="button" onclick="onDelete();">삭제</button>
+                    <button class="btn full_green" type="button" onclick="onWrite();">수정</button>
+                </div>
+            </div>
+        </div>
+        <!--// con_box -->
+    </form>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $("#frmMain").validate({
+            rules: {
+                UnionName: {
+                    required: true,
+                }
+            },
+            messages: {
+                UnionName: {
+                    required: "부분명을 입력하세요.",
+                }
+            }, errorPlacement: function (error, element) {
+                // do nothing
+            },
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    alert(validator.errorList[0].message);
+                    validator.errorList[0].element.focus();
+                }
+            }
+        });
+    });
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onWrite() {
+        var f = document.frmMain;
+
+        if ($(f).valid()) {
+
+            $.ajax({
+                url: "Union_Duplicate_Ajax",
+                type: "post",
+                data: { UnionName: $("#UnionName").val() },
+                dataType: "json",
+                success: function (res) {
+                    //
+                    if (res.success == true) {
+                        $("#hCheck").val("Y");
+                    }
+                    else {
+                        $("#hCheck").val("N");
+                    }
+
+                    if (f.oldUnionName.value != f.UnionName.value) {
+                        if (f.hCheck.value == "N") {
+                            alert("중복 확인을 눌러주세요.");
+                            return false;
+                        }
+                    }
+
+                    if (confirm("수정하시겠습니까?")) {
+                        f.action = "Union_Write_Action";
+                        f.submit();
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+    }
+
+    function onDelete() {
+        var f = document.frmMain;
+
+        if (confirm("삭제 시 하위 조직도 같이 삭제됩니다.\n삭제하시겠습니까?")) {
+            f.action = "Union_Delete_Action";
+            f.submit();
+        }
+    }
+
+    function onDuplicateAllowUnion() {
+        var f = document.frmMain;
+        
+        if ($(f).valid()) {
+
+            $.ajax({
+                url: "Union_Duplicate_Ajax",
+                type: "post",
+                data: { UnionName: $("#UnionName").val() },
+                dataType: "json",
+                success: function (res) {
+                    //
+                    if (res.success == true) {
+                        alert("등록 가능합니다.");
+                        $("#hCheck").val("Y");
+                    }
+                    else {
+                        alert("조직명이 중복되었습니다.\n다시 입력해주세요");
+                        $("#hCheck").val("N");
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+    }
+</script>
+
+

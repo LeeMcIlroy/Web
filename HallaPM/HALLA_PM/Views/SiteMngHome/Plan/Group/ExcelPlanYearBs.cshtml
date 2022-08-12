@@ -1,0 +1,391 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+
+    PlanGroup chk = Model.chk;
+    List<PmBsSummaryExp> pm = Model.pm;
+    List<PlanYearBsSummaryExp> pn = Model.pn;
+
+    var groupPm = pm.GroupBy(g => new { g.BsYear })
+        .Select(cl => new PmBsSummaryExp
+        {
+            BsYear = cl.First().BsYear,
+            Assets = cl.Sum(c => c.Assets),
+            Liabilities = cl.Sum(c => c.Liabilities),
+            Capital = cl.Sum(c => c.Capital),
+            Cash = cl.Sum(c => c.Cash),
+            Loan = cl.Sum(c => c.Loan),
+            AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+            PainInCapital = cl.Sum(c => c.PainInCapital),
+            Ar = cl.Sum(c => c.Ar),
+            ArToDays = cl.Sum(c => c.ArToDays),
+            Ap = cl.Sum(c => c.Ap),
+            ApToDays = cl.Sum(c => c.ApToDays),
+            Inventory = cl.Sum(c => c.Inventory),
+            InventoryToDays = cl.Sum(c => c.InventoryToDays)
+        }).ToList();
+
+    var groupPn = pn.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearBsSummaryExp
+        {
+            YearlyYear = cl.First().YearlyYear,
+            Assets = cl.Sum(c => c.Assets),
+            Liabilities = cl.Sum(c => c.Liabilities),
+            Capital = cl.Sum(c => c.Capital),
+            Cash = cl.Sum(c => c.Cash),
+            Loan = cl.Sum(c => c.Loan),
+            AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+            PainInCapital = cl.Sum(c => c.PainInCapital),
+            Ar = cl.Sum(c => c.Ar),
+            ArToDays = cl.Sum(c => c.ArToDays),
+            Ap = cl.Sum(c => c.Ap),
+            ApToDays = cl.Sum(c => c.ApToDays),
+            Inventory = cl.Sum(c => c.Inventory),
+            InventoryToDays = cl.Sum(c => c.InventoryToDays)
+        }).ToList();
+
+    var companyList = pn.GroupBy(g => new { g.OrgUnionSeq, g.OrgCompanySeq })
+        .Select(cl => new PlanYearBsSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            OrgCompanySeq = cl.First().OrgCompanySeq,
+            CompanyName = cl.First().CompanyName
+        }).ToList();
+
+    string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>중기 B/S</h2>
+    </div><!--//top_wrap-->
+
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+
+            <div class="box">
+                <div class="graph">
+                    <table class="tbl tbl_type01" border="1">
+                        <colgroup>
+                            <col width="10%" />
+                            <col width="/" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="7" class="rbd lbd0" style="text-align:right;">
+                                    (단위 : %)
+                                </th>
+                            </tr>
+                            <tr>
+                                <th scope="col" colspan="2" class="rbd lbd0">
+                                    구분
+                                </th>
+                                <th scope="col">@(Convert.ToInt32(groupPn.First().YearlyYear) - 1) 년</th>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <th scope="col">@summary.YearlyYear 년</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row" rowspan="6" class="lbd0">BS</th>
+                                <th scope="row" class="lbd0">총자산</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Assets, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Assets)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">총부채</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Liabilities, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Liabilities)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">총자본</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Capital, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Capital)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">현금</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Cash, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Cash)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">차입금</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Loan, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Loan)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">부채비율</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00%">@(groupPm.Count() == 0 ? 0 : WebUtil.NumberRound(groupPm.First().Liabilities, groupPm.First().Capital, 1, 4))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00%">@(summary.Capital == 0 ? 0 : WebUtil.NumberRound(summary.Liabilities, summary.Capital, 1, 4))</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" rowspan="3" class="lbd0">ROIC</th>
+                                <th scope="row" class="lbd0">세후영업이익</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().AfterTaxOperationProfit, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.AfterTaxOperationProfit)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">투하자본</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().PainInCapital, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.PainInCapital)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">ROIC</th>
+                                <th style="mso-number-format:\#\,\#\#0\.00%">@(groupPm.Count() == 0 ? 0 : WebUtil.NumberRound(groupPm.First().AfterTaxOperationProfit, groupPm.First().PainInCapital, 1, 4))</th>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00%">@(summary.PainInCapital == 0 ? 0 : WebUtil.NumberRound(summary.AfterTaxOperationProfit, summary.PainInCapital, 1, 4))</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" rowspan="6" class="lbd0">W/C</th>
+                                <th scope="row" class="lbd0">A/R</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Ar, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Ar)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">T/O Days</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().ArToDays, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.ArToDays)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">A/P</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Ap, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Ap)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">T/O Days</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().ApToDays, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.ApToDays)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">Inv</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Inventory, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Inventory)</td>
+                                }
+                            </tr>
+                            <tr>
+                                <th scope="row" class="lbd0">T/O Days</th>
+                                <td style="mso-number-format:\#\,\#\#0\.00">@(groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().InventoryToDays, 2, MidpointRounding.AwayFromZero))</td>
+                                @foreach (var summary in groupPn)
+                                {
+                                    <td style="mso-number-format:\#\,\#\#0\.00">@(summary.InventoryToDays)</td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table><!--// tbl-->
+                </div><!--//graph-->
+            </div><!--//box-->
+        </div><!--//con_wrap-->
+    </div><!--//group_wrap-->
+
+    <div class="tab_wrap">
+
+        @foreach (var company in companyList.OrderBy(o => o.OrgUnionSeq).ThenBy(t => t.OrgCompanySeq))
+        {
+            PmBsSummaryExp pmRow = pm.Where(w => w.OrgCompanySeq == company.OrgCompanySeq).FirstOrDefault() == null ? new PmBsSummaryExp() : pm.Where(w => w.OrgCompanySeq == company.OrgCompanySeq).FirstOrDefault();
+            List<PlanYearBsSummaryExp> pnRow = pn.Where(w => w.OrgCompanySeq == company.OrgCompanySeq).ToList();
+            <div class="type_tab_con" id="yearpal_@company.OrgCompanySeq">
+                <div class="con_wrap">
+                    <div class="graph_box">
+                        <h3>@company.CompanyName</h3>
+                        <div class="box">
+                            <table class="tbl tbl_type01" border="1">
+                                <colgroup>
+                                    <col width="10%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="7" class="rbd lbd0" style="text-align:right;">
+                                            (단위 : %)
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col"> @(Convert.ToInt32(pnRow.First().YearlyYear) - 1) 년</th>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <th scope="col">@summary.YearlyYear 년</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" rowspan="6" class="lbd0">BS</th>
+                                        <th scope="row" class="lbd0">총자산</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.Assets)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Assets)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">총부채</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.Liabilities)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Liabilities)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">총자본</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.Capital)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Capital)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">현금</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.Cash)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Cash)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">차입금</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.Loan)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Loan)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">부채비율</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00%">@(WebUtil.NumberRound(pmRow.Liabilities, pmRow.Capital, 1, 4))</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td>@(Convert.ToString(summary.LiabilitiesRate) + "%")</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" rowspan="3" class="lbd0">ROIC</th>
+                                        <th scope="row" class="lbd0">세후영업이익</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.AfterTaxOperationProfit)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.AfterTaxOperationProfit)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">투하자본</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.PainInCapital)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.PainInCapital)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">ROIC</th>
+                                        <th style="mso-number-format:\#\,\#\#0\.00%">@(WebUtil.NumberRound(pmRow.AfterTaxOperationProfit, pmRow.PainInCapital, 1, 4))</th>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td>@(Convert.ToString(summary.Roic) + "%")</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" rowspan="6" class="lbd0">W/C</th>
+                                        <th scope="row" class="lbd0">A/R</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.Ar)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Ar)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">T/O Days</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.ArToDays)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.ArToDays)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">A/P</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.Ap)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Ap)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">T/O Days</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.ApToDays)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.ApToDays)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">Inv</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.Inventory)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.Inventory)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">T/O Days</th>
+                                        <td style="mso-number-format:\#\,\#\#0\.00">@(pmRow.InventoryToDays)</td>
+                                        @foreach (var summary in pnRow)
+                                        {
+                                            <td style="mso-number-format:\#\,\#\#0\.00">@(summary.InventoryToDays)</td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div><!--//plan_wrap-->

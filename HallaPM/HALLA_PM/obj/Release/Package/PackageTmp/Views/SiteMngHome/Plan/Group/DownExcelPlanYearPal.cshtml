@@ -1,0 +1,842 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    Layout = null;
+    PlanGroup chk = Model.chk;
+
+    List<PlanYearPalBusinessExp> lastPnB = Model.lastPnB;
+    List<PmPalBusinessExp> lastPmB = Model.lastPmB;
+    List<PlanYearPalBusinessExp> thisPnB = Model.thisPnB;
+
+    List<PlanYearPalBusinessSummaryExp> lastPnC = Model.lastPnC;
+    List<PmPalSummaryExp> lastPmC = Model.lastPmC;
+    List<PlanYearPalBusinessSummaryExp> thisPnC = Model.thisPnC;
+
+    List<PlanYearPalBusinessSummaryExp> UList = thisPnC.GroupBy(g => new { g.OrgUnionSeq })
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName
+        }).ToList();
+
+    List<PlanYearPalBusinessSummaryExp> lastPnU = lastPnC.GroupBy(g => new { g.OrgUnionSeq, g.YearlyYear })
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    List<PmPalSummaryExp> lastPmU = lastPmC.GroupBy(g => new { g.OrgUnionSeq, g.PalYear })
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            PalYear = cl.First().PalYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    List<PlanYearPalBusinessSummaryExp> thisPnU = thisPnC.GroupBy(g => new { g.OrgUnionSeq, g.YearlyYear })
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+
+    List<PlanYearPalBusinessSummaryExp> lastPnG = lastPnC.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    List<PmPalSummaryExp> lastPmG = lastPmC.GroupBy(g => new { g.PalYear })
+        .Select(cl => new PmPalSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            PalYear = cl.First().PalYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    List<PlanYearPalBusinessSummaryExp> thisPnG = thisPnC.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearPalBusinessSummaryExp
+        {
+            OrgUnionSeq = cl.First().OrgUnionSeq,
+            UnionName = cl.First().UnionName,
+            YearlyYear = cl.First().YearlyYear,
+            Sales = cl.Sum(c => c.Sales),
+            Ebit = cl.Sum(c => c.Ebit),
+            Pbt = cl.Sum(c => c.Pbt)
+        }).ToList();
+
+    // 작년도 계획이 없거나 회사와 Bu의 데이터가 없어 짤릴 경우를 대비
+    int lastStartYear = Convert.ToInt32(chk.PlanYear) - 1;
+    int thisStartYear = Convert.ToInt32(chk.PlanYear);
+
+    bool isBFirst = false;
+    bool isCfirst = false;
+
+    string fileName = chk.PlanYear + "년_" + chk.MenuName;
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DownExcelPlanYearPal</title>
+    <style>
+        .mytable {
+            border-collapse: collapse;
+        }
+
+            .mytable th, .mytable td {
+                border: 1px solid black;
+            }
+
+        .buLevel {
+            background-color: #f2f2f2;
+        }
+
+            .buLevel th, .buLevel td {
+                background-color: #f2f2f2;
+            }
+
+        .ComLevel {
+            background-color: #fff2cc;
+        }
+
+            .ComLevel th, .ComLevel td {
+                background-color: #fff2cc;
+            }
+
+        .UniLevel {
+            background-color: #d0cece;
+        }
+
+            .UniLevel th, .UniLevel td {
+                background-color: #d0cece;
+            }
+
+        .GrpLevel {
+            background-color: #bdd7ee;
+        }
+
+            .GrpLevel th, .GrpLevel td {
+                background-color: #bdd7ee;
+            }
+
+        .MsoNTwo {
+            mso-number-format: \#\,\#\#0\
+        }
+
+        .MsoNTwoPer {
+            mso-number-format: \#\,\#\#0\.0%
+        }
+    </style>
+</head>
+<body>
+    <h3>@(chk.PlanYear)년 손익중기계획</h3>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="20" style="text-align:right">(단위: 억원,%)</td>
+            </tr>
+        </tbody>
+    </table>
+    <table border="1">
+        <thead>
+            <tr class="buLevel">
+                <th rowspan="2" colspan="4">구분</th>
+                <th colspan="5">@(lastStartYear)년 중기계획</th>
+                <th colspan="6">@(thisStartYear)년 중기계획</th>
+                <th colspan="5">전년대비</th>
+            </tr>
+            <tr class="buLevel">
+                @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                {
+                    <th>@(i)년</th>
+                }
+                @for (int i = lastStartYear; i < lastStartYear + 6; i++)
+                {
+                    <th>@(i)년</th>
+                }
+                @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                {
+                    <th>@(i)년</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in UList)
+            {
+                var CList = thisPnC.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).GroupBy(g => new { g.OrgCompanySeq })
+                    .Select(cl => new PlanYearPalBusinessSummaryExp
+                    {
+                        UnionName = cl.First().UnionName,
+                        OrgCompanySeq = cl.First().OrgCompanySeq,
+                        CompanyName = cl.First().CompanyName
+                    }).ToList();
+                foreach (var item2 in CList)
+                {
+                    var BList = thisPnB.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).GroupBy(g => new { g.OrgBusinessSeq })
+                        .Select(cl => new PlanYearPalBusinessExp
+                        {
+                            UnionName = cl.First().UnionName,
+                            CompanyName = cl.First().CompanyName,
+                            OrgBusinessSeq = cl.First().OrgBusinessSeq,
+                            BusinessName = cl.First().BusinessName
+                        }).ToList();
+                    foreach (var item3 in BList)
+                    {
+                        var ListLastPn = lastPnB.Where(w => w.OrgBusinessSeq == item3.OrgBusinessSeq).ToList();
+                        var ListLastPm = lastPmB.Where(w => w.OrgBusinessSeq == item3.OrgBusinessSeq).ToList();
+                        var ListThisPn = thisPnB.Where(w => w.OrgBusinessSeq == item3.OrgBusinessSeq).ToList();
+                        <tr>
+                            @if (!isCfirst)
+                            {
+                                <th class="buLevel" rowspan="@(BList.Count() * 4)">@(item3.UnionName)</th>
+                                <th class="buLevel" rowspan="@(BList.Count() * 4)">@(item3.CompanyName)</th>
+                                isCfirst = true;
+                            }
+                            @if (!isBFirst)
+                            {
+                                <th class="buLevel" rowspan="4">@(item3.BusinessName)</th>
+                                isBFirst = true;
+                            }
+                            <th class="buLevel">Sales</th>
+
+                            @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                            {
+                                var lastPn = ListLastPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (lastPn == null) { lastPn = new PlanYearPalBusinessExp(); }
+                                <th class="MsoNTwo">@(lastPn.Sales)</th>
+                            }
+                            @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                            {
+                                if (i == thisStartYear)
+                                {
+                                    var lastPm = ListLastPm.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                                    if (lastPm == null) { lastPm = new PmPalBusinessExp(); }
+                                    <th class="MsoNTwo">@(lastPm.Sales)</th>
+                                }
+                                var thisPn = ListThisPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                <th class="MsoNTwo">@(thisPn.Sales)</th>
+                            }
+                            @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                            {
+                                var lastPn = ListLastPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (lastPn == null) { lastPn = new PlanYearPalBusinessExp(); }
+                                var thisPn = ListThisPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (i == lastStartYear)
+                                {
+                                    var lastPm = ListLastPm.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                                    if (lastPm == null) { lastPm = new PmPalBusinessExp(); }
+                                    <th class="MsoNTwo">@(lastPm.Sales - lastPn.Sales)</th>
+                                }
+                                else
+                                {
+                                    <th class="MsoNTwo">@(thisPn.Sales - lastPn.Sales)</th>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="buLevel">EBIT</th>
+
+                            @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                            {
+                                var lastPn = ListLastPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (lastPn == null) { lastPn = new PlanYearPalBusinessExp(); }
+                                <th class="MsoNTwo">@(lastPn.Ebit)</th>
+                            }
+                            @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                            {
+                                if (i == thisStartYear)
+                                {
+                                    var lastPm = ListLastPm.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                                    if (lastPm == null) { lastPm = new PmPalBusinessExp(); }
+                                    <th class="MsoNTwo">@(lastPm.Ebit)</th>
+                                }
+                                var thisPn = ListThisPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                <th class="MsoNTwo">@(thisPn.Ebit)</th>
+                            }
+                            @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                            {
+                                var lastPn = ListLastPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (lastPn == null) { lastPn = new PlanYearPalBusinessExp(); }
+                                var thisPn = ListThisPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (i == lastStartYear)
+                                {
+                                    var lastPm = ListLastPm.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                                    if (lastPm == null) { lastPm = new PmPalBusinessExp(); }
+                                    <th class="MsoNTwo">@(lastPm.Ebit - lastPn.Ebit)</th>
+                                }
+                                else
+                                {
+                                    <th class="MsoNTwo">@(thisPn.Ebit - lastPn.Ebit)</th>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="buLevel">%</th>
+
+                            @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                            {
+                                var lastPn = ListLastPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (lastPn == null) { lastPn = new PlanYearPalBusinessExp(); }
+                                <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                            }
+                            @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                            {
+                                if (i == thisStartYear)
+                                {
+                                    var lastPm = ListLastPm.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                                    if (lastPm == null) { lastPm = new PmPalBusinessExp(); }
+                                    <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPm.Ebit, lastPm.Sales, 1, 4))</th>
+                                }
+                                var thisPn = ListThisPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                <th class="MsoNTwoPer">@(WebUtil.NumberRound(thisPn.Ebit, thisPn.Sales, 1, 4))</th>
+                            }
+                            @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                            {
+                                var lastPn = ListLastPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (lastPn == null) { lastPn = new PlanYearPalBusinessExp(); }
+                                var thisPn = ListThisPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (i == lastStartYear)
+                                {
+                                    var lastPm = ListLastPm.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                                    if (lastPm == null) { lastPm = new PmPalBusinessExp(); }
+                                    <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPm.Ebit, lastPm.Sales, 1, 4) - WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                                }
+                                else
+                                {
+                                    <th class="MsoNTwoPer">@(WebUtil.NumberRound(thisPn.Ebit, thisPn.Sales, 1, 4) - WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <th class="buLevel">PBT</th>
+
+                            @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                            {
+                                var lastPn = ListLastPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (lastPn == null) { lastPn = new PlanYearPalBusinessExp(); }
+                                <th class="MsoNTwo">@(lastPn.Pbt)</th>
+                            }
+                            @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                            {
+                                if (i == thisStartYear)
+                                {
+                                    var lastPm = ListLastPm.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                                    if (lastPm == null) { lastPm = new PmPalBusinessExp(); }
+                                    <th class="MsoNTwo">@(lastPm.Pbt)</th>
+                                }
+                                var thisPn = ListThisPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                <th class="MsoNTwo">@(thisPn.Pbt)</th>
+                            }
+                            @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                            {
+                                var lastPn = ListLastPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (lastPn == null) { lastPn = new PlanYearPalBusinessExp(); }
+                                var thisPn = ListThisPn.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                                if (i == lastStartYear)
+                                {
+                                    var lastPm = ListLastPm.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                                    if (lastPm == null) { lastPm = new PmPalBusinessExp(); }
+                                    <th class="MsoNTwo">@(lastPm.Pbt - lastPn.Pbt)</th>
+                                }
+                                else
+                                {
+                                    <th class="MsoNTwo">@(thisPn.Pbt - lastPn.Pbt)</th>
+                                }
+                            }
+                        </tr>
+                        isBFirst = false;
+                    }
+                    isCfirst = false;
+                    // 회사
+
+                    var ListLastPnC = lastPnC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).ToList();
+                    var ListLastPmC = lastPmC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).ToList();
+                    var ListThisPnC = thisPnC.Where(w => w.OrgCompanySeq == item2.OrgCompanySeq).ToList();
+                    <tr class="ComLevel">
+                        <th rowspan="4" colspan="3">@(item2.CompanyName)</th>
+                        <th>Sales</th>
+
+                        @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                        {
+                            var lastPn = ListLastPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPn.Sales)</th>
+                        }
+                        @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                        {
+                            if (i == thisStartYear)
+                            {
+                                var lastPm = ListLastPmC.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                                if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                                <th class="MsoNTwo">@(lastPm.Sales)</th>
+                            }
+                            var thisPn = ListThisPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            <th class="MsoNTwo">@(thisPn.Sales)</th>
+                        }
+                        @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                        {
+                            var lastPn = ListLastPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                            var thisPn = ListThisPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (i == lastStartYear)
+                            {
+                                var lastPm = ListLastPmC.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                                if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                                <th class="MsoNTwo">@(lastPm.Sales - lastPn.Sales)</th>
+                            }
+                            else
+                            {
+                                <th class="MsoNTwo">@(thisPn.Sales - lastPn.Sales)</th>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>EBIT</th>
+
+                        @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                        {
+                            var lastPn = ListLastPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPn.Ebit)</th>
+                        }
+                        @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                        {
+                            if (i == thisStartYear)
+                            {
+                                var lastPm = ListLastPmC.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                                if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                                <th class="MsoNTwo">@(lastPm.Ebit)</th>
+                            }
+                            var thisPn = ListThisPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            <th class="MsoNTwo">@(thisPn.Ebit)</th>
+                        }
+                        @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                        {
+                            var lastPn = ListLastPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                            var thisPn = ListThisPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (i == lastStartYear)
+                            {
+                                var lastPm = ListLastPmC.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                                if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                                <th class="MsoNTwo">@(lastPm.Ebit - lastPn.Ebit)</th>
+                            }
+                            else
+                            {
+                                <th class="MsoNTwo">@(thisPn.Ebit - lastPn.Ebit)</th>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>%</th>
+
+                        @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                        {
+                            var lastPn = ListLastPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                            <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                        }
+                        @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                        {
+                            if (i == thisStartYear)
+                            {
+                                var lastPm = ListLastPmC.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                                if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                                <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPm.Ebit, lastPm.Sales, 1, 4))</th>
+                            }
+                            var thisPn = ListThisPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            <th class="MsoNTwoPer">@(WebUtil.NumberRound(thisPn.Ebit, thisPn.Sales, 1, 4))</th>
+                        }
+                        @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                        {
+                            var lastPn = ListLastPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                            var thisPn = ListThisPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (i == lastStartYear)
+                            {
+                                var lastPm = ListLastPmC.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                                if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                                <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPm.Ebit, lastPm.Sales, 1, 4) - WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                            }
+                            else
+                            {
+                                <th class="MsoNTwoPer">@(WebUtil.NumberRound(thisPn.Ebit, thisPn.Sales, 1, 4) - WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                            }
+                        }
+                    </tr>
+                    <tr class="ComLevel">
+                        <th>PBT</th>
+
+                        @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                        {
+                            var lastPn = ListLastPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPn.Pbt)</th>
+                        }
+                        @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                        {
+                            if (i == thisStartYear)
+                            {
+                                var lastPm = ListLastPmC.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                                if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                                <th class="MsoNTwo">@(lastPm.Pbt)</th>
+                            }
+                            var thisPn = ListThisPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            <th class="MsoNTwo">@(thisPn.Pbt)</th>
+                        }
+                        @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                        {
+                            var lastPn = ListLastPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                            var thisPn = ListThisPnC.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                            if (i == lastStartYear)
+                            {
+                                var lastPm = ListLastPmC.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                                if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                                <th class="MsoNTwo">@(lastPm.Pbt - lastPn.Pbt)</th>
+                            }
+                            else
+                            {
+                                <th class="MsoNTwo">@(thisPn.Pbt - lastPn.Pbt)</th>
+                            }
+                        }
+                    </tr>
+                }
+                // 부문
+
+                var ListLastPnU = lastPnU.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).ToList();
+                var ListLastPmU = lastPmU.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).ToList();
+                var ListThisPnU = thisPnU.Where(w => w.OrgUnionSeq == item.OrgUnionSeq).ToList();
+                <tr class="UniLevel">
+                    <th rowspan="4" colspan="3">@(item.UnionName)</th>
+                    <th>Sales</th>
+
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = ListLastPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        <th class="MsoNTwo">@(lastPn.Sales)</th>
+                    }
+                    @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                    {
+                        if (i == thisStartYear)
+                        {
+                            var lastPm = ListLastPmU.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Sales)</th>
+                        }
+                        var thisPn = ListThisPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        <th class="MsoNTwo">@(thisPn.Sales)</th>
+                    }
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = ListLastPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        var thisPn = ListThisPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (i == lastStartYear)
+                        {
+                            var lastPm = ListLastPmU.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Sales - lastPn.Sales)</th>
+                        }
+                        else
+                        {
+                            <th class="MsoNTwo">@(thisPn.Sales - lastPn.Sales)</th>
+                        }
+                    }
+                </tr>
+                <tr class="UniLevel">
+                    <th>EBIT</th>
+
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = ListLastPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        <th class="MsoNTwo">@(lastPn.Ebit)</th>
+                    }
+                    @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                    {
+                        if (i == thisStartYear)
+                        {
+                            var lastPm = ListLastPmU.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Ebit)</th>
+                        }
+                        var thisPn = ListThisPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        <th class="MsoNTwo">@(thisPn.Ebit)</th>
+                    }
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = ListLastPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        var thisPn = ListThisPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (i == lastStartYear)
+                        {
+                            var lastPm = ListLastPmU.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Ebit - lastPn.Ebit)</th>
+                        }
+                        else
+                        {
+                            <th class="MsoNTwo">@(thisPn.Ebit - lastPn.Ebit)</th>
+                        }
+                    }
+                </tr>
+                <tr class="UniLevel">
+                    <th>%</th>
+
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = ListLastPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                    }
+                    @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                    {
+                        if (i == thisStartYear)
+                        {
+                            var lastPm = ListLastPmU.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPm.Ebit, lastPm.Sales, 1, 4))</th>
+                        }
+                        var thisPn = ListThisPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        <th class="MsoNTwoPer">@(WebUtil.NumberRound(thisPn.Ebit, thisPn.Sales, 1, 4))</th>
+                    }
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = ListLastPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        var thisPn = ListThisPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (i == lastStartYear)
+                        {
+                            var lastPm = ListLastPmU.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPm.Ebit, lastPm.Sales, 1, 4) - WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                        }
+                        else
+                        {
+                            <th class="MsoNTwoPer">@(WebUtil.NumberRound(thisPn.Ebit, thisPn.Sales, 1, 4) - WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                        }
+                    }
+                </tr>
+                <tr class="UniLevel">
+                    <th>PBT</th>
+
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = ListLastPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        <th class="MsoNTwo">@(lastPn.Pbt)</th>
+                    }
+                    @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                    {
+                        if (i == thisStartYear)
+                        {
+                            var lastPm = ListLastPmU.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Pbt)</th>
+                        }
+                        var thisPn = ListThisPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        <th class="MsoNTwo">@(thisPn.Pbt)</th>
+                    }
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = ListLastPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        var thisPn = ListThisPnU.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (i == lastStartYear)
+                        {
+                            var lastPm = ListLastPmU.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Pbt - lastPn.Pbt)</th>
+                        }
+                        else
+                        {
+                            <th class="MsoNTwo">@(thisPn.Pbt - lastPn.Pbt)</th>
+                        }
+                    }
+                </tr>
+            }
+            <!--그룹-->
+            @{
+                <tr class="GrpLevel">
+                    <th rowspan="4" colspan="3">그룹</th>
+                    <th>Sales</th>
+
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = lastPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        <th class="MsoNTwo">@(lastPn.Sales)</th>
+                    }
+                    @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                    {
+                        if (i == thisStartYear)
+                        {
+                            var lastPm = lastPmG.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Sales)</th>
+                        }
+                        var thisPn = thisPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        <th class="MsoNTwo">@(thisPn.Sales)</th>
+                    }
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = lastPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        var thisPn = thisPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (i == lastStartYear)
+                        {
+                            var lastPm = lastPmG.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Sales - lastPn.Sales)</th>
+                        }
+                        else
+                        {
+                            <th class="MsoNTwo">@(thisPn.Sales - lastPn.Sales)</th>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>EBIT</th>
+
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = lastPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        <th class="MsoNTwo">@(lastPn.Ebit)</th>
+                    }
+                    @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                    {
+                        if (i == thisStartYear)
+                        {
+                            var lastPm = lastPmG.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Ebit)</th>
+                        }
+                        var thisPn = thisPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        <th class="MsoNTwo">@(thisPn.Ebit)</th>
+                    }
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = lastPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        var thisPn = thisPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (i == lastStartYear)
+                        {
+                            var lastPm = lastPmG.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Ebit - lastPn.Ebit)</th>
+                        }
+                        else
+                        {
+                            <th class="MsoNTwo">@(thisPn.Ebit - lastPn.Ebit)</th>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>%</th>
+
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = lastPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                    }
+                    @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                    {
+                        if (i == thisStartYear)
+                        {
+                            var lastPm = lastPmG.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPm.Ebit, lastPm.Sales, 1, 4))</th>
+                        }
+                        var thisPn = thisPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        <th class="MsoNTwoPer">@(WebUtil.NumberRound(thisPn.Ebit, thisPn.Sales, 1, 4))</th>
+                    }
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = lastPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        var thisPn = thisPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (i == lastStartYear)
+                        {
+                            var lastPm = lastPmG.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwoPer">@(WebUtil.NumberRound(lastPm.Ebit, lastPm.Sales, 1, 4) - WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                        }
+                        else
+                        {
+                            <th class="MsoNTwoPer">@(WebUtil.NumberRound(thisPn.Ebit, thisPn.Sales, 1, 4) - WebUtil.NumberRound(lastPn.Ebit, lastPn.Sales, 1, 4))</th>
+                        }
+                    }
+                </tr>
+                <tr class="GrpLevel">
+                    <th>PBT</th>
+
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = lastPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        <th class="MsoNTwo">@(lastPn.Pbt)</th>
+                    }
+                    @for (int i = thisStartYear; i < thisStartYear + 5; i++)
+                    {
+                        if (i == thisStartYear)
+                        {
+                            var lastPm = lastPmG.Where(w => w.PalYear == (i - 1).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Pbt)</th>
+                        }
+                        var thisPn = thisPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        <th class="MsoNTwo">@(thisPn.Pbt)</th>
+                    }
+                    @for (int i = lastStartYear; i < lastStartYear + 5; i++)
+                    {
+                        var lastPn = lastPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (lastPn == null) { lastPn = new PlanYearPalBusinessSummaryExp(); }
+                        var thisPn = thisPnG.Where(w => w.YearlyYear == i.ToString()).FirstOrDefault();
+                        if (i == lastStartYear)
+                        {
+                            var lastPm = lastPmG.Where(w => w.PalYear == (i).ToString()).FirstOrDefault();
+                            if (lastPm == null) { lastPm = new PmPalSummaryExp(); }
+                            <th class="MsoNTwo">@(lastPm.Pbt - lastPn.Pbt)</th>
+                        }
+                        else
+                        {
+                            <th class="MsoNTwo">@(thisPn.Pbt - lastPn.Pbt)</th>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

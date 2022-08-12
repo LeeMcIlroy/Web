@@ -1,0 +1,23 @@
+2022-05-10 16:46:11 | System.Data.SqlClient.SqlException (0x80131904): 테이블 'HALLA_PM.dbo.DISCLOSURE_ITEM', 열 'DIS_NAME'에 NULL 값을 삽입할 수 없습니다. 열에는 NULL을 사용할 수 없습니다. INSERT이(가) 실패했습니다.
+문이 종료되었습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   위치: System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.DisclosureItemRepo.insert(DisclosureItem entity)
+ClientConnectionId:2e25384d-48b3-466a-9ffa-f133eb2e8c02
+Error Number:515,State:2,Class:16

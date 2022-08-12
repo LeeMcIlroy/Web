@@ -1,0 +1,201 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    List<PmGroup> list = Model.list;
+    Search search = ViewBag.Search;
+
+    string thisYear = "";
+    string thisMonth = "";
+    if (!string.IsNullOrEmpty(search.searchYear))
+    {
+        thisYear = search.searchYear;
+    } 
+    if (!string.IsNullOrEmpty(search.searchMonth))
+    {
+        thisMonth = search.searchMonth;
+    }
+
+}
+
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>경영실적</span>
+        <strong>그룹데이터 요약</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="PageIndex" />
+        <input type="hidden" name="pmYear" value="" />
+        <input type="hidden" name="Monthly" value="" />        
+        <input type="hidden" name="TableName" value="" />
+
+        <div class="con_box search">
+            <h3 class="mt0">그룹데이터 요약</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 경영실적에 대한 매 월 그룹데이터를 확인할 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 모든 기초자료는 회사 레벨에서 등록된 데이터를 기반으로 합니다.
+            </div>
+        </div>
+        <div class="con_box search">
+            <div class="bg_gray">
+                <div class="style_select" style="width:15%;">
+                    <label>
+                        <span></span>
+                        <select name="searchYear">
+                            <option value="">년도</option>
+                            @for (int i = 2017; i <= DateTime.Now.Year + 10; i++)
+                            {
+                                <option value="@i" @(thisYear == i.ToString() ? "selected" : "")>@i</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:15%;">
+                    <label>
+                        <span></span>
+                        <select name="searchMonth">
+                            <option value="">월</option>
+                            @{
+                                string mon = "";
+                            }
+                            @for (int i = 1; i < 13; i++)
+                            {
+                                if (i < 10)
+                                {
+                                    mon = "0" + i;
+                                }
+                                else
+                                {
+                                    mon = i.ToString();
+                                }
+                                <option value="@mon" @(thisMonth == mon ? "selected" : "")>@mon</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:15%;">
+                    <label>
+                        <span></span>
+                        <select name="searchBusType">
+                            @{
+                                var query2 = from m in Define.BUSINESS_PM_TYPE select m;
+
+                                foreach (var item in query2)
+                                {
+                                    <option value="@item.Key" @(ViewBag.Search.searchBusType == item.Key ? "selected" : "")>@item.Value</option>
+                                }
+                            }
+                        </select>
+                    </label>
+                </div>
+                <input type="text" name="searchText" value="@ViewBag.Search.searchText" style="width:30%;display:none" />
+                <a href="javascript: onSearch(document.frmMain);" class="btn small full_green" style="width:9%;">검색</a>
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="7%" />
+                    <col width="/" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>
+                        <th scope="col">연도</th>
+                        <th scope="col">월</th>
+                        <th scope="col">경영실적 항목</th>
+                        <th scope="col">등록여부</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (list == null || list.Count() <= 0)
+                    {
+                        <tr>
+                            <td colspan="4" class="nv-noData">등록된 데이터가 없습니다.</td>
+                        </tr>
+
+                    }
+                    else
+                    {
+                        foreach (var item in list)
+                        {
+                            <tr>
+                                <td>@item.RowNum</td>
+                                <td>@item.PmYear</td>
+                                <td>@item.Monthly</td>
+                                <td>@item.MenuName</td>
+                                @if (item.RegistType == "Y" && item.FinishType == "Y")
+                                {
+                                    <td><a class="underline" href="javascript:;" onclick="onExcel('@item.PmYear', '@item.Monthly', '@item.TableName');">최종승인</a></td>
+                                }
+                                else if (item.RegistType == "Y" && item.FinishType == "N")
+                                {
+                                    <td><a class="underline" href="javascript:;" onclick="onExcel('@item.PmYear', '@item.Monthly', '@item.TableName');">승인중</a></td>
+                                }
+                                else
+                                {
+                                    <td><a class="underline" href="javascript:;" onclick="alert('데이터가 취합되지 않았습니다. 회사별 최종승인 여부를 다시 확인해주세요');">등록중</a></td>
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <div class="paging">
+                <a href="javascript:;" onclick="onPagingList(document.frmMain, @search.FirstPageIndex)" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                <a href="javascript:;" onclick="onPagingList(document.frmMain, @search.PrevPageIndex)" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                <span>
+                    @for (int i = search.StartPageIndex; i <= search.EndPageIndex; i++)
+                    {
+                        if (search.PageIndex == i)
+                        {
+                            <strong>@i</strong>
+                        }
+                        else
+                        {
+                            <a href="#" onclick="onPagingList(document.frmMain, @i)">@i</a>
+                        }
+                    }
+                </span>
+                <a href="javascript:;" onclick="onPagingList(document.frmMain, @search.NextPageIndex)" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                <a href="javascript:;" onclick="onPagingList(document.frmMain, @search.FinalPageIndex)" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+            </div>
+            <!--// paging-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+    function onExcel(year, month, tableName) {
+        var f = document.frmMain;
+
+        f.pmYear.value = year;
+        f.Monthly.value = month;
+        f.TableName.value = tableName;
+        f.action = "EXCEL_" + tableName;
+        f.submit();
+    }
+
+    function onPagingList(form, pageIndex) {
+        form.PageIndex.value = pageIndex;
+        form.method = "get";
+        form.action = "List";
+        form.submit();
+    }
+
+    function onSearch(form) {
+        form.action = "List";
+        form.method = "POST";
+        form.submit();
+    }
+</script>

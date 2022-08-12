@@ -1,0 +1,217 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PmGroupdataMonth pmGroupdataMonth = Model.PmGroupdataMonth;
+    List<PmGroupdataQuarterPalMonth> palMonthList = Model.PmQuarterPalMonthList;
+    List<PmGroupdataQuarterPalMonthCr> palMonthListCr = Model.PmQuarterPalMonthListCr;
+
+    Search search = ViewBag.Search;
+    var PmYear = Model.PmYear;
+    var PmMonth = Model.PmMonth;
+    //orgBusinessList
+}
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>그룹데이터 조정</span>
+        <strong>실적 조정</strong>
+    </div>
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" /> 
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <input type="hidden" name="searchMonth" value="@(search.searchMonth)" />
+        <input type="hidden" name="searchBusType" value="@(search.searchBusType)" />
+        <input type="hidden" name="GroupDataSeq" value="@pmGroupdataMonth.Seq" />
+        <input type="hidden" name="PmYear" value="@PmYear" />
+        <input type="hidden" name="PmMonth" value="@PmMonth" />
+        <div class="con_box search">
+            <h3 class="mt0">실적 조정 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 전체 그룹데이터에 대한 배당 조정을 하실 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연월</th>
+                        <td>@(PmYear)년@(PmMonth)월</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">실적 구분</th>
+                        <td>분기별 손익</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            <h3>@(PmMonth)월 그룹데이터 분기별 손익 예상 조정</h3>
+            <table class="tbl th_ver ta_right">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:10%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody id="table-month-item">
+                    <tr>
+                        <th scope="row" rowspan="2" colspan="2">구분</th>
+                        <th colspan="4">그룹데이터 분기별 손익 예상 조정</th>
+                        <th colspan="5">그룹데이터 분기별 손익 예상</th>
+                    </tr>
+                    <tr>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>PBT</th>
+                        <th>당기순이익</th>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>EBIT%</th>
+                        <th>PBT</th>
+                        <th>당기순이익</th>
+                    </tr>
+                @if (palMonthList == null || palMonthList.Count() <= 0)
+                {
+                    <tr>
+                        <td colspan="11" class="nv-noData">등록된 데이터가 없습니다.</td>
+                    </tr>
+
+                }
+                else
+                {
+                    foreach (var item in palMonthList)
+                    {
+                        var item2 = palMonthListCr.Find(x => x.MonthlyType == item.MonthlyType);
+                        var strTemp = (item.GroupdataMonth.Length < item.GroupdataYear.Length) ? item.GroupdataMonth + "월" : item.GroupdataMonth + "년";
+                        var objMonthCr = (item2 != null) ? item2 : new PmGroupdataQuarterPalMonthCr { };
+                     <tr>
+                         @if (item.MonthlyType =="1")
+                         {
+                            <th scope="row" rowspan="4">@(PmYear)년<br />예상</th>
+                         } 
+                        <th scope="row">@(item.MonthlyType)분기<input type="hidden" name="PalMonthSeq" value="@item.Seq" />
+                            <input type="hidden" name="GROUPDATAYEAR" value="@item.GroupdataYear" />
+                            <input type="hidden" name="GROUPDATAMONTH" value="@item.GroupdataMonth" />
+                            <input type="hidden" name="DATATYPE" value="@item.DataType" />  
+                            <input type="hidden" name="MONTHLYTYPE" value="@item.MonthlyType" />
+                         </th>
+                         <td><input type="text" name="MonthSales" value="@WebUtil.NCommaRound(objMonthCr.SalesCr,2)" /></td>
+                         <td><input type="text" name="MonthEbit" value="@WebUtil.NCommaRound(objMonthCr.EbitCr,2)" /></td>
+                         <td><input type="text" name="MonthPbt" value="@WebUtil.NCommaRound(objMonthCr.PbtCr,2)" /></td>
+                         <td><input type="text" name="MonthNetProfitTerm" value="@WebUtil.NCommaRound(objMonthCr.NetProfitTermCr,2)" /></td>
+                         <td>@WebUtil.NCommaRound(item.Sales, 2)</td>
+                         <td>@WebUtil.NCommaRound(item.Ebit, 2)</td>
+                         <td>@WebUtil.NCommaRound(item.EbitRate, 2)%</td>
+                         <td>@WebUtil.NCommaRound(item.Pbt, 2)</td>
+                         <td>@WebUtil.NCommaRound(item.NetProfitTerm, 2)</td>
+                    </tr>
+                    }
+                }
+                </tbody>
+            </table>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:10%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tr>
+                    <th scope="row" colspan="2">Comment</th>
+                    <td colspan="9"><textarea class="w100" name="BeCashComment"id="strComment">@pmGroupdataMonth.Comment</textarea></td>
+                </tr>
+            </table>
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                <button class="btn full_green" type="button" onclick="onSave();">저장하기</button>
+            </div><!--//btn_area-->
+        </div>
+        <div id="txtContents"></div>
+        <!--// con_box -->
+    </form>
+</div>
+ <script type="text/javascript">
+function onList() {
+        var f = document.frmMain;
+        f.action = "PerformanceList";
+        f.submit();
+    }
+
+    function onSave() {
+        var dcmValue = 0;
+        var JsonMonthData = "";
+        var JsonSummaryData = "";
+
+         // 값확인
+        if (!onCheckMultipleNameDoubleValues("MonthSales", "Sales" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("MonthEbit", "Ebit" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("MonthPbt", "Pbt" + "@Message.MSG_001")) return false;
+        if (!onCheckMultipleNameDoubleValues("MonthNetProfitTerm", "NetProfitTerm" + "@Message.MSG_001")) return false;
+
+
+        $('#table-month-item tr').each(function (index) {
+            var GROUPDATAYEAR = $(this).find("input:hidden[name='GROUPDATAYEAR']").val();
+            var GROUPDATAMONTH = $(this).find("input:hidden[name='GROUPDATAMONTH']").val();
+            var DATATYPE = $(this).find("input:hidden[name='DATATYPE']").val();
+            var MONTHLYTYPE = $(this).find("input:hidden[name='MONTHLYTYPE']").val();
+            var Sales = $(this).find("input:text[name='MonthSales']").val();
+            var Ebit = $(this).find("input:text[name='MonthEbit']").val();
+            var Pbt = $(this).find("input:text[name='MonthPbt']").val();
+            var NetProfitTerm = $(this).find("input:text[name='MonthNetProfitTerm']").val();
+            var Seq = $(this).find("input:hidden[name='PalMonthSeq']").val();
+            if (Seq != undefined) {
+               // if (Sales != dcmValue || Ebit != dcmValue || Pbt != dcmValue || NetProfitTerm != dcmValue) {
+                    JsonMonthData += ',{"Seq":' + Seq + ',"GROUPDATAYEAR": "' + GROUPDATAYEAR
+                          + '","GROUPDATAMONTH":"' + GROUPDATAMONTH
+                          + '","DATATYPE":"' + DATATYPE
+                           + '","MONTHLYTYPE":"' + MONTHLYTYPE
+                          + '","Sales":' + (($.isNumeric(Sales)) ? Sales : 0.00) + ',"Ebit":' + (($.isNumeric(Ebit)) ? Ebit : 0.00) + ',"Pbt":' + (($.isNumeric(Pbt)) ? Pbt : 0.00) + ',"NetProfitTerm":' + (($.isNumeric(NetProfitTerm)) ? NetProfitTerm : 0.00) + '}';
+                //}
+            }
+        });
+
+        JsonMonthData = JsonMonthData.substring(1).replace("{}", "");
+        JsonSummaryData = JsonSummaryData.substring(1).replace("{}", "");
+        // $('#txtContents').html('{"seq":@pmGroupdataMonth.Seq,"MonthData":[' + JsonMonthData + '],"SummaryData":[' + JsonSummaryData + '],"strComment":"' + escape($("#strComment").val()) + '"}');
+        var strSendValues = '{"seq":@pmGroupdataMonth.Seq,"MonthData":[' + JsonMonthData + '],"SummaryData":[' + JsonSummaryData + '],"strComment":"' + escape($("#strComment").val()) + '"}';
+        funCheckVal(strSendValues);
+    }
+
+    function funCheckVal(str) {
+        var strUrl = "../../ApiCorrect/PmGroupDataQuarterPalUpdate";
+        var json_data = funJsonReplace(str);
+         //alert(json_data);
+        var request = $.ajax({
+            url: strUrl,
+            type: 'post',
+            data: json_data,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                alert("저장되었습니다.");
+                onReload();
+            },
+            error: function (request, status, error) {
+                alert("[에러][관리자에게 문의하세요]\n" + "error:" + request.responseText);
+            }
+        });
+    }
+    function funJsonReplace(objValue) {
+        return objValue.replace(/\r/g, '').replace(/\\/g, "").replace(/\n/g, '').replace('"[', '[').replace(']"', ']');
+    }
+
+    function onReload() {
+        var f = document.frmMain;
+        f.action = "PerformanceQuarterPalEdit";
+        f.submit();
+    }
+
+</script>

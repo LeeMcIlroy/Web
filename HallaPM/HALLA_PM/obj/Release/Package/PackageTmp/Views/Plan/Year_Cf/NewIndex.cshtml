@@ -1,0 +1,389 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "NewIndex";
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    // 2019.02.18 만도는 안 보이게 변경
+    lvCompany = lvCompany.Where(w => w.id != "3").ToList();
+
+    List<PmCashFlowCumulativeExp> pmLastYear = Model.pmLastYear;
+    List<PlanYearCfSummaryExp> pnThisYear = Model.pnThisYear;
+
+    var groupPm = pmLastYear.GroupBy(g => new { g.CashFlowYear })
+        .Select(cl => new PmCashFlowCumulativeExp
+        {
+            CashFlowYear = cl.First().CashFlowYear,
+            CfSales = cl.Sum(c => c.CfSales),
+            CfInvestment = cl.Sum(c => c.CfInvestment),
+            CfFinancial = cl.Sum(c => c.CfFinancial),
+            CfEndingCash = cl.Sum(c => c.CfEndingCash),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            CfAvailableCash = cl.Sum(c => c.CfAvailableCash)
+        }).ToList();
+
+    var groupPn = pnThisYear.GroupBy(g => new { g.YearlyYear })
+        .Select(cl => new PlanYearCfSummaryExp
+        {
+            YearlyYear = cl.First().YearlyYear,
+            CfSales = cl.Sum(c => c.CfSales),
+            CfInvestment = cl.Sum(c => c.CfInvestment),
+            CfFinancial = cl.Sum(c => c.CfFinancial),
+            CfEndingCash = cl.Sum(c => c.CfEndingCash),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            CfAvailableCash = cl.Sum(c => c.CfAvailableCash)
+        }).ToList();
+
+
+    // 댓글 관련
+    var year = SessionManager.GetMemberSession().planYear.First().RegistYear;
+    CommentList commentList = new CommentList();
+    commentList.CommentYear = year;
+    commentList.CommentMonth = "99";
+    commentList.AttachTableName = "PLAN_YEAR_CF";
+    commentList.AttachTableSeq = 0;
+    commentList.UserKey = SessionManager.GetMemberSession().insaUserV.userKey;
+    commentList.EmpNo = SessionManager.GetMemberSession().insaUserV.empNo;
+    commentList.UserKorName = SessionManager.GetMemberSession().insaUserV.userKorName;
+    commentList.CompKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Compkorname;
+    commentList.DeptKorName = SessionManager.GetMemberSession().insaDeptV == null ? "소속검색안됨" : SessionManager.GetMemberSession().insaDeptV.Deptkorname;
+}
+<form name="frmForm" method="post">
+    <div class="plan_wrap">
+        <div class="top_wrap">
+            <h2>중기 C/F</h2>
+            @*<a href="/Plan/Year_Cf/NewIndex_excel" class="btn_download" target="_blank">DOWNLOAD</a>*@
+            @*2019.01.24 분기*@
+            <a href="javascript:;" onclick="goDownOrView();" class="btn_download">DOWNLOAD</a>
+        </div><!--//top_wrap-->
+
+
+        @if (lvGroup.Count() > 0)
+        {
+            string gSalesText = "";
+            string gInvestmentText = "";
+            string gFcfText = "";
+
+            gSalesText += "{";
+            gSalesText += "x:" + (Convert.ToInt32(groupPn.First().YearlyYear) - 1) + ",";
+            gSalesText += "y:" + (groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().CfSales, MidpointRounding.AwayFromZero)) + "}";
+
+            gInvestmentText += "{";
+            gInvestmentText += "x:" + (Convert.ToInt32(groupPn.First().YearlyYear) - 1) + ",";
+            gInvestmentText += "y:" + (groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().CfInvestment, MidpointRounding.AwayFromZero)) + "}";
+
+            gFcfText += "{";
+            gFcfText += "x:" + (Convert.ToInt32(groupPn.First().YearlyYear) - 1) + ",";
+            gFcfText += "y:" + (groupPm.Count() == 0 ? 0 : Math.Round(groupPm.First().Fcf2, MidpointRounding.AwayFromZero)) + "}";
+            <div class="con_wrap">
+                <div class="graph_box">
+                    <h3>한라 그룹</h3>
+
+                    <div class="box">
+                        <div class="chart_box chart_box7">
+                            <span class="p_unit">(단위 : 억원)</span>
+                            <div class="chart chart_type10" id="chart1"></div>
+
+                            @foreach (var s in groupPn)
+                            {
+                                gSalesText += ", {";
+                                gSalesText += "x:" + s.YearlyYear + ",";
+                                gSalesText += "y:" + Math.Round(s.CfSales, MidpointRounding.AwayFromZero) + "}";
+
+                                gInvestmentText += ", {";
+                                gInvestmentText += "x:" + s.YearlyYear + ",";
+                                gInvestmentText += "y:" + Math.Round(s.CfInvestment, MidpointRounding.AwayFromZero) + "}";
+
+                                gFcfText += ",{";
+                                gFcfText += "x:" + s.YearlyYear + ",";
+                                gFcfText += "y:" + Math.Round(s.Fcf2, MidpointRounding.AwayFromZero) + "}";
+                            }
+                            <script>
+                                (function () {
+                                    var data = [
+                                        { key: '영업활동', values: [ @gSalesText] },
+                                        { key: '투자활동', values: [ @gInvestmentText] },
+                                        { key: 'FCF', values: [ @gFcfText] }
+                                    ];
+
+                                    MYAPP.graph.type10(data, '#chart1');
+                                })();
+                            </script>
+                        </div>
+                        <!-- chart_box -->
+                    </div><!--//box-->
+
+                    <div class="box">
+                        <div class="graph">
+                            <table class="tbl tbl_type01">
+                                <colgroup>
+                                    <col width="10%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        <th scope="col">@(Convert.ToInt32(groupPn.First().YearlyYear) - 1) 년</th>
+                                        @foreach (var summary in groupPn)
+                                        {
+                                            <th scope="col">@summary.YearlyYear 년</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="lbd0">Ending cash</th>
+                                        <td>@(groupPm.Count() == 0 ? "0" : WebUtil.NCommaRound(groupPm.First().CfEndingCash, 0))</td>
+                                        @foreach (var summary in groupPn)
+                                        {
+                                            <td>@WebUtil.NCommaRound(summary.CfEndingCash)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">가용현금</th>
+                                        <td>@(groupPm.Count() == 0 ? "0" : WebUtil.NCommaRound(groupPm.First().CfAvailableCash, 0))</td>
+                                        @foreach (var summary in groupPn)
+                                        {
+                                            <td>@WebUtil.NCommaRound(summary.CfAvailableCash)</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="lbd0">FCF</th>
+                                        <td>@(groupPm.Count() == 0 ? "0" : WebUtil.NCommaRound(groupPm.First().Fcf2, 0))</td>
+                                        @foreach (var summary in groupPn)
+                                        {
+                                            <td>@WebUtil.NCommaRound(summary.Fcf2)</td>
+                                        }
+                                    </tr>
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div><!--//graph-->
+                    </div><!--//box-->
+                </div><!--//graph_box-->
+
+            </div><!--//con_wrap-->
+        }
+        <div class="tab_wrap">
+            <div class="type_tab2">
+                <ul>
+                    @foreach (var company in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+                    {
+                        <li><a href="#yearpal_@company.id">@company.txt</a></li>
+                    }
+                    <!--
+                    <li><a href="#yearpal01">한라홀딩스</a></li>
+                    <li><a href="#yearpal02">JJ한라</a></li>
+                    <li><a href="#yearpal03">만도</a></li>
+                    <li><a href="#yearpal04">만도헬라</a></li>
+                    <li><a href="#yearpal05">만도브로제</a></li>
+                    <li><a href="#yearpal06">㈜한라</a></li>
+                        -->
+                </ul>
+            </div><!--//type_tab-->
+
+            @foreach (var company in lvCompany.OrderBy(o => o.UpId).ThenBy(t => t.id))
+            {
+                PmCashFlowCumulativeExp pmLastYearRow = pmLastYear.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).FirstOrDefault() == null ? new PmCashFlowCumulativeExp() : pmLastYear.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).FirstOrDefault();
+                List<PlanYearCfSummaryExp> pnThisYearRow = pnThisYear.Where(w => w.OrgCompanySeq == Convert.ToInt32(company.id)).ToList();
+                string salesText = "";
+                string investmentText = "";
+                string fcfText = "";
+                int toYear = Convert.ToInt32(year) + 4;
+
+
+                salesText += "{";
+                salesText += "x:" + (Convert.ToInt32(pnThisYearRow.First().YearlyYear) - 1) + ",";
+                salesText += "y:" + Math.Round(pmLastYearRow.CfSales, MidpointRounding.AwayFromZero) + "}";
+
+                investmentText += "{";
+                investmentText += "x:" + (Convert.ToInt32(pnThisYearRow.First().YearlyYear) - 1) + ",";
+                investmentText += "y:" + Math.Round(pmLastYearRow.CfInvestment, MidpointRounding.AwayFromZero) + "}";
+
+                fcfText += "{";
+                fcfText += "x:" + (Convert.ToInt32(pnThisYearRow.First().YearlyYear) - 1) + ",";
+                fcfText += "y:" + Math.Round(pmLastYearRow.Fcf2, MidpointRounding.AwayFromZero) + "}";
+
+                foreach (var s in pnThisYearRow)
+                {
+                    salesText += ",{";
+                    salesText += "x:" + s.YearlyYear + ",";
+                    salesText += "y:" + Math.Round(s.CfSales, MidpointRounding.AwayFromZero) + "}";
+
+                    investmentText += ",{";
+                    investmentText += "x:" + s.YearlyYear + ",";
+                    investmentText += "y:" + Math.Round(s.CfInvestment, MidpointRounding.AwayFromZero) + "}";
+
+                    fcfText += ",{";
+                    fcfText += "x:" + s.YearlyYear + ",";
+                    fcfText += "y:" + Math.Round(s.Fcf2, MidpointRounding.AwayFromZero) + "}";
+                }
+                PlanYearCfSummaryExp pnRowThisYear0 = pnThisYearRow.Where(w => w.YearlyYear == year).FirstOrDefault();
+                PlanYearCfSummaryExp pnRowThisYear1 = pnThisYearRow.Where(w => w.YearlyYear == (Convert.ToInt32(year) + 1).ToString()).FirstOrDefault();
+                PlanYearCfSummaryExp pnRowThisYear2 = pnThisYearRow.Where(w => w.YearlyYear == (Convert.ToInt32(year) + 2).ToString()).FirstOrDefault();
+                PlanYearCfSummaryExp pnRowThisYear3 = pnThisYearRow.Where(w => w.YearlyYear == (Convert.ToInt32(year) + 3).ToString()).FirstOrDefault();
+                PlanYearCfSummaryExp pnRowThisYear4 = pnThisYearRow.Where(w => w.YearlyYear == (Convert.ToInt32(year) + 4).ToString()).FirstOrDefault();
+
+                <div class="type_tab_con" id="yearpal_@company.id">
+                    <div class="con_wrap">
+
+                        <div class="graph_box">
+                            <div class="box">
+                                <div class="chart_box chart_box7">
+                                    <span class="p_unit">(단위 : 억원)</span>
+                                    <div class="chart chart_type10" id="chart_@company.id"></div>
+                                    <script>
+                                        (function () {
+                                            var data = [
+                                                { key: '영업활동', values: [ @salesText] },
+                                                { key: '투자활동', values: [ @investmentText] },
+                                                { key: 'FCF', values: [ @fcfText] }
+                                            ];
+
+                                            MYAPP.graph.type10(data, '#chart_@company.id');
+                                        })();
+                                    </script>
+                                </div>
+                                <!-- chart_box -->
+                            </div><!--//box-->
+
+                            <div class="box">
+                                <div class="graph">
+                                    <table class="tbl tbl_type01">
+                                        <colgroup>
+                                            <col width="10%" />
+                                            <col width="/" />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" rowspan="2" class="rbd lbd0">
+                                                    구분
+                                                </th>
+                                                <th scope="col" colspan="6" class="rbd">@year 년 중기계획</th>
+                                                <th scope="col" colspan="5">전년대비</th>
+                                            </tr>
+                                            <tr>
+                                                <th scope="col">@(Convert.ToInt32(year) - 1) 년</th>
+                                                @for (int i = Convert.ToInt32(year); i <= toYear; i++)
+                                                {
+                                                    <th scope="col" @(i == toYear ? "class=rbd" : "")>@i 년</th>
+                                                }
+                                                <!--
+                                                    <th scope="col">'18년</th>
+                                                    <th scope="col">'19년</th>
+                                                    <th scope="col">'20년</th>
+                                                    <th scope="col">'21년</th>
+                                                    <th scope="col" class="rbd">'22년</th>
+                                                    -->
+                                                @for (int i = Convert.ToInt32(year); i <= toYear; i++)
+                                                {
+                                                    <th scope="col">@i 년</th>
+                                                }
+                                                <!--
+                                                <th scope="col">'18년</th>
+                                                <th scope="col">'19년</th>
+                                                <th scope="col">'20년</th>
+                                                <th scope="col">'21년</th>
+                                                <th scope="col">'22년</th>
+                                                    -->
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    Ending cash
+                                                </th>
+                                                <td>@WebUtil.NCommaRound(pmLastYearRow.CfEndingCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear0.CfEndingCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear1.CfEndingCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear2.CfEndingCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear3.CfEndingCash)</td>
+                                                <td class="rbd">@WebUtil.NCommaRound(pnRowThisYear4.CfEndingCash)</td>
+
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear0.CfEndingCash - pmLastYearRow.CfEndingCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear1.CfEndingCash - pnRowThisYear0.CfEndingCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear2.CfEndingCash - pnRowThisYear1.CfEndingCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear3.CfEndingCash - pnRowThisYear2.CfEndingCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear4.CfEndingCash - pnRowThisYear3.CfEndingCash)</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    가용현금
+                                                </th>
+                                                <td>@WebUtil.NCommaRound(pmLastYearRow.CfAvailableCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear0.CfAvailableCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear1.CfAvailableCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear2.CfAvailableCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear3.CfAvailableCash)</td>
+                                                <td class="rbd">@WebUtil.NCommaRound(pnRowThisYear4.CfAvailableCash)</td>
+
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear0.CfAvailableCash - pmLastYearRow.CfAvailableCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear1.CfAvailableCash - pnRowThisYear0.CfAvailableCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear2.CfAvailableCash - pnRowThisYear1.CfAvailableCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear3.CfAvailableCash - pnRowThisYear2.CfAvailableCash)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear4.CfAvailableCash - pnRowThisYear3.CfAvailableCash)</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="lbd0">
+                                                    FCF
+                                                </th>
+                                                <td>@WebUtil.NCommaRound(pmLastYearRow.Fcf2)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear0.Fcf2)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear1.Fcf2)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear2.Fcf2)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear3.Fcf2)</td>
+                                                <td class="rbd">@WebUtil.NCommaRound(pnRowThisYear4.Fcf2)</td>
+
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear0.Fcf2 - pmLastYearRow.Fcf2)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear1.Fcf2 - pnRowThisYear0.Fcf2)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear2.Fcf2 - pnRowThisYear1.Fcf2)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear3.Fcf2 - pnRowThisYear2.Fcf2)</td>
+                                                <td>@WebUtil.NCommaRound(pnRowThisYear4.Fcf2 - pnRowThisYear3.Fcf2)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table><!--// tbl-->
+                                </div><!--//graph-->
+                            </div><!--//box-->
+
+                        </div><!--//graph_box-->
+                    </div><!--//con_wrap-->
+
+                </div><!--//type_tab_con-->
+            }
+
+        </div><!--//tab_wrap-->
+    </div><!--//plan_wrap-->
+    <script>
+        $(function () {
+            /*탭*/
+            MYAPP.tab.init($(".type_tab2"));
+        })
+
+        function goDownOrView() {
+            var f = document.frmForm;
+            // 웹 모바일 분기
+            var filter = "win16|win32|win64|mac";
+
+            if (navigator.platform) {
+
+                if (0 > filter.indexOf(navigator.platform.toLowerCase())) {
+                    // Mobile
+                    f.action = "ViewYearCf";
+                    f.target = "_Blank";
+                    f.submit();
+                } else {
+                    // Pc
+                    f.action = "ExcelYearCf";
+                    //f.target = "_Blank";
+                    f.submit();
+                }
+
+            }
+
+        }
+    </script>
+</form>
+@Html.Partial("~/Views/Shared/PartialReply.cshtml", commentList)

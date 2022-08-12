@@ -1,0 +1,149 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "list";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    int UnionCount = Model.UnionCount;
+    int companyCount = Model.companyCount;
+    List<OrgBusiness> list = Model.list;
+    Search search = ViewBag.Search;
+
+    string companyLink = "javascript: alert('부문을 먼저 등록하세요.'); return false";
+    string businessLink = "javascript: alert('회사를 먼저 등록하세요.'); return false";
+
+    if (UnionCount > 0)
+    {
+        companyLink = "javascript: onRegist('Company_Write'); ";
+    }
+    if (companyCount > 0)
+    {
+        businessLink = "javascript: onRegist('Business_Write'); ";
+    }
+}
+
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>관리자관리</span>
+        <span>조직관리</span>
+        <strong>리스트</strong>
+    </div>
+
+    <form name="frmMain" method="post">
+        <input type="hidden" name="seq" />
+        <div class="con_box search">
+            <h3 class="mt0">조직관리</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 조직은 부분 - 회사 Business 레벨로 구분됩니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 삭제 시 계획 및 실적 데이터가 손실될 수 있으므로 유의해주세요.
+            </div>
+            <div class="btn_area">
+                <button class="btn full_green" onclick="javascript: onRegist('Union_Write');">부문등록</button>
+                <button class="btn full_green" onclick="@companyLink">회사등록</button>
+                <button class="btn full_green" onclick="@businessLink">BU등록</button>
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box danzi_list">
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:25%" />
+                    <col style="width:25%" />
+                    <col style="width:25%" />
+                    <col style="width:25%" />
+                    <col style="width:25%" />
+
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="row">부문</th>
+                        <th scope="row">회사</th>
+                        <th scope="row">BU</th>
+                        <th scope="row">실적사용여부</th>
+                        <th scope="row">공시사용여부</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (list == null || list.Count <= 0)
+                        {
+                            <tr><td colspan='4'>데이터가 없습니다.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var item in list)
+                            {
+                            <tr>
+                                <td>
+                                    @{
+                                        if (item.OrgCompanySeq == 0)
+                                        {
+                                            <a href="javascript:;" onclick="onEdit('Union_Edit', @item.OrgUnionSeq);">@item.UnionName</a>
+                                        }
+                                        else
+                                        {
+                                            @item.UnionName
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        if (item.OrgCompanySeq != 0 && item.Seq == 0)
+                                        {
+                                            <a href="javascript:;" onclick="onEdit('Company_Edit', @item.OrgCompanySeq);">@item.CompanyName</a>
+                                        }
+                                        else if (item.OrgCompanySeq != 0 && item.Seq != 0)
+                                        {
+                                            @item.CompanyName
+                                        }
+                                        else
+                                        {
+                                            <label>-</label>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        if (item.Seq != 0)
+                                        {
+                                            <a href="javascript:;" onclick="onEdit('Business_Edit', @item.Seq);">@item.BusinessName</a>
+                                        }
+                                        else
+                                        {
+                                            <label>-</label>
+                                        }
+                                    }
+                                </td>
+                                <td>@item.IsUse</td>
+                                <td>@item.IsDisclosure</td>
+                            </tr>
+                                }
+                            }
+                        }
+                </tbody>
+            </table>
+            <!--// paging-->
+            <!--// btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+    <script>
+        function onRegist(actionName) {
+            var f = document.frmMain;
+
+            f.action = actionName;
+            f.submit();
+        }
+
+        function onEdit(actionName, seq) {
+            var f = document.frmMain;
+            f.seq.value = seq;
+            f.action = actionName;
+            f.submit();
+        }
+    </script>
+</div>

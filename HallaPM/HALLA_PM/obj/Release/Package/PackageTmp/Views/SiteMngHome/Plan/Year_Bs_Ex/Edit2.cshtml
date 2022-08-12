@@ -1,0 +1,289 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit2";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    PlanYearBsEx planYearBs = Model.planYearBs;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+
+    List<PmBsSummaryExExp> lastYearSummaryList = Model.lastYearSummaryList;
+    List<PlanYearBsSummaryEx> thisYearSummaryList = Model.thisYearSummaryList;
+
+    var lastYearSummaryFirst = lastYearSummaryList.FirstOrDefault() == null ? new PmBsSummaryExExp() : lastYearSummaryList.FirstOrDefault();
+    bool bSummaryLast = false;
+    Search search = ViewBag.Search;
+}
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>사업계획</span>
+        <strong>중기BS - (주)한라 별도</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@planYearBs.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@planYearBs.OrgCompanySeq" />
+        <input type="hidden" name="YearBsYear" value="@planYearBs.YearBsYear" />
+        <input type="hidden" name="RegistStatus" value="@planYearBs.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <div class="con_box search">
+            <h3 class="mt0">중기BS 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@planYearBs.YearBsYear</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = planYearBs.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <h3>중기재무계획 요약</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup></colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2" rowspan="2">구분</th>
+                        <th scope="col" colspan="6">B/S</th>
+                        <th scope="col" colspan="3">ROIC</th>
+                        <th scope="col" colspan="6">W/C</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">총자산</th>
+                        <th scope="col">총부채</th>
+                        <th scope="col">총자본</th>
+                        <th scope="col">현금</th>
+                        <th scope="col">차입금</th>
+                        <th scope="col">부채비율</th>
+                        <th scope="col">세후 영업이익</th>
+                        <th scope="col">투하자본</th>
+                        <th scope="col">ROIC</th>
+                        <th scope="col">A/R</th>
+                        <th scope="col">T/O Days</th>
+                        <th scope="col">A/P</th>
+                        <th scope="col">T/O Days</th>
+                        <th scope="col">Inv</th>
+                        <th scope="col">T/O Days</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (lastYearSummaryList == null || lastYearSummaryList.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row" rowspan="6">@(planYearBs.YearBsYear)<br />중기계획</th>
+                            <th scope="row">@(Convert.ToInt32(planYearBs.YearBsYear) - 1)년</th>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0%</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0%</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <th scope="row" rowspan="6">@(planYearBs.YearBsYear)<br />중기계획</th>
+                            <th scope="row">@(Convert.ToInt32(planYearBs.YearBsYear) - 1)년</th>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Assets, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Liabilities, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Capital, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Cash, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Loan, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Capital == 0 ? 0 : WebUtil.NumberRound(lastYearSummaryFirst.Liabilities, lastYearSummaryFirst.Capital, 100, 0), 0)%</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.AfterTaxOperationProfit, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.PainInCapital, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.PainInCapital == 0 ? 0 : WebUtil.NumberRound(lastYearSummaryFirst.AfterTaxOperationProfit, lastYearSummaryFirst.PainInCapital, 100, 0), 0)%</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Ar, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.ArToDays, 1)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Ap, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.ApToDays, 1)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.Inventory, 0)</td>
+                            <td>@WebUtil.NCommaRound(lastYearSummaryFirst.InventoryToDays, 1)</td>
+                        </tr>
+                    }
+                    @foreach (var item in thisYearSummaryList)
+                    {
+                        <tr>
+                            @*<th scope="row" rowspan="6">전년대비</th>*@
+                            <th scope="row">
+                                @item.YearlyYear 년
+                            </th>
+                            <td>@WebUtil.NCommaRound(item.Assets, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.Liabilities, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.Capital, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.Cash, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.Loan, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.LiabilitiesRate, 0)%</td>
+                            <td>@WebUtil.NCommaRound(item.AfterTaxOperationProfit, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.PainInCapital, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.Roic, 1)%</td>
+                            <td>@WebUtil.NCommaRound(item.Ar, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.ArToDays, 1)</td>
+                            <td>@WebUtil.NCommaRound(item.Ap, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.ApToDays, 1)</td>
+                            <td>@WebUtil.NCommaRound(item.Inventory, 0)</td>
+                            <td>@WebUtil.NCommaRound(item.InventoryToDays, 1)</td>
+                        </tr>
+                    }
+
+                    @{
+                        var summaryCount = 0;
+
+                        foreach (var item in thisYearSummaryList)
+                        {
+                            if (summaryCount == 0)
+                            {
+                                //var lastYearSummaryFirst = lastYearSummaryList.FirstOrDefault() == null ? new PmBsSummaryExp() : lastYearSummaryList.FirstOrDefault();
+
+                                <tr>
+                                    <th scope="row" rowspan="5">전년대비</th>
+                                    <th scope="row">
+                                        @item.YearlyYear 년
+                                    </th>
+                                    <td>@WebUtil.NCommaRound(item.Assets - lastYearSummaryFirst.Assets, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Liabilities - lastYearSummaryFirst.Liabilities, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Capital - lastYearSummaryFirst.Capital, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Cash - lastYearSummaryFirst.Cash, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Loan - lastYearSummaryFirst.Loan, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.LiabilitiesRate - lastYearSummaryFirst.Capital == 0 ? 0 : WebUtil.NumberRound(lastYearSummaryFirst.Liabilities, lastYearSummaryFirst.Capital, 100, 0), 0)%</td>
+                                    <td>@WebUtil.NCommaRound(item.AfterTaxOperationProfit - lastYearSummaryFirst.AfterTaxOperationProfit, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.PainInCapital - lastYearSummaryFirst.PainInCapital, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Roic - lastYearSummaryFirst.PainInCapital == 0 ? 0 : WebUtil.NumberRound(lastYearSummaryFirst.AfterTaxOperationProfit, lastYearSummaryFirst.PainInCapital, 100, 0), 0)%</td>
+                                    <td>@WebUtil.NCommaRound(item.Ar - lastYearSummaryFirst.Ar, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.ArToDays - lastYearSummaryFirst.ArToDays, 1)</td>
+                                    <td>@WebUtil.NCommaRound(item.Ap - lastYearSummaryFirst.Ap, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.ApToDays - lastYearSummaryFirst.ApToDays, 1)</td>
+                                    <td>@WebUtil.NCommaRound(item.Inventory - lastYearSummaryFirst.Inventory, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.InventoryToDays - lastYearSummaryFirst.InventoryToDays, 1)</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                var lastYear = thisYearSummaryList.Where(w => w.YearlyYear == (Convert.ToInt32(item.YearlyYear) - 1).ToString()).FirstOrDefault();
+                                <tr>
+                                    <th scope="row">
+                                        @item.YearlyYear 년
+                                    </th>
+                                    <td>@WebUtil.NCommaRound(item.Assets - lastYear.Assets, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Liabilities - lastYear.Liabilities, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Capital - lastYear.Capital, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Cash - lastYear.Cash, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Loan - lastYear.Loan, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.LiabilitiesRate - lastYear.LiabilitiesRate, 0)%</td>
+                                    <td>@WebUtil.NCommaRound(item.AfterTaxOperationProfit - lastYear.AfterTaxOperationProfit, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.PainInCapital - lastYear.PainInCapital, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.Roic - lastYear.Roic, 1)%</td>
+                                    <td>@WebUtil.NCommaRound(item.Ar - lastYear.Ar, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.ArToDays - lastYear.ArToDays, 1)</td>
+                                    <td>@WebUtil.NCommaRound(item.Ap - lastYear.Ap, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.ApToDays - lastYear.ApToDays, 1)</td>
+                                    <td>@WebUtil.NCommaRound(item.Inventory - lastYear.Inventory, 0)</td>
+                                    <td>@WebUtil.NCommaRound(item.InventoryToDays - lastYear.InventoryToDays, 1)</td>
+                                </tr>
+                            }
+                            summaryCount++;
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+        onRegistStatusChange(afterRegistStatus);
+        //var f = document.frmMain;
+        //f.afterRegistStatus.value = afterRegistStatus;
+        //MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+
+</script>

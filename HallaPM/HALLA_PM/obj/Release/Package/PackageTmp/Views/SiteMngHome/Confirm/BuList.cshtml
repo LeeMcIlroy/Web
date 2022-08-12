@@ -1,0 +1,217 @@
+﻿
+@using HALLA_PM.Models;
+@using HALLA_PM.Models.Confirm;
+@using HALLA_PM.Util
+@using HALLA_PM.Core;
+@{
+
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    string thisYear = "";
+    string thisMonth = "";
+    List<ConfirmAllView> list = Model.list;
+    list = Model.list;
+    int totalCount = Model.totalCount;
+    Search search = ViewBag.Search;
+    if (!string.IsNullOrEmpty(search.searchYear))
+    {
+        thisYear = search.searchYear;
+    }
+    if (!string.IsNullOrEmpty(search.searchMonth))
+    {
+        thisMonth = search.searchMonth;
+    }
+    List<OrgCompany> OrgCpyList = Model.OrgCpyList;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>승인관리</span>
+        <strong>승인 관리</strong>
+    </div>
+
+    <form name="frmMain" method="post">
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="seq" value="" />
+
+        <div class="con_box search">
+            <h3 class="mt0">승인 관리</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 등록된 사업계획과 경영실적에 대해서 승인 또는 반려 처리할 수 있습니다.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box search">
+            <div class="bg_gray">
+                <div class="style_select" style="width:20%;">
+                    <label>
+                        <span></span>
+                        <select name="searchCpySeq">
+                            <option value="-1">회사</option>
+                            @foreach (var item in OrgCpyList)
+                            {
+                                <option value="@item.Seq" @(ViewBag.Search.searchCpySeq == item.Seq ? "selected" : "")>@item.CompanyName</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:20%;">
+                    <label>
+                        <span></span>
+                        <select name="searchBusType">
+                            @{
+                                var query2 = from m in Define.BUSINESS_PLAN_TYPE select m;
+
+                                foreach (var item in query2)
+                                {
+                                    <option value="@item.Key" @(ViewBag.Search.searchBusType == item.Key ? "selected" : "")>@item.Value</option>
+                                }
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:10%;">
+                    <label>
+                        <span></span>
+                        <select name="searchYear">
+                            <option value="">년도</option>
+                            @for (int i = 2017; i < 2040; i++)
+                            {
+                                <option value="@i" @(thisYear == i.ToString() ? "selected" : "")>@i</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <div class="style_select" style="width:10%;display:none">
+                    <label>
+                        <span></span>
+                        <select name="searchType">
+                            @foreach (var item in Define.NOTICE_SEARCH_TYPE)
+                            {
+                                <option value="@item.Key" @(ViewBag.Search.searchType == item.Key ? "selected" : "")>@item.Value</option>
+                            }
+                        </select>
+                    </label>
+                </div>
+                <input type="text" name="searchText" value="@ViewBag.Search.searchText" style="width:30%;display:none" />
+                <a href="javascript: onSearch(document.frmMain);" class="btn small full_green" style="width:9%;">검색</a>
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+
+            @if (!string.IsNullOrEmpty(ViewBag.Search.searchText))
+            {
+                <p class="tblinfo">@ViewBag.Search.searchText 에 대한 총 <strong class="number">@totalCount</strong>개의 댓글이 있습니다.</p>
+            }
+            else
+            {
+                <p class="tblinfo">총 <strong class="number">@totalCount</strong>개의 댓글이 있습니다.</p>
+            }
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="5%" />
+                    <col width="15%" />
+                    <col width="20%" />
+                    <col width="10%" />
+                    <col width="/" />
+                    <col width="/" />
+                    <col width="15%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>                        
+                        <th scope="col">회사</th>
+                        <th scope="col">분류</th>
+                        <th scope="col">년월</th>
+                        <th scope="col">진행상태</th>
+                        <th scope="col">처리</th>
+                        <th scope="col">등록일</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @if (list.Count() > 0)
+                    {
+                        foreach (var item in list)
+                        { 
+                            <tr>
+                                <td>@item.rowNum</td>
+                                @*<td class="ta_left"><a href="javascript:;" onclick="onView(document.frmMain, @item.seq)">@item.title</a></td>*@
+                                <td class="ta_left">@item.companyName</td>
+                                <td class="ta_left">@Define.BUSINESS_PLAN_TYPE.GetValue(item.busType)</td>
+                                <td>@item.planYear @((item.monthly == "99") ? "": "-" + item.monthly)</td>
+                                <td>@Define.REGIST_STATUS.GetValue(item.registStatus)</td>
+                                <td><button>승인</button>&nbsp;<button>반려</button>&nbsp;<button>최종승인</button></td>
+                                <td>@item.CreateDate</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">등록된 댓글이 없습니다.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="paging">
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.FirstPageIndex)" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.PrevPageIndex)" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                <span>
+                    @for (int i = ViewBag.Search.StartPageIndex; i <= ViewBag.Search.EndPageIndex; i++)
+                    {
+                        if (ViewBag.Search.PageIndex == i)
+                        {
+                            <strong>@i</strong>
+                        }
+                        else
+                        {
+                            <a href="#" onclick="onPaging(document.frmMain, @i)">@i</a>
+                        }
+                    }
+                </span>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.NextPageIndex)" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                <a href="#" onclick="onPaging(document.frmMain, @ViewBag.Search.FinalPageIndex)" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+            </div>
+            <!--// con_box-->
+
+
+            <div class="btn_area" style="display:none">
+                <a href="javascript:;" onclick="onWrite(document.frmMain)" class="btn full_green">등록</a>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+
+</div><!--//container-->
+<script>
+    function onSearch(form) {
+        form.action = "/SiteMngHome/Confirm/BuList";
+        form.method = "POST";
+        form.submit();
+    }
+
+    function onWrite(form) {
+
+        form.action = "/SiteMngHome/Confirm/Buwrite";
+        form.method = "POST";
+        form.submit();
+
+    }
+
+    function onView(form, seq) {
+        form.seq.value = seq;
+
+        form.action = "/SiteMngHome/Confirm/BuEdit";
+        form.method = "POST";
+        form.submit();
+
+    }
+</script>
+

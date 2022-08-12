@@ -1,0 +1,230 @@
+﻿@using HALLA_PM.Models;
+@{
+    Layout = null;
+
+    List<LevelTwo> lvGroup = Model.lvGroup;
+    List<LevelTwo> lvCompany = Model.lvCompany;
+
+    List<OrgUnionExp> orgUnionList = Model.orgUnionList;
+    List<TbOrgCompanyExp> tbOrgCompanyList = Model.tbOrgCompanyList;
+    List<PlanYearPalBusinessSummary> groupTotalSummary = Model.groupTotalSummary;
+    List<PlanYearPalExp> planYearPalList = Model.planYearPalList;
+    List<String> yearList = Model.yearList;
+    List<OrgUnionExp> procedOrgUnionList = new List<OrgUnionExp>();
+    foreach(var union in orgUnionList)
+    {
+        if (union.planYearPalBusinessSummaryList != null && union.planYearPalBusinessSummaryList.Count() > 0)
+        {
+            procedOrgUnionList.Add(union);
+        }
+    }
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=plan_year_pal_excel.xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+<div class="plan_wrap">
+    <div class="top_wrap">
+        <h2>중기 손익</h2>
+    </div><!--//top_wrap-->
+
+    @if (lvGroup.Count() > 0)
+    {
+    <div class="con_wrap">
+        <div class="graph_box">
+            <h3>한라 그룹</h3>
+
+            <div class="box">
+                <div class="graph">
+                    <table class="tbl tbl_type01" border="1">
+                        <colgroup>
+                            <col width="7%" />
+                            <col width="7%" />
+                            <col width="/" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="8" class="rbd lbd0" style="text-align:right;">
+                                    (단위 : 억원)
+                                </th>
+                            </tr>
+                            <tr>
+                                <th scope="col" colspan="2" class="rbd lbd0">
+                                    구분
+                                </th>
+                                @foreach (var year in yearList)
+                                {
+                                    var y = year + "년";
+                                    <th scope="col">'@y</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var union in procedOrgUnionList)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="3" class="lbd0">
+                                        @union.UnionName
+                                    </th>
+                                    <th scope="row">Sales</th>
+                                    <td>@union.pmPalBusinessSummary.sales</td>
+                                    @foreach (var summary in union.planYearPalBusinessSummaryList)
+                                    {
+                                        <td>@summary.sales</td>
+                                    }
+                                </tr>
+                                    <tr>
+                                        <th scope="row">EBIT</th>
+                                        <td>@union.pmPalBusinessSummary.ebit</td>
+                                        @foreach (var summary in union.planYearPalBusinessSummaryList)
+                                        {
+                                            <td>@summary.ebit</td>
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">%</th>
+                                        <td>@union.pmPalBusinessSummary.rate %</td>
+                                        @foreach (var summary in union.planYearPalBusinessSummaryList)
+                                        {
+                                            <td>@summary.rate %</td>
+                                        }
+                                    </tr>
+                            }
+                        </tbody>
+                    </table><!--// tbl-->
+                </div><!--//graph-->
+            </div><!--//box-->
+        </div><!--//graph_box-->
+    </div><!--//con_wrap-->
+    }
+    @foreach (var item in tbOrgCompanyList)
+    {
+        if (lvCompany.Where(w => w.id == item.seq.ToString()).Count() > 0)
+        {
+            List<PlanYearPalBusinessSummary> totalPlanYearPalBusinessSummaryList = item.totalPlanYearPalBusinessSummaryList;
+        <div class="type_tab_con" id="yearpal01_@item.seq">
+            <div class="con_wrap">
+                <div class="graph_box">
+                    <h3>@item.companyName</h3>
+                    <div class="box">
+                        <div class="graph">
+                            <table class="tbl tbl_type01" border="1">
+                                <colgroup>
+                                    <col width="7%" />
+                                    <col width="7%" />
+                                    <col width="/" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" colspan="8" class="rbd lbd0" style="text-align:right;">
+                                            (단위 : 억원)
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col" colspan="2" class="rbd lbd0">
+                                            구분
+                                        </th>
+                                        @foreach (var year in yearList)
+                                        {
+                                            var y = year + "년";
+                                            <th scope="col">'@y</th>
+                                        }
+                                       
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (item.orgBusinessList != null)
+                                    {
+                                        foreach (var business in item.orgBusinessList)
+                                        {
+                                            if (business.planYearPalBusinessSummaryList != null)
+                                            {
+                                                var summaryList = business.planYearPalBusinessSummaryList;
+                                                var prevData = business.pmPalBusinessSummary;
+
+                                                <tr>
+                                                    <th scope="row" rowspan="3" class="lbd0">
+                                                        @business.BusinessName
+                                                    </th>
+                                                    <th scope="row">Sales</th>
+                                                    <td>@(prevData == null ? 0 : prevData.sales)</td>
+
+                                                    @foreach (var data in summaryList)
+                                                    {
+                                                        <td>@data.sales</td>
+                                                    }
+                                                    <!-- <td>5,706 </td><td>6,311 </td><td>6,873 </td><td>7,816 </td><td>9,027 </td><td>9,941 </td>-->
+                                                </tr>
+
+                                                    <tr>
+                                                        <th scope="row" class="lbd0">EBIT</th>
+                                                        <td>@(prevData == null ? 0 : prevData.ebit)</td>
+                                                        @foreach (var data in summaryList)
+                                                        {
+                                                            <td>@data.ebit</td>
+                                                        }
+                                                        <!-- <td>242 </td><td>236 </td><td>260 </td><td>309</td><td>390</td><td>454 </td>-->
+                                                    </tr>
+
+                                                    <tr>
+                                                        <th scope="row">%</th>
+                                                        <td>@(prevData == null ? 0 : prevData.rate) %</td>
+                                                        @foreach (var data in summaryList)
+                                                        {
+                                                            <td>@data.rate %</td>
+                                                        }
+                                                        <!-- <td>4.2%</td><td>3.7%</td><td>3.8%</td><td>4.0%</td><td>4.3%</td><td>4.6%</td>-->
+                                                    </tr>
+                                            }
+                                        }
+                                    }
+                                    <tr class="total">
+                                        <th scope="row" rowspan="3" class="lbd0">
+                                            합계
+                                        </th>
+                                        <th scope="row">Sales</th>
+                                        <td>@item.totalPmPalBusinessSummary.sales</td>
+                                        @if (totalPlanYearPalBusinessSummaryList != null)
+                                        {
+                                            foreach (var total in totalPlanYearPalBusinessSummaryList)
+                                            {
+                                                <td>@total.sales</td>
+                                            }
+                                        }
+                                        <!-- <td>8,908</td><td>9,755</td><td>10,452</td><td>11,735</td><td>13,609</td><td>15,001</td>-->
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">EBIT</th>
+                                        <td>@item.totalPmPalBusinessSummary.ebit</td>
+                                        @if (totalPlanYearPalBusinessSummaryList != null)
+                                        {
+                                            foreach (var total in totalPlanYearPalBusinessSummaryList)
+                                            {
+                                                <td>@total.ebit</td>
+                                            }
+                                        }
+                                        <!-- <td>632</td><td>856</td><td>675</td><td>790</td><td>975</td><td>1,185</td>-->
+                                    </tr>
+                                    <tr class="total">
+                                        <th scope="row">%</th>
+                                        <td>@item.totalPmPalBusinessSummary.rate %</td>
+                                        @if (totalPlanYearPalBusinessSummaryList != null)
+                                        {
+                                            foreach (var total in totalPlanYearPalBusinessSummaryList)
+                                            {
+                                                <td>@total.rate %</td>
+                                            }
+
+                                        }
+                                        <!-- <td>7.1%</td><td>8.8%</td><td>6.5%</td><td>6.7%</td><td>7.2%</td><td>7.9%</td>-->
+                                    </tr>
+                                </tbody>
+                            </table><!--// tbl-->
+                        </div><!--//graph-->
+                    </div><!--//box-->
+                </div><!--//graph_box-->
+            </div><!--//con_wrap-->
+        </div><!--//type_tab_con-->
+        }
+    }
+
+</div><!--//plan_wrap-->

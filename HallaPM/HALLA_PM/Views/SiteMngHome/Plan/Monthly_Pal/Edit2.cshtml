@@ -1,0 +1,248 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+@{
+    ViewBag.Title = "Edit2";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PlanMonthlyPal planMonthlyPal = Model.planMonthlyPal;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<PlanMonthlyPalBusinessMonthlySum> pMonthlyList = Model.pMonthlyList;
+    List<PlanMonthlyPalBusinessQuarterSum> pQuarterList = Model.pQuarterList;
+    Search search = ViewBag.Search;
+}
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>사업계획</span>
+        <strong>손익월별계획</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="Seq" value="@planMonthlyPal.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@planMonthlyPal.OrgCompanySeq" />
+        <input type="hidden" name="RegistStatus" value="@planMonthlyPal.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <div class="con_box search">
+            <h3 class="mt0">손익월별계획 작성</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등이 계산되어 저장됩니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@(planMonthlyPal.MonthlyPalYear)</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = planMonthlyPal.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+
+            <h3>월별손익 요약</h3>
+            <table class="tbl th_ver ta_right">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row" rowspan="2">구분</th>
+                        <th colspan="4">@(Convert.ToInt32(planMonthlyPal.MonthlyPalYear) - 1)년</th>
+                        <th colspan="4">@(planMonthlyPal.MonthlyPalYear)년</th>
+                    </tr>
+                    <tr>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>EBIT%</th>
+                        <th>PBT</th>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>EBIT%</th>
+                        <th>PBT</th>
+                    </tr>
+                    @foreach (var item2 in pMonthlyList)
+                    {
+                        if (item2.Monthly == "99")
+                        {
+                            <tr>
+                                <th scope="row">
+                                    합계
+                                </th>
+                                <td>@WebUtil.NCommaRound(item2.BeforeSales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.BeforeEbit, 0)</td>
+                                <td>@WebUtil.NumberRound(item2.BeforeEbit, item2.BeforeSales, 100, 1)%</td>
+                                <td>@WebUtil.NCommaRound(item2.BeforePbt, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.Sales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.Ebit, 0)</td>
+                                <td class="ta_center">@WebUtil.NCommaRound(WebUtil.NumberRound(item2.Ebit, item2.Sales, 100, 1), 1)%</td>
+                                <td>@WebUtil.NCommaRound(item2.Pbt, 0)</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <th scope="row">
+                                    <label>@(Convert.ToInt32(item2.Monthly))월</label>
+                                </th>
+                                <td>@WebUtil.NCommaRound(item2.BeforeSales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.BeforeEbit, 0)</td>
+                                <td>@WebUtil.NumberRound(item2.BeforeEbit, item2.BeforeSales, 100, 1)%</td>
+                                <td>@WebUtil.NCommaRound(item2.BeforePbt, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.Sales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.Ebit, 0)</td>
+                                <td class="ta_center">@WebUtil.NCommaRound(WebUtil.NumberRound(item2.Ebit, item2.Sales, 100, 1), 1)%</td>
+                                <td>@WebUtil.NCommaRound(item2.Pbt, 0)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+
+            <h3>분기별손익 요약</h3>
+            <table class="tbl th_ver ta_right">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row" rowspan="2">구분</th>
+                        <th colspan="4">@(Convert.ToInt32(planMonthlyPal.MonthlyPalYear) - 1)년</th>
+                        <th colspan="4">@(planMonthlyPal.MonthlyPalYear)년</th>
+                    </tr>
+                    <tr>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>EBIT%</th>
+                        <th>PBT</th>
+                        <th>Sales</th>
+                        <th>EBIT</th>
+                        <th>EBIT%</th>
+                        <th>PBT</th>
+                    </tr>
+                    @foreach (var item2 in pQuarterList)
+                    {
+                        if (item2.BusinessQuarter == 99)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    합계
+                                </th>
+                                <td>@WebUtil.NCommaRound(item2.BeforeSales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.BeforeEbit, 0)</td>
+                                <td>@WebUtil.NumberRound(item2.BeforeEbit, item2.BeforeSales, 100, 1)%</td>
+                                <td>@WebUtil.NCommaRound(item2.BeforePbt, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.Sales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.Ebit, 0)</td>
+                                <td class="ta_center">@WebUtil.NCommaRound(WebUtil.NumberRound(item2.Ebit, item2.Sales, 100, 1), 1)%</td>
+                                <td>@WebUtil.NCommaRound(item2.Pbt, 0)</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <th scope="row">
+                                    <label>@(Convert.ToInt32(item2.BusinessQuarter))분기</label>
+                                </th>
+                                <td>@WebUtil.NCommaRound(item2.BeforeSales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.BeforeEbit, 0)</td>
+                                <td>@WebUtil.NumberRound(item2.BeforeEbit, item2.BeforeSales, 1)%</td>
+                                <td>@WebUtil.NCommaRound(item2.BeforePbt, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.Sales, 0)</td>
+                                <td>@WebUtil.NCommaRound(item2.Ebit, 0)</td>
+                                <td class="ta_center">@WebUtil.NCommaRound(WebUtil.NumberRound(item2.Ebit, item2.Sales, 100, 1), 1)%</td>
+                                <td>@WebUtil.NCommaRound(item2.Pbt, 0)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+            </div><!--//btn_area-->
+        </div>
+        <!--// con_box -->
+    </form>
+</div>
+<script>
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onRegistStatusChange(afterRegistStatus) {
+
+        var f = document.frmMain;
+        f.afterRegistStatus.value = afterRegistStatus;
+
+        var confirmMessage = "";
+        if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+            confirmMessage = "@Message.MSG_008_Q";
+            f.message.value = "@Message.MSG_008_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+            confirmMessage = "@Message.MSG_004_Q";
+            f.message.value = "@Message.MSG_004_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+        else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("3차반려"))") {
+            confirmMessage = "@Message.MSG_005_Q";
+            f.message.value = "@Message.MSG_005_A";
+        }
+
+        if (confirm(confirmMessage)) {
+            f.action = "Regist_Status_Change";
+            f.submit();
+        }
+    }
+
+
+    // 2019.01.03 반려사유 추가
+    function onRegistStatusChangeReject(afterRegistStatus) {
+        onRegistStatusChange(afterRegistStatus);
+        //var f = document.frmMain;
+        //f.afterRegistStatus.value = afterRegistStatus;
+        //MYAPP.layerControl.layerShow($('#layerCommentReject'));
+    }
+</script>
+

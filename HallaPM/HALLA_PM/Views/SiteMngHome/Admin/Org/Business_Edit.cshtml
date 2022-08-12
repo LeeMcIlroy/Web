@@ -1,0 +1,283 @@
+﻿@using HALLA_PM.Models;
+@{
+    ViewBag.Title = "Business_Edit";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+
+    List<OrgUnion> UnionList = Model.UnionList;
+    List<OrgCompany> CompanyList = Model.CompanyList;
+    OrgBusiness org = Model.org;
+}
+
+<div id="container">
+
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>관리자관리</span>
+        <span>조직관리</span>
+        <strong>Business 등록</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="Seq" value="@org.Seq" />
+        <input type="hidden" name="hCheck" id="hCheck" value="N" />
+        <input type="hidden" name="message" value="수정" />
+        <input type="hidden" name="oldBusinessName" id="oldBusinessName" value="@org.BusinessName" />
+        <input type="hidden" name="oldOrgCompanySeq" id="oldOrgCompanySeq" value="@org.OrgCompanySeq" />
+        @*<input type="hidden" name="OrgCompanySeq" value="@org.OrgCompanySeq" />
+        <input type="hidden" name="OrgUnionSeq" value="@org.OrgUnionSeq" />*@
+
+        <div class="con_box search">
+            <h3 class="mt0">Business 등록</h3>
+            <div class="bg_gray">
+                수정 삭제 시 하위 조직까지 일괄 반영되므로 신중히 작업해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:auto" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">조직레벨</th>
+                        <td>Business</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">부문</th>
+                        <td>
+                            <!--@org.UnionName-->
+                            <div class="style_select" style="width:30%;">
+                                <label>
+                                    <span></span>
+                                    <select name="OrgUnionSeq" id="OrgUnionSeq">
+                                        <option value="">선택하세요.</option>
+                                        @foreach (var item in UnionList)
+                                        {
+                                            if(item.Seq == org.OrgUnionSeq)
+                                            {
+                                                <option value="@item.Seq" selected>@item.UnionName</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@item.Seq">@item.UnionName</option>
+                                            }                       
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">회사</th>
+                        <td>
+                            <!--@org.CompanyName-->
+                            <div class="style_select" style="width:30%;">
+                                <label>
+                                    <span></span>
+                                    <select name="OrgCompanySeq" id="OrgCompanySeq">
+                                        <option value="">선택하세요.</option>
+                                        @foreach (var item in CompanyList)
+                                        {
+                                            if(item.Seq == org.OrgCompanySeq)
+                                            {
+                                                <option value="@item.Seq" selected>@item.CompanyName</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@item.Seq">@item.CompanyName</option>
+                                            }
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Business명</th>
+                        <td>
+                            <input type="text" name="BusinessName" id="BusinessName" style="width:30%;" value="@org.BusinessName" />
+                            <button class="btn full_green" type="button" onclick="onDuplicateAllowBusiness();">중복확인</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">사용여부</th>
+                        <td>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="Y" @(org.IsUse == "Y" ? " checked" : "")><i></i>
+                                    <strong>사용</strong>
+                                </label>
+                            </div>
+                            <div class="style_radio">
+                                <label>
+                                    <input type="radio" name="IsUse" value="N" @(org.IsUse == "Y" ? " " : " checked")><i></i>
+                                    <strong>미사용</strong>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="btn_area2">
+                <div class="left">
+                    <button class="btn full_blue" type="button" onclick="onList();">목록</button>
+                </div>
+                <div class="right">
+                    <button class="btn full_green" type="button" onclick="onDelete();">삭제</button>
+                    <button class="btn full_green" type="button" onclick="onWrite();">수정</button>
+                </div>
+            </div>
+        </div>
+        <!--// con_box -->
+    </form>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $("#frmMain").validate({
+            rules: {
+                OrgUnionSeq: {
+                    required: true,
+                },
+                OrgCompanySeq: {
+                    required: true,
+                },
+                BusinessName: {
+                    required: true,
+                }
+            },
+            messages: {
+                OrgUnionSeq: {
+                    required: "부문을 선택하세요.",
+                },
+                OrgCompanySeq: {
+                    required: "회사를 선택하세요.",
+                },
+                BusinessName: {
+                    required: "Business명을 입력하세요.",
+                }
+            }, errorPlacement: function (error, element) {
+                // do nothing
+            },
+            invalidHandler: function (form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    alert(validator.errorList[0].message);
+                    validator.errorList[0].element.focus();
+                }
+            }
+        });
+
+        // 회사
+        $("#OrgUnionSeq").change(function () {
+            $.ajax({
+                url: "Company_Ajax",
+                type: "post",
+                data: { OrgUnionSeq: $("#OrgUnionSeq").val() },
+                dataType: "json",
+                success: function (res) {
+                    console.log(res);
+                    var html = "";
+                    html += "<option value=''>선택하세요.</option>";
+                    if (res.success == true) {
+                        res.list.forEach(function (v, i) {
+                            html += "<option value=" + v.Seq + ">" + v.CompanyName + "</option>";
+                        });
+                    }
+                    $("#OrgCompanySeq").html(html);
+                    $("#OrgCompanySeq option:eq(0)").prop("selected", true);
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        });
+    });
+
+    function onList() {
+        var f = document.frmMain;
+        f.action = "List";
+        f.submit();
+    }
+
+    function onWrite() {
+        var f = document.frmMain;
+
+        if ($(f).valid()) {
+            $.ajax({
+                url: "Business_Duplicate_Ajax",
+                type: "post",
+                data: { BusinessName: $("#BusinessName").val(), OrgCompanySeq: $("#OrgCompanySeq").val() },
+                dataType: "json",
+                success: function (res) {
+                    //
+                    if (res.success == true) {
+                        $("#hCheck").val("Y");
+                    }
+                    else {
+                        $("#hCheck").val("N");
+                    }
+                    if (f.oldBusinessName.value == f.BusinessName.value && f.oldOrgCompanySeq.value == f.OrgCompanySeq.value) {
+                    }
+                    else {
+                        if (f.hCheck.value == "N") {
+                            alert("중복 확인을 눌러주세요.");
+                            return false;
+                        }
+                    }
+                    if (confirm("수정하시겠습니까?")) {
+                        f.action = "Business_Write_Action";
+                        f.submit();
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+    }
+
+    function onDelete() {
+        var f = document.frmMain;
+
+        if (confirm("삭제 시 하위 조직도 같이 삭제됩니다.\n삭제하시겠습니까?")) {
+            f.action = "Business_Delete_Action";
+            f.submit();
+        }
+    }
+
+    function onDuplicateAllowBusiness() {
+        
+        var f = document.frmMain;
+        
+        if ($(f).valid()) {
+            $.ajax({
+                url: "Business_Duplicate_Ajax",
+                type: "post",
+                data: { BusinessName: $("#BusinessName").val(), OrgCompanySeq: $("#OrgCompanySeq").val() },
+                dataType: "json",
+                success: function (res) {
+                    //
+                    if (res.success == true) {
+                        alert("등록 가능합니다.");
+                        $("#hCheck").val("Y");
+                    }
+                    else {
+                        alert("조직명이 중복되었습니다.\n다시 입력해주세요");
+                        $("#hCheck").val("N");
+                    }
+                },
+                error: function (res, status, err) {
+                    console.log("err");
+                    console.log(err);
+                }
+            });
+        }
+    }
+</script>
+

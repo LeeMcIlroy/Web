@@ -1,0 +1,107 @@
+2018-10-18 13:58:53 | System.Data.SqlClient.SqlException (0x80131904): 열 'PM_PAL_BUSINESS.SALES'이(가) 집계 함수나 GROUP BY 절에 없으므로 SELECT 목록에서 사용할 수 없습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   위치: System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.PmPalBusinessRepo.selectListExpectThisYear(Object param) 파일 D:\Dev\vsWorkspace\halla\HALLA_PM\Models\PmPalBusiness\PmPalBusinessRepo.cs:줄 469
+ClientConnectionId:d07a83e3-bfbc-413c-a841-b30193c32dcb
+Error Number:8120,State:1,Class:16
+<<<<<<< HEAD
+2018-10-18 21:23:19 | System.Data.SqlClient.SqlException (0x80131904): 열 이름 'PAL_YEAR'이(가) 잘못되었습니다.
+열 이름 'MONTHLY'이(가) 잘못되었습니다.
+=======
+2018-10-18 21:48:06 | System.Data.SqlClient.SqlException (0x80131904): 열 이름 'YEAR_BS_YEAR'이(가) 잘못되었습니다.
+열 이름 'YEAR_BS_YEAR'이(가) 잘못되었습니다.
+열 이름 'MONTHLY'이(가) 잘못되었습니다.
+열 이름 'ORG_COMPANY_SEQ'이(가) 잘못되었습니다.
+>>>>>>> 9535955d68bb5c29f33214b998db18929b0edb80
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+<<<<<<< HEAD
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption)
+=======
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+>>>>>>> 9535955d68bb5c29f33214b998db18929b0edb80
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   위치: System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+<<<<<<< HEAD
+   위치: HALLA_PM.Models.PmPalSummaryRepo.selectListPlanSummaryLastYear(Object param) 파일 D:\Dev\vsWorkspace\halla\HALLA_PM\Models\PmPalSummary\PmPalSummaryRepo.cs:줄 168
+ClientConnectionId:975ff3ee-d6c7-45a3-8e9a-439e98dea42e
+Error Number:207,State:1,Class:16
+2018-10-18 21:25:37 | System.Data.SqlClient.SqlException (0x80131904): 열 이름 'PAL_YEAR'이(가) 잘못되었습니다.
+열 이름 'MONTHLY'이(가) 잘못되었습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   위치: System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.PmPalSummaryRepo.selectListPlanSummaryLastYear(Object param) 파일 D:\Dev\vsWorkspace\halla\HALLA_PM\Models\PmPalSummary\PmPalSummaryRepo.cs:줄 168
+ClientConnectionId:975ff3ee-d6c7-45a3-8e9a-439e98dea42e
+Error Number:207,State:1,Class:16
+2018-10-18 21:43:26 | System.Data.SqlClient.SqlException (0x80131904): 열 이름 'PAL_YEAR'이(가) 잘못되었습니다.
+열 이름 'MONTHLY'이(가) 잘못되었습니다.
+   위치: System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   위치: System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   위치: System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   위치: System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   위치: System.Data.SqlClient.SqlDataReader.get_MetaData()
+   위치: System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   위치: System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   위치: System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   위치: System.Data.Common.DbCommand.System.Data.IDbCommand.ExecuteReader(CommandBehavior behavior)
+   위치: Dapper.SqlMapper.ExecuteReaderWithFlagsFallback(IDbCommand cmd, Boolean wasClosed, CommandBehavior behavior)
+   위치: Dapper.SqlMapper.<QueryImpl>d__138`1.MoveNext()
+   위치: System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   위치: System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   위치: Dapper.SqlMapper.Query[T](IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Boolean buffered, Nullable`1 commandTimeout, Nullable`1 commandType)
+   위치: HALLA_PM.Models.PmPalSummaryRepo.selectListPlanSummaryLastYear(Object param) 파일 D:\Dev\vsWorkspace\halla\HALLA_PM\Models\PmPalSummary\PmPalSummaryRepo.cs:줄 168
+ClientConnectionId:8601e7f0-adac-4b2d-908a-8a7821a89752
+=======
+   위치: HALLA_PM.Models.PlanYearBsWCapitalRepo.nowYearBsRoicOneExp(Object param) 파일 D:\Dev\vsWorkspace\halla\halla\HALLA_PM\Models\PlanYearBsWCapital\PlanYearBsWCapitalRepo.cs:줄 168
+ClientConnectionId:cca9069f-87f9-4347-a589-44486e50b7c5
+>>>>>>> 9535955d68bb5c29f33214b998db18929b0edb80
+Error Number:207,State:1,Class:16

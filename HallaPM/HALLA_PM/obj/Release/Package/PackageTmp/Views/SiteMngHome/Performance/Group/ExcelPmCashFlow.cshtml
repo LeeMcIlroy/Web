@@ -1,0 +1,354 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Core;
+@{
+    Layout = null;
+
+    List<PmCashFlowCumulativeExcel> excelCom = Model.excelCom;
+
+    string companyName = "GROUP";
+    string year = "";
+    string mm = "";
+    if (excelCom.Count() > 0)
+    {
+        //companyName = excelCom.First().CompanyName;
+        year = excelCom.First().CashFlowYear;
+        mm = excelCom.First().Monthly;
+    }
+    var gp = excelCom.GroupBy(g => g.OrgCompanySeq).Select(cl => new PmCashFlowCumulativeExcel { OrgCompanySeq = cl.First().OrgCompanySeq, CompanyName = cl.First().CompanyName }).ToList();
+    var pn = excelCom.Where(w => w.Diff == Define.DIFF.GetKey("계획")).ToList();
+    var pm = excelCom.Where(w => w.Diff == Define.DIFF.GetKey("실적")).ToList();
+
+    var pnGroup = excelCom.Where(w => w.Diff == Define.DIFF.GetKey("계획"))
+        .GroupBy(g => g.CashFlowYear)
+        .Select(cl => new PmCashFlowCumulativeExcel
+        {
+            CashFlowYear = cl.First().CashFlowYear,
+            Ebitda = cl.Sum(c => c.Ebitda),
+            WcSum = cl.Sum(c => c.WcSum),
+            Etc = cl.Sum(c => c.Etc),
+            NetCapexSum = cl.Sum(c => c.NetCapexSum),
+            FinancialCost = cl.Sum(c => c.FinancialCost),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            FinancialSum = cl.Sum(c => c.FinancialSum),
+            CashSum = cl.Sum(c => c.CashSum),
+            EndingCash = cl.Sum(c => c.EndingCash),
+            CreditLine = cl.Sum(c => c.CreditLine),
+            AvailableCash = cl.Sum(c => c.AvailableCash)
+        }).FirstOrDefault();
+
+    if (pnGroup == null) { pnGroup = new PmCashFlowCumulativeExcel(); }
+
+    var pmGroup = excelCom.Where(w => w.Diff == Define.DIFF.GetKey("실적"))
+        .GroupBy(g => g.CashFlowYear)
+        .Select(cl => new PmCashFlowCumulativeExcel
+        {
+            CashFlowYear = cl.First().CashFlowYear,
+            Ebitda = cl.Sum(c => c.Ebitda),
+            WcSum = cl.Sum(c => c.WcSum),
+            Etc = cl.Sum(c => c.Etc),
+            NetCapexSum = cl.Sum(c => c.NetCapexSum),
+            FinancialCost = cl.Sum(c => c.FinancialCost),
+            Fcf2 = cl.Sum(c => c.Fcf2),
+            FinancialSum = cl.Sum(c => c.FinancialSum),
+            CashSum = cl.Sum(c => c.CashSum),
+            EndingCash = cl.Sum(c => c.EndingCash),
+            CreditLine = cl.Sum(c => c.CreditLine),
+            AvailableCash = cl.Sum(c => c.AvailableCash)
+        }).FirstOrDefault();
+
+    if (pmGroup == null) { pmGroup = new PmCashFlowCumulativeExcel(); }
+
+    string fileName = companyName + "_" + year + "_" + mm + "_CashFlow";
+
+    Response.AppendHeader("Content-Disposition", "attachment;filename=" + Server.UrlEncode(fileName) + ".xls");
+    Response.ContentType = "application/vnd.ms-excel";
+}
+<style>
+    .mytable {
+        border-collapse: collapse;
+    }
+
+        .mytable th, .mytable td {
+            border: 1px solid black;
+        }
+
+    .buLevel {
+        background-color: #f2f2f2;
+    }
+
+        .buLevel th, .buLevel td {
+            background-color: #f2f2f2;
+        }
+
+    .ComLevel {
+        background-color: #fff2cc;
+    }
+
+        .ComLevel th, .ComLevel td {
+            background-color: #fff2cc;
+        }
+
+    .UniLevel {
+        background-color: #d0cece;
+    }
+
+        .UniLevel th, .UniLevel td {
+            background-color: #d0cece;
+        }
+
+    .GrpLevel {
+        background-color: #bdd7ee;
+    }
+
+        .GrpLevel th, .GrpLevel td {
+            background-color: #bdd7ee;
+        }
+
+    .MsoNTwo {
+        mso-number-format: \#\,\#\#0\.00;
+    }
+
+    .MsoNTwoPer {
+        mso-number-format: \#\,\#\#0\.00;
+    }
+
+    .MsoNOne {
+        mso-number-format: \#\,\#\#0\.00;
+    }
+
+    .MsoNOnePer {
+        mso-number-format: \#\,\#\#0\.00%;
+    }
+</style>
+
+<h3>@(year)년 Cash Flow 관리지표(@(mm)월 누계)</h3>
+<br />
+<table>
+    <tr>
+        <th style="text-align:right" colspan="@(1 + (gp.Count() * 3))">(단위 : 억원)</th>
+    </tr>
+</table>
+<table border="1">
+    <thead>
+        <tr class="buLevel">
+            <th rowspan="2">구분</th>
+            @foreach (var item in gp)
+            {
+                <th colspan="3">@(item.CompanyName)</th>
+            }
+            <th colspan="3">Total</th>
+        </tr>
+        <tr class="buLevel">
+            @foreach (var item in gp)
+            {
+                <th>계획</th>
+                <th>실적</th>
+                <th>차이</th>
+            }
+            <th>계획</th>
+            <th>실적</th>
+            <th>차이</th>
+        </tr>
+    </thead>
+    <tbody>
+            <tr>
+                <th class="ComLevel">세후EBITDA</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Ebitda;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Ebitda;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    decimal plValueGroup = pnGroup.Ebitda;
+                    decimal pmValueGroup = pmGroup.Ebitda;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">W/C 변동</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().WcSum;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().WcSum;
+
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.WcSum;
+                    pmValueGroup = pmGroup.WcSum;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">영업활동 기타</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Etc;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Etc;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.Etc;
+                    pmValueGroup = pmGroup.Etc;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">Net CAPEX</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().NetCapexSum;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().NetCapexSum;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.NetCapexSum;
+                    pmValueGroup = pmGroup.NetCapexSum;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">순금융비용</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().FinancialCost;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().FinancialCost;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.FinancialCost;
+                    pmValueGroup = pmGroup.FinancialCost;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">FCF</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Fcf2;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().Fcf2;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.Fcf2;
+                    pmValueGroup = pmGroup.Fcf2;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">재무활동</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().FinancialSum;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().FinancialSum;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.FinancialSum;
+                    pmValueGroup = pmGroup.FinancialSum;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">현금흐름 계</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().CashSum;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().CashSum;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.CashSum;
+                    pmValueGroup = pmGroup.CashSum;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">기말현금</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().EndingCash;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().EndingCash;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.EndingCash;
+                    pmValueGroup = pmGroup.EndingCash;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">Credit Line</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().CreditLine;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().CreditLine;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.CreditLine;
+                    pmValueGroup = pmGroup.CreditLine;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+            <tr>
+                <th class="ComLevel">가용현금</th>
+                @foreach (var item in gp)
+                {
+                    decimal plValue = pn.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().AvailableCash;
+                    decimal pmValue = pm.Where(w => w.OrgCompanySeq == item.OrgCompanySeq).First().AvailableCash;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValue - plValue)</td>
+                }
+                @{
+                    plValueGroup = pnGroup.AvailableCash;
+                    pmValueGroup = pmGroup.AvailableCash;
+                    <td style="mso-number-format:\#\,\#\#0\">@(plValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup)</td>
+                    <td style="mso-number-format:\#\,\#\#0\">@(pmValueGroup - plValueGroup)</td>
+                }
+            </tr>
+    </tbody>
+</table>

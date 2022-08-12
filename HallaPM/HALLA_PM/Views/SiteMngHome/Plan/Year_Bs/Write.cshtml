@@ -1,0 +1,831 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@using HALLA_PM.Core;
+
+@{
+    ViewBag.Title = "Write";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    PlanYearBs planYearBs = Model.planYearBs;
+    OrgCompany orgCompanyName = Model.orgCompanyName;
+    List<OrgBusiness> orgBusinessList = Model.orgBusinessList;
+    //List<PlanYearBsBsheet> pBusinessList = Model.pBusinessList;
+    List<PlanYearBsBsheet> lastYearSales = Model.lastYearSales;
+    List<PlanYearBsBsheet> thisYearSales = Model.thisYearSales;
+
+    List<PlanYearBsRoic> lastYearBsRoicList = Model.lastYearBsRoicList;
+    List<PlanYearBsRoic> thisYearRoicList = Model.thisYearRoicList;
+
+    List<PlanYearBsWCapital> lastYearBsWcapitalList = Model.lastYearBsWcapitalList;
+    List<PlanYearBsWCapital> thisYearBsWCapitalList = Model.thisYearBsWCapitalList;
+
+    List<PlanYearBsWCapitalReg> lastYearBsWCapital = Model.lastYearBsWCapital;
+    List<PlanYearBsWCapitalReg> thisYearBsWCapitalRegList = Model.thisYearBsWCapitalRegList;
+
+    List<PmBsSummaryExp> lastYearSummaryList = Model.lastYearSummaryList;
+    var lastYearSummaryFirst = lastYearSummaryList.FirstOrDefault() == null ? new PmBsSummaryExp() : lastYearSummaryList.FirstOrDefault();
+    //List<PlanYearBsSummary> yearBsSummaryList = Model.yearBsSummaryList;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>사업계획</span>
+        <strong>중기BS </strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Seq" value="@planYearBs.Seq" />
+        <input type="hidden" name="OrgCompanySeq" value="@planYearBs.OrgCompanySeq" />
+        <input type="hidden" name="YearBsYear" value="@planYearBs.YearBsYear" />
+        <input type="hidden" name="RegistStatus" value="@planYearBs.RegistStatus" />
+        <input type="hidden" name="afterRegistStatus" value="" />
+        <input type="hidden" name="message" value="" />
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="searchCpySeq" value="@(search.searchCpySeq)" />
+        <input type="hidden" name="searchYear" value="@(search.searchYear)" />
+        <div class="con_box search">
+            <h3 class="mt0">중기BS 등록</h3>
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 계산하기를 클릭하시면 비율, 합계 등을 미리 확인하실 수 있습니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 승인요청, 승인 클릭 시 수정이 불가능하니 신중히 작성해주세요.
+            </div>
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_ver ta_left">
+                <caption></caption>
+                <colgroup>
+                    <col width="15%" />
+                    <col width="/" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">등록연도</th>
+                        <td>@planYearBs.YearBsYear</td>
+                    </tr>
+                    @*상단 공통*@
+                    @{
+                        TopFrame Top = new TopFrame();
+                        Top.RegistStatus = planYearBs.RegistStatus;
+                        Top.UnionName = orgCompanyName.UnionName;
+                        Top.CompanyName = orgCompanyName.CompanyName;
+                    }
+                    @Html.Partial("~/Views/Shared/_LayoutMngTopFrame.cshtml", Top)
+                </tbody>
+            </table>
+            <!--// tbl th_ver -->
+
+            <h3>B/Sheet</h3>
+            <p class="caption"><span>(단위 : 억원, %)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">총자산<br/>(유동자산)</th>
+                        <th scope="col">총부채<br/>(유동부채)</th>
+                        <th scope="col">총자본</th>
+                        <th scope="col">현금</th>
+                        <th scope="col">차입금</th>
+                        <th scope="col">부채비율</th>
+                        <th scope="col">유동비율</th>
+                    </tr>
+                </thead>                
+                <tbody id="tbodyBSheet">
+                    @if (lastYearSales == null || lastYearSales.Count() == 0)
+                    {
+                        <tr>
+                            <th scope="row">@(Convert.ToInt32(planYearBs.YearBsYear) - 1)년</th>
+                            <td>0(0)</td>
+                            <td>0(0)</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0%</td>
+                            <td>0%</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var lastYearSalesFirst = lastYearSales.FirstOrDefault();
+                        <tr>
+                            <th scope="row">@(Convert.ToInt32(planYearBs.YearBsYear) - 1)년</th>
+                            <td>@(WebUtil.NCommaRound(lastYearSummaryFirst.Assets, 2))<br />(@(WebUtil.NCommaRound(lastYearSalesFirst.CurrentAssets, 2)))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearSummaryFirst.Liabilities, 2))<br />(@(WebUtil.NCommaRound(lastYearSalesFirst.CurrentLiabilities, 2)))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearSummaryFirst.Capital, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearSummaryFirst.Cash, 2))</td>
+                            <td>@(WebUtil.NCommaRound(lastYearSummaryFirst.Loan, 2))</td>
+                            <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(lastYearSummaryFirst.Liabilities, lastYearSummaryFirst.Capital, 100, 0), 2))%</td>
+                            <td>@(WebUtil.NCommaRound(WebUtil.NumberRound(lastYearSalesFirst.CurrentAssets, lastYearSalesFirst.CurrentLiabilities, 100, 0), 2))%</td>
+                        </tr>
+                    }
+                    @foreach (var item in thisYearSales)
+                    {
+                        if (item.YearlyYear == planYearBs.YearBsYear)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @(planYearBs.YearBsYear)년@(item.Monthly)월
+                                    <input type="hidden" name="PlanYearBsBsheetSeq" value="@item.Seq" />
+                                    <input type="hidden" name="PlanMonthly" value="@item.Monthly" />
+                                </th>
+                                <td><input type="text" name="Assets" value="@(item.Assets)" /><br /><br /><input type="text" name="CurrentAssets" value="@item.CurrentAssets" /></td>
+                                <td><input type="text" name="Liabilities" value="@(item.Liabilities)" /><br /><br /><input type="text" name="CurrentLiabilities" value="@item.CurrentLiabilities" /></td>
+                                <td><input type="text" name="Capital" value="@(item.Capital)" /></td>
+                                <td><input type="text" name="Cash" value="@(item.Cash)" /></td>
+                                <td><input type="text" name="Loan" value="@(item.Loan)" /></td>
+                                <td>
+                                    @(WebUtil.NCommaRound(WebUtil.NumberRound(item.Liabilities, item.Capital, 100, 2), 2))%
+                                    @*@(item.LiabilitiesRate)%*@
+                                    <input type="hidden" name="LiabilitiesRate" class="bg_blue" value="@WebUtil.NumberRound(item.Liabilities, item.Capital, 100, 2)" />
+                                </td>
+                                <td>
+                                    @(WebUtil.NCommaRound(WebUtil.NumberRound(item.CurrentAssets, item.CurrentLiabilities, 100, 2), 2))%
+                                    @*@(item.CurrentRate)%*@
+                                    <input type="hidden" name="CurrentRate" class="bg_blue" value="@WebUtil.NumberRound(item.CurrentAssets, item.CurrentLiabilities, 100, 2)" />
+                                </td>
+                            </tr>
+                            if (item.Monthly == "12")
+                            {
+                                // 2018.10.28 BS의 월별 값은 누계의 개념이라서 2018년 합계는 12월의 갑과 같다. [수정]
+                                //var thisSalesGroup = thisYearSales.Where(w => w.YearlyYear == planYearBs.YearBsYear)
+                                //    .GroupBy(g => g.YearlyYear)
+                                //    .Select(cl => new PlanYearBsBsheet
+                                //    {
+                                //        YearlyYear = cl.First().YearlyYear,
+                                //        Assets = cl.Sum(c => c.Assets),
+                                //        Liabilities = cl.Sum(c => c.Liabilities),
+                                //        Capital = cl.Sum(c => c.Capital),
+                                //        Cash = cl.Sum(c => c.Cash),
+                                //        Loan = cl.Sum(c => c.Loan),
+                                //        LiabilitiesRate = cl.Sum(c => c.LiabilitiesRate),
+                                //        CurrentRate = cl.Sum(c => c.CurrentRate)
+                                //    }).FirstOrDefault();
+
+                                <tr>
+                                    <th scope="row">@(item.YearlyYear)년</th>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(item.Assets, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(item.Liabilities, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(item.Capital, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(item.Cash, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(item.Loan, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(item.Liabilities, item.Capital, 100, 2), 2))%</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(item.CurrentAssets, item.CurrentLiabilities, 100, 2), 2))%</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @(item.YearlyYear)년
+                                    <input type="hidden" name="PlanYearBsBsheetSeq" value="@item.Seq" />
+                                    <input type="hidden" name="PlanMonthly" value="@item.Monthly" />
+                                </th>
+                                <td><input type="text" name="Assets" value="@(item.Assets)" /><br /><br /><input type="text" name="CurrentAssets" value="@item.CurrentAssets" /></td>
+                                <td><input type="text" name="Liabilities" value="@(item.Liabilities)" /><br /><br /><input type="text" name="CurrentLiabilities" value="@item.CurrentLiabilities" /></td>
+                                <td><input type="text" name="Capital" value="@(item.Capital)" /></td>
+                                <td><input type="text" name="Cash" value="@(item.Cash)" /></td>
+                                <td><input type="text" name="Loan" value="@(item.Loan)" /></td>
+                                <td>
+                                    @(WebUtil.NCommaRound(WebUtil.NumberRound(item.Liabilities, item.Capital, 100, 2), 2))%
+                                    @*@(item.LiabilitiesRate)%*@
+                                    <input type="hidden" name="LiabilitiesRate" value="@WebUtil.NumberRound(item.Liabilities, item.Capital, 100, 2)" />
+                                </td>
+                                <td>
+                                    @(WebUtil.NCommaRound(WebUtil.NumberRound(item.CurrentAssets, item.CurrentLiabilities, 100, 2), 2))%
+                                    @*@(item.CurrentRate)%*@
+                                    <input type="hidden" name="CurrentRate" value="@WebUtil.NumberRound(item.CurrentAssets, item.CurrentLiabilities, 100, 2)" />
+                                </td>
+                            </tr>
+                        }
+                    }     
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <h3>ROIC</h3>
+            <p class="caption"><span>(단위 : 억원, %)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="22.5%" />
+                    <col width="22.5%" />
+                    <col width="22.5%" />
+                    <col width="22.5%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">세후 영업이익</th>
+                        <th scope="col">투하자본</th>
+                        <th scope="col">ROIC</th>
+                        <th scope="col">ROIC 연환산</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (lastYearSummaryFirst == null)
+                    {
+                        <tr>
+                            <th scope="row">@(Convert.ToInt32(planYearBs.YearBsYear) - 1)년</th>
+                            <td class="bg_blue">0</td>
+                            <td class="bg_blue">0</td>
+                            <td class="bg_blue">0%</td>
+                            <td class="bg_blue">0%</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        // 요약에서 가져오게 변경
+                        <tr>
+                            <th scope="row">@(Convert.ToInt32(planYearBs.YearBsYear) - 1)년</th>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(lastYearSummaryFirst.AfterTaxOperationProfit, 2))</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(lastYearSummaryFirst.PainInCapital, 2))</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(lastYearSummaryFirst.AfterTaxOperationProfit, lastYearSummaryFirst.PainInCapital, 100, 1), 1))%</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(lastYearSummaryFirst.AfterTaxOperationProfit, lastYearSummaryFirst.PainInCapital, 100, 1), 1))%</td>
+                        </tr>
+                    }
+                    @foreach (var item in thisYearRoicList)
+                    {
+                        if (item.YearlyYear == planYearBs.YearBsYear)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @(planYearBs.YearBsYear)년@(item.Monthly)월
+                                    <input type="hidden" name="PlanYearBsRoicSeq" value="@item.Seq" />
+                                </th>
+                                <td><input type="text" name="AfterTaxOperationProfit" value="@item.AfterTaxOperationProfit" /></td>
+                                <td><input type="text" name="PainInCapital" value="@item.PainInCapital" /></td>
+                                <td class="bg_blue">
+                                    @WebUtil.NCommaRound(WebUtil.NumberRound(item.AfterTaxOperationProfit, item.PainInCapital, 100, 2), 1)%
+                                    @*@item.Roic*@
+                                    <input type="hidden" name="Roic" value="@WebUtil.NumberRound(item.AfterTaxOperationProfit , item.PainInCapital, 100, 2)" />
+                                </td>
+                                <td class="bg_blue">
+                                    @WebUtil.NCommaRound(WebUtil.NewRoic(WebUtil.NumberRound(item.AfterTaxOperationProfit, item.PainInCapital, 100, 8), Convert.ToDecimal(item.Monthly)), 1)%
+                                </td>
+                            </tr>
+                            if (item.Monthly == "12")
+                            {
+                                //var thisSalesGroup = thisYearRoicList.Where(w => w.YearlyYear == planYearBs.YearBsYear)
+                                //    .GroupBy(g => g.YearlyYear)
+                                //    .Select(cl => new PlanYearBsRoic
+                                //    {
+                                //        YearlyYear = cl.First().YearlyYear,
+                                //        AfterTaxOperationProfit = cl.Sum(c => c.AfterTaxOperationProfit),
+                                //        PainInCapital = cl.Sum(c => c.PainInCapital),
+                                //        Roic = cl.Sum(c => c.Roic)
+                                //    }).FirstOrDefault();
+                                <tr>
+                                    <th scope="row">@(item.YearlyYear)년</th>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(item.AfterTaxOperationProfit, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(item.PainInCapital, 2))</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(item.AfterTaxOperationProfit, item.PainInCapital, 100, 1), 1))%</td>
+                                    <td class="bg_blue">@(WebUtil.NCommaRound(WebUtil.NumberRound(item.AfterTaxOperationProfit, item.PainInCapital, 100, 1), 1))%</td>
+                                    @*<td class="bg_blue">@(thisSalesGroup.Roic)</td>*@
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @(item.YearlyYear)년
+                                    <input type="hidden" name="PlanYearBsRoicSeq" value="@item.Seq" />
+                                </th>
+                                <td><input type="text" name="AfterTaxOperationProfit" value="@item.AfterTaxOperationProfit" /></td>
+                                <td><input type="text" name="PainInCapital" value="@item.PainInCapital" /></td>
+                                <td class="bg_blue">
+                                    @WebUtil.NCommaRound(WebUtil.NumberRound(item.AfterTaxOperationProfit, item.PainInCapital, 100, 1), 1)%
+                                    @*@item.Roic*@
+                                    <input type="hidden" name="Roic" value="@WebUtil.NumberRound(item.AfterTaxOperationProfit , item.PainInCapital)" />
+                                </td>
+                                <td class="bg_blue">
+                                    @WebUtil.NCommaRound(WebUtil.NumberRound(item.AfterTaxOperationProfit, item.PainInCapital, 100, 1), 1)%
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <h3>W/Capital</h3>
+            <p class="caption"><span>(단위 : 억원)</span></p>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%" />
+                    <col width="30%" />
+                    <col width="30%" />
+                    <col width="30%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">연간 매출액</th>
+                        <th scope="col">연간매출원가(AP)</th>
+                        <th scope="col">연간매출원가(Inv)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        foreach (var item in thisYearBsWCapitalList)
+                        {
+
+                            <tr>
+                                <th scope="row">@(item.YearlyYear)년@(item.Monthly != "99" ? item.Monthly + "월" : "")
+                                    <input type="hidden" name="PlanYearBsWCapitalSeq" value="@item.Seq" />
+                                    <input type="hidden" name="BsCapitalYearlyYear" value="@item.YearlyYear" />
+                                    <input type="hidden" name="BsCapitalYearlyMonth" value="@item.Monthly" />
+                                </th>
+                                <td><input type="text" name="AnnualSales" value="@item.AnnualSales"/></td>
+                                <td><input type="text" name="AnnualSalesCost" value="@item.AnnualSalesCost" /></td>
+                                <td><input type="text" name="InventoryCost" value="@item.InventoryCost" /></td>
+                                
+                            </tr>
+
+                            if (item.YearlyYear == planYearBs.YearBsYear)
+                            {
+                                if (item.Monthly == "12")
+                                {
+                                    <tr>
+                                        <th>@(item.YearlyYear)년</th>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(item.AnnualSales, 2))</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(item.AnnualSalesCost, 2))</td>
+                                        <td class="bg_blue">@(WebUtil.NCommaRound(item.InventoryCost, 2))</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    }            
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+
+            <div class="btn_area">
+                <button class="btn full_green" type="button" onclick="onSalesAccountAction()">매출액 등록</button>
+            </div><!--//btn_area-->
+
+            <table class="tbl th_hor mt40" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="10%"/>
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                    <col width="" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" rowspan="2"></th>
+                        <th scope="col" colspan="3">@(planYearBs.YearBsYear)년</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                    <tr>
+                        <th>A/R</th>
+                        <th>AR T/O Days</th>
+                        <th>A/P</th>
+                        <th>AP T/O Days</th>
+                        <th>Inventory</th>
+                        <th>Inventory T/O Days</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (lastYearSummaryFirst == null)
+                    {
+                        <tr>
+                            <th scope="row">@(Convert.ToInt32(planYearBs.YearBsYear) - 1)년</th>
+                            <td class="bg_blue">0</td>
+                            <td class="bg_blue">0</td>
+                            <td class="bg_blue">0</td>
+                            <td class="bg_blue">0</td>
+                            <td class="bg_blue">0</td>
+                            <td class="bg_blue">0</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        // 전년도 항목 요약값 가져오게 변경
+                        <tr>
+                            <th scope="row">@(Convert.ToInt32(planYearBs.YearBsYear) - 1)년</th>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(lastYearSummaryFirst.Ar, 2))</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(lastYearSummaryFirst.ArToDays, 2))</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(lastYearSummaryFirst.Ap, 2))</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(lastYearSummaryFirst.ApToDays, 2))</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(lastYearSummaryFirst.Inventory, 2))</td>
+                            <td class="bg_blue">@(WebUtil.NCommaRound(lastYearSummaryFirst.InventoryToDays, 2))</td>
+                        </tr>
+                    }
+                    @foreach (var item in thisYearBsWCapitalRegList)
+                    {
+                        var thisYearBsWCapitalListFirst = thisYearBsWCapitalList.Where(w => w.YearlyYear == item.YearlyYear).Where(w=> w.Monthly == item.Monthly).FirstOrDefault();
+
+                        if (item.YearlyYear == planYearBs.YearBsYear)
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @(item.YearlyYear)년@(item.Monthly == "99" ? "" : item.Monthly + "월")
+                                    <input type="hidden" name="PlanYearBsCapitalRegSeq" value="@item.Seq" />
+                                    <input type="hidden" name="BsCapitalRegYearlyYear" value="@item.YearlyYear" />
+                                    <input type="hidden" name="BsCapitalRegYearlyMonth" value="@item.Monthly" />
+                                </th>
+                                <td><input type="text" name="Ar" value="@item.Ar" /></td>
+                                <td class="bg_blue">
+                                    @(WebUtil.NCommaRound(thisYearBsWCapitalListFirst.AnnualSales == 0 ? 0 : WebUtil.NumberRound(item.Ar, thisYearBsWCapitalListFirst.AnnualSales, 365, 2), 2))
+                                    <input type="hidden" name="ArToDays" value="@(thisYearBsWCapitalListFirst.AnnualSales == 0 ? 0 : WebUtil.NumberRound(item.Ar, thisYearBsWCapitalListFirst.AnnualSales, 365, 2))" />
+                                </td>
+                                <td><input type="text" name="Ap" value="@item.Ap" /></td>
+                                <td class="bg_blue">
+                                    @(WebUtil.NCommaRound(thisYearBsWCapitalListFirst.AnnualSalesCost == 0 ? 0 : WebUtil.NumberRound(item.Ap, thisYearBsWCapitalListFirst.AnnualSalesCost, 365, 2), 2))
+                                    <input type="hidden" name="ApToDays" value="@(thisYearBsWCapitalListFirst.AnnualSalesCost == 0 ? 0 : WebUtil.NumberRound(item.Ap, thisYearBsWCapitalListFirst.AnnualSalesCost, 365, 2))" />
+                                </td>
+                                <td><input type="text" name="Inventory" value="@item.Inventory" /></td>
+                                <td class="bg_blue">
+                                    @(WebUtil.NCommaRound(thisYearBsWCapitalListFirst.InventoryCost == 0 ? 0 : WebUtil.NumberRound(item.Inventory, thisYearBsWCapitalListFirst.InventoryCost, 365, 2), 2))
+                                    <input type="hidden" name="InventoryToDays" value="@(thisYearBsWCapitalListFirst.InventoryCost == 0 ? 0 : WebUtil.NumberRound(item.Inventory, thisYearBsWCapitalListFirst.InventoryCost, 365, 2))" />
+                                </td>
+                            </tr>
+                            if (item.Monthly == "12")
+                            {
+                                <tr>
+                                    <th scope="row">@(item.YearlyYear)년</th>
+                                    <td class="bg_blue">@item.Ar</td>
+                                    <td class="bg_blue">@(thisYearBsWCapitalListFirst.AnnualSales == 0 ? 0 : WebUtil.NumberRound(item.Ar, thisYearBsWCapitalListFirst.AnnualSales, 365, 2))</td>
+                                    <td class="bg_blue">@item.Ap</td>
+                                    <td class="bg_blue">@(thisYearBsWCapitalListFirst.AnnualSalesCost == 0 ? 0 : WebUtil.NumberRound(item.Ap, thisYearBsWCapitalListFirst.AnnualSalesCost, 365, 2))</td>
+                                    <td class="bg_blue">@item.Inventory</td>
+                                    <td class="bg_blue">@(thisYearBsWCapitalListFirst.InventoryCost == 0 ? 0 : WebUtil.NumberRound(item.Inventory, thisYearBsWCapitalListFirst.InventoryCost, 365, 2))</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <th scope="row">
+                                    @(item.YearlyYear)년
+                                    <input type="hidden" name="PlanYearBsCapitalRegSeq" value="@item.Seq" />
+                                    <input type="hidden" name="BsCapitalRegYearlyYear" value="@item.YearlyYear" />
+                                    <input type="hidden" name="BsCapitalRegYearlyMonth" value="@item.Monthly" />
+                                </th>
+                                <td><input type="text" name="Ar" value="@item.Ar" /></td>
+                                <td class="bg_blue">
+                                    @(WebUtil.NCommaRound(thisYearBsWCapitalListFirst.AnnualSales == 0 ? 0 : WebUtil.NumberRound(item.Ar, thisYearBsWCapitalListFirst.AnnualSales, 365, 2), 2))
+                                    <input type="hidden" name="ArToDays" value="@(thisYearBsWCapitalListFirst.AnnualSales == 0 ? 0 : WebUtil.NumberRound(item.Ar, thisYearBsWCapitalListFirst.AnnualSales, 365, 2))" />
+                                </td>
+                                <td><input type="text" name="Ap" value="@item.Ap" /></td>
+                                <td class="bg_blue">
+                                    @(WebUtil.NCommaRound(thisYearBsWCapitalListFirst.AnnualSalesCost == 0 ? 0 : WebUtil.NumberRound(item.Ap, thisYearBsWCapitalListFirst.AnnualSalesCost, 365, 2), 2))
+                                    <input type="hidden" name="ApToDays" value="@(thisYearBsWCapitalListFirst.AnnualSalesCost == 0 ? 0 : WebUtil.NumberRound(item.Ap, thisYearBsWCapitalListFirst.AnnualSalesCost, 365, 2))" />
+                                </td>
+                                <td><input type="text" name="Inventory" value="@item.Inventory" /></td>
+                                <td class="bg_blue">
+                                    @(WebUtil.NCommaRound(thisYearBsWCapitalListFirst.InventoryCost == 0 ? 0 : WebUtil.NumberRound(item.Inventory, thisYearBsWCapitalListFirst.InventoryCost, 365, 2), 2))
+                                    <input type="hidden" name="InventoryToDays" value="@(thisYearBsWCapitalListFirst.InventoryCost == 0 ? 0 : WebUtil.NumberRound(item.Inventory, thisYearBsWCapitalListFirst.InventoryCost, 365, 2))" />
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <!--//tbl th_ver-->
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left" type="button" onclick="onList();">목록</button>
+                <button class="btn full_green" type="button" onclick="onReset();">초기화</button>
+                <button class="btn full_green" type="button" onclick="onCalculationAction();">계산하기</button>
+            </div>
+
+            @*<h3>중기재무계획 요약</h3>
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup></colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2" rowspan="2">구분</th>
+                        <th scope="col" colspan="6">B/S</th>
+                        <th scope="col" colspan="3">ROIC</th>
+                        <th scope="col" colspan="6">W/C</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">총자산</th>
+                        <th scope="col">총부채</th>
+                        <th scope="col">총자본</th>
+                        <th scope="col">현금</th>
+                        <th scope="col">차입금</th>
+                        <th scope="col">부채비율</th>
+                        <th scope="col">세후 영업이익</th>
+                        <th scope="col">투하자본</th>
+                        <th scope="col">ROIC</th>
+                        <th scope="col">A/R</th>
+                        <th scope="col">T/O Days</th>
+                        <th scope="col">A/P</th>
+                        <th scope="col">T/O Days</th>
+                        <th scope="col">Inv</th>
+                        <th scope="col">T/O Days</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                            var summaryCount = 0;
+
+                            foreach (var item in yearBsSummaryList)
+                            {
+                                if (summaryCount == 0)
+                                {
+                                <tr>
+                                    <th scope="row" rowspan="6">2018<br />중기계획</th>
+                                    <th scope="row">
+                                        @item.YearlyYear 년
+                                        <input type="hidden" name="PlanYearBsSummarySeq" value="@item.PlanYearBsSummarySeq" />
+                                    </th>
+                                    <td><input type="text" name="SummaryAssets" value="@item.Assets"/></td>
+                                    <td><input type="text" name="SummaryLiabilities" value="@item.Liabilities"/></td>
+                                    <td><input type="text" name="SummaryCapital" value="@item.Capital"/></td>
+                                    <td><input type="text" name="SummaryCash" value="@item.Cash"/></td>
+                                    <td><input type="text" name="SummaryLoan" value="@item.Loan"/></td>
+                                    <td><input type="text" name="SummaryLiabilitiesRate" value="@item.LiabilitiesRate"/></td>
+                                    <td><input type="text" name="SummaryAfterTaxOperationProfit" value="@item.AfterTaxOperationProfit"/></td>
+                                    <td><input type="text" name="SummaryPainInCapital" value="@item.PainInCapital"/></td>
+                                    <td><input type="text" name="SummaryRoic" value="@item.Roic"/></td>
+                                    <td><input type="text" name="SummaryAr" value="@item.Ar"/></td>
+                                    <td><input type="text" name="SummaryArToDays" value="@item.ArToDays"/></td>
+                                    <td><input type="text" name="SummaryAp" value="@item.Ap"/></td>
+                                    <td><input type="text" name="SummaryApToDays" value="@item.ApToDays"/></td>
+                                    <td><input type="text" name="SummaryInventory" value="@item.Inventory"/></td>
+                                    <td><input type="text" name="SummaryInventoryToDays" value="@item.InventoryToDays"/></td>
+                                </tr>
+                                }
+                                else
+                                {
+                                <tr>
+                                    <th scope="row">
+                                        @item.YearlyYear 년
+                                        <input type="hidden" name="PlanYearBsSummarySeq" value="@item.PlanYearBsSummarySeq" />
+                                    </th>
+                                    <td><input type="text" name="SummaryAssets" value="@item.Assets"/></td>
+                                    <td><input type="text" name="SummaryLiabilities" value="@item.Liabilities"/></td>
+                                    <td><input type="text" name="SummaryCapital" value="@item.Capital"/></td>
+                                    <td><input type="text" name="SummaryCash" value="@item.Cash"/></td>
+                                    <td><input type="text" name="SummaryLoan" value="@item.Loan"/></td>
+                                    <td><input type="text" name="SummaryLiabilitiesRate" value="@item.LiabilitiesRate"/></td>
+                                    <td><input type="text" name="SummaryAfterTaxOperationProfit" value="@item.AfterTaxOperationProfit"/></td>
+                                    <td><input type="text" name="SummaryPainInCapital" value="@item.PainInCapital"/></td>
+                                    <td><input type="text" name="SummaryRoic" value="@item.Roic"/></td>
+                                    <td><input type="text" name="SummaryAr" value="@item.Ar"/></td>
+                                    <td><input type="text" name="SummaryArToDays" value="@item.ArToDays"/></td>
+                                    <td><input type="text" name="SummaryAp" value="@item.Ap"/></td>
+                                    <td><input type="text" name="SummaryApToDays" value="@item.ApToDays"/></td>
+                                    <td><input type="text" name="SummaryInventory" value="@item.Inventory"/></td>
+                                    <td><input type="text" name="SummaryInventoryToDays" value="@item.InventoryToDays"/></td>
+                                </tr>
+                                }
+                                summaryCount++;
+                            }
+                        }
+                    
+                    @{
+                        for (int i = 0; i <= 4; i++)
+                        {
+                            var yearSummary = DateTime.Now.AddYears(i).ToString("yyyy");
+
+                            if (i == 0)
+                            {
+                                <tr>
+                                    <th scope="row" rowspan="6">전년<br />대비</th>
+                                    <th scope="row">@yearSummary 년</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <th scope="row">@yearSummary 년</th>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                    <td class="bg_blue">0</td>
+                                </tr>
+                                }
+                            }
+                        }
+                </tbody>
+            </table>
+            <div class="btn_area align_left_right">
+                <button class="btn full_green left">목록</button>
+                <button class="btn full_green">저장하기</button>
+            </div>*@
+        </div>
+    </form>
+</div>
+<script>
+        function onCalculationAction() {
+            var f = document.frmMain;
+
+            // 값확인
+            if (!onCheckMultipleNameDoubleValues("Assets", "총자산" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("CurrentAssets", "유동자산" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Liabilities", "총부채" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("CurrentLiabilities", "유동부채" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Capital", "총자본" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Cash", "현금" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Loan", "차입금" + "@Message.MSG_001")) return false;
+
+            // 값확인
+            if (!onCheckMultipleNameDoubleValues("AfterTaxOperationProfit", "세후 영업이익" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("CurrentAssets", "투하자본" + "@Message.MSG_001")) return false;
+
+            // 값확인
+            if (!onCheckMultipleNameDoubleValues("AnnualSales", "연간 매출액" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("AnnualSalesCost", "연간매출원가(AP)" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("InventoryCost", "연간매출원가(Inv)" + "@Message.MSG_001")) return false;
+
+
+            if (!onCheckMultipleNameDoubleValues("Ar", "Ar" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Ap", "Ap" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Inventory", "Inventory" + "@Message.MSG_001")) return false;
+
+            if (confirm("@Message.MSG_002_Q")) {
+                f.message.value = "@Message.MSG_002_A";
+                f.action = "Calculation_Action";
+                f.submit();
+            }
+        }
+
+        function onSalesAccountAction() {
+            var f = document.frmMain;
+
+            // 값확인
+            if (!onCheckMultipleNameDoubleValues("Assets", "총자산" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("CurrentAssets", "유동자산" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Liabilities", "총부채" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("CurrentLiabilities", "유동부채" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Capital", "총자본" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Cash", "현금" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("Loan", "차입금" + "@Message.MSG_001")) return false;
+
+            // 값확인
+            if (!onCheckMultipleNameDoubleValues("AfterTaxOperationProfit", "세후 영업이익" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("CurrentAssets", "투하자본" + "@Message.MSG_001")) return false;
+
+            // 값확인
+            if (!onCheckMultipleNameDoubleValues("AnnualSales", "연간 매출액" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("AnnualSalesCost", "연간매출원가(AP)" + "@Message.MSG_001")) return false;
+            if (!onCheckMultipleNameDoubleValues("InventoryCost", "연간매출원가(Inv)" + "@Message.MSG_001")) return false;
+
+
+            if (confirm("@Message.MSG_002_Q")) {
+                f.message.value = "@Message.MSG_002_A";
+                f.action = "SalesAccount_Action";
+                f.submit();
+            }
+        }
+        function onList() {
+            var f = document.frmMain;
+            f.action = "List";
+            f.submit();
+        }
+        function onReset() {
+            var f = document.frmMain;
+            if (confirm("@Message.MSG_003_Q")) {
+                f.message.value = "@Message.MSG_003_A";
+                f.action = "Write";
+                f.submit();
+            }
+        }
+
+        function onDownExcel() {
+            var f = document.frmMain;
+            f.action = "Excel_Down2";
+            f.submit();
+        }
+
+        function onUploadExcel() {
+            var f = document.frmMain;
+            var excelFilePath = $("#ExcelFile").val();
+            var fileLen = excelFilePath.length;
+            var lastDot = excelFilePath.lastIndexOf('.');
+            var excelFileExt = excelFilePath.substring(lastDot + 1, fileLen).toLowerCase();
+
+            var orgCpyName = "@(orgCompanyName.CompanyName)"; 
+            var excelFileName = excelFilePath.substring(excelFilePath.lastIndexOf('\\') + 1, fileLen).toLowerCase();
+
+
+            if (excelFileExt == "") {
+                alert('업로드할 파일을 첨부하세요.');
+                return;
+            }
+
+            if (excelFileExt != "xlsx") {
+                alert('엑셀 파일만 업로드 가능합니다.');
+                $("#ExcelFile").val('');
+                return;
+            }
+
+            if (excelFileName.indexOf('중기bs') < 0 || excelFileName.indexOf(orgCpyName.toLowerCase()) < 0) {
+                alert('' + orgCpyName + ' - [중기BS] 파일이 아닙니다. \n파일을 확인해주세요');
+                return;
+            }
+
+            var formData = new FormData($("#frmMain")[0]);
+
+            $.ajax({
+                type: "post",
+               // url: "Excel_Upload",
+                url: "Excel_Upload2",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    if (res.success) {
+                        alert('업로드되었습니다.');
+                        f.action = "Write";
+                        f.submit();
+                    }
+                    else {
+                        $("#ExcelFile").val('');
+                        alert(res.resultMsg);
+                    }
+                },
+                error: function (request, status, error) {
+                    alert("code:" + request.status + "\n" + "[" + request.responseText + "]");
+                }
+            });
+        }
+
+        function onRegistStatusChange(afterRegistStatus) {
+
+            var f = document.frmMain;
+            f.afterRegistStatus.value = afterRegistStatus;
+
+            var confirmMessage = "";
+            if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("승인대기"))") {
+                confirmMessage = "@Message.MSG_008_Q";
+                f.message.value = "@Message.MSG_008_A";
+            }
+            else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차승인"))") {
+                confirmMessage = "@Message.MSG_004_Q";
+                f.message.value = "@Message.MSG_004_A";
+            }
+            else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("1차반려"))") {
+                confirmMessage = "@Message.MSG_005_Q";
+                f.message.value = "@Message.MSG_005_A";
+            }
+            else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("최종승인"))") {
+                confirmMessage = "@Message.MSG_004_Q";
+                f.message.value = "@Message.MSG_004_A";
+            }
+            else if (afterRegistStatus == "@(Define.REGIST_STATUS.GetKey("2차반려"))") {
+                confirmMessage = "@Message.MSG_005_Q";
+                f.message.value = "@Message.MSG_005_A";
+            }
+
+            if (confirm(confirmMessage)) {
+                f.action = "Regist_Status_Change";
+                f.submit();
+            }
+        }
+</script>
+<!--//container-->
+

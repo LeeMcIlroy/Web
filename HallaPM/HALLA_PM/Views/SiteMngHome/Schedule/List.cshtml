@@ -1,0 +1,113 @@
+﻿@using HALLA_PM.Models;
+@using HALLA_PM.Util;
+@{
+    ViewBag.Title = "List";
+    Layout = "~/Views/Shared/_LayoutSiteMng.cshtml";
+    List<PlanSchedule> list = Model.list;
+    Search search = ViewBag.Search;
+}
+
+<div id="container">
+    <div class="location">
+        <span class="home"><i class="fa fa-home"></i></span>
+        <span>관리자 관리</span>
+        <strong>등록일정계획</strong>
+    </div>
+
+    <form name="frmMain" id="frmMain" method="post">
+        <input type="hidden" name="PageIndex" value="@(search.PageIndex)" />
+        <input type="hidden" name="ScheduleYear" value="" />
+        <div class="con_box search">
+            <h3 class="mt0">등록일정계획</h3>
+            <!--
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 설정된 기간 동안 등록 시스템이 오픈됩니다.<br />
+                <i class="fa fa-info-circle" aria-hidden="true"></i> 실적등록기간이 초과되면 계획 및 실적 입력이 불가능합니다.
+            </div>
+            -->
+        </div>
+        <!--// con_box -->
+
+        <div class="con_box">
+            <table class="tbl th_hor" border="0" cellpadding="0" cellspacing="0">
+                <caption></caption>
+                <colgroup>
+                    <col width="20%" />
+                    <col width="50%" />
+                    <col width="30%" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th scope="col">번호</th>
+                        <th scope="col">연도</th>
+                        <th scope="col">승인요청</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (list == null || list.Count <= 0)
+                        {
+                            <tr>
+                                <td colspan="4" class="nodata">등록된 데이타가 없습니다.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var item in list)
+                            {
+                                <tr>
+                                    <td>@item.RowNum</td>
+                                    <td><a href="javascript:;" onclick="onEdit('@item.ScheduleYear')">@item.ScheduleYear</a></td>
+                                    <td>@item.ApplyChk</td>
+                                </tr>
+
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+
+            <div class="btn_area">
+                <button class="btn full_green" onclick="onWrite();return false">등록</button>
+            </div><!--//btn_area-->
+
+            <div class="paging">
+                <a href="javascript:;" onclick="onPaging(document.frmMain, @search.FirstPageIndex)" class="btn_first"><i class=""></i><span class="hidden">처음으로</span></a>
+                <a href="javascript:;" onclick="onPaging(document.frmMain, @search.PrevPageIndex)" class="btn_prev"><i class=""></i><span class="hidden">이전으로</span></a>
+                <span>
+                    @for (int i = search.StartPageIndex; i <= search.EndPageIndex; i++)
+                    {
+                        if (search.PageIndex == i)
+                        {
+                            <strong>@i</strong>
+                        }
+                        else
+                        {
+                            <a href="#" onclick="onPaging(document.frmMain, @i)">@i</a>
+                        }
+                    }
+                </span>
+                <a href="javascript:;" onclick="onPaging(document.frmMain, @search.NextPageIndex)" class="btn_next"><i class=""></i><span class="hidden">다음으로</span></a>
+                <a href="javascript:;" onclick="onPaging(document.frmMain, @search.FinalPageIndex)" class="btn_last"><i class=""></i><span class="hidden">마지막으로</span></a>
+            </div>
+            <!--// paging-->
+        </div>
+        <!--// con_box -->
+    </form>
+    <script>
+        function onWrite() {
+            var f = document.frmMain;
+
+            f.action = "Write";
+            f.submit();
+        }
+
+        function onEdit(ScheduleYear) {
+            var f = document.frmMain;
+
+            f.ScheduleYear.value = ScheduleYear;
+            f.action = "Edit";
+            f.submit();
+        }
+    </script>
+</div><!--//container-->

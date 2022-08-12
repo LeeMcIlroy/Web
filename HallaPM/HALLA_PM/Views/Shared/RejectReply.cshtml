@@ -1,0 +1,40 @@
+﻿<div id="layerCommentReject" class="layer">
+    <form name="frmRejectReply" id="frmRejectReply">
+        <!-- TODO JS : MYAPP.layerControl.layerShow($('#layerComment')); -->
+        <div class="layer_in">
+            <div class="comment_box_wrap">
+                <textarea name="Rejectcomment" id="Rejectcomment"></textarea>
+                <button class="btn" type="button" onclick="onRejectReply();">등록</button>
+            </div><!--//comment_box_wrap-->
+            <div class="bg_gray">
+                <i class="fa fa-info-circle" aria-hidden="true"></i>
+                입력 된 반려 사유는 실적관리자에게 메일로 발송됩니다.
+            </div>
+            <a href="javascript:;" onclick="javascript: alert('반려 사유 입력이 취소되었습니다'); MYAPP.layerControl.layerHide($('#layerCommentReject')); return false;" class="btn_layer_close"></a>
+        </div><!--//layer_in-->
+    </form>
+</div>
+<script>
+    function onRejectReply() {
+        var f = document.frmRejectReply;
+
+        if (f.Rejectcomment.value == "") {
+            if (confirm('반려 사유없이 안내 메일이 발송됩니다. 등록하시겠습니까?')) {
+                // 반려로직으로 이동
+                var fMain = document.frmMain;
+                fMain.RejectReson.value = " ";
+                fMain.action = "Regist_Status_Change";
+                fMain.submit();
+            }
+        }
+        else {            
+            if (confirm('반려 사유 입력 후에는 수정이 불가능합니다. 등록하시겠습니까?')) {
+                // 반려로직으로 이동
+                var fMain = document.frmMain;
+                fMain.RejectReson.value = $("#Rejectcomment").val();
+                fMain.action = "Regist_Status_Change";
+                fMain.submit();
+            }
+        }
+    }
+</script>
