@@ -1,0 +1,456 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>H&amp;Bio 관리자</title>
+<link rel="stylesheet" type="text/css" href="../css/ui/adm_common.css">
+<script type="text/javascript" src="../js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="../js/jquery-ui.js"></script>
+<script type="text/javascript" src="../js/common.ui.js"></script>
+
+<!--[if lt IE 9]>
+<script type="text/javascript" src="../js/html5.js"></script>
+<script type="text/javascript" src="../js/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+<!-- wrap -->
+<div class="wrap">
+	<!-- header -->
+	<div class="header">
+		<div>
+			<h1><a href="#">H&amp;Bio</a></h1>
+			<!-- util -->
+			<div class="util">
+				<span><em>홍길동(111111)</em>님</span>
+				<a href="#" title="로그아웃">로그아웃</a>
+			</div>
+			<!-- gnb -->
+			<nav class="gnb" id="gnb">
+				<ul>
+					<li>
+						<a href="#" class="top-heading">연구관리</a>
+						<div class="dropdown sub1">
+							<ul>
+								<li><a href="#">연구관리</a></li>
+								<li><a href="#">피험자선정</a></li>
+								<li><a href="#">예약관리</a></li>
+								<li><a href="#">IRB심의</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#" class="top-heading">eCRF관리</a>
+						<div class="dropdown sub2">
+							<ul>
+								<li><a href="#">eCRF관리</a></li>
+								<li><a href="#">템플릿관리</a></li>
+								<li><a href="#">질문답변관리</a></li>
+								<li><a href="#">제품사용관리</a></li>
+								<li><a href="#">연구동의서관리</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">피험자관리</a>
+						<div class="dropdown sub3">
+							<ul>
+								<li><a href="#">피험자관리</a></li>
+								<li><a href="#">연구일정</a></li>
+								<li><a href="#">예약일정</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">자료추출</a>
+						<div class="dropdown sub4">
+							<ul>
+								<li><a href="#">시험결과추출</a></li>
+								<li><a href="#">피부자극결과</a></li>
+								<li><a href="#">종합통계</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">보고서</a>
+						<div class="dropdown sub5">
+							<ul>
+								<li><a href="#">보고서관리</a></li>
+								<li><a href="#">보고서 양식관리</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">발송관리</a>
+						<div class="dropdown sub6">
+							<ul>
+								<li><a href="#">보고서발송</a></li>
+								<li><a href="#">이메일발송내역</a></li>
+								<li><a href="#">SMS발송내역</a></li>
+								<li><a href="#">SMS발송메시지</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">기준정보관리</a>
+						<div class="dropdown sub7">
+							<ul>
+								<li><a href="#">회사관리</a></li>
+								<li><a href="#">사용자관리</a></li>
+								<li><a href="#">지사관리</a></li>
+								<li><a href="#">고객사관리</a></li>
+								<li><a href="#">메뉴관리</a></li>
+								<li><a href="#">권한관리</a></li>
+								<li><a href="#">공통코드관리</a></li>
+							</ul>
+						</div>
+					</li>
+				</ul>		
+			</nav>
+			<!-- //gnb -->
+		</div>
+	</div>
+	<!-- //header -->
+	<!-- container -->
+	<div class="container">
+		<h2>연구관리</h2>
+		<!-- contents -->
+		<div class="contents">
+			<!-- 타이틀 -->
+			<div class="title_area">
+				<h3>연구관리</h3>
+				<!-- 현재위치 -->
+				<div class="breadcrumb">
+					<a href="#">홈</a>
+					<span>&gt;</span>
+					연구관리
+					<span>&gt;</span>
+					연구관리
+				</div>
+			</div>
+			<!-- //타이틀 -->
+			<!-- 서브타이틀 -->
+            <div class="sub_title_area type02">
+                <h4>연구정보</h4>
+            </div>
+            <!-- //서브타이틀 -->
+            <!-- 연구정보 -->
+            <table class="tbl_view">
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:35%" />
+                    <col style="width:15%" />
+                    <col style="width:35%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">연구코드</th>
+                        <td>
+                            <select class="p25">
+                                <option>선택</option>
+                            </select>
+                            -
+                            <input type="text" class="p25" />
+                            -
+                            <input type="text" class="p25" />
+                            -
+                            <input type="text" class="p15" />
+                        </td>
+                        <th scope="row" class="bl">연구목적</th>
+                        <td>
+                            <select>
+                                <option>선택</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">연구지사</th>
+                        <td>
+                            <select>
+                                <option>선택</option>
+                            </select>
+                        </td>
+                        <th scope="row" class="bl">연구분야</th>
+                        <td>
+                            <select>
+                                <option>선택</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">연구책임자</th>
+                        <td>
+                            <div class="srch_sec">
+                                홍길동
+                                <a href="#" class="btn_sub">조회</a>
+                            </div>
+                        </td>
+                        <th scope="row" class="bl">연구담당자</th>
+                        <td>
+                            <div class="srch_sec">
+                                홍길동
+                                <a href="#" class="btn_sub">조회</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">피험자수</th>
+                        <td>
+                            <input type="text" class="p25" /> 명&nbsp;&nbsp;&nbsp;
+                            최대지원자수&nbsp;&nbsp;
+                            <input type="text" class="p25" /> 명
+                        </td>
+                        <th scope="row" class="bl">연구기간</th>
+                        <td>
+                            <div class="date_sec">
+                                <span>
+                                    <input type="text" class="date" />
+                                    <a href="#" class="btn_cld">날짜검색</a>
+                                </span>
+                                <em>~</em>
+                                <span>
+                                    <input type="text" class="date" />
+                                    <a href="#" class="btn_cld">날짜검색</a>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">연구상태</th>
+                        <td>
+                            <input type="radio" name="H010101" id="H010101_01" />
+                            <label for="H010101_01">예정</label>
+                            <input type="radio" name="H010101" id="H010101_02" />
+                            <label for="H010101_02">진행</label>
+                            <input type="radio" name="H010101" id="H010101_03" />
+                            <label for="H010101_03">완료</label>
+                            <input type="radio" name="H010101" id="H010101_04" />
+                            <label for="H010101_04">취소</label>
+                        </td>
+                        <th scope="row" class="bl">결과보고일</th>
+                        <td>
+                            <div class="date_sec">
+                                <span>
+                                    <input type="text" class="date" />
+                                    <a href="#" class="btn_cld">날짜검색</a>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">방문횟수</th>
+                        <td>
+                            <select class="p90">
+                                <option>선택</option>
+                            </select>
+                            회
+                        </td>
+                        <th scope="row" class="bl">중복참여여부</th>
+                        <td>
+                            <input type="radio" name="H010102" id="H010102_01" />
+                            <label for="H010102_01">중복참여 가능</label>
+                            <input type="radio" name="H010102" id="H010102_02" />
+                            <label for="H010102_02">중복참여 불가</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">대상부위</th>
+                        <td colspan="3">                            
+                            <input type="checkbox" name="H010103" id="H010103_01" />
+                            <label for="H010103_01">이마</label>
+                            <input type="checkbox" name="H010103" id="H010103_02" />
+                            <label for="H010103_02">눈</label>
+                            <input type="checkbox" name="H010103" id="H010103_03" />
+                            <label for="H010103_03">코</label>
+                            <input type="checkbox" name="H010103" id="H010103_04" />
+                            <label for="H010103_04">입</label>
+                            <input type="checkbox" name="H010103" id="H010103_05" />
+                            <label for="H010103_05">얼굴전체</label>
+                            <input type="checkbox" name="H010103" id="H010103_06" />
+                            <label for="H010103_06">등</label>
+                            <input type="checkbox" name="H010103" id="H010103_07" />
+                            <label for="H010103_07">피부전체</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">연구명</th>
+                        <td colspan="3">                            
+                            <input type="text" class="type02 ta_l" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">대상부위</th>
+                        <td colspan="3">                            
+                            <textarea class="type02"></textarea>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- //연구정보 -->
+            <!-- 서브타이틀 -->
+            <div class="sub_title_area">
+                <h4>의뢰기관</h4>
+            </div>
+            <!-- //서브타이틀 -->
+            <!-- 의뢰기관 -->
+            <table class="tbl_view">
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:35%" />
+                    <col style="width:15%" />
+                    <col style="width:35%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">고객사명</th>
+                        <td>
+                            <select>
+                                <option>선택</option>
+                            </select>
+                        </td>
+                        <th scope="row" class="bl">담당자</th>
+                        <td>
+                            <input type="text" class="ta_l" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">연락처</th>
+                        <td>
+                            <select class="p25">
+                                <option>선택</option>
+                            </select>
+                            -
+                            <input type="text" class="p30" />
+                             -
+                            <input type="text" class="p30" />
+                        </td>
+                        <th scope="row" class="bl">이메일</th>
+                        <td>
+                            <input type="text" class="p30" />
+                             @
+                            <input type="text" class="p30" />
+                            <select class="p30">
+                                <option>직접입력</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">연구비</th>
+                        <td>                            
+                            <input type="text" class="p40" />
+                            &nbsp;&nbsp;&nbsp;VAT&nbsp;
+                            <input type="text" class="p40" />
+                        </td>
+                        <th scope="row" class="bl">IRB승인</th>
+                        <td>
+                            <input type="radio" name="H010104" id="H010104_01" />
+                            <label for="H010104_01">필요</label>
+                            <input type="radio" name="H010104" id="H010104_02" />
+                            <label for="H010104_02">불필요</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">제품정보</th>
+                        <td colspan="3">
+                        	<select class="p40">
+                        		<option>제품구분</option>
+                        	</select>        
+                        	&nbsp;&nbsp;&nbsp;제품명&nbsp;                   
+                            <input type="text" class="p50 ta_l" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- //의뢰기관 -->
+            <!-- 서브타이틀 -->
+            <div class="sub_title_area">
+                <h4>첨부파일</h4>
+            </div>
+            <!-- //서브타이틀 -->
+            <!-- 첨부파일 -->
+            <table class="tbl_view">
+                <colgroup>
+                    <col style="width:15%" />
+                    <col style="width:35%" />
+                    <col style="width:15%" />
+                    <col style="width:35%" />
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <th scope="row">연구공고</th>
+                        <td>
+                            <div class="attach_sec">
+                            	<input type="file" id="in_file01" />
+                            	<label for="in_file01" class="btn_sub">파일업로드</label>
+                            	<div>
+                            		<span>파일명.jpg</span>
+                            		<a href="#">삭제</a>
+                            	</div>
+                            </div>
+                        </td>
+                        <th scope="row" class="bl">연구계획서</th>
+                        <td>
+                            <div class="attach_sec">
+                            	<input type="file" id="in_file02" />
+                            	<label for="in_file02" class="btn_sub">파일업로드</label>
+                            	<div>
+                            		<span>파일명.jpg</span>
+                            		<a href="#">삭제</a>
+                            	</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">IRB신규계획서</th>
+                        <td>
+                            <div class="attach_sec">
+                            	<input type="file" id="in_file03" />
+                            	<label for="in_file03" class="btn_sub">파일업로드</label>
+                            	<div>
+                            		<span>파일명.jpg</span>
+                            		<a href="#">삭제</a>
+                            	</div>
+                            </div>
+                        </td>
+                        <th scope="row" class="bl">IRB결과보고서</th>
+                        <td>
+                            <div class="attach_sec">
+                            	<input type="file" id="in_file04" />
+                            	<label for="in_file04" class="btn_sub">파일업로드</label>
+                            	<div>
+                            		<span>파일명.jpg</span>
+                            		<a href="#">삭제</a>
+                            	</div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- //첨부파일 -->
+			<!-- 버튼 -->
+			<div class="btn_area">
+				<a href="#" class="type02">취소</a>
+				<a href="#">저장</a>
+				<!-- 토글버튼 -->
+				<div>
+					데이터 잠금
+		       		<div class="toggle_btn">
+						<label class="switch">
+							<input type="checkbox" id="data_lock" />
+							<span class="slider round"></span>
+						</label>
+						<p>Lock</p>
+					</div>
+				</div>
+				<!-- //토글버튼 -->
+			</div>
+			<!-- //버튼 -->
+		</div>
+		<!-- //contents -->
+	</div>
+	<!-- //container -->
+</div>	
+<!-- //wrap -->
+</body>
+</html>

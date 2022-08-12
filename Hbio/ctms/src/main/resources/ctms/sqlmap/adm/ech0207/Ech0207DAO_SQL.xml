@@ -1,0 +1,1070 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+    <!-- 피부자극결과 시작 **************************************** -->
+    <sql id="where_cr3100m">
+        FROM 
+                CR3100M
+    </sql>
+     <sql id="where_cr3100mSearch">
+          
+	        <dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition7" prepend="AND">
+	        		(A.RS_CD = #searchCondition7#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_STDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_ENDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		A.RSST_CLS  LIKE CONCAT ('%',#searchCondition6#,'%')
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition5" prepend="AND">
+	        		A.DEL_YN  LIKE CONCAT ('%',#searchCondition5#,'%')
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구명칭 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					
+					<!-- 연구코드 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+    <!-- 피부자극결과 리스트 -->
+    <select id="AdmEch0207DAO.selectAdmEch0207List" parameterClass="searchVO" resultClass="egovMap">
+    /* AdmEch0207DAO.selectAdmEch0207List */
+    <![CDATA[
+   			
+        SELECT   A.CORP_CD    	AS corpCd 
+				,A.RS_NO 		AS rsNo
+				,A.RS_NAME		AS rsName
+				,A.RS_CD	    AS rsCd
+				,A.REG_DT       AS regDt
+				,A.RSST_CLS		AS rsstCls
+				,D.CD_NAME	    AS rsstClsNm
+				,ISNULL(A.RS_SCNT,0)		    AS rsScnt
+        		,(SELECT COUNT(*)     
+          	 	  FROM  RS2010M Y
+       			  WHERE Y.CORP_CD       = A.CORP_CD
+		      	  AND   Y.RS_NO         = A.RS_NO
+		      	  AND   Y.CFM_YN = 'Y'
+		      	  AND   Y.RSI_NO != '') AS cfmCnt  
+            	,A.DATA_REGDT	    AS dataReddt
+            	,A.DATA_REGNT    AS dataRegnt
+            	,A.DEL_YN	        AS delYn
+            	,CONVERT(NUMERIC(5,2),ROUND((ISNULL(B.H24total,0) +ISNULL(B.M30total,0)) / 2,2)) AS total
+            	,(CASE WHEN (B.M30total + B.H24total) / 2  >= 0.00  AND (B.M30total + B.H24total) / 2  < 0.87  THEN '저자극' 
+				       WHEN (B.M30total + B.H24total) / 2  >= 0.87  AND (B.M30total + B.H24total) / 2  < 2.42  THEN '경자극'
+				       WHEN (B.M30total + B.H24total) / 2  >= 2.42  AND (B.M30total + B.H24total) / 2  < 3.44  THEN '중자극' 
+				       WHEN (B.M30total + B.H24total) / 2  >  3.44  THEN '강자극' ELSE''
+			      END)                      AS judge
+            	,ISNULL(B.MTL_DSP,'')  AS mtlDsp
+            	,ISNULL(B.MTL_NAME,'')	AS mtlName
+            	,ISNULL(B.LOT_NO,'')	AS lotNo
+            	,B.NC_YN				AS ncYn
+		FROM    RS1010M A
+
+        
+        		LEFT OUTER JOIN ( SELECT Y.CORP_CD
+                                		,Y.RS_NO
+                                		,Z.MTL_DSP
+                                		,Z.MTL_NAME
+                                		,Z.LOT_NO
+                                		,MAX(Z.NC_YN) AS NC_YN
+                                		,ISNULL(CONVERT(NUMERIC(5,2),(SUM(X.M30_VL1) / (4 * Y.RS_SCNT)) * 100),0) AS M30total
+                                        ,ISNULL(CONVERT(NUMERIC(5,2),(SUM(X.H24_VL1) / (4 * Y.RS_SCNT)) * 100),0) AS H24total    
+                          		  FROM   CR3110M X
+
+                                         INNER JOIN RS1010M Y
+                                  ON     Y.CORP_CD  = X.CORP_CD
+								  AND	 Y.RS_NO	= X.RS_NO
+
+                                  		 INNER JOIN RS1040M Z
+                           		  ON     Z.CORP_CD  = Y.CORP_CD
+                           		  AND    Z.MRS_NO   = Y.RS_NO
+								  AND    Z.MTL_NO   = X.MTL_NO
+                                  AND    Z.MTL_DSP  = X.MTL_DSP
+      
+                           		  GROUP  BY
+                                  		 Y.CORP_CD, Y.RS_NO,Z.MTL_DSP,Z.MTL_NAME,Z.LOT_NO,Y.RS_SCNT
+                        		) B
+		ON      B.CORP_CD       = A.CORP_CD
+		AND     B.RS_NO         = A.RS_NO
+
+		        INNER JOIN CM4000M D
+		ON      D.CORP_CD   = A.CORP_CD
+		AND     D.CD_CLS    = 'CT2050'
+		AND     D.CLS_CAT   = '3'
+		AND     D.CD        = A.RSST_CLS 
+ 
+		 ]]>
+ 	<include refid="where_cr3100mSearch" />
+ 
+	<![CDATA[	
+	
+			ORDER BY
+			  A.REG_DT DESC, B.RS_NO DESC, B.NC_YN DESC ,B.MTL_DSP ASC
+               OFFSET #firstIndex# ROWS
+			  FETCH NEXT #recordCountPerPage# ROWS ONLY  
+			  
+ 	]]>
+   
+    
+    </select>
+ 
+    <!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+ 
+    <!-- 피부자극결과 Cnt -->
+    <select id="AdmEch0207DAO.selectAdmEch0207ListCnt" parameterClass="searchVO" resultClass="int">
+    /* AdmEch0207DAO.selectAdmEch0207ListCnt */
+    <![CDATA[
+         SELECT  COUNT(*) 
+        
+         FROM    RS1010M A
+
+        
+        			LEFT OUTER JOIN ( SELECT Y.CORP_CD
+                                		,Y.RS_NO
+                                		,Z.MTL_DSP
+                                		,Z.MTL_NAME
+                                		,Z.LOT_NO
+                                		,MAX(Z.NC_YN) AS NC_YN
+                                		,ISNULL(CONVERT(NUMERIC(5,2),(SUM(X.M30_VL1) / (4 * Y.RS_SCNT)) * 100),0) AS M30total
+                                        ,ISNULL(CONVERT(NUMERIC(5,2),(SUM(X.H24_VL1) / (4 * Y.RS_SCNT)) * 100),0) AS H24total    
+                          		  FROM   CR3110M X
+
+                                         INNER JOIN RS1010M Y
+                                  ON     Y.CORP_CD  = X.CORP_CD
+								  AND	 Y.RS_NO	= X.RS_NO
+
+                                  		 INNER JOIN RS1040M Z
+                           		  ON     Z.CORP_CD  = Y.CORP_CD
+                           		  AND    Z.MRS_NO   = Y.RS_NO
+								  AND    Z.MTL_NO   = X.MTL_NO
+                                  AND    Z.MTL_DSP  = X.MTL_DSP
+      
+                           		  GROUP  BY
+                                  		 Y.CORP_CD, Y.RS_NO,Z.MTL_DSP,Z.MTL_NAME,Z.LOT_NO,Y.RS_SCNT
+                        		) B
+		ON      B.CORP_CD       = A.CORP_CD
+		AND     B.RS_NO         = A.RS_NO
+
+		        INNER JOIN CM4000M D
+		ON      D.CORP_CD   = A.CORP_CD
+		AND     D.CD_CLS    = 'CT2050'
+		AND     D.CLS_CAT   = '3'
+		AND     D.CD        = A.RSST_CLS 
+	  	
+    ]]>
+    <include refid="where_cr3100mSearch" />
+    <![CDATA[
+	  
+	 ]]>
+    </select>
+    <select id="AdmEch0207DAO.selectEch0207Excel" parameterClass="searchVO" resultClass="egovMap">
+    
+	    <![CDATA[
+		      SELECT   A.CORP_CD    AS corpCd 
+					  ,A.RS_NO 		AS rsNo
+					  ,A.RS_NAME    AS rsName
+					  ,A.RS_CD	    AS rsCd
+				  	  ,A.REG_DT      AS regDt
+				      ,A.RSST_CLS		AS rsstCls
+					  ,D.CD_NAME	    AS rsstClsNm
+					  ,ISNULL(A.RS_SCNT,0)		    AS rsScnt
+        			  ,(SELECT COUNT(*)     
+          	 	        FROM  RS2010M Y
+       			  		WHERE Y.CORP_CD       = A.CORP_CD
+		      	  		AND   Y.RS_NO         = A.RS_NO
+	      	  			AND   Y.CFM_YN = 'Y'
+		      	  		AND   Y.RSI_NO != '') AS cfmCnt  
+            		  ,A.DATA_REGDT	    AS dataReddt
+            		  ,A.DATA_REGNT    AS dataRegnt
+            		  ,A.DEL_YN	        AS delYn
+            		  ,CONVERT(NUMERIC(5,2),ROUND((ISNULL(B.H24total,0) +ISNULL(B.M30total,0)) / 2,2)) AS total
+            	 	  ,(CASE WHEN (B.M30total + B.H24total) / 2  >= 0.00  AND (B.M30total + B.H24total) / 2  < 0.87  THEN '저자극' 
+				       		 WHEN (B.M30total + B.H24total) / 2  >= 0.87  AND (B.M30total + B.H24total) / 2  < 2.42  THEN '경자극'
+				       		 WHEN (B.M30total + B.H24total) / 2  >= 2.42  AND (B.M30total + B.H24total) / 2  < 3.44  THEN '중자극' 
+				       		 WHEN (B.M30total + B.H24total) / 2  >  3.44  THEN '강자극' ELSE''
+			      		END)                      AS judge
+            		  ,ISNULL(B.MTL_DSP,'')  AS mtlDsp
+            		  ,ISNULL(B.MTL_NAME,'')	AS mtlName
+            		  ,ISNULL(B.LOT_NO,'')	AS lotNo
+            		  ,B.NC_YN				AS ncYn
+			  FROM    RS1010M A
+
+        
+        	  LEFT OUTER JOIN ( SELECT Y.CORP_CD
+                                		,Y.RS_NO
+                                		,Z.MTL_DSP
+                                		,Z.MTL_NAME
+                                		,Z.LOT_NO
+                                		,MAX(Z.NC_YN) AS NC_YN
+                                		,ISNULL(CONVERT(NUMERIC(5,2),(SUM(X.M30_VL1) / (4 * Y.RS_SCNT)) * 100),0) AS M30total
+                                        ,ISNULL(CONVERT(NUMERIC(5,2),(SUM(X.H24_VL1) / (4 * Y.RS_SCNT)) * 100),0) AS H24total    
+                          		  FROM   CR3110M X
+
+                                         INNER JOIN RS1010M Y
+                                  ON     Y.CORP_CD  = X.CORP_CD
+								  AND	 Y.RS_NO	= X.RS_NO
+
+                                  		 INNER JOIN RS1040M Z
+                           		  ON     Z.CORP_CD  = Y.CORP_CD
+                           		  AND    Z.MRS_NO   = Y.RS_NO
+								  AND    Z.MTL_NO   = X.MTL_NO
+                                  AND    Z.MTL_DSP  = X.MTL_DSP
+      
+                           		  GROUP  BY
+                                  		 Y.CORP_CD, Y.RS_NO,Z.MTL_DSP,Z.MTL_NAME,Z.LOT_NO,Y.RS_SCNT
+                        		) B
+			  ON      B.CORP_CD       = A.CORP_CD
+			  AND     B.RS_NO         = A.RS_NO
+
+		        	  INNER JOIN CM4000M D
+			  ON      D.CORP_CD   = A.CORP_CD
+			  AND     D.CD_CLS    = 'CT2050'
+			  AND     D.CLS_CAT   = '3'
+			  AND     D.CD        = A.RSST_CLS 
+		    ]]>
+		 	<include refid="where_cr3100mSearch" />
+		 
+			<![CDATA[
+		
+				ORDER BY 	 A.REG_DT DESC,B.NC_YN DESC ,B.MTL_DSP ASC
+						 
+		    ]]>
+   
+    
+    </select>
+    <!-- 피부자극결과 상세보기 -->
+    <select id="AdmEch0207DAO.selectAdmEch0207View" parameterClass="string" resultClass="egovMap">
+    /* AdmEch0207DAO.selectAdmEch0207View */
+    <![CDATA[
+               SELECT  
+        		MAX(A.CORP_CD)                   	AS corpCd            
+               ,MAX(A.RS_NO)                   		AS rsNo
+               ,MAX(A.RSI_NO)                       AS rsiNo
+               ,CASE WHEN LEN(MAX(A.RSI_NO)) < 8 THEN MAX(CONVERT(NVARCHAR,A.RSI_NO1))+'-0'+MAX(CONVERT(NVARCHAR,A.RSI_NO3)) ELSE MAX(A.RSI_NO) END AS rsiNo2
+               ,MAX(F.RS_NAME)                   	AS rsName                      
+               ,MAX(H.RSJ_NO)                  		AS rsjNo  
+               ,MAX(J.MTL_DSP)                      AS mtlDsp
+               ,MAX(J.MTL_NO)						AS mtlNo
+               ,MAX(J.MTL_NAME)						AS mtlName
+               ,MAX(H.M30_DT)                   	AS m30Dt             
+               ,CONVERT(NUMERIC(5,2),MAX(H.M30_VL1)) AS m30Vl1                    
+               ,MAX(H.H24_DT)                      	AS h24Dt             
+               ,CONVERT(NUMERIC(5,2),MAX(H.H24_VL1)) AS h24Vl1                           
+               ,MAX(A.DATA_REGDT)                	AS dataRegdt         
+               ,MAX(A.DATA_REGNT)                	AS dataRegnt   
+               ,MAX(J.NC_YN)						AS ncYn
+               , CONVERT(int, STUFF(MAX(J.MTL_DSP) , 1, 1, '')) 	  AS ord    
+        FROM    RS2010M A
+
+                INNER JOIN RS1010M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.RS_NO         = A.RS_NO    
+           
+        
+                INNER JOIN RS1040M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.MRS_NO        = F.RS_NO
+                   
+                INNER JOIN CR3110M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.BRSJ_NO       = A.RSI_NO
+        AND     H.RS_NO         = A.RS_NO
+        AND     H.MTL_DSP       = J.MTL_DSP
+		
+		 		
+        
+        WHERE   F.RS_NO			= #rsNo#
+        GROUP BY A.RSI_NO,J.MTL_DSP
+        ORDER 	BY rsiNo2,MAX(A.RSI_NO), MAX(J.NC_YN) DESC, ord ASC
+        
+        
+    ]]>
+   
+    
+    </select>
+    <!-- 연구과제에 참여하는 피험자 여부 조회-->
+     <select id="AdmEch0207DAO.selectAdmEch0207ViewNoOne" parameterClass="string" resultClass="egovMap">
+    /* AdmEch0207DAO.selectAdmEch0207ViewNoOne */
+    <![CDATA[
+        SELECT  DISTINCT 
+        		 A.CORP_CD                     AS corpCd            
+              	,A.RS_NO                       AS rsNo
+              	,A.RSI_NO					   AS rsiNo                                            
+              	,F.RS_NAME                     AS rsName            
+              	,A.RSJ_NO                      AS rsjNo
+              	,ISNULL(J.MTL_NO,'')           AS mtlNo          
+              	,A.DATA_REGDT                  AS dataRegdt         
+              	,A.DATA_REGNT                  AS dataRegnt         
+        FROM    RS2010M A
+
+                INNER JOIN RS1010M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.RS_NO         = A.RS_NO               
+             
+                INNER JOIN RS1000M G
+        ON      G.CORP_CD       = F.CORP_CD
+        AND     G.MRS_NO        = F.RS_NO       
+             
+          		LEFT OUTER JOIN RS1040M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.RS_NO         = G.RS_NO
+           
+        WHERE   F.RS_NO			= #rsNo#
+        AND     NOT A.RSI_NO	= '' 
+        
+    ]]>
+
+    </select>
+    <!-- 피험자 피부자극수치 상세보기  -->
+    <!-- INNER JOIN CR3110M H -> RS_NO 비교 추가  2021.8.22 Hong--> 
+    <select id="AdmEch0207DAO.selectAdmEch0207ViewOne" parameterClass="cr3110mVO" resultClass="egovMap">
+    /* AdmEch0207DAO.selectAdmEch0207View */
+    <![CDATA[
+       
+    	SELECT  
+   				MAX(A.CORP_CD)                  AS corpCd            
+               ,MAX(A.RS_NO)                    AS rsNo   
+               ,MAX(A.RSJ_NO)				  	AS rsjNo
+               ,MAX(A.RSI_NO)				 	AS rsiNo                        
+               ,MAX(F.RS_NAME)                  AS rsName            
+               ,MAX(H.BRSJ_NO)                  AS brsjNo
+               ,MAX(X.MTL_DSP)                  AS mtlDsp
+               ,MAX(X.MTL_NAME)					AS mtlName
+               ,MAX(H.M30_DT)                 	AS m30Dt             
+               ,CONVERT(NUMERIC(5,2),MAX(H.M30_VL1)) AS m30Vl1                               
+               ,MAX(H.H24_DT )                    	AS h24Dt             
+               ,CONVERT(NUMERIC(5,2),MAX(H.H24_VL1)) AS h24Vl1                              
+               ,MAX(A.DATA_REGDT)               AS dataRegdt         
+               ,MAX(A.DATA_REGNT)               AS dataRegnt
+               ,MAX(X.NC_YN)					AS ncYn   
+               ,MAX(SUBSTRING(A.RSI_NO,1,6)+CONVERT(NVARCHAR,Z.RS_NO7)+'-'+RIGHT(A.RSI_NO,1)) AS rsNo7
+
+        FROM    RS2010M A
+
+                INNER JOIN RS1010M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.RS_NO         = A.RS_NO               
+                INNER JOIN CR3110M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND		H.RS_NO			= A.RS_NO
+        AND     H.RSJ_NO        = A.RSJ_NO
+        AND     H.BRSJ_NO       = A.RSI_NO
+
+                INNER JOIN RS1040M X
+        ON      X.CORP_CD       = A.CORP_CD
+        AND     X.MRS_NO        = F.RS_NO
+        AND     X.MTL_DSP       = H.MTL_DSP
+        AND     H.RSJ_NO        = A.RSJ_NO
+        
+                INNER JOIN RS1000M Z 
+		ON      Z.CORP_CD   = X.CORP_CD 
+		AND     Z.RS_NO     = X.RS_NO 
+        
+        WHERE   H.BRSJ_NO   = #brsjNo#
+        AND   	A.RS_NO		= #rsNo#
+
+        GROUP BY A.RSI_NO, X.MTL_DSP
+
+        ORDER 	BY MAX(A.RSI_NO),MAX(X.NC_YN)DESC,MAX(X.MTL_DSP)ASC 
+        
+    ]]>
+    </select> 
+    
+    <!-- 피부자극결과 CR3110M 신규 피험자 조회 -->
+    <select id="AdmEch0207DAO.selectAdmEch0207ViewUpdate" parameterClass="string" resultClass="egovMap">
+    /* AdmEch0207DAO.selectAdmEch0207ViewUpdate */
+    <![CDATA[
+                SELECT   
+                 MAX(B.RSI_NO)          AS rsiNo
+                ,MAX(B.RSJ_NO)          AS rsjNo
+                ,MAX(B.RS_NO)           AS rsNo
+                ,MAX(B.CORP_CD)         AS corpCd
+                ,MAX(C.MTL_NO)          AS mtlNo
+                ,MAX(C.MTL_DSP)         AS mtlDsp
+                ,MAX(C.NC_YN)			AS ncYn
+         FROM    CR3110M A 
+                 RIGHT OUTER JOIN RS2010M B 
+         ON      A.RS_NO    = B.RS_NO
+         AND     A.RSJ_NO   = B.RSJ_NO 
+         AND     A.BRSJ_NO  = B.RSI_NO
+
+                 RIGHT OUTER JOIN  RS1040M C
+         ON      C.CORP_CD  = B.CORP_CD
+         AND     C.MRS_NO   = B.RS_NO
+        
+
+         WHERE    A.RS_NO IS NULL
+         AND      B.RSI_NO != ''
+         AND      B.RS_NO = #rsNo#
+         GROUP    BY C.MTL_DSP,B.RSI_NO
+         ORDER    BY MAX(B.RSI_NO)
+    ]]>
+    </select>
+    
+	 <!-- 피부자극결과 CR3100M 신규 피험자 조회 -->
+    <select id="AdmEch0207DAO.selectAdmEch0207ViewUpdateCR3100m" parameterClass="string" resultClass="egovMap">
+    /* AdmEch0207DAO.selectAdmEch0207ViewUpdateCR3100m */
+    <![CDATA[
+    	SELECT   CONCAT(G.RS_NO5,G.RS_NO6,'-',J.RS_NO7,'-',A.RSI_NO3) AS rsiNo
+       			,'999999'	AS rsjNo
+      			,J.RS_NO    AS rsNo
+        		,A.CORP_CD	AS corpCd
+        		,H.MTL_NO	AS mtlNo
+       			,H.MTL_DSP	AS mtlDsp
+        		,H.NC_YN	AS ncYn
+        		,H.MRS_NO	AS mrsNo
+		FROM    RS2010M A
+
+        		INNER JOIN RS1010M G 
+		ON      G.CORP_CD   = A.CORP_CD 
+		AND     G.RS_NO     = A.RS_NO 
+
+       			INNER JOIN RS1040M H 
+		ON      H.CORP_CD   = G.CORP_CD 
+		AND     H.MRS_NO    = G.RS_NO
+
+        		INNER JOIN RS1000M J 
+		ON      J.CORP_CD   = H.CORP_CD 
+		AND     J.RS_NO     = H.RS_NO 
+
+		WHERE   A.CORP_CD = 'HNBSRC' 
+		AND     CONCAT(G.RS_NO5,G.RS_NO6,'-',J.RS_NO7,'-',A.RSI_NO3) NOT IN (
+        		SELECT DISTINCT BRSJ_NO 
+        		FROM CR3100M CM
+        		WHERE CM.CORP_CD = A.CORP_CD
+        		AND CM.MRS_NO = A.RS_NO) 
+		AND     A.RS_NO = #rsNo#
+    ]]>
+    </select>
+	
+    <!-- 피부자극결과 CR3110M 삭제 -->
+    <delete id="AdmEch0207DAO.deleteAdmEch0207" parameterClass="string">
+    /* AdmEch0207DAO.deleteAdmEch0207 */
+    <![CDATA[
+        DELETE
+        FROM
+                CR3110M
+        WHERE 	RS_NO	=#rsNo#
+    ]]>
+    </delete>
+    <!-- 피부자극결과 CR3100M 삭제 -->
+    <delete id="AdmEch0207DAO.deleteCR3100mAdmEch0207" parameterClass="string">
+    /* AdmEch0207DAO.deleteCR3100mAdmEch0207 */
+    <![CDATA[
+        DELETE
+        FROM
+                CR3100M
+        WHERE 	MRS_NO	=#rsNo#
+    ]]>
+    </delete>
+    <!-- 피부자극결과 CR3110M 초기값설정 -->
+    <insert id="AdmEch0207DAO.insertAdmEch0207" parameterClass="string">
+
+	    <![CDATA[
+	        INSERT  INTO 
+			        CR3110M(
+			        CORP_CD,
+			        RS_NO,
+			        RSJ_NO,
+			        MTL_NO,
+			        MTL_DSP,
+			        BRSJ_NO,
+			        DATA_REGNT,
+			        M30_DT,
+			        H24_DT,
+			        DATA_REGDT,
+			        NC_YN
+	        ) 
+			SELECT  DISTINCT      
+			        A.CORP_CD,
+			        A.RS_NO,
+			        A.RSJ_NO,
+			        B.MTL_NO,
+					B.MTL_DSP,
+			        A.RSI_NO,
+			        A.DATA_REGNT,
+			        CONVERT(NVARCHAR(10), GETDATE(), 23),
+			        CONVERT(NVARCHAR(10), GETDATE(), 23),
+			        GETDATE(),
+			        B.NC_YN  
+			FROM    RS2010M A
+                    INNER JOIN  RS1010M C
+            ON      C.CORP_CD       = A.CORP_CD
+            AND     C.RS_NO         = A.RS_NO
+
+			 		RIGHT OUTER JOIN  RS1040M B
+            ON      B.CORP_CD       = B.CORP_CD
+            AND     B.MRS_NO        = C.RS_NO
+            
+			WHERE   A.RS_NO = #rsNo#
+			AND		A.RSI_NO != ''
+	    ]]>
+    </insert>
+     <!-- 피부자극결과 CR3100M 초기값설정 -->
+    <insert id="AdmEch0207DAO.insertCR3100mAdmEch0207" parameterClass="string">
+
+	    <![CDATA[
+	        INSERT  INTO 
+			        CR3100M(
+			        CORP_CD,
+			        RS_NO,
+			        RSJ_NO,
+			        MTL_NO,
+			        MTL_DSP,
+			        BRSJ_NO,
+			        DATA_REGNT,
+			        M30_DT,
+			        H24_DT,
+			        DATA_REGDT,
+			        MRS_NO,
+			        NC_YN
+	        ) 
+			SELECT  A.CORP_CD, 
+                    A.RS_NO,
+                    C.RSJ_NO,
+                    B.MTL_NO,
+                    B.MTL_DSP,
+                    C.RSI_NO1 +'-'+CONVERT(NVARCHAR,A.RS_NO7)+'-'+CONVERT(NVARCHAR,C.RSI_NO3), 
+                    A.DATA_REGNT,
+			        CONVERT(NVARCHAR(10), GETDATE(), 23),
+			        CONVERT(NVARCHAR(10), GETDATE(), 23),
+			        GETDATE(),
+			        B.MRS_NO,
+			        B.NC_YN
+                  
+            FROM    RS1000M A
+
+                    INNER JOIN RS1040M B                  
+            ON      A.CORP_CD   = B.CORP_CD
+            AND     A.RS_NO     = B.RS_NO
+
+                    INNER JOIN RS2010M C
+            ON      C.CORP_CD   = A.CORP_CD
+            AND     C.RS_NO     = A.MRS_NO
+
+            WHERE   A.MRS_NO =#rsNo#
+            AND		C.RSI_NO != ''
+			
+	    ]]>
+    </insert>
+      <!-- 피부자극결과 CR3110M 테이블에 신규피험자 추가 -->
+    <insert id="AdmEch0207DAO.insertNewAdmEch0207" parameterClass="cr3110mVO">
+
+	    <![CDATA[
+	       INSERT  CR3110M(
+	               CORP_CD                     
+	              ,RS_NO                       
+	              ,RSJ_NO
+	              ,MTL_NO
+	              ,MTL_DSP                     
+	              ,BRSJ_NO                     
+	              ,M30_DT                      
+	              ,M30_VL1                     
+	              ,M30_VL2                     
+	              ,M30_VL3                     
+	              ,H24_DT                      
+	              ,H24_VL1                     
+	              ,H24_VL2                     
+	              ,H24_VL3                     
+	              ,DATA_REGDT                  
+	              ,DATA_REGNT
+	              ,NC_YN                
+        ) VALUES(
+	               #corpCd#
+	              ,#rsNo#
+	              ,#rsjNo#
+	              ,#mtlNo#
+	              ,#mtlDsp#
+	              ,#brsjNo#
+			      ,CONVERT(NVARCHAR(10), GETDATE(), 23)
+	              ,0
+	              ,0
+	              ,0
+	              ,CONVERT(NVARCHAR(10), GETDATE(), 23)
+	              ,0
+	              ,0
+	              ,0
+	              ,GETDATE()
+	              ,#dataRegnt#
+	              ,#ncYn#
+        )
+	    ]]>
+    </insert>
+      <!-- 피부자극결과  CR3100M 테이블에 신규피험자 추가추가 -->
+    <insert id="AdmEch0207DAO.insertCR3100mNewAdmEch0207" parameterClass="cr3100mVO">
+
+	    <![CDATA[
+	       INSERT  CR3100M(
+	               CORP_CD                     
+	              ,RS_NO                       
+	              ,RSJ_NO
+	              ,MTL_NO
+	              ,MTL_DSP                     
+	              ,BRSJ_NO                     
+	              ,M30_DT                      
+	              ,M30_VL1                     
+	              ,M30_VL2                     
+	              ,M30_VL3                     
+	              ,H24_DT                      
+	              ,H24_VL1                     
+	              ,H24_VL2                     
+	              ,H24_VL3                     
+	              ,DATA_REGDT                  
+	              ,DATA_REGNT
+	              ,MRS_NO
+	              ,NC_YN                 
+        ) VALUES(
+	               #corpCd#
+	              ,#rsNo#
+	              ,#rsjNo#
+	              ,#mtlNo#
+	              ,#mtlDsp#
+	              ,#brsjNo#
+			      ,CONVERT(NVARCHAR(10), GETDATE(), 23)
+	              ,0
+	              ,0
+	              ,0
+	              ,CONVERT(NVARCHAR(10), GETDATE(), 23)
+	              ,0
+	              ,0
+	              ,0
+	              ,GETDATE()
+	              ,#dataRegnt#
+	              ,#mrsNo#
+	              ,#ncYn#
+        )
+	    ]]>
+    </insert>
+    <!-- 피부자극결과 수정 -->
+    <update id="AdmEch0207DAO.updateAdmEch0207" parameterClass="cr3110mVO">
+    /* AdmEch0207DAO.updateAdmEch0207 */
+    <![CDATA[
+        UPDATE  CR3110M
+        
+        SET     M30_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                     
+              , M30_VL1                     = #m30Vl1#                                              
+              , H24_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                 
+              , H24_VL1                     = #h24Vl1#                                                  
+              , DATA_REGDT                  = GETDATE()             
+              , DATA_REGNT                  = #dataRegnt#                   
+        
+        WHERE   BRSJ_NO	= #brsjNo#
+        AND		RS_NO 	= #rsNo#
+        AND     MTL_DSP = #mtlDsp#
+    ]]>
+    </update>
+    
+    <!-- 피부자극결과 CR3100M 수정 -->
+    <update id="AdmEch0207DAO.updateCR3100mAdmEch0207" parameterClass="cr3100mVO">
+    /* AdmEch0207DAO.updateCR3100mAdmEch0207 */
+            <!-- UPDATE  CR3100M
+        
+        SET     M30_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                     
+              , M30_VL1                     = #m30Vl1#                                              
+              , H24_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                 
+              , H24_VL1                     = #h24Vl1#                                                  
+              , DATA_REGDT                  = GETDATE()             
+              , DATA_REGNT                  = #dataRegnt#                   
+        
+        WHERE   BRSJ_NO	= #brsjNo#
+        AND     MTL_DSP = #mtlDsp# -->
+    <![CDATA[
+        UPDATE  CR3100M
+        
+        SET     M30_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                     
+              , M30_VL1                     = #m30Vl1#                                              
+              , H24_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                 
+              , H24_VL1                     = #h24Vl1#                                                  
+              , DATA_REGDT                  = GETDATE()             
+              , DATA_REGNT                  = #dataRegnt#                   
+        
+        FROM CR3100M A 
+		 WHERE CORP_CD 	= #corpCd#
+		 AND MTL_DSP 	= #mtlDsp#
+		 AND CONCAT(LEFT(BRSJ_NO, CHARINDEX('-', BRSJ_NO)-1),'-',RIGHT(BRSJ_NO, CHARINDEX('-', REVERSE(BRSJ_NO))-1)) = #brsjNo#
+		 AND RS_NO IN
+		 (
+		 SELECT B.RS_NO 
+		 FROM RS1010M A
+		 INNER JOIN RS1000M B
+		 ON B.CORP_CD 		= A.CORP_CD 
+		 AND B.MRS_NO 		= A.RS_NO 
+		 INNER JOIN RS1040M C 
+		 ON C.CORP_CD 		= A.CORP_CD 
+		 AND C.RS_NO 		= B.RS_NO
+		 AND C.MTL_DSP 		= #mtlDsp#
+		 WHERE A.CORP_CD	= #corpCd# 
+		 AND A.RS_NO 		= #rsNo#)
+        
+    ]]>
+    </update>
+    
+	<!-- 피부자극평가 결과 조회 연구 상세 -->
+ 	<select id="Ech0207DAO.selectEch0207RsSeqSsResultList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0207DAO.selectEch0207RsSeqSsResultList */
+	<![CDATA[
+		SELECT A.CORP_CD 		AS corpCd 
+				, A.RS_NO		AS rsNo  
+				, '999999'      AS rsjNo 
+				, '1'			AS mtlNo 
+				, A.MTL_DSP		AS mtlDsp 
+				, B.RSI_NO		AS brsjNo
+				, A.MRS_NO 		AS mrsNo
+				, A.MTL_NO 		AS mtlNo 
+		FROM RS1040M A
+		INNER JOIN RS2010M C 
+		ON C.CORP_CD 	= A.CORP_CD 
+		AND C.RS_NO 	= A.MRS_NO
+		INNER JOIN RS2000M B 
+		ON B.CORP_CD 	= A.CORP_CD
+		AND B.RS_NO 	= A.RS_NO 
+		AND B.MRSI_NO 	= C.RSI_NO
+		AND B.MRSI_NO IN 
+			(SELECT DISTINCT RSI_NO
+				FROM CR3010M A2
+				INNER JOIN CR2100M B2
+				ON B2.CORP_CD = A2.CORP_CD 
+				AND B2.TEMP_NO = A2.TEMP_NO 
+				AND B2.TEMP_TYPE = '4080'
+				WHERE A2.CORP_CD = #corpCd#
+				AND A2.RS_NO	 = #rsNo#)
+		WHERE A.CORP_CD = #corpCd#
+		AND A.MRS_NO 	= #rsNo#
+		AND A.MTL_DSP   = #mtlDsp#
+	]]>
+	</select>
+	
+
+	<!-- 피부자극결과 등록(CR3100M) 연구상세 -->
+    <insert id="Ech0207DAO.insertEch0207RsSeqSsResult" parameterClass="cr3100mVO">
+    /* Ech0207DAO.insertEch0207RsSeqSsResult */
+    <![CDATA[
+    	INSERT INTO CR3100M(
+    		CORP_CD
+			, RS_NO
+			, RSJ_NO
+			, MTL_NO
+			, MTL_DSP
+			, BRSJ_NO
+			, M30_DT
+			, M30_VL1
+			, M30_VL2
+			, M30_VL3
+			, H24_DT
+			, H24_VL1
+			, H24_VL2
+			, H24_VL3
+			, DATA_REGDT
+			, DATA_REGNT
+			, MRS_NO
+			, NC_YN
+    	)VALUES(
+    		  #corpCd#
+			, #rsNo#
+			, #rsjNo#
+			, #mtlNo#
+			, #mtlDsp#
+			, #brsjNo#
+			, CONVERT(NVARCHAR(10), GETDATE(), 23)
+			, #m30Vl1#
+			, #m30Vl2#
+			, #m30Vl3#
+			, CONVERT(NVARCHAR(10), GETDATE(), 23)
+			, #h24Vl1#
+			, #h24Vl2#
+			, #h24Vl3#
+			, GETDATE()
+			, #dataRegnt#
+			, #mrsNo#
+			, #ncYn#
+    	)
+    ]]>
+    </insert>
+    
+    <!-- 피부자극결과 연구상세 수정 -->
+    <update id="Ech0207DAO.updateEch0207RsSeqSsResult" parameterClass="cr3100mVO">
+    /* Ech0207DAO.updateEch0207RsSeqSsResult */
+    <![CDATA[
+        UPDATE  CR3100M
+        
+        SET     M30_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                     
+              , M30_VL1                     = #m30Vl1#                                              
+              , H24_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                 
+              , H24_VL1                     = #h24Vl1#                                                  
+              , DATA_REGDT                  = GETDATE()             
+              , DATA_REGNT                  = #dataRegnt#
+        WHERE   BRSJ_NO	= #brsjNo#
+        AND		RS_NO 	= #rsNo#
+        AND		RSJ_NO 	= #rsjNo#
+        AND     MTL_DSP = #mtlDsp#
+        AND     BRSJ_NO = #brsjNo#
+    ]]>
+    </update>
+    
+	<!--  피부자극결과 연구상세 조회 -->
+	<select id="Ech0207DAO.selectEch0207RsSeqResult" parameterClass="egovMap" resultClass="cr3100mVO">
+    /* Ech0207DAO.selectEch0207RsSeqResult */
+    <![CDATA[
+		SELECT CORP_CD			AS corpCd
+				, RS_NO			AS rsNo
+				, RSJ_NO		AS rsjNo
+				, MTL_NO		AS mtlNo
+				, MTL_DSP		AS mtlDsp
+				, BRSJ_NO		AS brsjNo
+				, M30_DT		AS m30Dt
+				, M30_VL1		AS m30Vl1
+				, M30_VL2		AS m30Vl2
+				, M30_VL3		AS m30Vl3
+				, H24_DT		AS h24Dt
+				, H24_VL1		AS h24Vl1
+				, H24_VL2		AS h24Vl2
+				, H24_VL3		AS h24Vl3
+				, DATA_REGDT	AS dataRegdt
+				, DATA_REGNT	AS dataRegnt
+				, MRS_NO		AS mrsNo
+				, NC_YN			AS ncYn
+		FROM CR3100M
+		WHERE CORP_CD	= #corpCd# 
+		AND RS_NO		= #rsNo# 
+		AND RSJ_NO		= #rsjNo# 
+		AND MTL_DSP		= #mtlDsp# 
+		AND BRSJ_NO		= #brsjNo#        
+    ]]>
+    </select> 
+    
+    <!--  피부자극결과 연구 조회 -->
+	<select id="Ech0207DAO.selectEch0207RsSeqResultChkCnt" parameterClass="egovMap" resultClass="int">
+    /* Ech0207DAO.selectEch0207RsSeqResultChkCnt */
+    <![CDATA[
+		SELECT	COUNT(*)
+		FROM CR3100M
+		WHERE CORP_CD	= #corpCd# 
+		AND RS_NO		= #rsNo# 
+		AND RSJ_NO		= #rsjNo# 
+		AND MTL_DSP		= #mtlDsp# 
+		AND BRSJ_NO		= #brsjNo#        
+    ]]>
+    </select> 
+    
+    
+    
+    
+    <!-- 피부자극평가 결과 조회 연구 -->
+ 	<select id="Ech0207DAO.selectEch0207RsSsResultList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0207DAO.selectEch0207RsSsResultList */
+	<![CDATA[
+		SELECT A.CORP_CD		AS corpCd  
+				, A.RS_NO		AS rsNo  
+				, A.RSJ_NO		AS rsjNo  
+				, '1'			AS mtlNo		
+				, C.QUES_CON	AS mtlDsp  
+				, C.QUES_ABB	AS mtlDsp2
+				, A.RSI_NO		AS brsjNo 
+				, B.SR_TYPE		AS srType		
+				, A.ANSW_NUM	AS answNum  
+				, Z2.NC_YN		AS ncYn
+		FROM CR3010M A
+		INNER JOIN CR2100M B
+		ON B.CORP_CD 	= A.CORP_CD 
+		AND B.TEMP_NO 	= A.TEMP_NO 
+		AND B.TEMP_TYPE = '4080'
+		INNER JOIN CR2050M C 
+		ON C.CORP_CD  	= A.CORP_CD 
+		AND C.TEMP_NO 	= A.TEMP_NO 
+		AND C.QUES_NO 	= A.QUES_NO
+		INNER JOIN 				
+				(SELECT Z.MTL_DSP
+				 		, Z.NC_YN
+						, Z.MRS_NO				 
+				FROM (		
+				SELECT DISTINCT MTL_DSP, NC_YN, MRS_NO 
+				FROM RS1040M A 
+				WHERE MRS_NO = #rsNo#
+				AND NC_YN = 'Y'
+				UNION ALL 
+				SELECT MTL_DSP, NC_YN, MRS_NO 
+				FROM RS1040M A 
+				WHERE MRS_NO = #rsNo#
+				AND NC_YN = 'N') Z) Z2
+		ON Z2.MTL_DSP = C.QUES_CON 
+		AND Z2.MRS_NO = #rsNo#
+		WHERE A.CORP_CD = #corpCd#
+		AND A.RS_NO 	= #rsNo#
+		AND A.ANSW_NUM <> 'A'
+		ORDER BY A.CORP_CD, A.RS_NO, A.RSJ_NO, C.QUES_CON, A.RSI_NO, B.SR_TYPE		
+
+	]]>
+	</select>
+    
+    <!--  피부자극결과 연구 조회 CR3110M-->
+	<select id="Ech0207DAO.selectEch0207RsResult" parameterClass="egovMap" resultClass="cr3110mVO">
+    /* Ech0207DAO.selectEch0207RsResult */
+    <![CDATA[
+		SELECT CORP_CD			AS corpCd
+				, RS_NO			AS rsNo
+				, RSJ_NO		AS rsjNo
+				, MTL_NO		AS mtlNo
+				, MTL_DSP		AS mtlDsp
+				, BRSJ_NO		AS brsjNo
+				, M30_DT		AS m30Dt
+				, M30_VL1		AS m30Vl1
+				, M30_VL2		AS m30Vl2
+				, M30_VL3		AS m30Vl3
+				, H24_DT		AS h24Dt
+				, H24_VL1		AS h24Vl1
+				, H24_VL2		AS h24Vl2
+				, H24_VL3		AS h24Vl3
+				, DATA_REGDT	AS dataRegdt
+				, DATA_REGNT	AS dataRegnt
+				, NC_YN			AS ncYn
+		FROM CR3110M
+		WHERE CORP_CD	= #corpCd# 
+		AND RS_NO		= #rsNo# 
+		AND RSJ_NO		= #rsjNo# 
+		AND MTL_DSP		= #mtlDsp# 
+		AND BRSJ_NO		= #brsjNo#        
+    ]]>
+    </select> 
+    
+    <!-- 피부자극결과 연구 수정 CR3110M -->
+    <update id="Ech0207DAO.updateEch0207RsSsResult" parameterClass="cr3110mVO">
+    /* Ech0207DAO.updateEch0207RsSsResult */
+    <![CDATA[
+        UPDATE  CR3110M        
+        SET     M30_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                     
+              , M30_VL1                     = #m30Vl1#                                              
+              , H24_DT                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                 
+              , H24_VL1                     = #h24Vl1#                                                  
+              , DATA_REGDT                  = GETDATE()             
+              , DATA_REGNT                  = #dataRegnt#
+        WHERE   BRSJ_NO	= #brsjNo#
+        AND		RS_NO 	= #rsNo#
+        AND		RSJ_NO 	= #rsjNo#
+        AND     MTL_DSP = #mtlDsp#
+        AND     BRSJ_NO = #brsjNo#
+    ]]>
+    </update>
+    
+    <!-- 피부자극결과 등록(CR3110M) 연구 -->
+    <insert id="Ech0207DAO.insertEch0207RsSsResult" parameterClass="cr3110mVO">
+    /* Ech0207DAO.insertEch0207RsSsResult */
+    <![CDATA[
+    	INSERT INTO CR3110M(
+    		CORP_CD
+			, RS_NO
+			, RSJ_NO
+			, MTL_NO
+			, MTL_DSP
+			, BRSJ_NO
+			, M30_DT
+			, M30_VL1
+			, M30_VL2
+			, M30_VL3
+			, H24_DT
+			, H24_VL1
+			, H24_VL2
+			, H24_VL3
+			, DATA_REGDT
+			, DATA_REGNT
+			, NC_YN
+    	)VALUES(
+    		  #corpCd#
+			, #rsNo#
+			, #rsjNo#
+			, #mtlNo#
+			, #mtlDsp#
+			, #brsjNo#
+			, CONVERT(NVARCHAR(10), GETDATE(), 23)
+			, #m30Vl1#
+			, #m30Vl2#
+			, #m30Vl3#
+			, CONVERT(NVARCHAR(10), GETDATE(), 23)
+			, #h24Vl1#
+			, #h24Vl2#
+			, #h24Vl3#
+			, GETDATE()
+			, #dataRegnt#
+			, #ncYn#
+    	)
+    ]]>
+    </insert>
+    
+    <!--  피부자극결과 연구 조회 -->
+	<select id="Ech0207DAO.selectEch0207ResultChkCnt" parameterClass="egovMap" resultClass="int">
+    /* Ech0207DAO.selectEch0207ResultChkCnt */
+    <![CDATA[
+		SELECT COUNT(*)
+		FROM CR3110M
+		WHERE CORP_CD	= #corpCd# 
+		AND RS_NO		= #rsNo# 
+		AND RSJ_NO		= #rsjNo# 
+		AND MTL_DSP		= #mtlDsp# 
+		AND BRSJ_NO		= #brsjNo#        
+    ]]>
+    </select> 
+    
+    <select id="Ech0207DAO.selectEch0207ExcelResult" parameterClass="searchVO" resultClass="egovMap">    
+	<![CDATA[
+		SELECT 	
+				A.CORP_CD		AS corpCd  
+				, A.RS_NO		AS rsNo
+				, B.RS_CD		AS rsCd
+				, B.RS_NAME 	AS rsName 
+				, BRSJ_NO		AS brsjNo  
+				, MTL_DSP		AS mtlDsp
+				, CONCAT(B.RS_NO1+B.RS_NO2,'-',A.BRSJ_NO) AS rsiNo 
+				, M30_VL1		AS m30Vl1  
+				, H24_VL1		AS h24Vl1
+				, A.NC_YN 		AS ncYn 
+				, CONVERT(int, STUFF(MTL_DSP, 1, 1, '')) 	  AS ord
+		FROM CR3110M A
+		INNER JOIN RS1010M B 
+		ON B.CORP_CD 	= A.CORP_CD 
+		AND B.RS_NO 	= A.RS_NO 
+		WHERE A.CORP_CD 	= #corpCd#
+		AND A.RS_NO 		= #rsNo#
+		ORDER BY A.CORP_CD, A.RS_NO, BRSJ_NO, NC_YN DESC, ord						 
+	]]> 
+    </select>
+    
+    
+    
+    <!-- 피부자극결과 종료 **************************************** -->
+    
+</sqlMap>

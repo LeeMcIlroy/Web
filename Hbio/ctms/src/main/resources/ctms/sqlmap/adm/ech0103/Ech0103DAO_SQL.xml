@@ -1,0 +1,906 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 연구대상자(예약관리)******************************************************************************************************************************************* -->
+
+        
+	<sql id="where_rs2000mMt">
+		FROM 	RS2010M B
+		INNER 	JOIN RS1010M A
+		ON 		A.CORP_CD 		= B.CORP_CD 
+		AND 	A.RS_NO 		= B.RS_NO
+		AND 	A.DEL_YN 		= 'N'
+		AND 	A.RSST_CLS IN ('10', '20')
+		AND 	DATA_LOCK_YN 	= 'N'
+		INNER 	JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CT2030'
+        AND     K.CLS_CAT       = '3'
+        AND     K.CD            = A.RS_NO3
+		INNER 	JOIN SB1000M J
+        ON      J.CORP_CD       = B.CORP_CD
+        AND     J.RSJ_NO     = B.RSJ_NO         
+                INNER JOIN CM4000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.CD_CLS        = 'CT2050'
+        AND     G.CLS_CAT       = '3'
+        AND     G.CD            = A.RSST_CLS
+        LEFT OUTER join (SELECT 
+	    						DISTINCT SUBSTRING(a.RS_CD,1,14) AS RS_CD ,
+	    						STUFF(( 
+	        							SELECT 
+	            						',' +VEND_NAME 
+	        							FROM 
+	           							 RS1000M b
+	           							 INNER JOIN CT2000M b1
+	           							 ON b1.CORP_CD = b.CORP_CD
+	           							 AND b1.VEND_NO = b.VEND_NO 
+								        WHERE
+								        	b.CORP_CD = A.CORP_CD
+								            AND b.RS_CD LIKE CONCAT(SUBSTRING(A.RS_CD,1,14),'%')
+								            FOR XML PATH('') ),1,1,'') AS VEND 
+								FROM 
+								    RS1000M a) U
+			ON U.RS_CD LIKE CONCAT(SUBSTRING(A.RS_CD,1,14),'%')        
+        <dynamic prepend="INNER JOIN RS1020M N">
+        	<isNotEmpty property="branchCd" prepend="ON">
+        		ON		N.CORP_CD		= A.CORP_CD
+		        AND		N.RS_NO			= A.RS_NO
+		        AND		N.BRANCH_CD		= #branchCd#
+        	</isNotEmpty>
+		</dynamic>
+      <!-- LEFT OUTER join (SELECT 
+    						DISTINCT a.RSJ_NO ,
+    						STUFF(( 
+        							SELECT 
+            						',' +CONCAT(RESR_NO,',',RESR_DT,' ', RESR_HR,':',RESR_MM) 
+        							FROM 
+           							 RS4000M b 
+							        WHERE
+							        	b.CORP_CD = B.CORP_CD 
+							            AND b.RSJ_NO = a.RSJ_NO
+							            AND b.RS_NO = a.RS_NO
+							            FOR XML PATH('') ),1,1,'') AS NAME 
+							FROM 
+							    RS4000M a) Y
+		ON Y.RSJ_NO = B.RSJ_NO -->
+		<dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition8" prepend="AND">
+	        		(A.RS_CD = #searchCondition8#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_STDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_ENDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty property="searchCondition5" prepend="AND">
+	        		(A.RS_NO3 = #searchCondition5#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.RSST_CLS = #searchCondition6#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							( J.RSJ_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_CD LIKE CONCAT ('%',#searchWord#,'%')
+							OR H.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 대상자명 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(J.RSJ_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구명칭 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 고객사명 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(H.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구코드 -->
+		        	<isEqual property="searchCondition3" compareValue="5">
+			        	<isNotEmpty property="searchWord">
+							(A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+	
+	<!-- 예약관리 리스트 -->
+	<select id="Ech0103DAO.selectEch0103List" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0103DAO.selectEch0103List */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+			SELECT  
+                A.CORP_CD                     AS corpCd
+              , A.RS_NO                       AS rsNo              
+              , A.BRANCH_CD                   AS branchCd        
+              , A.RS_CD         	          AS rsCd            
+              , A.REG_DT                      AS regDt             
+              , A.RS_PTC                      AS rsPtc          
+              , A.RS_PPS    	              AS rsPps         
+              , A.RS_NO3                      AS rsNo3
+              , K.CD_NAME                     AS rsNo3Nm
+              , A.RS_SCNT                     AS rsScnt          
+              , A.RSST_CLS                    AS rsStCls          
+              , G.CD_NAME                     AS rsStClsNm        
+              , A.RS_NAME                     AS rsName            
+              , A.IRBSM_YN                    AS irbsmYn       
+              , A.DEL_YN                      AS delYn
+              , B.RSJ_NO					  AS rsjNo	
+              , J.RSJ_NAME                    AS rsjName
+              , J.BR_DT                       AS brDt
+              , U.VEND         		          AS vendName
+              , FLOOR(CAST(DATEDIFF(DAY,J.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age   
+              , J.HP_NO 					  AS hpNo
+              , J.GEN_YN 					  AS genYn
+              , CASE J.GEN_YN 
+              		WHEN '1' THEN '남'
+              		WHEN '2' THEN '여'
+              		ELSE '미정'
+              	END 						  AS genYnNm
+              , J.EMAIL 					  AS email
+              , (SELECT COUNT(*) 
+              		FROM RS4000M X
+              		WHERE X.CORP_CD = B.CORP_CD 
+              		AND X.RS_NO 	= B.RS_NO 
+              		AND X.RSJ_NO 	= B.RSJ_NO) AS tmtCnt
+              , LOWER(A.RS_NO) + B.RSJ_NO as mapKey 
+              , (SELECT COUNT(*)
+              		FROM RS1000M X2
+              		WHERE X2.CORP_CD = B.CORP_CD 	
+              		AND X2.RS_CD LIKE CONCAT(B.RS_NO,'%')) AS rsCnt
+		]]>
+		<include refid="where_rs2000mMt" />	
+			<![CDATA[
+			AND B.CFM_YN = 'Y'
+			AND B.RSI_NO3 IS NOT NULL 
+			]]>		
+		
+		<![CDATA[				
+			) Z 
+			ORDER BY Z.rsNo DESC
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY			
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<sql id="where_rs2000mMtExcel">
+		FROM 	RS2010M B
+		INNER 	JOIN RS1010M A
+		ON 		A.CORP_CD 		= B.CORP_CD 
+		AND 	A.RS_NO 		= B.RS_NO
+		AND 	A.DEL_YN 		= 'N'
+		AND 	A.RSST_CLS IN ('10', '20')
+		AND 	DATA_LOCK_YN 	= 'N'
+		INNER 	JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CT2030'
+        AND     K.CLS_CAT       = '3'
+        AND     K.CD            = A.RS_NO3
+		INNER 	JOIN SB1000M J
+        ON      J.CORP_CD       = B.CORP_CD
+        AND     J.RSJ_NO     = B.RSJ_NO         
+                INNER JOIN CM4000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.CD_CLS        = 'CT2050'
+        AND     G.CLS_CAT       = '3'
+        AND     G.CD            = A.RSST_CLS
+        INNER JOIN RS4000M K1	
+		ON 		K1.CORP_CD 		= A.CORP_CD 
+		AND 	K1.RS_NO 		= A.RS_NO
+		AND 	K1.RSJ_NO 		= B.RSJ_NO
+		INNER 	JOIN CM4000M K2
+        ON      K2.CORP_CD      = A.CORP_CD
+        AND     K2.CD_CLS       = 'CT1030'
+        AND     K2.CLS_CAT      = '3'
+        AND     K2.CD           = K1.MT_ST 
+        LEFT OUTER join (SELECT 
+	    						DISTINCT SUBSTRING(a.RS_CD,1,14) AS RS_CD ,
+	    						STUFF(( 
+	        							SELECT 
+	            						',' +VEND_NAME 
+	        							FROM 
+	           							 RS1000M b
+	           							 INNER JOIN CT2000M b1
+	           							 ON b1.CORP_CD = b.CORP_CD
+	           							 AND b1.VEND_NO = b.VEND_NO 
+								        WHERE
+								        	b.CORP_CD = A.CORP_CD
+								            AND b.RS_CD LIKE CONCAT(SUBSTRING(A.RS_CD,1,14),'%')
+								            FOR XML PATH('') ),1,1,'') AS VEND 
+								FROM 
+								    RS1000M a) U
+			ON U.RS_CD LIKE CONCAT(SUBSTRING(A.RS_NO,1,14),'%')        
+        <dynamic prepend="INNER JOIN RS1020M N">
+        	<isNotEmpty property="branchCd" prepend="ON">
+        		ON		N.CORP_CD		= A.CORP_CD
+		        AND		N.RS_NO			= A.RS_NO
+		        AND		N.BRANCH_CD		= #branchCd#
+        	</isNotEmpty>
+		</dynamic>
+      <!-- LEFT OUTER join (SELECT 
+    						DISTINCT a.RSJ_NO ,
+    						STUFF(( 
+        							SELECT 
+            						',' +CONCAT(RESR_NO,',',RESR_DT,' ', RESR_HR,':',RESR_MM) 
+        							FROM 
+           							 RS4000M b 
+							        WHERE
+							        	b.CORP_CD = B.CORP_CD 
+							            AND b.RSJ_NO = a.RSJ_NO
+							            AND b.RS_NO = a.RS_NO
+							            FOR XML PATH('') ),1,1,'') AS NAME 
+							FROM 
+							    RS4000M a) Y
+		ON Y.RSJ_NO = B.RSJ_NO -->
+		<dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition8" prepend="AND">
+	        		(A.RS_CD = #searchCondition8#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_STDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_ENDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty property="searchCondition5" prepend="AND">
+	        		(A.RS_NO3 = #searchCondition5#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.RSST_CLS = #searchCondition6#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							( J.RSJ_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_CD LIKE CONCAT ('%',#searchWord#,'%')
+							OR H.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 대상자명 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(J.RSJ_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구명칭 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 고객사명 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(H.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구코드 -->
+		        	<isEqual property="searchCondition3" compareValue="5">
+			        	<isNotEmpty property="searchWord">
+							(A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+
+
+	<!-- 예약관리 엑셀 리스트 -->
+	<select id="Ech0103DAO.selectEch0103Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0103DAO.selectEch0103Excel */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+			SELECT  
+                A.CORP_CD                     AS corpCd
+              , A.RS_NO                       AS rsNo              
+              , A.BRANCH_CD                   AS branchCd        
+              , A.RS_CD         	          AS rsCd            
+              , A.REG_DT                      AS regDt             
+              , A.RS_PTC                      AS rsPtc          
+              , A.RS_PPS    	              AS rsPps         
+              , A.RS_NO3                      AS rsNo3
+              , K.CD_NAME                     AS rsNo3Nm
+              , A.RS_SCNT                     AS rsScnt          
+              , A.RSST_CLS                    AS rsStCls          
+              , G.CD_NAME                     AS rsStClsNm        
+              , A.RS_NAME                     AS rsName            
+              , A.IRBSM_YN                    AS irbsmYn       
+              , A.DEL_YN                      AS delYn
+              , B.RSJ_NO					  AS rsjNo	
+              , J.RSJ_NAME                    AS rsjName
+              , J.BR_DT                       AS brDt
+              , U.VEND         		          AS vendName
+              , FLOOR(CAST(DATEDIFF(DAY,J.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age   
+              , J.HP_NO 					  AS hpNo
+              , J.GEN_YN 					  AS genYn
+              , CASE J.GEN_YN 
+              		WHEN '1' THEN '남'
+              		WHEN '2' THEN '여'
+              		ELSE '미정'
+              	END 						  AS genYnNm
+              , J.EMAIL 					  AS email
+              , (SELECT COUNT(*) 
+              		FROM RS4000M X
+              		WHERE X.CORP_CD = B.CORP_CD 
+              		AND X.RS_NO 	= B.RS_NO 
+              		AND X.RSJ_NO 	= B.RSJ_NO) AS tmtCnt
+              , LOWER(A.RS_NO) + B.RSJ_NO as mapKey 
+              , (SELECT COUNT(*)
+              		FROM RS1000M X2
+              		WHERE X2.CORP_CD = B.CORP_CD 	
+              		AND X2.RS_CD LIKE CONCAT(B.RS_NO,'%')) AS rsCnt
+              , K1.RESR_DT 						AS resrDt
+              , REPLICATE('0',2-LEN(K1.RESR_HR))+CONVERT(NVARCHAR,K1.RESR_HR) AS resrHr
+	          , REPLICATE('0',2-LEN(K1.RESR_MM))+CONVERT(NVARCHAR,K1.RESR_MM) AS resrMm
+              , K1.MT_ST 						AS mtSt
+              , K2.CD_NAME 						AS mtStName		 	
+				]]>
+		<include refid="where_rs2000mMtExcel" />
+		<![CDATA[
+			AND B.CFM_YN = 'Y'
+			AND B.RSI_NO3 IS NOT NULL 
+			]]>		
+		
+		<![CDATA[
+				
+			) Z 
+			ORDER BY Z.rsNo DESC
+			
+		]]>	
+	</select>
+
+
+	<!-- 예약관리 cnt -->
+	<select id="Ech0103DAO.selectEch0103ListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ech0103DAO.selectEch0103ListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+	]]>
+		<include refid="where_rs2000mMt" />
+		<![CDATA[
+			AND B.CFM_YN = 'Y'
+			AND B.RSI_NO3 IS NOT NULL 
+			]]>	
+	</select>
+
+	<!-- 예약관리 상세보기 -->
+	<select id="Ech0103DAO.selectEch0103View" parameterClass="rs4000mVO"
+		resultClass="rs4000mVO">
+		/* Ech0103DAO.selectEch0103View */
+	<![CDATA[
+     SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RESR_NO                     AS resrNo            
+              , A.REG_DT                      AS regDt             
+              , A.MT_ST                       AS mtSt              
+              , F.CD_NAME                     AS mtStNm            
+              , A.RESR_DT                     AS resrDt 
+              , REPLICATE('0',2-LEN(A.RESR_HR))+CONVERT(NVARCHAR,A.RESR_HR) AS resrHr
+	          , REPLICATE('0',2-LEN(A.RESR_MM))+CONVERT(NVARCHAR,A.RESR_MM) AS resrMm            
+              , A.MT_CNT                      AS mtCnt             
+              , A.RS_NO                       AS rsNo              
+              , ISNULL(G.RS_NAME, '')         AS rsName
+              , G.RS_CD						  AS rsCd	            
+              , A.RSJ_NO                      AS rsjNo             
+              , H.RSJ_NAME                    AS rsjName           
+              , A.RSI_NO                      AS rsiNo
+              , A.SCR_YN                      AS scrYn
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt         
+        FROM    RS4000M A
+                INNER JOIN CM4000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.CD_CLS        = 'CT1030'
+        AND     F.CLS_CAT       = '3'
+        AND     F.CD            = A.MT_ST               
+                LEFT JOIN RS1010M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.RS_NO         = A.RS_NO               
+                INNER JOIN SB1000M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.RSJ_NO        = A.RSJ_NO              
+                LEFT JOIN RS2000M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.RSI_NO        = A.RSI_NO              
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RESR_NO       = #resrNo#              
+        ORDER   BY
+                A.CORP_CD
+              , A.RESR_NO
+	]]>
+	</select>
+
+	<!-- 예약관리 삭제 -->
+	<delete id="Ech0103DAO.deleteEch0103" parameterClass="string">
+		/* Ech0103DAO.deleteEch0103 */
+	<![CDATA[
+		DELETE
+        FROM
+                RS4000M
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     RESR_NO         = #resrNo#    
+	]]>
+	</delete>
+	
+	<!-- 예약관리 추가 -->
+	<insert id="Ech0103DAO.insertEch0103" parameterClass="rs4000mVO">
+	<selectKey keyProperty="resrNo" resultClass="string" type="pre">
+		DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                  
+        DECLARE @V_RECM_DT                  NVARCHAR(0010) = #resrDt#                                                  
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_RECM_DT, 1, 4)                                                  
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.RESR_NO), @BDT04 + '0000')) + 1) as resrNo     
+        FROM    RS4000M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.RESR_DT, 1, 4)  = @BDT04
+	</selectKey>
+	/* Ech0103DAO.insertEch0103 */
+	<![CDATA[
+		    INSERT  RS4000M(
+                CORP_CD                     
+              , RESR_NO                     
+              , REG_DT                      
+              , MT_ST                       
+              , RESR_DT                     
+              , RESR_HR                     
+              , RESR_MM                     
+              , MT_CNT                      
+              , RS_NO                       
+              , RSJ_NO                      
+              , RSI_NO                      
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #resrNo#
+              , CONVERT(NVARCHAR(10), GETDATE(), 23)
+              , #mtSt#
+              , #resrDt#
+              , #resrHr#
+              , #resrMm#
+              , #mtCnt#
+              , #rsNo#
+              , #rsjNo#
+              , #rsiNo#
+              , GETDATE()
+              , #dataRegnt#
+        )
+	]]>
+	</insert>
+
+	<!-- 예약관리 수정 -->
+	<update id="Ech0103DAO.updateEch0103" parameterClass="rs4000mVO">
+		/* Ech0103DAO.updateEch0103 */
+	<![CDATA[
+	    UPDATE
+                RS4000M
+        SET
+                REG_DT                      = #regDt#                       
+              , MT_ST                       = #mtSt#                        
+              , RESR_DT                     = #resrDt#                      
+              , RESR_HR                     = #resrHr#                      
+              , RESR_MM                     = #resrMm#                      
+              , MT_CNT                      = #mtCnt#                       
+              , RS_NO                       = #rsNo#                        
+              , RSJ_NO                      = #rsjNo#                       
+              , RSI_NO                      = #rsiNo#                       
+              , DATA_REGDT                  = GETDATE()
+              , DATA_REGNT                  = #dataRegnt#                   
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     RESR_NO         = #resrNo#              
+	]]>
+	</update>
+	
+	<insert id="Ech0103DAO.insertEch1003AjaxSaveStep" parameterClass="egovMap">
+	/* Ech0205DAO.insertEch1003AjaxSaveStep */
+	<selectKey keyProperty="resrNo" resultClass="string" type="pre">
+		DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                  
+        DECLARE @V_RECM_DT                  NVARCHAR(0010) = #resrDt#                                                  
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_RECM_DT, 1, 4)                                                  
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.RESR_NO), @BDT04 + '0000')) + 1) as resrNo     
+        FROM    RS4000M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.RESR_DT, 1, 4)  = @BDT04
+	</selectKey>
+	/* Ech0103DAO.insertEch0103AjaxSaveStep */
+	<![CDATA[
+		    INSERT  RS4000M(
+                CORP_CD                     
+              , RESR_NO                     
+              , REG_DT                      
+              , MT_ST                       
+              , RESR_DT                     
+              , RESR_HR                     
+              , RESR_MM                     
+              , MT_CNT                      
+              , RS_NO                       
+              , RSJ_NO                      
+              , RSI_NO                      
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #resrNo#
+              , CONVERT(NVARCHAR(10), GETDATE(), 23)
+              , #mtSt#
+              , #resrDt#
+              , #resrHr#
+              , #resrMm#
+              , #mtCnt#
+              , #rsNo#
+              , #rsjNo#
+              , #rsiNo#
+              , GETDATE()
+              , #dataRegnt#
+        )
+	]]>
+		
+	</insert>
+	
+	<!-- 예약관리 수정 -->
+	<update id="Ech0103DAO.updateEch1003AjaxSaveStep" parameterClass="egovMap">
+		/* Ech0103DAO.updateEch0103 */
+	<![CDATA[
+	    UPDATE
+                RS4000M
+        SET
+          	  MT_ST                       = #mtSt#                        
+              , RESR_DT                     = #resrDt#                      
+              , RESR_HR                     = #resrHr#                      
+              , RESR_MM                     = #resrMm#                      
+              , MT_CNT                      = #mtCnt#                       
+              , RS_NO                       = #rsNo#                        
+              , RSJ_NO                      = #rsjNo#                       
+              , RSI_NO                      = #rsiNo#                       
+              , DATA_REGDT                  = GETDATE()
+              , DATA_REGNT                  = #dataRegnt#                   
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     RESR_NO         = #resrNo#              
+	]]>
+	</update>
+	
+	
+	
+	<!-- 연구과제-연구대상자별 예약 목록 -->
+	<select id="Ech0103DAO.selectEch0103MtList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0103DAO.selectEch0103MtList */
+	<![CDATA[
+		SELECT  
+				A.CORP_CD					  AS corpCd	                     
+              , A.RESR_NO                     AS resrNo            
+              , A.REG_DT                      AS regDt             
+              , A.MT_ST                       AS mtSt              
+              , F.CD_NAME                     AS mtStNm            
+              , A.RESR_DT                     AS resrDt
+              , REPLICATE('0',2-LEN(A.RESR_HR))+CONVERT(NVARCHAR,A.RESR_HR) AS resrHr
+	          , REPLICATE('0',2-LEN(A.RESR_MM))+CONVERT(NVARCHAR,A.RESR_MM) AS resrMm           
+              , A.RSJ_NO                      AS rsjNo
+        FROM    RS4000M A
+                INNER JOIN CM4000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.CD_CLS        = 'CT1030'
+        AND     F.CLS_CAT       = '3'
+        AND     F.CD            = A.MT_ST              
+        WHERE   A.CORP_CD       = #corpCd#
+        AND 	A.RSJ_NO		= #rsjNo#
+        AND 	A.RS_NO			= #rsNo#             
+        ORDER   BY
+                A.CORP_CD
+              , A.RESR_NO
+    ]]>          
+	</select>
+
+
+	<insert id="Ech0103DAO.insertEch1002AjaxSaveSms" parameterClass="egovMap">
+	/* Ech0103DAO.insertEch1002AjaxSaveSms */
+	<selectKey keyProperty="recsNo" resultClass="string" type="pre">
+		DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                  
+        DECLARE @V_RECM_DT                  NVARCHAR(0010) = #recsDt#                                                  
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_RECM_DT, 1, 4)                                                  
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.RECS_NO), @BDT04 + '0000')) + 1) as recsNo     
+        FROM    RM2000M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.RECS_DT, 1, 4)  = @BDT04
+	</selectKey>
+	/* Ech0103DAO.insertEch1002AjaxSaveSms */
+	<![CDATA[
+		    INSERT  RM2000M(
+                CORP_CD                     
+              , RECS_NO                     
+              , RECS_DT                      
+              , TSTA_CLS                       
+              , SEND_NO
+              , SEND_NAME                     
+              , RECE_NO
+              , RECE_NAME                     
+              , SMS_CLS                     
+              , CONT
+              , SENDM_CLS                      
+              , RS_NO
+              , RESR_DT
+              , RESR_HR
+              , RESR_MM
+              , SEND_DT
+              , RSJ_NO
+              , BRANCH_CD                      
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #recsNo#
+			  , #recsDt#	              
+              , #tstaCls#
+              , #sendNo#
+              , #sendName#
+              , #receNo#
+              , #receName#
+              , #smsCls#
+              , #cont#
+              , #sendmCls#
+              , #rsNo#
+              , #resrDt#
+              , #resrHr#
+              , #resrMm#
+              , GETDATE()
+              , #rsjNo#
+              , #branchCd#
+              , GETDATE()
+              , #dataRegnt#
+        )
+	]]>
+		
+	</insert>
+	
+	<!-- 예약SMS 대상 리스트 -->
+	<select id="Ech0103DAO.selectEch0103SendSmsMtList" parameterClass="egovMap" resultClass="egovMap">
+		/* Ech0103DAO.selectEch0103SendSmsMtList */
+		SELECT 
+			a.* FROM 
+			(	
+				SELECT
+					ROW_NUMBER() OVER(order by A.RESR_NO DESC) rownum  	  	
+					, A.CORP_CD			AS corpCd
+					, A.RESR_NO			AS resrNo
+					, A.RESR_DT			AS resrDt
+					, REPLICATE('0',2-LEN(A.RESR_HR))+CONVERT(NVARCHAR,A.RESR_HR) AS resrHr
+	          		, REPLICATE('0',2-LEN(A.RESR_MM))+CONVERT(NVARCHAR,A.RESR_MM) AS resrMm
+					, A.MT_ST			AS mtSt
+					, K.CD_NAME 		AS mtstNm
+					, A.RS_NO			AS rsNo
+					, B.RSJ_NO			AS rsjNo 
+					, B.RSJ_NAME		AS rsjName 
+					, B.HP_NO			AS hpNo
+					, B.EMAIL			AS email 
+					, C.RS_CD			AS rsCd
+					, CONCAT(A.RESR_DT,' ',FORMAT(A.RESR_HR,'00'),'시',FORMAT(A.RESR_MM,'00'),'분') AS resrDay 
+					, D.APPSTA_CLS		AS appstaCls
+					, L.CD_NAME			AS appstaClsNm
+				FROM RS4000M A
+				INNER JOIN SB1000M B 
+				ON B.CORP_CD = A.CORP_CD 
+				AND B.RSJ_NO = A.RSJ_NO
+				LEFT OUTER JOIN RS1010M C 
+				ON C.CORP_CD = A.CORP_CD 
+				AND C.RS_NO = A.RS_NO
+				INNER JOIN RS2010M D 
+				ON D.CORP_CD = A.CORP_CD 
+				AND D.RSJ_NO = A.RSJ_NO
+				AND D.RS_NO  = A.RS_NO
+				INNER JOIN CM4000M K  
+				ON K.CORP_CD = A.CORP_CD 
+				AND K.CD_CLS = 'CT1030'
+				AND K.CLS_CAT = '3'
+				AND K.CD = A.MT_ST
+				INNER JOIN CM4000M L  
+				ON L.CORP_CD = A.CORP_CD 
+				AND L.CD_CLS = 'CT2050'
+				AND L.CLS_CAT = '3'
+				AND L.CD = D.APPSTA_CLS
+				WHERE A.CORP_CD = #corpCd#
+		        AND A.MT_ST IN ('10')
+		        AND CONCAT(A.RS_NO,A.RSJ_NO)  
+						<iterate open="(" close=")" conjunction="," prepend="IN" property="rsjSeq">
+							#rsjSeq[]#
+						</iterate>
+			) A 
+			ORDER BY A.resrNo ASC
+	</select>
+	
+	<!-- 예약SMS 대상자 상세보기 조회 -->
+	<select id="Ech0103DAO.selectEch0103RsjDetail" parameterClass="rm2000mVO" resultClass="rm2000mVO">
+		/* Ech0103DAO.selectEch0103RsjDetail */
+	<![CDATA[
+     SELECT  
+ 			A.CORP_CD		AS corpCd
+ 			, A.RSJ_NO		AS rsjNo
+ 			, A.RSJ_NAME 	AS receName
+ 			, A.HP_NO		AS receNo
+        FROM    SB1000M A
+        WHERE   A.CORP_CD       = #corpCd#
+        AND     A.RSJ_NO        = #rsjNo#              
+	]]>
+	</select>
+	
+
+
+	
+	<!-- 이메일 목록 -->
+	<select id="Ech0103DAO.selectEch0103EmailList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0103DAO.selectEch0103EmailList */
+	<![CDATA[
+		SELECT  
+				A.CORP_CD					  AS corpCd
+			  , A.EMAILT_NO					  AS emailtNo
+			  , A.TITLE						  AS title  			                     
+              , A.CONT             	  	      AS cont
+        FROM    RM1010M A              
+        WHERE   A.CORP_CD       = #corpCd#             
+        ORDER   BY
+                A.EMAILT_NO
+    ]]>          
+	</select>
+	
+		
+	<!-- SMS팝업 대상자 리스트 -->
+	<select id="Ech0103DAO.selectEch0103SendList" parameterClass="egovMap" resultClass="egovMap">
+		/* Ech0103DAO.selectEch0103SendList */
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT
+				ROW_NUMBER() OVER(order by A.RSJ_NO DESC) rownum  	  
+              , A.CORP_CD                     AS corpCd            
+              , A.RSJ_NO                      AS rsjNo             
+              , A.RSJ_NAME                    AS rsjName           
+              , A.REG_DT                      AS regDt             
+              , A.BR_DT                       AS brDt
+              , FLOOR(CAST(DATEDIFF(DAY,A.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age              
+              , A.JREG_NO                     AS jregNo            
+              , A.ACCT_NO                     AS acctNo            
+              , A.BANK_NAME                   AS bankName          
+              , A.ACCT_NAME                   AS acctName          
+              , A.ACCT_CP                     AS acctCp            
+              , A.POST_NO                     AS postNo            
+              , A.ADDR_MAIN                   AS addrMain          
+              , A.ADDR_GITA                   AS addrGita
+              , CONCAT (A.ADDR_MAIN, A.ADDR_GITA)  AS addr          
+              , A.RSJ_ST_CLS                  AS rsjStCls          
+              , F.CD_NAME                     AS rsjStClsNm        
+              , A.GEN_YN                      AS genYn
+              , CASE A.GEN_YN
+              		WHEN '1' THEN '남'
+              		WHEN '2' THEN '여'
+              	  	ELSE '미정'
+              	END AS genYnNm             
+              , A.HP_NO                       AS hpNo              
+              , A.EMAIL                       AS email             
+              , A.POSITION                    AS position          
+              , A.USER_ID                     AS userId            
+              , A.PW_NO                       AS pwNo              
+              , A.BRANCH_CD                   AS branchCd          
+              , G.BRANCH_NAME                 AS branchName        
+              , A.SPOT                        AS spot              
+              , A.RLOGIN_DT                   AS rloginDt          
+              , A.USER_ST                     AS userSt            
+              , H.CD_NAME                     AS userStNm          
+              , A.REMK                        AS remk              
+              , A.EFF_STDT                    AS effStdt           
+              , A.EFF_ENDT                    AS effEndt           
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , A.CFM_DT					  AS cfmDt
+              , J.RS_CD						  AS rsCd
+              , J.RS_NO						  AS rsNo
+              , I.APPSTA_CLS				  AS appstaCls
+              , K.CD_NAME					  AS appstaClsNm
+              FROM    SB1000M A
+                INNER JOIN CM4000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.CD_CLS        = 'CT1010'
+        AND     F.CD            = A.RSJ_ST_CLS          
+                LEFT OUTER JOIN CT1020M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.BRANCH_CD     = A.BRANCH_CD           
+                INNER JOIN CM4000M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.CD_CLS        = 'CM1250'
+        AND     H.CD            = A.USER_ST
+                INNER JOIN RS2010M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND 	I.RSJ_NO		= A.RSJ_NO
+                INNER JOIN RS1010M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.RS_NO         = I.RS_NO
+        AND 	J.RSST_CLS		IN ('10','20')
+                        INNER JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CT2050'
+        AND     K.CD            = I.APPSTA_CLS
+        WHERE A.CORP_CD = #corpCd#
+        AND CONCAT(I.RS_NO,A.RSJ_NO)  
+								<iterate open="(" close=")" conjunction="," prepend="IN" property="rsjSeq">
+									#rsjSeq[]#
+								</iterate>
+			) A 
+			ORDER BY A.rsjNo DESC
+	</select>
+	
+
+	
+	<!-- /예약관리****************************************************************************************************************************************** -->
+
+</sqlMap>

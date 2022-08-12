@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 공통코드관리******************************************************************************************************************************************* -->
+	<sql id="where_cm4010m">
+		FROM
+		CM4010M
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="1">USE_YN
+					= 'Y'
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="2">USE_YN
+					= 'N'
+				</isEqual>				
+			</isNotEmpty>
+			<isNotEmpty property="searchWord" prepend="AND">
+				(CODE_NAME LIKE CONCAT ('%',#searchWord#,'%') 
+				OR CODE_DESC LIKE CONCAT ('%',#searchWord#,'%'))
+			</isNotEmpty>		
+		</dynamic>
+	</sql>
+	
+	<!-- 공통코드관리 리스트 -->
+	<select id="Ech0708DAO.selectEch0708List" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0708DAO.selectEch0708List */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT 
+					COMM_CODE_NO			
+					,COMM_CODE
+					,CODE_NAME
+					,CODE_DESC
+					,USE_YN
+					,ORD_SEQ
+					,REFER1
+					,REFER2
+					,COMM_CODECLS_NO
+					,COMM_CODECLS_NAME
+					,CORP_CD
+					,DATA_REGDT
+					,DATA_REGNT					
+				]]>
+		<include refid="where_cm4010m" />	<![CDATA[
+				
+			)a 
+			ORDER BY COMM_CODE_NO DESC
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- 공통코드관리 엑셀 리스트 -->
+	<select id="Ech0708DAO.selectEch0708Excel" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0708DAO.selectEch0708Excel */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT  
+					COMM_CODE_NO			
+					,COMM_CODE
+					,CODE_NAME
+					,CODE_DESC
+					,USE_YN
+					,ORD_SEQ
+					,REFER1
+					,REFER2
+					,COMM_CODECLS_NO
+					,COMM_CODECLS_NAME
+					,CORP_CD
+					,DATA_REGDT
+					,DATA_REGNT  										
+				]]>
+		<include refid="where_cm4010m" />	<![CDATA[
+				
+			)a 
+			ORDER BY COMM_CODE_NO DESC
+			
+		]]>	
+	</select>
+
+
+	<!-- 공통코드관리 cnt -->
+	<select id="Ech0708DAO.selectEch0708ListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ech0708DAO.selectEch0708ListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*) totalCnt
+	]]>
+		<include refid="where_cm4010m" />
+	</select>
+
+	<!-- 공통코드관리 상세보기 -->
+	<select id="Ech0708DAO.selectEch0708One" parameterClass="string"
+		resultClass="cm4010mVO">
+		/* Ech0708DAO.selectEch0708One */
+	<![CDATA[
+	    SELECT  
+			COMM_CODE_NO as commCodeNo			
+			,COMM_CODE as commCode
+			,CODE_NAME as codeName
+			,CODE_DESC as codeDesc
+			,USE_YN as useYn
+			,ORD_SEQ as ordSeq
+			,REFER1 as refer1
+			,REFER2 as refer2
+			,COMM_CODECLS_NO as commCodeclsNo			
+			,COMM_CODECLS_NAME as commCodeclsName
+			,CORP_CD as corpCd
+			,DATA_REGDT as dataRegdt
+			,DATA_REGNT as dataRegnt
+	    FROM 
+	        CM4010M 
+	    WHERE 
+	    	COMM_CODE_NO = #commCodeNo#
+	]]>
+	</select>
+	
+    <!-- 공통코드관리 삭제 -->
+	<delete id="Ech0708DAO.deleteEch0708" parameterClass="cm4010mVO">
+		/* Ech0708DAO.deleteEch0708 */
+	<![CDATA[
+		DELETE FROM 
+			CM4010M
+		WHERE
+			COMM_CODE_NO = #commCodeNo#
+	]]>
+	</delete>
+	
+	<!-- 공통코드관리 추가 -->
+	<insert id="Ech0708DAO.insertEch0708" parameterClass="cm4010mVO">
+	<selectKey keyProperty="commCodeNo" resultClass="string" type="post">
+		(SELECT MAX(COMM_CODE_NO) FROM CM4010M)
+	</selectKey>
+	/* Ech0708DAO.insertEch0708 */
+	<![CDATA[
+		INSERT INTO CM4010M  
+			(
+			COMM_CODE
+			,CODE_NAME
+			,CODE_DESC
+			,USE_YN
+			,ORD_SEQ
+			,REFER1
+			,REFER2
+			,COMM_CODECLS_NO
+			,COMM_CODECLS_NAME
+			,CORP_CD
+			,DATA_REGDT
+			,DATA_REGNT	
+			) 
+		VALUES 
+			(
+   			#commCode#
+			,#codeName#
+			,#codeDesc#
+			,#useYn#
+			,#ordSeq#
+			,#refer1#
+			,#refer2#
+			,#commCodeclsNo#
+			,#commCodeclsName#
+			,#corpCd#
+			,GETDATE()
+			,#dataRegnt#
+			)
+	]]>
+	</insert>
+
+	<!-- 공통코드관리 수정 -->
+	<update id="Ech0708DAO.updateEch0708" parameterClass="cm4010mVO">
+		/* Ech0708DAO.updateEch0708 */
+	<![CDATA[
+	    UPDATE
+	    	CM4010M
+	    SET 
+	    	COMM_CODE = #commCode#
+			,CODE_NAME = #codeName#
+			,CODE_DESC = #codeDesc#
+			,USE_YN = #useYn#
+			,ORD_SEQ = #ordSeq#
+			,REFER1 = #refer1#
+			,REFER2 = #refer2#
+			,COMM_CODECLS_NO = #commCodeclsNo#
+			,COMM_CODECLS_NAME = #commCodeclsName#
+			,CORP_CD = #corpCd#
+			,GETDATE()
+			,DATA_REGNT = #dataRegnt#	
+	    WHERE
+	    	COMM_CODE_NO = #commCodeNo#
+	]]>
+	</update>
+	
+	<!-- 공통코드관리 일련번호 -->
+	<select id="Ech0708DAO.selectEch0708Max" parameterClass="cm4010mVO" resultClass="string">
+	/* Ech0708DAO.selectEch0708Max */
+		SELECT
+			MAX(COMM_CODE_NO) + 1 as commCodeNo
+		FROM
+			CM4010M		
+	</select>
+	
+	
+	<!-- /공통코드관리****************************************************************************************************************************************** -->
+
+</sqlMap>

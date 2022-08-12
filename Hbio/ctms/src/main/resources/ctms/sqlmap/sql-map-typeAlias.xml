@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap>
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	
+	<!-- 공통 -->
+	<typeAlias  alias="searchVO" type="ctms.valueObject.cmm.CmmnSearchVO"/>
+	<typeAlias  alias="logVO" type="ctms.valueObject.LogVO"/>
+	
+	<typeAlias  alias="userInfoVO" type="ctms.valueObject.UserInfoVO"/>
+	<typeAlias  alias="usrVO" type="ctms.valueObject.UsrVO"/>
+	<typeAlias  alias="adminVO" type="ctms.valueObject.AdminVO"/>
+	
+	<!-- 첨부파일 -->
+	<typeAlias  alias="ct7000mVO" type="ctms.valueObject.Ct7000mVO"/>
+	
+	<typeAlias  alias="cd3001mVO" type="ctms.valueObject.Cd3001mVO"/> <!-- 사용안함 -->
+	
+	<!-- 관리자 연구관리 -->
+	<typeAlias  alias="rs1000mVO" type="ctms.valueObject.Rs1000mVO"/> <!-- 연구과제관리 -->
+	<typeAlias  alias="rs1020mVO" type="ctms.valueObject.Rs1020mVO"/> <!-- 참여지사관리(연구과제관리) -->
+	<typeAlias  alias="rs1030mVO" type="ctms.valueObject.Rs1030mVO"/> <!-- 참여연구담당자관리(연구과제관리) -->
+	<typeAlias  alias="rs1040mVO" type="ctms.valueObject.Rs1040mVO"/> <!-- 시험물질 정보(연구과제관리) -->
+	<typeAlias  alias="rs2000mVO" type="ctms.valueObject.Rs2000mVO"/> <!-- 피험자선정 -->
+	<typeAlias  alias="rs4000mVO" type="ctms.valueObject.Rs4000mVO"/> <!-- 예약관리 -->
+	<typeAlias  alias="rs5000mVO" type="ctms.valueObject.Rs5000mVO"/> <!-- IRB심의관리 -->
+	<typeAlias  alias="rsUploadVO" type="ctms.valueObject.RsUploadVO"/> <!-- 연구과제 Upload -->
+	<typeAlias  alias="rs1010mVO" type="ctms.valueObject.Rs1010mVO"/> <!-- 연구계획서 -->
+	<typeAlias  alias="rs3000mVO" type="ctms.valueObject.Rs3000mVO"/> <!-- 시험제품 -->
+	<typeAlias  alias="rs2010mVO" type="ctms.valueObject.Rs2010mVO"/> <!-- 연구계획서-피험자 -->
+	
+	<!-- 관리자 eCRF관리 -->
+	<typeAlias  alias="cr1000mVO" type="ctms.valueObject.Cr1000mVO"/> <!-- eCRF -->
+	<typeAlias  alias="cr2020mVO" type="ctms.valueObject.Cr2020mVO"/> <!-- 질문관리 -->
+	<typeAlias  alias="cr2030mVO" type="ctms.valueObject.Cr2030mVO"/> <!-- 질문관리 -->
+	<typeAlias  alias="cr2040mVO" type="ctms.valueObject.Cr2040mVO"/> <!-- 질문답변 -->
+	<typeAlias  alias="cr2050mVO" type="ctms.valueObject.Cr2050mVO"/> <!-- 템플릿질문 -->
+	<typeAlias  alias="cr2060mVO" type="ctms.valueObject.Cr2060mVO"/> <!-- 템플릿답변 -->
+	<typeAlias  alias="cr3010mVO" type="ctms.valueObject.Cr3010mVO"/> <!-- 연구대상자질문답변 -->
+	<typeAlias  alias="cr3100mVO" type="ctms.valueObject.Cr3100mVO"/> <!-- 피부자극관리 -->
+	<typeAlias  alias="cr3110mVO" type="ctms.valueObject.Cr3110mVO"/> <!-- 피부자극관리  -->
+	<typeAlias  alias="cr3150mVO" type="ctms.valueObject.Cr3150mVO"/> <!-- 피부자극결과생성 -->
+	<typeAlias  alias="cr3160mVO" type="ctms.valueObject.Cr3160mVO"/> <!-- 특성결과생성 -->
+	<typeAlias  alias="cr3170mVO" type="ctms.valueObject.Cr3170mVO"/> <!-- 특성결과표제 -->
+	<typeAlias  alias="cr3200mVO" type="ctms.valueObject.Cr3200mVO"/> <!-- 제품사용관리 -->
+	<typeAlias  alias="cr3210mVO" type="ctms.valueObject.Cr3210mVO"/> <!-- 연구대상자제품사용환경 -->
+	<typeAlias  alias="cr3240mVO" type="ctms.valueObject.Cr3240mVO"/> <!-- 연구대상자사용내역 -->
+	<typeAlias  alias="cr4000mVO" type="ctms.valueObject.Cr4000mVO"/> <!-- 연구동의서-->
+	<typeAlias  alias="cr2100mVO" type="ctms.valueObject.Cr2100mVO"/> <!-- CRF템플릿-->
+	<typeAlias  alias="cr2110mVO" type="ctms.valueObject.Cr2110mVO"/> <!-- CRF설정-->
+	<typeAlias  alias="cr2120mVO" type="ctms.valueObject.Cr2120mVO"/> <!-- CRF작성-->
+	
+	<!-- 관리자 피험자관리 -->
+	<typeAlias  alias="sb1000mVO" type="ctms.valueObject.Sb1000mVO"/> <!-- 피험자관리 -->
+	<typeAlias  alias="sb1010mVO" type="ctms.valueObject.Sb1010mVO"/> <!-- 피험자유형 -->
+	
+	<!-- 관리자 보고서관리 -->
+	<typeAlias  alias="rs5010mVO" type="ctms.valueObject.Rs5010mVO"/> <!-- 보고서양식 -->
+	<typeAlias  alias="rs5020mVO" type="ctms.valueObject.Rs5020mVO"/> <!-- 연구보고서 -->
+	
+	<!-- 관리자 발송관리 -->
+	<typeAlias  alias="rm1000mVO" type="ctms.valueObject.Rm1000mVO"/> <!-- 이메일발송 -->
+	<typeAlias  alias="rm1010mVO" type="ctms.valueObject.Rm1010mVO"/> <!-- 이메일메시지(예문) -->
+	<typeAlias  alias="rm1020mVO" type="ctms.valueObject.Rm1020mVO"/> <!-- 이메일재발송 -->
+	<typeAlias  alias="rm2000mVO" type="ctms.valueObject.Rm2000mVO"/> <!-- SMS발송 -->
+	<typeAlias  alias="rm2010mVO" type="ctms.valueObject.Rm2010mVO"/> <!-- SMS메시지 -->
+	
+	<!-- 관리자 기준정보관리 -->
+	<typeAlias  alias="ct1000mVO" type="ctms.valueObject.Ct1000mVO"/> <!-- 회사관리 -->
+	<typeAlias  alias="ct1030mVO" type="ctms.valueObject.Ct1030mVO"/> <!-- 사용자관리 -->	
+	<typeAlias  alias="ct1020mVO" type="ctms.valueObject.Ct1020mVO"/> <!-- 지사관리 -->
+	<typeAlias  alias="ct2000mVO" type="ctms.valueObject.Ct2000mVO"/> <!-- 고객사관리 -->
+	<typeAlias  alias="cm4000mVO" type="ctms.valueObject.Cm4000mVO"/> <!-- 공통코드(분류)관리 -->
+	<typeAlias  alias="cm4010mVO" type="ctms.valueObject.Cm4010mVO"/> <!-- 공통코드관리 -->
+	<typeAlias  alias="rs5000mVO" type="ctms.valueObject.Rs5000mVO"/> <!-- 보고서관리 -->
+	<typeAlias  alias="rS5010mVO" type="ctms.valueObject.Rs5010mVO"/> <!-- 보고서이력관리 -->
+	<typeAlias  alias="ct3000mVO" type="ctms.valueObject.Ct3000mVO"/> <!-- 자산관리 -->
+	
+	<!-- 관리자 운영관리 -->
+	<typeAlias  alias="ct1040mVO" type="ctms.valueObject.Ct1040mVO"/> <!-- 로그인접속 로그-->
+	<typeAlias  alias="ct1050mVO" type="ctms.valueObject.Ct1050mVO"/> <!-- 개인정보처리 로그 -->
+	<typeAlias  alias="ct1060mVO" type="ctms.valueObject.Ct1060mVO"/> <!-- 인증코드 -->
+	
+	<!-- 관리자 영업관리 -->
+	<typeAlias  alias="cs1000mVO" type="ctms.valueObject.Cs1000mVO"/> <!-- 상담관리-->
+	<typeAlias  alias="cs1020mVO" type="ctms.valueObject.Cs1020mVO"/> <!-- 견적관리-->
+	<typeAlias  alias="cs2000mVO" type="ctms.valueObject.Cs2000mVO"/> <!-- 계약관리-->
+	<typeAlias  alias="cs2020mVO" type="ctms.valueObject.Cs2020mVO"/> <!-- 입금관리-->
+	
+	<typeAlias  alias="cr3180mVO" type="ctms.valueObject.Cr3180mVO"/> <!-- 사용성설문 데이터-->
+	<typeAlias  alias="cr3190mVO" type="ctms.valueObject.Cr3190mVO"/> <!-- 사용성설문 표제-->
+	<typeAlias  alias="cr3280mVO" type="ctms.valueObject.Cr3280mVO"/> <!-- 효능설문 데이터-->
+	<typeAlias  alias="cr3290mVO" type="ctms.valueObject.Cr3290mVO"/> <!-- 효능설문 표제-->
+		
+</sqlMap>

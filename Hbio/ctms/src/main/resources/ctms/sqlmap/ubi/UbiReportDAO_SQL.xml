@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<select id="UbiReportDAO.selectAgreementCnt" parameterClass="cr4000mVO" resultClass="int">
+	/* UbiReportDAO.selectAgreementCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*) totalCnt
+		FROM CR4000M
+		WHERE CORP_CD = #corpCd#
+		AND RS_NO = #rsNo#
+		AND SUB_NO = #subNo#
+	]]>
+	</select>
+	
+	<insert id="UbiReportDAO.insertAgreement" parameterClass="cr4000mVO">
+	<![CDATA[
+		INSERT  CR4000M(
+                CORP_CD                     
+              , RS_NO
+              , SUB_NO
+              , PRICF_YN
+              , RSICF_YN
+              , ICF_DT                       
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #rsNo#
+              , #subNo#
+    ]]>
+    	<isNotEmpty property="pricfYn">
+              , #pricfYn#
+        </isNotEmpty>
+        <isEmpty property="pricfYn">
+        	  , 'N'
+        </isEmpty>
+    	<isNotEmpty property="rsicfYn">
+              , #rsicfYn#
+        </isNotEmpty>
+        <isEmpty property="rsicfYn">
+        	  , 'N'
+        </isEmpty>
+	<![CDATA[
+              , CONVERT(CHAR(10), GETDATE() , 23)
+              , GETDATE()
+              , #dataRegnt#
+        )
+    ]]>
+	</insert>
+	
+	<update id="UbiReportDAO.updateAgreement" parameterClass="cr4000mVO">
+	<![CDATA[
+		UPDATE CR4000M 
+			SET ICF_DT		= CONVERT(CHAR(10), GETDATE() , 23)
+				, DATA_REGDT	= GETDATE()
+				, DATA_REGNT	= #dataRegnt#  
+    ]]>
+    	<isNotEmpty property="pricfYn">
+             	, PRICF_YN 		= #pricfYn#
+             	, RSICF_YN		= CASE RSICF_YN WHEN 'Y' THEN 'Y' ELSE 'N' END
+        </isNotEmpty>
+    	<isNotEmpty property="rsicfYn">
+              	, RSICF_YN		= #rsicfYn#
+             	, PRICF_YN		= CASE PRICF_YN WHEN 'Y' THEN 'Y' ELSE 'N' END
+        </isNotEmpty>
+	<![CDATA[
+		WHERE CORP_CD 	= #corpCd#
+		AND RS_NO		= #rsNo#
+		AND SUB_NO		= #subNo#
+	]]>
+	</update>
+	
+	<insert id="UbiReportDAO.insertSurveyAnsw" parameterClass="egovMap">
+	/* UbiReportDAO.insertSurveyAnsw */
+	<![CDATA[
+		INSERT INTO CR3010M(
+			CORP_CD
+			, RS_NO
+			, RSI_NO
+			, RSJ_NO
+			, TEMP_NO
+			, QUES_NO
+			, ANSW_CON
+			, ANSW_NUM
+		)VALUES(
+			#corpCd#
+			, #rsNo#
+			, #rsiNo#
+			, #rsjNo#
+			, #tempNo#
+			, #quesNo#
+			, #answCon#
+			, #answNum#
+		)
+	]]>
+	</insert>
+	
+	<update id="UbiReportDAO.updateSurveyAnsw" parameterClass="egovMap">
+	/* UbiReportDAO.insertSurveyAnsw */
+	<![CDATA[
+		UPDATE CR3010M 
+			SET ANSW_CON		= CONCAT(ANSW_CON,',',#answNum#)
+		WHERE CORP_CD =#corpCd#
+		AND RS_NO		= #rsNo#
+		AND RSI_NO		= #rsiNo#
+		AND RSJ_NO		= #rsjNo#
+		AND TEMP_NO		= #tempNo#
+		AND QUES_NO		= #quesNo#		  
+    ]]>
+ 	</update>
+	
+	<update id="UbiReportDAO.updateMkHist" parameterClass="egovMap">
+	/* UbiReportDAO.updateMkHist */
+	<![CDATA[
+		UPDATE CR2120M 
+			SET MK_YN		 = 'Y'
+				, MK_DT		 = CONVERT(CHAR(10), GETDATE() , 23)
+				, DATA_REGDT = GETDATE()
+		WHERE CORP_CD 	=#corpCd#
+		AND RS_NO		= #rsNo#
+		AND RSI_NO		= #rsiNo#
+		AND TEMP_NO		= #tempNo#
+    ]]>
+ 	</update>
+ 	
+ 	<!-- 연구과제내 모든 피험자에 대한 연구종료확인서 작성 count  -->
+ 	<select id="UbiReportDAO.selectMkFinCnt" parameterClass="egovMap" resultClass="int">
+	/* UbiReportDAO.selectMkFinCnt */
+	<![CDATA[
+		SELECT 
+			COUNT(*) totalMkFinCnt 					
+		FROM CR2120M A
+		INNER JOIN CR2100M B
+		ON B.CORP_CD 		= A.CORP_CD
+		AND B.TEMP_NO 		= A.TEMP_NO 
+		AND B.TEMP_TYPE 	= '1030'
+		WHERE A.CORP_CD 	= #corpCd#
+		AND A.RS_NO 		= #rsNo#
+		AND A.MK_YN 		= 'Y'
+	]]>
+	</select>
+
+ 	<!-- 피험자의  CRF작성 count  -->
+ 	<select id="UbiReportDAO.selectMkFirstCnt" parameterClass="egovMap" resultClass="int">
+	/* UbiReportDAO.selectMkFirstCnt */
+	<![CDATA[
+		SELECT 
+			COUNT(*) totalMkFirstCnt 					
+		FROM CR2120M A		
+		WHERE A.CORP_CD 	= #corpCd#
+		AND A.RS_NO 		= #rsNo#
+		AND A.MK_YN 		= 'Y'
+	]]>
+	</select>
+	 	
+ 	<!-- 피험자 count -->
+ 	<select id="UbiReportDAO.selectRsiCnt" parameterClass="egovMap" resultClass="int">
+	/* UbiReportDAO.selectRsjCnt */
+	<![CDATA[
+		SELECT COUNT(*) totalRsiCnt 
+		FROM RS2010M A
+		WHERE A.CORP_CD = #corpCd#
+		AND RS_NO 		= #rsNo#
+	]]>
+	</select>
+ 	
+ 	<!-- CRF작성완료 설정 -->
+ 	<update id="UbiReportDAO.updateAllMkFin" parameterClass="egovMap">
+	/* UbiReportDAO.updateAllMkFin */
+	<![CDATA[
+		UPDATE RS1010M 
+			SET MK_YN		 = 'Y'
+				, MK_CLS	 = '1030'
+				, RSST_CLS   = '30'		
+		WHERE CORP_CD 	=#corpCd#
+		AND RS_NO		= #rsNo#
+    ]]>
+ 	</update>
+ 	
+ 	<!-- CRF작성완료 설정 -->
+ 	<update id="UbiReportDAO.updateRsstCls" parameterClass="egovMap">
+	/* UbiReportDAO.updateRsstCls */
+	<![CDATA[
+		UPDATE RS1010M 
+			SET RSST_CLS   = #rsstCls#		
+		WHERE CORP_CD 	=#corpCd#
+		AND RS_NO		= #rsNo#
+    ]]>
+ 	</update>
+ 	
+ 	<!-- CRF작성 count 작성CNT 연구종료확인서CNT -->
+ 	<select id="UbiReportDAO.selectMkCnt" parameterClass="egovMap" resultClass="egovMap">
+	/* UbiReportDAO.selectMkCnt */
+	<![CDATA[
+		SELECT 
+			COUNT(CASE WHEN A.MK_YN = 'Y' THEN 1 END) AS totalMkCnt	
+			, COUNT(CASE WHEN B.TEMP_TYPE = '1030' THEN 1 END) AS totalMkFinCnt 					
+		FROM CR2120M A
+		INNER JOIN CR2100M B
+		ON B.CORP_CD 		= A.CORP_CD
+		AND B.TEMP_NO 		= A.TEMP_NO
+		WHERE A.CORP_CD 	= #corpCd#
+		AND A.RS_NO 		= #rsNo#
+		AND A.MK_YN 		= 'Y'
+	]]>
+	</select>
+ 	
+ 	
+ 	
+</sqlMap>

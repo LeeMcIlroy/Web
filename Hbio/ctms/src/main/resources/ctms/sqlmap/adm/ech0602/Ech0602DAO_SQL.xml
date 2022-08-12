@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 이메일발송관리******************************************************************************************************************************************* -->
+	<!-- 변수목록
+                A.CORP_CD                     AS corpCd            회사코드
+                A.RECM_NO                     AS recmNo            메일접수번호
+                A.RECM_DT                     AS recmDt            메일접수일자
+                A.BRANCH_CD                   AS branchCd          지사코드 
+                A.RS_NO                       AS rsNo              연구과제번호
+                ISNULL(G.RS_NAME, '')         AS rsName            연구과제번호명
+                A.TSTA_CLS                    AS tstaCls           전송상태
+                H.CD_NAME                     AS tstaClsNm         전송상태명
+                A.TSEN_CLS                    AS tsenCls           전송결과
+                ISNULL(I.CD_NAME, '')         AS tsenClsNm         전송결과명
+                A.SEND_NO                     AS sendNo            발신번호
+                A.SEND_NAME                   AS sendName          발신자명
+                A.RECE_NO                     AS receNo            수신번호
+                A.RECE_NAME                   AS receName          수신자명
+                A.SEND_EMAIL                  AS sendEmail         발신이메일
+                A.RECE_EMAIL                  AS receEmail         수신이메일
+                A.SENDS_CLS                   AS sendsCls          발송설정    1 이메일 2 이메일 + SMS
+                J.CD_NAME                     AS sendsClsNm        발송설정명
+                A.SENDM_CLS                   AS sendmCls          발송구분
+                K.CD_NAME                     AS sendmClsNm        발송구분명  1 즉시발송 2 예약발송
+                A.TITLE                       AS title             제목
+                A.CONT                        AS cont              내용
+                A.REMK                        AS remk              비고
+                A.RESR_DT                     AS resrDt            예약일자
+                A.RESR_HR                     AS resrHr            예약시간
+                A.RESR_MM                     AS resrMm            예약분
+                A.ACCP_DT                     AS accpDt            접수일시
+                A.SEND_DT                     AS sendDt            발송일시
+                A.RETN_DT                     AS retnDt            전송결과수신일시
+                A.FILE_NAMES                  AS fileNames         전송파일명리스트
+                A.OT_FILE_NAMES               AS otFileNames       추가전송파일명리스트
+                A.EMAILS                      AS emails            수신이메일리스트
+                A.SMSCONT                     AS smscont           SMS내용
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->
+	
+	<sql id="where_rm1000m">
+		FROM    RM1000M A
+                LEFT JOIN CT1020M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.BRANCH_CD     = A.BRANCH_CD           
+                LEFT JOIN RS1000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.RS_NO         = A.RS_NO               
+                INNER JOIN CM4000M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.CD_CLS        = 'CM1310'
+        AND     H.CD            = A.TSTA_CLS            
+                LEFT JOIN CM4000M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.CD_CLS        = 'CM1320'
+        AND     I.CD            = A.TSEN_CLS 
+                INNER JOIN CM4000M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.CD_CLS        = 'CM1330'
+        AND     J.CD            = A.SENDS_CLS           
+                INNER JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CM1340'
+        AND     K.CD            = A.SENDM_CLS    
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="corpCd" prepend="AND">
+        		(A.CORP_CD = #corpCd#)
+        	</isNotEmpty>
+			<isNotEmpty property="searchCondition4" prepend="">
+				<isEqual property="searchCondition4" compareValue="1">
+					<isNotEmpty property="searchCondition1" prepend="AND">
+						<!-- 접수일자 -->
+						<isNotEmpty property="searchCondition2" >
+							CONVERT(CHAR(10), A.RECM_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+						</isNotEmpty>
+					</isNotEmpty>
+				</isEqual>
+				<isEqual property="searchCondition4" compareValue="2">
+					<isNotEmpty property="searchCondition1" prepend="AND">
+						<!-- 예약일자 -->
+						<isNotEmpty property="searchCondition2" >
+							CONVERT(CHAR(10), A.RESR_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+						</isNotEmpty>
+					</isNotEmpty>
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.TITLE LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.CONT LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.REMK LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RECE_EMAIL LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 제목 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.TITLE LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 내용 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(A.CONT LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 비고 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(A.REMK LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 이메일 -->
+		        	<isEqual property="searchCondition3" compareValue="5">
+			        	<isNotEmpty property="searchWord">
+							(A.RECE_EMAIL LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 이메일발송관리 리스트 -->
+	<select id="Ech0602DAO.selectEch0602List" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0602DAO.selectEch0602List */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT
+	                A.CORP_CD                     AS corpCd            
+	              , A.RECM_NO                     AS recmNo            
+	              , A.RECM_DT                     AS recmDt            
+	              , A.BRANCH_CD                   AS branchCd         
+	              , F.BRANCH_NAME				  AS branchName
+	              , A.RS_NO                       AS rsNo
+	              , G.RS_CD                       AS rsCd
+	              , ISNULL(G.RS_NAME, '')         AS rsName            
+	              , A.TSTA_CLS                    AS tstaCls           
+	              , H.CD_NAME                     AS tstaClsNm         
+	              , A.TSEN_CLS                    AS tsenCls           
+	              , ISNULL(I.CD_NAME, '')         AS tsenClsNm         
+	              , A.SEND_NO                     AS sendNo            
+	              , A.SEND_NAME                   AS sendName          
+	              , A.RECE_NO                     AS receNo            
+	              , A.RECE_NAME                   AS receName          
+	              , A.SEND_EMAIL                  AS sendEmail         
+	              , A.RECE_EMAIL                  AS receEmail         
+	              , A.SENDS_CLS                   AS sendsCls          
+	              , J.CD_NAME                     AS sendsClsNm        
+	              , A.SENDM_CLS                   AS sendmCls          
+	              , K.CD_NAME                     AS sendmClsNm        
+	              , A.TITLE                       AS title             
+	              , A.CONT                        AS cont              
+	              , A.REMK                        AS remk              
+	              , A.RESR_DT                     AS resrDt
+	              , REPLICATE('0',2-LEN(A.RESR_HR))+CONVERT(NVARCHAR,A.RESR_HR) AS resrHr
+	              , REPLICATE('0',2-LEN(A.RESR_MM))+CONVERT(NVARCHAR,A.RESR_MM) AS resrMm            
+	              , A.ACCP_DT                     AS accpDt            
+	              , A.SEND_DT                     AS sendDt            
+	              , A.RETN_DT                     AS retnDt            
+	              , A.FILE_NAMES                  AS fileNames         
+	              , A.OT_FILE_NAMES               AS otFileNames       
+	              , A.EMAILS                      AS emails
+	              , A.SMSCONT                     AS smscont
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt       
+				]]>
+		<include refid="where_rm1000m" />	<![CDATA[
+				
+			) A
+			ORDER BY A.recmNo DESC
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY			
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- 이메일발송관리 엑셀 리스트 -->
+	<select id="Ech0602DAO.selectEch0602Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0602DAO.selectEch0602Excel */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT
+	                A.CORP_CD                     AS corpCd            
+	              , A.RECM_NO                     AS recmNo            
+	              , A.RECM_DT                     AS recmDt            
+	              , A.BRANCH_CD                   AS branchCd         
+	              , F.BRANCH_NAME				  AS branchName
+	              , A.RS_NO                       AS rsNo
+	              , G.RS_CD                       AS rsCd              
+	              , ISNULL(G.RS_NAME, '')         AS rsName            
+	              , A.TSTA_CLS                    AS tstaCls           
+	              , H.CD_NAME                     AS tstaClsNm         
+	              , A.TSEN_CLS                    AS tsenCls           
+	              , ISNULL(I.CD_NAME, '')         AS tsenClsNm         
+	              , A.SEND_NO                     AS sendNo            
+	              , A.SEND_NAME                   AS sendName          
+	              , A.RECE_NO                     AS receNo            
+	              , A.RECE_NAME                   AS receName          
+	              , A.SEND_EMAIL                  AS sendEmail         
+	              , A.RECE_EMAIL                  AS receEmail         
+	              , A.SENDS_CLS                   AS sendsCls          
+	              , J.CD_NAME                     AS sendsClsNm        
+	              , A.SENDM_CLS                   AS sendmCls          
+	              , K.CD_NAME                     AS sendmClsNm        
+	              , A.TITLE                       AS title             
+	              , A.CONT                        AS cont              
+	              , A.REMK                        AS remk              
+	              , A.RESR_DT                     AS resrDt            
+	              , A.RESR_HR                     AS resrHr            
+	              , A.RESR_MM                     AS resrMm            
+	              , A.ACCP_DT                     AS accpDt            
+	              , A.SEND_DT                     AS sendDt            
+	              , A.RETN_DT                     AS retnDt            
+	              , A.FILE_NAMES                  AS fileNames         
+	              , A.OT_FILE_NAMES               AS otFileNames       
+	              , A.EMAILS                      AS emails
+	              , A.SMSCONT                     AS smscont            
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt       
+				]]>
+		<include refid="where_rm1000m" />	<![CDATA[
+				
+			)a 
+			ORDER BY A.recmNo DESC
+			
+		]]>	
+	</select>
+
+
+	<!-- 이메일발송관리 cnt -->
+	<select id="Ech0602DAO.selectEch0602ListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ech0602DAO.selectEch0602ListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+	]]>
+		<include refid="where_rm1000m" />
+	</select>
+
+	<!-- 이메일발송관리 상세보기 -->
+	<select id="Ech0602DAO.selectEch0602View" parameterClass="rm1000mVO"
+		resultClass="rm1000mVO">
+		/* Ech0602DAO.selectEch0602One */
+	<![CDATA[
+	    SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RECM_NO                     AS recmNo            
+              , A.RECM_DT                     AS recmDt            
+              , A.BRANCH_CD                   AS branchCd         
+              , F.BRANCH_NAME				  AS branchName
+              , A.RS_NO                       AS rsNo
+	          , G.RS_CD                       AS rsCd              
+              , ISNULL(G.RS_NAME, '')         AS rsName            
+              , A.TSTA_CLS                    AS tstaCls           
+              , H.CD_NAME                     AS tstaClsNm         
+              , A.TSEN_CLS                    AS tsenCls           
+              , ISNULL(I.CD_NAME, '')         AS tsenClsNm         
+              , A.SEND_NO                     AS sendNo            
+              , A.SEND_NAME                   AS sendName          
+              , A.RECE_NO                     AS receNo            
+              , A.RECE_NAME                   AS receName          
+              , A.SEND_EMAIL                  AS sendEmail         
+              , A.RECE_EMAIL                  AS receEmail         
+              , A.SENDS_CLS                   AS sendsCls          
+              , J.CD_NAME                     AS sendsClsNm        
+              , A.SENDM_CLS                   AS sendmCls          
+              , K.CD_NAME                     AS sendmClsNm        
+              , A.TITLE                       AS title             
+              , A.CONT                        AS cont              
+              , A.REMK                        AS remk              
+              , A.RESR_DT                     AS resrDt            
+              , A.RESR_HR                     AS resrHr            
+              , A.RESR_MM                     AS resrMm            
+              , A.ACCP_DT                     AS accpDt            
+              , A.SEND_DT                     AS sendDt            
+              , A.RETN_DT                     AS retnDt            
+              , A.FILE_NAMES                  AS fileNames         
+              , A.OT_FILE_NAMES               AS otFileNames       
+              , A.EMAILS                      AS emails
+              , A.SMSCONT                     AS smscont            
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt         
+        FROM    RM1000M A
+                LEFT JOIN CT1020M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.BRANCH_CD     = A.BRANCH_CD           
+                LEFT JOIN RS1000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.RS_NO         = A.RS_NO               
+                INNER JOIN CM4000M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.CD_CLS        = 'CM1310'
+        AND     H.CD            = A.TSTA_CLS            
+                LEFT JOIN CM4000M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.CD_CLS        = 'CM1320'
+        AND     I.CD            = A.TSEN_CLS 
+                INNER JOIN CM4000M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.CD_CLS        = 'CM1330'
+        AND     J.CD            = A.SENDS_CLS           
+                INNER JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CM1340'
+        AND     K.CD            = A.SENDM_CLS           
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RECM_NO       = #recmNo#
+	]]>
+	</select>
+	
+    <!-- 이메일발송관리 삭제 -->
+	<delete id="Ech0602DAO.deleteEch0602" parameterClass="rm1000mVO">
+		/* Ech0602DAO.deleteEch0602 */
+	<![CDATA[
+		DELETE
+        FROM
+                RM1000M
+        WHERE
+                CORP_CD         = #corpCd#              
+              	AND RECM_NO         = #recmNo#    
+	]]>
+	</delete>
+	
+	<!-- 이메일발송관리 추가 -->
+	<insert id="Ech0602DAO.insertEch0602" parameterClass="rm1000mVO">
+	<selectKey keyProperty="recmNo" resultClass="string" type="pre">
+		DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                  
+        DECLARE @V_RECM_DT                  NVARCHAR(0010) = #recmDt#                                                  
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_RECM_DT, 1, 4)                                                  
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.RECM_NO), @BDT04 + '0000')) + 1) as recmNo     
+        FROM    RM1000M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.RECM_DT, 1, 4)  = @BDT04
+	</selectKey>
+	/* Ech0602DAO.insertEch0602 */
+	<![CDATA[
+		INSERT  RM1000M(
+                CORP_CD                     
+              , RECM_NO                     
+              , RECM_DT                     
+              , BRANCH_CD                   
+              , RS_NO                       
+              , TSTA_CLS                    
+              , TSEN_CLS                    
+              , SEND_NO                     
+              , SEND_NAME                   
+              , RECE_NO                     
+              , RECE_NAME                   
+              , SEND_EMAIL                  
+              , RECE_EMAIL                  
+              , SENDS_CLS                   
+              , SENDM_CLS                   
+              , TITLE                       
+              , CONT                        
+              , REMK                        
+              , RESR_DT                     
+              , RESR_HR                     
+              , RESR_MM                     
+              , ACCP_DT                     
+              , SEND_DT                     
+              , RETN_DT                     
+              , FILE_NAMES                  
+              , OT_FILE_NAMES               
+              , EMAILS
+              , SMSCONT                      
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #recmNo#
+              , #recmDt#
+              , #branchCd#
+              , #rsNo#
+              , #tstaCls#
+              , #tsenCls#
+              , #sendNo#
+              , #sendName#
+              , #receNo#
+              , #receName#
+              , #sendEmail#
+              , #receEmail#
+              , #sendsCls#
+              , #sendmCls#
+              , #title#
+              , #cont#
+              , #remk#
+              , #resrDt#
+              , #resrHr#
+              , #resrMm#
+              , #accpDt#
+              , #sendDt#
+              , #retnDt#
+              , #fileNames#
+              , #otFileNames#
+              , #emails#
+              , #smscont#
+              , GETDATE()
+              , #dataRegnt#
+        )
+	]]>
+	</insert>
+
+	<!-- 이메일발송관리 수정 -->
+	<update id="Ech0602DAO.updateEch0602" parameterClass="rm1000mVO">
+		/* Ech0602DAO.updateEch0602 */
+	<![CDATA[
+	    UPDATE
+                RM1000M
+        SET                           
+              RECM_DT                     = #recmDt#                      
+              , BRANCH_CD                   = #branchCd#                    
+              , RS_NO                       = #rsNo#                        
+              , TSTA_CLS                    = #tstaCls#                     
+              , TSEN_CLS                    = #tsenCls#                     
+              , SEND_NO                     = #sendNo#                      
+              , SEND_NAME                   = #sendName#                    
+              , RECE_NO                     = #receNo#                      
+              , RECE_NAME                   = #receName#                    
+              , SEND_EMAIL                  = #sendEmail#                   
+              , RECE_EMAIL                  = #receEmail#                   
+              , SENDS_CLS                   = #sendsCls#                    
+              , SENDM_CLS                   = #sendmCls#                    
+              , TITLE                       = #title#                       
+              , CONT                        = #cont#                        
+              , REMK                        = #remk#                        
+              , RESR_DT                     = #resrDt#                      
+              , RESR_HR                     = #resrHr#                      
+              , RESR_MM                     = #resrMm#                      
+              , ACCP_DT                     = #accpDt#                      
+              , SEND_DT                     = #sendDt#                      
+              , RETN_DT                     = #retnDt#                      
+              , FILE_NAMES                  = #fileNames#                   
+              , OT_FILE_NAMES               = #otFileNames#                 
+              , EMAILS                      = #emails#
+              , SMSCONT                     = #smscont# 
+              , DATA_REGDT                  = GETDATE()                   
+              , DATA_REGNT                  = #dataRegnt#                   
+        WHERE
+                CORP_CD         = #corpCd#              
+              	AND RECM_NO         = #recmNo#             
+	]]>
+	</update>
+	
+	<!-- 이메일재발송 목록 -->
+	<select id="Ech0602DAO.selectEch0602ResendlList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0602DAO.selectEch0602ResendlList */
+	<![CDATA[
+			    SELECT 
+			   ROW_NUMBER() OVER(order by A.RECM_NO DESC) rownum   
+              , A.CORP_CD                     AS corpCd            
+              , A.RECM_NO                     AS recmNo            
+              , A.RECM_DT                     AS recmDt
+              , A.ORECM_NO                    AS orecmNo           
+              , A.TSTA_CLS                    AS tstaCls           
+              , H.CD_NAME                     AS tstaClsNm         
+              , A.TSEN_CLS                    AS tsenCls           
+              , ISNULL(I.CD_NAME, '')         AS tsenClsNm         
+              , A.ACCP_DT                     AS accpDt            
+              , A.SEND_DT                     AS sendDt            
+              , A.RETN_DT                     AS retnDt            
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt         
+        FROM    RM1020M A
+                INNER JOIN CM4000M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.CD_CLS        = 'CM1310'
+        AND     H.CD            = A.TSTA_CLS            
+                LEFT JOIN CM4000M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.CD_CLS        = 'CM1320'
+        AND     I.CD            = A.TSEN_CLS 
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.ORECM_NO      = #orecmNo#
+    ]]>          
+	</select>
+
+	
+	<!-- /이메일발송관리****************************************************************************************************************************************** -->
+
+</sqlMap>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+ 
+	<!-- Batch******************************************************************************************************************************************* -->
+     
+	<sql id="where_batchrm1000m">
+		FROM    RM1000M A
+                LEFT JOIN CT1020M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.BRANCH_CD     = A.BRANCH_CD           
+                LEFT JOIN RS1000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.RS_NO         = A.RS_NO               
+                INNER JOIN CM4000M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.CD_CLS        = 'CM1310'
+        AND     H.CD            = A.TSTA_CLS            
+                LEFT JOIN CM4000M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.CD_CLS        = 'CM1320'
+        AND     I.CD            = A.TSEN_CLS 
+                INNER JOIN CM4000M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.CD_CLS        = 'CM1330'
+        AND     J.CD            = A.SENDS_CLS           
+                INNER JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CM1340'
+        AND     K.CD            = A.SENDM_CLS    
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="corpCd" prepend="AND">
+        		(A.CORP_CD = #corpCd#)
+        	</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 이메일발송관리 리스트 -->
+	<select id="ScheduleDAO.selectBatchMailList" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* ScheduleDAO.selectBatchMailList */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT
+	                A.CORP_CD                     AS corpCd            
+	              , A.RECM_NO                     AS recmNo            
+	              , A.RECM_DT                     AS recmDt            
+	              , A.BRANCH_CD                   AS branchCd         
+	              , F.BRANCH_NAME				  AS branchName
+	              , A.RS_NO                       AS rsNo
+	              , G.RS_CD                       AS rsCd
+	              , ISNULL(G.RS_NAME, '')         AS rsName            
+	              , A.TSTA_CLS                    AS tstaCls           
+	              , H.CD_NAME                     AS tstaClsNm         
+	              , A.TSEN_CLS                    AS tsenCls           
+	              , ISNULL(I.CD_NAME, '')         AS tsenClsNm         
+	              , A.SEND_NO                     AS sendNo            
+	              , A.SEND_NAME                   AS sendName          
+	              , A.RECE_NO                     AS receNo            
+	              , A.RECE_NAME                   AS receName          
+	              , A.SEND_EMAIL                  AS sendEmail         
+	              , A.RECE_EMAIL                  AS receEmail         
+	              , A.SENDS_CLS                   AS sendsCls          
+	              , J.CD_NAME                     AS sendsClsNm        
+	              , A.SENDM_CLS                   AS sendmCls          
+	              , K.CD_NAME                     AS sendmClsNm        
+	              , A.TITLE                       AS title             
+	              , A.CONT                        AS cont              
+	              , A.REMK                        AS remk              
+	              , A.RESR_DT                     AS resrDt            
+	              , A.RESR_HR                     AS resrHr            
+	              , A.RESR_MM                     AS resrMm            
+	              , A.ACCP_DT                     AS accpDt            
+	              , A.SEND_DT                     AS sendDt            
+	              , A.RETN_DT                     AS retnDt            
+	              , A.FILE_NAMES                  AS fileNames         
+	              , A.OT_FILE_NAMES               AS otFileNames       
+	              , A.EMAILS                      AS emails
+	              , A.SMSCONT                     AS smscont
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , CONCAT(A.RESR_DT,' ',REPLICATE('0',2-LEN(A.RESR_HR))+CONVERT(NVARCHAR,A.RESR_HR),':',REPLICATE('0',2-LEN(A.RESR_MM))+CONVERT(NVARCHAR,A.RESR_MM),':','00') AS resrDate       
+				]]>
+		<include refid="where_batchrm1000m" />	
+		<![CDATA[
+			AND A.RESR_DT IS NOT NULL
+			AND A.RESR_DT != ''
+			AND A.TSEN_CLS = '900'
+			AND A.TSTA_CLS = '10'
+			AND	A.SENDM_CLS	= '2'
+			) A
+			ORDER BY A.recmNo DESC
+		]]>	
+	</select>
+
+	<!--  Cnt -->
+    <select id="ScheduleDAO.selectBatchMailListCnt" parameterClass="searchVO" resultClass="int">
+    /* ScheduleDAO.selectBatchMailListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_batchrm1000m" />
+   <![CDATA[
+			AND A.RESR_DT IS NOT NULL
+			AND A.RESR_DT != ''
+			AND A.TSEN_CLS = '900'
+			AND A.TSTA_CLS		= '10'
+			AND	A.SENDM_CLS	= '2'
+			]]>
+    </select>
+  
+  	<!-- 전송결과 갱신 900 전송대기 -> 100 전송완료  10 접수 -> 30 처리완료 -->
+    <update id="ScheduleDAO.updateBatchMailTsenCls" parameterClass="egovMap">
+	/* ScheduleDAO.updateBatchMailTsenCls */
+    <![CDATA[
+  		UPDATE
+                RM1000M
+        SET   
+        		TSEN_CLS                    = '100' 
+        	  , TSTA_CLS					= '30'                     
+              , DATA_REGDT                  = GETDATE()
+              , DATA_REGNT                  = #dataRegnt# 
+              , SEND_DT  	                = GETDATE()
+              , RETN_DT  	                = GETDATE()
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     RECM_NO         = #recmNo#
+        AND		TSEN_CLS		= '900'
+        AND		TSTA_CLS		= '10'
+        AND		SENDM_CLS		= '2'		
+    ]]>
+		
+	</update>
+  
+  
+    
+    <!-- Batch******************************************************************************************************************************************* -->
+    
+</sqlMap>

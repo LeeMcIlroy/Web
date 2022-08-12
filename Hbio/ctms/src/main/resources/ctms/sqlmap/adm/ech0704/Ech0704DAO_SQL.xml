@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 고객사관리******************************************************************************************************************************************* -->
+	<!-- 변수목록
+                A.CORP_CD                     AS corpCd            회사코드
+                A.VEND_NO                     AS vendNo            거래처번호
+                A.VEND_CLS                    AS vendCls           거래처구분
+                F.CD_NAME                     AS vendClsNm         거래처구분명
+                A.VEND_NAME                   AS vendName          거래처명칭
+                A.VEND_SM                     AS vendSm            거래처약칭
+                A.BREG_RSNO                   AS bregRsno          사업자번호
+                A.CORP_NO                     AS corpNo            법인번호
+                A.EXCUT_NAME                  AS excutName         대표자성명
+                A.BSLN                        AS bsln              업태
+                A.BSCL                        AS bscl              업종(종목)
+                A.POST_NO                     AS postNo            우편번호
+                A.ADDR_MAIN                   AS addrMain          기본주소
+                A.ADDR_GITA                   AS addrGita          기타주소
+                A.TELNO                       AS telno             전화번호
+                A.FAXNO                       AS faxno             팩스번호
+                A.MNG_NAME                    AS mngName           담당자명
+                A.MNG_ORG                     AS mngOrg            담당자부서명
+                A.MNGHP_NO                    AS mnghpNo           담당자휴대폰
+                A.MNG_EMAIL                   AS mngEmail          담당자이메일
+                A.REMK                        AS remk              비고
+                A.BRANCH_CD                   AS branchCd          지사코드
+                G.BRANCH_NAME                 AS branchName        지사명칭
+                A.USE_YN                      AS useYn             사용여부
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->
+	<sql id="where_ct2000m">
+		FROM    CT2000M A
+                INNER JOIN CM4000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.CD_CLS        = 'CM1010'
+        AND     F.CD            = A.VEND_CLS            
+                LEFT JOIN CT1020M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.BRANCH_CD     = A.BRANCH_CD
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        </isNotEmpty>
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="Y">
+					A.USE_YN = 'Y'
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="N">
+					A.USE_YN	= 'N'
+				</isEqual>				
+			</isNotEmpty>
+			<isNotEmpty property="searchWord" prepend="AND">
+				(A.VEND_NAME LIKE CONCAT('%',#searchWord#,'%') 
+				OR A.EXCUT_NAME LIKE CONCAT('%',#searchWord#,'%'))
+			</isNotEmpty>		
+		</dynamic>
+	</sql>
+	
+	<!-- 고객사관리 리스트 -->
+	<select id="Ech0704DAO.selectEch0704List" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0704DAO.selectEch0704List */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT  
+	                A.CORP_CD                     AS corpCd            
+	              , A.VEND_NO                     AS vendNo            
+	              , A.VEND_CLS                    AS vendCls           
+	              , F.CD_NAME                     AS vendClsNm         
+	              , A.VEND_NAME                   AS vendName          
+	              , A.VEND_SM                     AS vendSm            
+	              , A.BREG_RSNO                   AS bregRsno
+	              , CONCAT(SUBSTRING(A.BREG_RSNO,1,3),'-',SUBSTRING(A.BREG_RSNO,4,2),'-',SUBSTRING(A.BREG_RSNO,6,5)) AS dispbregRsno          
+	              , A.CORP_NO                     AS corpNo            
+	              , A.EXCUT_NAME                  AS excutName         
+	              , A.BSLN                        AS bsln              
+	              , A.BSCL                        AS bscl              
+	              , A.POST_NO                     AS postNo            
+	              , A.ADDR_MAIN                   AS addrMain          
+	              , A.ADDR_GITA                   AS addrGita
+	              , CONCAT(A.ADDR_MAIN,' ',A.ADDR_GITA) AS addr          
+	              , A.TELNO                       AS telno             
+	              , A.FAXNO                       AS faxno             
+	              , A.MNG_NAME                    AS mngName           
+	              , A.MNG_ORG                     AS mngOrg            
+	              , A.MNGHP_NO                    AS mnghpNo           
+	              , A.MNG_EMAIL                   AS mngEmail          
+	              , A.REMK                        AS remk              
+	              , A.BRANCH_CD                   AS branchCd
+	              , A.USE_YN                      AS useYn             
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt							
+				]]>
+		<include refid="where_ct2000m" />	<![CDATA[
+				
+			)a 
+			ORDER BY A.vendNo DESC
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- 고객사관리 엑셀 리스트 -->
+	<select id="Ech0704DAO.selectEch0704Excel" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0704DAO.selectEch0704Excel */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT  
+	                A.CORP_CD                     AS corpCd            
+	              , A.VEND_NO                     AS vendNo            
+	              , A.VEND_CLS                    AS vendCls           
+	              , F.CD_NAME                     AS vendClsNm         
+	              , A.VEND_NAME                   AS vendName          
+	              , A.VEND_SM                     AS vendSm            
+	              , A.BREG_RSNO                   AS bregRsno          
+	              , A.CORP_NO                     AS corpNo            
+	              , A.EXCUT_NAME                  AS excutName         
+	              , A.BSLN                        AS bsln              
+	              , A.BSCL                        AS bscl              
+	              , A.POST_NO                     AS postNo            
+	              , A.ADDR_MAIN                   AS addrMain          
+	              , A.ADDR_GITA                   AS addrGita
+	              , CONCAT(A.ADDR_MAIN, ' ', A.ADDR_GITA) AS addr 
+	              , A.TELNO                       AS telno             
+	              , A.FAXNO                       AS faxno             
+	              , A.MNG_NAME                    AS mngName           
+	              , A.MNG_ORG                     AS mngOrg            
+	              , A.MNGHP_NO                    AS mnghpNo           
+	              , A.MNG_EMAIL                   AS mngEmail          
+	              , A.REMK                        AS remk              
+	              , A.BRANCH_CD                   AS branchCd
+	              , A.USE_YN                      AS useYn             
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt									
+				]]>
+		<include refid="where_ct2000m" />	<![CDATA[
+				
+			)a 
+			ORDER BY A.vendNo DESC
+			
+		]]>	
+	</select>
+
+
+	<!-- 고객사관리 cnt -->
+	<select id="Ech0704DAO.selectEch0704ListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ech0704DAO.selectEch0704ListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+	]]>
+		<include refid="where_ct2000m" />
+	</select>
+
+	<!-- 고객사관리 상세보기 -->
+	<select id="Ech0704DAO.selectEch0704View" parameterClass="ct2000mVO"
+		resultClass="ct2000mVO">
+		/* Ech0704DAO.selectEch0704View */
+	<![CDATA[
+	     SELECT  
+	            A.CORP_CD                     AS corpCd            
+              , A.VEND_NO                     AS vendNo            
+              , A.VEND_CLS                    AS vendCls           
+              , F.CD_NAME                     AS vendClsNm         
+              , A.VEND_NAME                   AS vendName          
+              , A.VEND_SM                     AS vendSm            
+              , A.BREG_RSNO                   AS bregRsno          
+              , A.CORP_NO                     AS corpNo            
+              , A.EXCUT_NAME                  AS excutName         
+              , A.BSLN                        AS bsln              
+              , A.BSCL                        AS bscl              
+              , A.POST_NO                     AS postNo            
+              , A.ADDR_MAIN                   AS addrMain          
+              , A.ADDR_GITA                   AS addrGita          
+              , A.TELNO                       AS telno             
+              , A.FAXNO                       AS faxno             
+              , A.MNG_NAME                    AS mngName           
+              , A.MNG_ORG                     AS mngOrg            
+              , A.MNGHP_NO                    AS mnghpNo           
+              , A.MNG_EMAIL                   AS mngEmail          
+              , A.REMK                        AS remk              
+              , A.BRANCH_CD                   AS branchCd
+              , G.BRANCH_NAME                 AS branchName
+              , A.USE_YN                      AS useYn             
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt         
+        FROM    CT2000M A
+                INNER JOIN CM4000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.CD_CLS        = 'CM1010'
+        AND     F.CD            = A.VEND_CLS            
+                LEFT JOIN CT1020M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.BRANCH_CD     = A.BRANCH_CD           
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.VEND_NO       = #vendNo#
+        ORDER   BY
+                A.CORP_CD
+              , A.VEND_NO
+	]]>
+	</select>
+	
+    <!-- 고객사관리 삭제 -->
+	<delete id="Ech0704DAO.deleteEch0704" parameterClass="ct2000mVO">
+		/* Ech0704DAO.deleteEch0704 */
+	<![CDATA[
+		   DELETE
+        FROM
+                CT2000M
+        WHERE
+                CORP_CD         = #corpCd#              
+              	AND VEND_NO         = #vendNo#           
+	]]>
+	</delete>
+	
+	<!-- 고객사관리 추가 -->
+	<insert id="Ech0704DAO.insertEch0704" parameterClass="ct2000mVO">	
+	/* Ech0704DAO.insertEch0704 */
+	<![CDATA[
+		DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                  
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 4)                                       
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  @P_RTN_KEY = CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.VEND_NO), '10000000')) + 1)          
+        FROM    CT2000M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                       
+ 
+ 
+        INSERT  CT2000M(
+                CORP_CD                     
+              , VEND_NO                     
+              , VEND_CLS                    
+              , VEND_NAME                   
+              , VEND_SM                     
+              , BREG_RSNO                   
+              , CORP_NO                     
+              , EXCUT_NAME                  
+              , BSLN                        
+              , BSCL                        
+              , POST_NO                     
+              , ADDR_MAIN                   
+              , ADDR_GITA                   
+              , TELNO                       
+              , FAXNO                       
+              , MNG_NAME                    
+              , MNG_ORG                     
+              , MNGHP_NO                    
+              , MNG_EMAIL                   
+              , REMK                        
+              , BRANCH_CD                   
+              , USE_YN                      
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , @P_RTN_KEY
+              , #vendCls#
+              , #vendName#
+              , #vendSm#
+              , #bregRsno#
+              , #corpNo#
+              , #excutName#
+              , #bsln#
+              , #bscl#
+              , #postNo#
+              , #addrMain#
+              , #addrGita#
+              , #telno#
+              , #faxno#
+              , #mngName#
+              , #mngOrg#
+              , #mnghpNo#
+              , #mngEmail#
+              , #remk#
+              , #branchCd#
+              , #useYn#
+              , GETDATE()
+              , #dataRegnt#
+        )
+    ]]>
+	</insert>
+
+	<!-- 고객사관리 수정 -->
+	<update id="Ech0704DAO.updateEch0704" parameterClass="ct2000mVO">
+		/* Ech0704DAO.updateEch0704 */
+	<![CDATA[
+	    UPDATE
+                CT2000M
+        SET
+              VEND_CLS                    = #vendCls#                     
+              , VEND_NAME                   = #vendName#                    
+              , VEND_SM                     = #vendSm#                      
+              , BREG_RSNO                   = #bregRsno#                    
+              , CORP_NO                     = #corpNo#                      
+              , EXCUT_NAME                  = #excutName#                   
+              , BSLN                        = #bsln#                        
+              , BSCL                        = #bscl#                        
+              , POST_NO                     = #postNo#                      
+              , ADDR_MAIN                   = #addrMain#                    
+              , ADDR_GITA                   = #addrGita#                    
+              , TELNO                       = #telno#                       
+              , FAXNO                       = #faxno#                       
+              , MNG_NAME                    = #mngName#                     
+              , MNG_ORG                     = #mngOrg#                      
+              , MNGHP_NO                    = #mnghpNo#                     
+              , MNG_EMAIL                   = #mngEmail#                    
+              , REMK                        = #remk#                        
+              , BRANCH_CD                   = #branchCd#                    
+              , USE_YN                      = #useYn#                       
+              , DATA_REGDT                  = GETDATE()                   
+              , DATA_REGNT                  = #dataRegnt#                   
+        WHERE
+                CORP_CD         = #corpCd#              
+              	AND VEND_NO         = #vendNo# 
+	]]>
+	</update>
+	
+	<!-- 공통코드 가져오기 -->
+	<select id="Ech0704DAO.selectCmmCdList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0704DAO.selectCmmCdList */
+	<![CDATA[
+		SELECT
+			CD as cd
+			,CD_NAME as cdName
+		FROM
+			CM4000M
+		WHERE CORP_CD = #corpCd#
+		 		AND CD_CLS = #cdCls#
+		ORDER BY
+			CD ASC
+	]]>
+	</select>
+	
+	<!-- 지사목록 가져오기 -->
+	<select id="Ech0704DAO.selectBranchList" parameterClass="String" resultClass="egovMap">
+	/* Ech0704DAO.selectBranchList */
+	<![CDATA[
+		SELECT
+			BRANCH_CD as branchCd
+			,BRANCH_NAME as branchName
+		FROM
+			CT1020M
+		WHERE CORP_CD = #corpCd#
+		AND USE_YN = 'Y'	
+		ORDER BY
+			BRANCH_NAME ASC
+	]]>
+	</select>
+	
+	<!-- 고객사삭제 제한 체크 - 연구과제에 사용된 경우 삭제 불가 -->
+	<select id="Ech0704DAO.selectVendYn" parameterClass="egovMap" resultClass="string">
+	/* Ech0704DAO.selectVendYn */
+	<![CDATA[
+		SELECT
+			CASE COUNT(*) 
+				WHEN 0 THEN 'N'
+				ELSE 'Y'
+		   	END AS vendYn		
+		FROM
+			RS1000M
+		WHERE CORP_CD 	= #corpCd#
+		AND VEND_NO 	= #vendNo#
+	]]>
+	</select>
+	
+	<!-- /고객사관리****************************************************************************************************************************************** -->
+
+</sqlMap>

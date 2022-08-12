@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 작업로그관리******************************************************************************************************************************************* -->
+	
+	<sql id="where_ct1050mJob">
+			FROM CT1050M A
+			INNER JOIN CT1020M B
+			ON 		B.CORP_CD 		= A.CORP_CD
+			AND 	B.BRANCH_CD 	= A.BRANCH_CD
+			INNER JOIN CT1030M C
+			ON 		C.CORP_CD 		= A.CORP_CD
+			AND 	C.USER_ID       = A.DATA_REGNT 
+		  <dynamic prepend="WHERE">
+		  		<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition1" prepend="AND">
+					<isNotEmpty property="searchCondition2" >
+						CONVERT(CHAR(10), A.DATA_REGDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+					</isNotEmpty>
+				</isNotEmpty>	
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.LOG_CONT LIKE CONCAT ('%',#searchWord#,'%') 
+							OR C.EMP_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR B.BRANCH_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 작업내용 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.LOG_CONT LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 작업자이름 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(C.EMP_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 지사명 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(B.BRANCH_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+	        		
+				<!-- <isEqual property="searchCondition1" compareValue="1">NOTI_GUBUN
+					= '전체'
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="2">NOTI_GUBUN
+					= '교사'
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="3">NOTI_GUBUN
+					= '학생'
+				</isEqual> 
+				
+				<isNotEmpty property="searchCondition1" prepend="AND">
+			<isNotEmpty property="searchCondition2" >
+			FUNC_DATE BETWEEN #searchCondition1# AND #searchCondition2#
+			</isNotEmpty>
+		</isNotEmpty>  -->			
+		</dynamic>
+	</sql>
+	
+	<!-- 작업로그 리스트 -->
+	<select id="Ech0804DAO.selectEch0804List" parameterClass="searchVO" resultClass="egovMap">
+		/* Ech0804DAO.selectEch0804List */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(	
+				SELECT	
+				    A.CORP_CD                   AS corpCd
+				  , A.MB_CD						AS mbCd
+				  , A.MB_NAME                   AS mbName             
+	              , A.LOG_CONT                  AS logCont
+	              , A.ACCE_IP					AS acceIp
+	              , A.BRANCH_CD					AS branchCd
+	              , B.BRANCH_NAME				AS branchNm
+	              , A.DATA_REGNT				AS dataRegnt
+	              , C.EMP_NAME					AS empName
+	              , A.DATA_REGDT				AS dataRegdt
+				  ]]>
+		<include refid="where_ct1050mJob" />	<![CDATA[
+				AND LOG_CLS NOT IN ('1000')
+				]]>
+			<![CDATA[	
+			) Z
+				
+			ORDER BY Z.dataRegdt DESC
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY
+			
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- 작업로그 cnt -->
+	<select id="Ech0804DAO.selectEch0804ListCnt" parameterClass="searchVO" resultClass="int">
+		/*Ech0804DAO.selectEch0804ListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*) totalCnt
+	]]>
+		<include refid="where_ct1050mJob" />
+	<![CDATA[
+		AND LOG_CLS NOT IN ('1000')
+	]]>	
+	</select>
+
+	<!-- 작업로그 엑셀 리스트 -->
+	<select id="Ech0804DAO.selectEch0804Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0804DAO.selectEch0804Excel */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+				SELECT	
+				    A.CORP_CD                   AS corpCd
+				  , A.MB_CD						AS mbCd
+				  , A.MB_NAME                   AS mbName             
+	              , A.LOG_CONT                  AS logCont
+	              , A.ACCE_IP					AS acceIp
+	              , A.BRANCH_CD					AS branchCd
+	              , B.BRANCH_NAME				AS branchNm
+	              , A.DATA_REGNT				AS dataRegnt
+	              , C.EMP_NAME					AS empName
+				  , CONVERT(CHAR(23), A.DATA_REGDT, 21) AS dataRegdt
+			]]>
+		<include refid="where_ct1050mJob" />	<![CDATA[
+			AND LOG_CLS NOT IN ('1000') 
+			]]>
+			<![CDATA[
+			) Z			  
+			ORDER BY Z.dataRegdt DESC
+		]]>	
+	</select>
+
+	
+	<!-- /작업로그관리****************************************************************************************************************************************** -->
+
+</sqlMap>

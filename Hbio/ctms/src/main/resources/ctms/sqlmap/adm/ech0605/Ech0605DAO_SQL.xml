@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- SMS메시지관리******************************************************************************************************************************************* -->
+	<sql id="where_rm1010m">
+		FROM
+		RM1010M
+  		<dynamic prepend="WHERE">
+  			<isNotEmpty property="corpCd" prepend="AND">
+	        		(CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+  			<isNotEmpty property="searchWord" prepend="AND">
+				(TITLE LIKE CONCAT ('%',#searchWord#,'%') 
+				OR CONT LIKE CONCAT ('%',#searchWord#,'%'))
+			</isNotEmpty>		
+		</dynamic>
+	</sql>
+
+<!-- 			<isNotEmpty property="searchCondition1" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="1">USE_YN
+					= 'Y'
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="2">USE_YN
+					= 'N'
+				</isEqual>				
+			</isNotEmpty> -->
+	
+	<!-- SMS메시지관리 리스트 -->
+	<select id="Ech0605DAO.selectEch0605List" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0605DAO.selectEch0605List */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT  
+	                CORP_CD                     AS corpCd            
+	              , EMAILT_NO                     AS emailtNo            
+	              , TITLE                       AS title             
+	              , CONT                        AS cont              
+	              , REMK                        AS remk              
+	              , DATA_REGDT                  AS dataRegdt         
+	              , DATA_REGNT                  AS dataRegnt 
+				]]>
+		<include refid="where_rm1010m" />	<![CDATA[
+				
+			) A		 
+			ORDER BY A.emailtNo DESC
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- SMS메시지관리 엑셀 리스트 -->
+	<select id="Ech0605DAO.selectEch0605Excel" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0605DAO.selectEch0605Excel */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT  
+	                CORP_CD                     AS corpCd            
+	              , EMAILT_NO                     AS emailtNo            
+	              , TITLE                       AS title             
+	              , CONT                        AS cont              
+	              , REMK                        AS remk              
+	              , DATA_REGDT                  AS dataRegdt         
+	              , DATA_REGNT                  AS dataRegnt										
+				]]>
+		<include refid="where_rm1010m" />	<![CDATA[
+			) A 
+			ORDER BY A.emailtNo DESC
+			
+		]]>	
+	</select>
+
+
+	<!-- SMS메시지관리 cnt -->
+	<select id="Ech0605DAO.selectEch0605ListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ech0605DAO.selectEch0605ListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+	]]>
+		<include refid="where_rm1010m" />
+	</select>
+
+	<!-- SMS메시지관리 상세보기 -->
+	<select id="Ech0605DAO.selectEch0605One" parameterClass="rm1010mVO"
+		resultClass="rm1010mVO">
+		/* Ech0605DAO.selectEch0605One */
+	<![CDATA[
+	    SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.EMAILT_NO                     AS emailtNo            
+              , A.TITLE                       AS title             
+              , A.CONT                        AS cont              
+              , A.REMK                        AS remk              
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt         
+        FROM    RM1010M A
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.EMAILT_NO       = #emailtNo#              
+        ORDER   BY
+                A.CORP_CD
+              , A.EMAILT_NO
+	]]>
+	</select>
+	
+    <!-- 이메일발송메시지관리 삭제 -->
+	<delete id="Ech0605DAO.deleteEch0605" parameterClass="rm1010mVO">
+		/* Ech0605DAO.deleteEch0605 */
+	<![CDATA[
+		DELETE
+        FROM
+                RM1010M
+        WHERE
+                CORP_CD         = #corpCd#              
+             AND EMAILT_NO         = #emailtNo#              
+	]]>
+	</delete>
+	
+	<!-- 이메일발송메시지관리 추가 -->
+	<insert id="Ech0605DAO.insertEch0605" parameterClass="rm1010mVO">
+		/* Ech0605DAO.insertEch0605 */
+	<![CDATA[
+		DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                  
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 4)                                       
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  @P_RTN_KEY = CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.EMAILT_NO), '000000')) + 1)            
+        FROM    RM1010M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+ 
+ 
+        INSERT  RM1010M(
+                CORP_CD                     
+              , EMAILT_NO                     
+              , TITLE                       
+              , CONT                        
+              , REMK                        
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , @P_RTN_KEY
+              , #title#
+              , #cont#
+              , #remk#
+              , GETDATE()
+              , #dataRegnt#
+        )
+	]]>
+	</insert>
+
+	<!-- 이메일발송메시지관리 수정 -->
+	<update id="Ech0605DAO.updateEch0605" parameterClass="rm1010mVO">
+		/* Ech0605DAO.updateEch0605 */
+	<![CDATA[
+	    UPDATE
+                RM1010M
+        SET
+                              
+              TITLE                       = #title#                       
+              , CONT                        = #cont#                        
+              , REMK                        = #remk#                        
+              , DATA_REGDT                  = #dataRegdt#                   
+              , DATA_REGNT                  = #dataRegnt#                   
+        WHERE
+                CORP_CD         = #corpCd#              
+       	AND     EMAILT_NO         = #emailtNo#              
+	]]>
+	</update>
+	
+	
+	<!-- /이메일발송메시지관리****************************************************************************************************************************************** -->
+
+</sqlMap>

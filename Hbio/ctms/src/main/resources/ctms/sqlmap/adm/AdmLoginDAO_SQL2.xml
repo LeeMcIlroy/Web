@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	 
+	<!-- 관리자 로그인 -->
+	<select id="AdmLoginDAO.selectAdmLoginProc" parameterClass="adminVO" resultClass="adminVO">
+/* AdmLoginDAO.selectAdmLoginProc */
+	<![CDATA[
+		SELECT
+			ADMIN_ID			AS adminId
+			, ADMIN_PW			AS adminPw
+			, NAME				AS name
+			, DEPART			AS depart
+			, ACCE_IP			AS acceIp
+			, IP_ALL_YN			AS ipAllYn
+			, USE_YN			AS useYn
+			, ADMIN_TYPE		AS adminType
+			, DTL_YN			AS dtlYn
+			, ENTRAN			AS entran
+			, REGIST			AS regist
+			, STUDENT			AS student
+			, CLSS				AS clss
+			, ADMSTR			AS admstr
+			, STAT				AS stat
+			, OPER				AS oper
+			, CURR				AS curr
+			, DATE_FORMAT(LOGIN_DATE_TIME, '%Y.%m.%d %H:%i')	AS loginDateTime
+			, LOGIN_FAIL		AS loginFail
+		FROM
+			TB_ctms_ADMIN
+		WHERE
+			ADMIN_ID = #adminId#
+	]]>	
+	</select>
+	
+	<update id="AdmLoginDAO.updateAdmLoginDateTime" parameterClass="adminVO">
+	/* AdmLoginDAO.updateAdmLoginDateTime */
+		UPDATE
+			TB_ctms_ADMIN
+		SET
+			LOGIN_DATE_TIME = SYSDATE()
+		WHERE
+			ADMIN_ID = #adminId#
+		AND
+			ADMIN_PW = #adminPw#
+	</update>
+	
+	<update id="AdmLoginDAO.updateAdmLoginFail" parameterClass="adminVO">
+	/* AdmLoginDAO.updateAdmLoginFail */
+	<![CDATA[
+		UPDATE
+			TB_ctms_ADMIN
+		SET
+			LOGIN_FAIL = #loginFail#
+		WHERE
+			ADMIN_ID = #adminId#
+	]]>
+	</update>
+</sqlMap>

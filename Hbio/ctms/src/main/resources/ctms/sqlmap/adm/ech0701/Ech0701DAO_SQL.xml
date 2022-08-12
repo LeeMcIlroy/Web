@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- CTMS운영사관리******************************************************************************************************************************************* -->
+	<!-- 변수목록
+                A.CORP_CD                     AS corpCd            회사코드
+                A.CORP_NAME                   AS corpName          회사명칭
+                A.CORP_EM                     AS corpEm            영문명칭
+                A.BASE_DT                     AS baseDt            설립일자
+                A.BREG_RSNO                   AS bregRsno          사업자번호
+                A.CORP_NO                     AS corpNo            법인번호
+                A.EXCUT_NAME                  AS excutName         대표자성명
+                A.BSLN                        AS bsln              업태
+                A.BSCL                        AS bscl              종목(업종)
+                A.POST_NO                     AS postNo            우편번호
+                A.ADDR_MAIN                   AS addrMain          기본주소
+                A.ADDR_GITA                   AS addrGita          기타주소
+                A.TELNO                       AS telno             전화번호
+                A.FAXNO                       AS faxno             팩스번호
+                A.EMAIL                       AS email             대표메일
+                A.HOMEPAGE                    AS homepage          홈페이지
+                A.USE_RULE                    AS useRule           이용약관
+                A.PRIV_RULE                   AS privRule          개인정보처리방침
+                A.CNTR_TELNO                  AS cntrTelno         고객센터전화번호
+                A.MNG_NAME                    AS mngName           담당자명
+                A.MNG_ORG                     AS mngOrg            담당자부서명
+                A.MNGHP_NO                    AS mnghpNo           담당자휴대폰
+                A.MNG_EMAIL                   AS mngEmail          담당자이메일
+                A.PRIVMNG_NAME                AS privmngName       개인정보담당자
+                A.USE_YN                      AS useYn             사용여부
+                A.RS_NO1                      AS rsNo1             연구고유번호
+                A.RV_NO1                      AS rvNo1             IRB심의고유번호
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->
+	<sql id="where_ct1000m">
+		FROM
+		CT1000M
+		<!--  <dynamic prepend="WHERE">
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="1">NOTI_GUBUN
+					= '전체'
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="2">NOTI_GUBUN
+					= '교사'
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="3">NOTI_GUBUN
+					= '학생'
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="searchWord" prepend="AND">
+				(NOTI_TITLE LIKE
+				CONCAT ('%',#searchWord#,'%') OR NOTI_CONTENT LIKE
+				CONCAT
+				('%',#searchWord#,'%'))
+			</isNotEmpty>
+		
+		</dynamic>  -->
+	</sql>
+	
+	<!-- CTMS운영사관리 리스트 -->
+	<select id="Ech0701DAO.selectEch0701List" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0701DAO.selectEch0701List */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT 
+				    CORP_CD                     
+	              , CORP_NAME                   
+	              , CORP_EM                     
+	              , BASE_DT                     
+	              , BREG_RSNO                   
+	              , CORP_NO                     
+	              , EXCUT_NAME                  
+	              , BSLN                        
+	              , BSCL                        
+	              , POST_NO                     
+	              , ADDR_MAIN                   
+	              , ADDR_GITA                   
+	              , TELNO                       
+	              , FAXNO                       
+	              , EMAIL                       
+	              , HOMEPAGE                    
+	              , USE_RULE                    
+	              , PRIV_RULE                   
+	              , CNTR_TELNO                  
+	              , MNG_NAME                    
+	              , MNG_ORG                     
+	              , MNGHP_NO                    
+	              , MNG_EMAIL                   
+	              , PRIVMNG_NAME                
+	              , USE_YN
+	              , CASE USE_YN
+	              		WHEN 'Y' THEN '사용' 
+	              		WHEN 'N' THEN '미사용'
+	              		ELSE '미정'
+	              	END useYnNm	
+	              , RS_NO1
+	              , RV_NO1                      
+	              , DATA_REGDT                  
+	              , DATA_REGNT
+	              , OP_NO1
+	              , CTRT_NO1                  						
+				]]>
+		<include refid="where_ct1000m" />	<![CDATA[
+			WHERE CORP_CD = #corpCd#
+				
+			)a 
+			ORDER BY CORP_CD DESC
+			
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- CTMS운영사관리 cnt -->
+	<select id="Ech0701DAO.selectEch0701ListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ech0701DAO.selectEch0701ListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*) totalCnt
+	]]>
+		<include refid="where_ct1000m" />
+	</select>
+
+	<!-- CTMS운영사관리 상세보기 -->
+	<select id="Ech0701DAO.selectEch0701View" parameterClass="ct1000mVO"
+		resultClass="ct1000mVO">
+		/* Ech0701DAO.selectEch0701View */
+	<![CDATA[
+	    SELECT
+   			A.CORP_CD                     AS corpCd            
+              , A.CORP_NAME                   AS corpName          
+              , A.CORP_EM                     AS corpEm            
+              , A.BASE_DT                     AS baseDt            
+              , A.BREG_RSNO                   AS bregRsno          
+              , A.CORP_NO                     AS corpNo            
+              , A.EXCUT_NAME                  AS excutName         
+              , A.BSLN                        AS bsln              
+              , A.BSCL                        AS bscl              
+              , A.POST_NO                     AS postNo            
+              , A.ADDR_MAIN                   AS addrMain          
+              , A.ADDR_GITA                   AS addrGita          
+              , A.TELNO                       AS telno             
+              , A.FAXNO                       AS faxno             
+              , A.EMAIL                       AS email             
+              , A.HOMEPAGE                    AS homepage          
+              , A.USE_RULE                    AS useRule           
+              , A.PRIV_RULE                   AS privRule          
+              , A.CNTR_TELNO                  AS cntrTelno         
+              , A.MNG_NAME                    AS mngName           
+              , A.MNG_ORG                     AS mngOrg            
+              , A.MNGHP_NO                    AS mnghpNo           
+              , A.MNG_EMAIL                   AS mngEmail          
+              , A.PRIVMNG_NAME                AS privmngName       
+              , A.USE_YN                      AS useYn
+              , CASE USE_YN
+	              		WHEN 'Y' THEN '사용' 
+	              		WHEN 'N' THEN '미사용'
+	              		ELSE '미정'
+	              	END useYnNm
+              , A.RS_NO1					  AS rsNo1
+              , A.RV_NO1					  AS rvNo1             
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , A.OP_NO1					  AS opNo1	
+	          , A.CTRT_NO1					  AS ctrtNo1         
+	    FROM 
+	        CT1000M A
+	    WHERE 
+	    	A.CORP_CD = #corpCd#
+	    	AND A.USE_YN = 'Y'
+	]]>
+	</select>
+	
+    <!-- CTMS운영사관리 삭제 -->
+	<delete id="Ech0701DAO.deleteEch0701" parameterClass="ct1000mVO">
+		/* Ech0701DAO.deleteEch0701 */
+	<![CDATA[
+		DELETE FROM 
+			CT1000M
+		WHERE
+			CORP_CD = #corpCd#
+	]]>
+	</delete>
+	
+	<!-- CTMS운영사관리 추가 -->
+	<insert id="Ech0701DAO.insertEch0701" parameterClass="ct1000mVO">
+	/* Ech0701DAO.insertEch0701 */
+	<![CDATA[
+		INSERT INTO CT1000M  
+			(
+			 CORP_CD                     
+              , CORP_NAME                   
+              , CORP_EM                     
+              , BASE_DT                     
+              , BREG_RSNO                   
+              , CORP_NO                     
+              , EXCUT_NAME                  
+              , BSLN                        
+              , BSCL                        
+              , POST_NO                     
+              , ADDR_MAIN                   
+              , ADDR_GITA                   
+              , TELNO                       
+              , FAXNO                       
+              , EMAIL                       
+              , HOMEPAGE                    
+              , USE_RULE                    
+              , PRIV_RULE                   
+              , CNTR_TELNO                  
+              , MNG_NAME                    
+              , MNG_ORG                     
+              , MNGHP_NO                    
+              , MNG_EMAIL                   
+              , PRIVMNG_NAME                
+              , USE_YN
+              , RS_NO1 
+              , RV_NO1             
+              , DATA_REGDT                  
+              , DATA_REGNT
+              , OP_NO1
+              , CTRT_NO1        		
+			) 
+		VALUES 
+			(
+   			  #corpCd#
+              , #corpName#
+              , #corpEm#
+              , #baseDt#
+              , #bregRsno#
+              , #corpNo#
+              , #excutName#
+              , #bsln#
+              , #bscl#
+              , #postNo#
+              , #addrMain#
+              , #addrGita#
+              , #telno#
+              , #faxno#
+              , #email#
+              , #homepage#
+              , #useRule#
+              , #privRule#
+              , #cntrTelno#
+              , #mngName#
+              , #mngOrg#
+              , #mnghpNo#
+              , #mngEmail#
+              , #privmngName#
+              , #useYn#
+              , #rsNo1#
+              , #rvNo1#
+              , #dataRegdt#
+              , #dataRegnt#
+              , #opNo1#
+              , #ctrtNo1#		
+			)
+	]]>
+	</insert>
+
+	<!-- CTMS운영사관리 수정 -->
+	<update id="Ech0701DAO.updateEch0701" parameterClass="ct1000mVO">
+		/* Ech0701DAO.updateEch0701 */
+	<![CDATA[
+	    UPDATE
+	    	CT1000M
+	    SET 
+	    	  CORP_NAME                   = #corpName#                    
+              , CORP_EM                     = #corpEm#                      
+              , BASE_DT                     = #baseDt#                      
+              , BREG_RSNO                   = #bregRsno#                    
+              , CORP_NO                     = #corpNo#                      
+              , EXCUT_NAME                  = #excutName#                   
+              , BSLN                        = #bsln#                        
+              , BSCL                        = #bscl#                        
+              , POST_NO                     = #postNo#                      
+              , ADDR_MAIN                   = #addrMain#                    
+              , ADDR_GITA                   = #addrGita#                    
+              , TELNO                       = #telno#                       
+              , FAXNO                       = #faxno#                       
+              , EMAIL                       = #email#                       
+              , HOMEPAGE                    = #homepage#                    
+              , USE_RULE                    = #useRule#                     
+              , PRIV_RULE                   = #privRule#                    
+              , CNTR_TELNO                  = #cntrTelno#                   
+              , MNG_NAME                    = #mngName#                     
+              , MNG_ORG                     = #mngOrg#                      
+              , MNGHP_NO                    = #mnghpNo#                     
+              , MNG_EMAIL                   = #mngEmail#                    
+              , PRIVMNG_NAME                = #privmngName#                 
+              , USE_YN                      = #useYn#
+              , RS_NO1                      = #rsNo1# 
+              , RV_NO1                      = #rvNo1#
+              , DATA_REGDT                  = GETDATE()                   
+              , DATA_REGNT                  = #dataRegnt# 
+              , OP_NO1		                = #opNo1#
+              , CTRT_NO1		            = #ctrtNo1#  			
+	    WHERE
+	    	CORP_CD = #corpCd#
+	]]>
+	</update>
+	
+	
+	
+	
+	<!-- /CTMS운영사관리****************************************************************************************************************************************** -->
+
+</sqlMap>

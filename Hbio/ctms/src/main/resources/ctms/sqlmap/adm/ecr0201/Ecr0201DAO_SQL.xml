@@ -1,0 +1,1455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 연구대상자(CRF작성관리)******************************************************************************************************************************************* -->
+
+	<sql id="where_rs1010mItem22ecrFin">
+		FROM    RS1010M A
+        <dynamic prepend="INNER JOIN RS1020M N">
+        	<isNotEmpty property="branchCd" prepend="ON">
+        		ON		N.CORP_CD		= A.CORP_CD
+		        AND		N.RS_NO			= A.RS_NO
+		        AND		N.BRANCH_CD		= #branchCd#
+        	</isNotEmpty>
+		</dynamic>
+        INNER JOIN CT1020M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.BRANCH_CD     = A.BRANCH_CD
+                INNER JOIN CM4000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.CD_CLS        = 'CT2050'
+        AND     G.CLS_CAT       = '3'
+        AND     G.CD            = A.RSST_CLS
+        INNER JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CT2030'
+        AND     K.CLS_CAT       = '3'
+        AND     K.CD            = A.RS_NO3
+        LEFT OUTER JOIN CM4000M U
+        ON      U.CORP_CD       = A.CORP_CD
+        AND     U.CD_CLS        = 'CT2040'
+        AND     U.CLS_CAT       = '3'
+        AND     U.CD            = A.ITEM_CLS 
+        LEFT OUTER JOIN CT2000M V
+        ON 		V.CORP_CD = A.CORP_CD 
+        AND 	V.VEND_NO = A.VEND_NO
+        LEFT OUTER join (SELECT 
+	    						DISTINCT SUBSTRING(a.RS_CD,1,14) AS RS_CD ,
+	    						STUFF(( 
+	        							SELECT 
+	            						',' +VEND_NAME 
+	        							FROM 
+	           							 RS1000M b
+	           							 INNER JOIN CT2000M b1
+	           							 ON b1.CORP_CD = b.CORP_CD
+	           							 AND b1.VEND_NO = b.VEND_NO 
+								        WHERE
+								        	b.CORP_CD = A.CORP_CD
+								            AND b.RS_CD LIKE CONCAT(SUBSTRING(A.RS_CD,1,14),'%')
+								            FOR XML PATH('') ),1,1,'') AS VEND 
+								FROM 
+								    RS1000M a) W
+			ON W.RS_CD LIKE CONCAT(SUBSTRING(A.RS_CD,1,14),'%')       
+		<dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition8" prepend="AND">
+	        		(A.RS_CD = #searchCondition8#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_STDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_ENDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty property="searchCondition5" prepend="AND">
+	        		(A.RS_NO3 = #searchCondition5#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.RSST_CLS = #searchCondition6#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_CD LIKE CONCAT ('%',#searchWord#,'%')
+							OR V.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구명칭 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 고객사명 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(V.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구코드 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty property="menuType" prepend="AND">
+					<isEqual property="menuType" compareValue="1">
+						A.MK_CLS = '1020'
+					</isEqual>
+					<isEqual property="menuType" compareValue="2">
+						A.MK_CLS = '1030'
+					</isEqual>
+					<isEqual property="menuType" compareValue="3">
+						A.MK_CLS IN ('1000', '1010')
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+	
+	<!-- CRF작성관리 리스트 -->
+	<select id="Ecr0201DAO.selectEcr0201List" parameterClass="searchVO" resultClass="egovMap">
+		/* Ecr0201DAO.selectEcr0201List */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+				SELECT  
+			  		A.CORP_CD                     AS corpCd            
+	              , A.RS_NO                       AS rsNo              
+	              , A.BRANCH_CD                   AS branchCd          
+	              , F.BRANCH_NAME                 AS branchName        
+	              , A.RS_CD         	          AS rsCd            
+	              , A.REG_DT                      AS regDt             
+	              , A.RS_STDT                     AS rsStdt            
+	              , A.RS_ENDT                     AS rsEndt            
+	              , A.RS_PTC                      AS rsPtc          
+	              , A.RS_PPS    	              AS rsPps         
+	              , A.RS_NO3                      AS rsNo3
+	              , K.CD_NAME                     AS rsNo3Nm
+	              , A.RS_DRT                      AS rsDrt        
+	              , A.RS_SCNT                     AS rsScnt          
+	              , A.RS_MSCNT                    AS rsMscnt       
+	              , A.RSST_CLS                    AS rsStCls          
+	              , G.CD_NAME                     AS rsstClsNm        
+	              , A.REP_DT                      AS repDt             
+	              , A.VISIT_CNT                   AS visitCnt          
+	              , A.DUPL_YN                     AS duplYn            
+	              , A.RS_NAME                     AS rsName            
+	              , A.RS_PAY                      AS rsPay             
+	              , A.IRBSM_YN                    AS irbsmYn       
+	              , A.ITEM_CLS                    AS itemCls
+	              , U.CD_NAME 	                  AS itemClsNm
+	              , A.ITEM_NAME                   AS itemName
+	              , A.VEND_NO					  AS vendNo
+	              , V.VEND_NAME 				  AS vendName
+	              , A.VMNGHP_NO					  AS vmnghpNo
+	              , A.VMNG_EMAIL				  AS vmngEmail
+	              , A.DATA_LOCK_YN				  AS dataLockYn
+	              , A.DEL_YN                      AS delYn
+	              , (SELECT COUNT(*) FROM RS2010M L
+	              	 WHERE L.CORP_CD = A.CORP_CD 
+	              	 AND L.RS_NO = A.RS_NO) AS usechkCnt
+	              , W.VEND						  AS vendName2
+	              , A.MK_YN						  AS mkYn
+	              , A.MK_CLS					  AS mkCls
+	              , CONCAT(LOWER(A.CORP_CD),LOWER(A.RS_NO)) AS mapKey
+	              , (SELECT 
+							COUNT(*) 					
+						FROM CR2120M Z1
+						INNER JOIN RS2010M Z2 
+						ON Z2.CORP_CD 		= Z1.CORP_CD 
+						AND Z2.RS_NO 		= Z1.RS_NO
+						AND Z2.RSI_NO 		= Z1.RSI_NO
+						INNER JOIN CR2100M Z3
+						ON Z3.CORP_CD 		= Z1.CORP_CD
+						AND Z3.TEMP_NO 		= Z1.TEMP_NO 
+						AND Z3.TEMP_TYPE 	= '1030'
+						WHERE Z1.CORP_CD 	= A.CORP_CD
+						AND Z1.RS_NO 		= A.RS_NO
+						AND Z1.MK_YN 		= 'Y'
+	              	) AS procMkFinCnt 							 	 
+              ]]>
+		<include refid="where_rs1010mItem22ecrFin" />	
+		<![CDATA[
+			AND A.DEL_YN = 'N'
+			]]>
+		<![CDATA[
+				
+			) Z 
+			ORDER BY Z.rsNo DESC
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY			
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- CRF작성관리 엑셀 리스트 -->
+	<select id="Ecr0201DAO.selectEcr0201Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecr0201DAO.selectEcr0201Excel */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+				SELECT  
+			  		A.CORP_CD                     AS corpCd            
+	              , A.RS_NO                       AS rsNo              
+	              , A.BRANCH_CD                   AS branchCd          
+	              , F.BRANCH_NAME                 AS branchName        
+	              , A.RS_CD         	          AS rsCd            
+	              , A.REG_DT                      AS regDt             
+	              , A.RS_STDT                     AS rsStdt            
+	              , A.RS_ENDT                     AS rsEndt            
+	              , A.RS_PTC                      AS rsPtc          
+	              , A.RS_PPS    	              AS rsPps         
+	              , A.RS_NO3                      AS rsNo3
+	              , K.CD_NAME                     AS rsNo3Nm
+	              , A.RS_DRT                      AS rsDrt        
+	              , A.RS_SCNT                     AS rsScnt          
+	              , A.RS_MSCNT                    AS rsMscnt       
+	              , A.RSST_CLS                    AS rsStCls          
+	              , G.CD_NAME                     AS rsstClsNm        
+	              , A.REP_DT                      AS repDt             
+	              , A.VISIT_CNT                   AS visitCnt          
+	              , A.DUPL_YN                     AS duplYn            
+	              , A.RS_NAME                     AS rsName            
+	              , A.RS_PAY                      AS rsPay             
+	              , A.IRBSM_YN                    AS irbsmYn       
+	              , A.ITEM_CLS                    AS itemCls
+	              , U.CD_NAME 	                  AS itemClsNm
+	              , A.ITEM_NAME                   AS itemName
+	              , A.VEND_NO					  AS vendNo
+	              , V.VEND_NAME 				  AS vendName
+	              , A.VMNGHP_NO					  AS vmnghpNo
+	              , A.VMNG_EMAIL				  AS vmngEmail
+	              , A.DATA_LOCK_YN				  AS dataLockYn
+	              , A.DEL_YN                      AS delYn
+	              , (SELECT COUNT(*) FROM RS2010 L
+	              	 WHERE L.CORP_CD = A.CORP_CD 
+	              	 AND L.RS_NO = A.RS_NO) AS usechkCnt
+				]]>
+		<include refid="where_rs1010mItem22ecrFin" />	
+				<![CDATA[
+			AND A.DEL_YN = 'N'
+			]]>
+		
+		<![CDATA[				
+			) Z 
+			ORDER BY Z.rsNo DESC
+			
+		]]>	
+	</select>
+
+
+	<!-- 연구과제 cnt -->
+	<select id="Ecr0201DAO.selectEcr0201ListCnt" parameterClass="searchVO" resultClass="int">
+		/*Ecr0201DAO.selectEcr0201ListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+	]]>
+		<include refid="where_rs1010mItem22ecrFin" />
+				<![CDATA[
+			AND A.DEL_YN = 'N'
+			]]>
+	</select>
+
+	<!-- 연구계획 상세보기 -->
+	<select id="Ecr0201DAO.selectEcr0201RsPlanView" parameterClass="rs1010mVO" resultClass="rs1010mVO">
+	/* Ecr0201DAO.selectEcr0201RsPlanView */
+	<![CDATA[
+			SELECT
+     	         A.CORP_CD                     AS corpCd            
+	             , A.RS_NO                       AS rsNo              
+	             , A.BRANCH_CD                   AS branchCd          
+	             , F.BRANCH_NAME                 AS branchNm        
+	             , A.RS_CD         	          	 AS rsCd            
+	             , A.REG_DT                      AS regDt             
+	             , A.RS_STDT                     AS rsStdt            
+	             , A.RS_ENDT                     AS rsEndt            
+	             , A.RS_PTC                      AS rsPtc          
+	             , A.RS_PPS    	                 AS rsPps         
+	             , A.RS_NO3                      AS rsNo3
+	             , K.CD_NAME                     AS rsNo3Nm
+	             , A.RS_DRT                      AS rsDrt        
+	             , A.RS_SCNT                     AS rsScnt          
+	             , A.RS_MSCNT                    AS rsMscnt       
+	             , A.RSST_CLS                    AS rsstCls          
+	             , G.CD_NAME                     AS rsstClsNm        
+	             , A.REP_DT                      AS repDt             
+	             , A.VISIT_CNT                   AS visitCnt          
+	             , A.DUPL_YN                     AS duplYn            
+	             , A.RS_NAME                     AS rsName            
+	             , A.RS_PAY                      AS rsPay             
+	             , A.IRBSM_YN                    AS irbsmYn       
+	             , A.ITEM_CLS                    AS itemCls
+	             , U.CD_NAME 	                 AS itemClsNm
+	             , A.ITEM_NAME                   AS itemName
+	             , A.VEND_NO					 AS vendNo
+	             , V.VEND_NAME 	 				 AS vendName
+	             , A.VMNG_NAME					 AS vmngName
+	             , A.VMNGHP_NO					 AS vmnghpNo
+	             , A.VMNG_EMAIL					 AS vmngEmail
+	             , A.DATA_LOCK_YN				 AS dataLockYn
+	             , A.DEL_YN                      AS delYn
+	             , A.MK_CLS						 AS mkCls
+	      	FROM    RS1010M A
+	        LEFT OUTER JOIN RS5000M H 
+	        ON 		H.CORP_CD       = A.CORP_CD
+	        AND 	H.RS_NO  = A.RS_NO 
+	        INNER JOIN CT1020M F
+	        ON      F.CORP_CD       = A.CORP_CD
+	        AND     F.BRANCH_CD     = A.BRANCH_CD
+	        INNER JOIN CM4000M G
+	        ON      G.CORP_CD       = A.CORP_CD
+	        AND     G.CD_CLS        = 'CT2050'
+	        AND     G.CLS_CAT       = '3'
+	        AND     G.CD            = A.RSST_CLS
+			INNER JOIN CM4000M K
+	        ON      K.CORP_CD       = A.CORP_CD
+	        AND     K.CD_CLS        = 'CT2030'
+	        AND     K.CLS_CAT       = '3'
+	        AND     K.CD            = A.RS_NO3
+	        LEFT OUTER JOIN CM4000M U
+	        ON      U.CORP_CD       = A.CORP_CD
+	        AND     U.CD_CLS        = 'CT2040'
+	        AND     U.CLS_CAT       = '3'
+	        AND     U.CD            = A.ITEM_CLS
+	        LEFT OUTER JOIN CT2000M V
+	        ON 		V.CORP_CD 		= A.CORP_CD 
+	        AND 	V.VEND_NO 		= A.VEND_NO        
+	        WHERE   A.CORP_CD       = #corpCd#              
+	      	AND     A.RS_NO    		= #rsNo#          
+	]]>
+	</select>
+
+	<!-- 제품사용 상세보기 -->
+	<select id="Ecr0201DAO.selectEcr0201View" parameterClass="cr3200mVO"
+		resultClass="cr3200mVO">
+		/* Ecr0201DAO.selectEcr0201View */
+	<![CDATA[
+     SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RS_NO                       AS rsNo              
+              , F.RS_NAME                     AS rsName            
+              , A.ITEM_NAME                   AS itemName          
+              , A.CHK_STDT                    AS chkStdt           
+              , A.CHK_ENDT                    AS chkEndt           
+              , A.CONT                        AS cont
+              , A.CHK_TRM                     AS chkTrm              
+              , A.CHK_CNT                     AS chkCnt            
+              , A.DSP_NAME1                   AS dspName1          
+              , A.DSP_NAME2                   AS dspName2          
+              , A.DSP_NAME3                   AS dspName3          
+              , A.DSP_NAME4                   AS dspName4          
+              , A.DSP_NAME5                   AS dspName5          
+              , A.TCHK_CNT                    AS tchkCnt           
+              , A.RE_YN                       AS reYn              
+              , A.USE_YN                      AS useYn             
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt         
+        FROM    CR3200M A
+                INNER JOIN RS1000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.RS_NO         = A.RS_NO               
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RS_NO         = #rsNo#                
+        AND     A.USE_YN        = 'Y'
+        ORDER   BY
+                A.CORP_CD
+              , A.RS_NO
+	]]>
+	</select>
+	
+	<!-- CRF작성관리 삭제 -->
+	<delete id="Ecr0201DAO.deleteEcr0201" parameterClass="cr3200mVO">
+		/* Ecr0201DAO.deleteEcr0201 */
+	<![CDATA[
+		DELETE
+        FROM
+                CR3200M
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     RS_NO           = #rsNo#
+	]]>
+	</delete>
+	
+	<!-- CRF작성관리 추가 -->
+	<insert id="Ecr0201DAO.insertEcr0201" parameterClass="cr3200mVO">
+	/* Ecr0201DAO.insertEcr0201 */
+	<![CDATA[
+		INSERT  CR3200M(
+                CORP_CD                     
+              , RS_NO                       
+              , ITEM_NAME                   
+              , CHK_STDT                    
+              , CHK_ENDT                    
+              , CONT
+              , CHK_TRM               
+              , CHK_CNT                     
+              , DSP_NAME1                   
+              , DSP_NAME2                   
+              , DSP_NAME3                   
+              , DSP_NAME4                   
+              , DSP_NAME5                   
+              , TCHK_CNT                    
+              , RE_YN                       
+              , USE_YN                      
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #rsNo#
+              , #itemName#
+              , #chkStdt#
+              , #chkEndt#
+              , #cont#
+              , #chkTrm#
+              , #chkCnt#
+              , #dspName1#
+              , #dspName2#
+              , #dspName3#
+              , #dspName4#
+              , #dspName5#
+              , #tchkCnt#
+              , #reYn#
+              , #useYn#
+              , GETDATE()
+              , #dataRegnt#
+        )
+	]]>
+	</insert>
+
+	<!-- CRF작성관리  수정 -->
+	<update id="Ecr0201DAO.updateEcr0201" parameterClass="cr3200mVO">
+		/* Ecr0201DAO.updateEcr0201 */
+	<![CDATA[
+	    UPDATE
+                CR3200M
+        SET
+                ITEM_NAME                   = #itemName#                    
+              , CHK_STDT                    = #chkStdt#                     
+              , CHK_ENDT                    = #chkEndt#                     
+              , CONT                        = #cont# 
+              , CHK_TRM                     = #chkTrm#                       
+              , CHK_CNT                     = #chkCnt#                      
+              , DSP_NAME1                   = #dspName1#                    
+              , DSP_NAME2                   = #dspName2#                    
+              , DSP_NAME3                   = #dspName3#                    
+              , DSP_NAME4                   = #dspName4#                    
+              , DSP_NAME5                   = #dspName5#                    
+              , TCHK_CNT                    = #tchkCnt#                     
+              , RE_YN                       = #reYn#                        
+              , USE_YN                      = #useYn#                       
+              , DATA_REGDT                  = GETDATE()
+              , DATA_REGNT                  = #dataRegnt#                   
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     RS_NO           = #rsNo#             
+	]]>
+	</update>
+	
+	<sql id="where_cr3210mChk22ecrFin">
+		FROM RS2010M A
+		LEFT OUTER JOIN SB1000M C
+		ON C.CORP_CD 	= A.CORP_CD 
+		AND C.RSJ_NO 	= A.RSJ_NO
+		INNER JOIN RS1010M D
+		ON D.CORP_CD 	= A.CORP_CD
+		AND D.RS_NO		= A.RS_NO
+		INNER JOIN CR2120M E
+		ON E.CORP_CD	= A.CORP_CD
+		AND E.RS_NO		= A.RS_NO
+		AND E.RSI_NO	= A.RSI_NO
+		INNER JOIN CR2100M F
+		ON F.CORP_CD	= A.CORP_CD
+		AND F.TEMP_NO	= E.TEMP_NO
+		AND F.TEMP_TYPE = '1030'
+		INNER JOIN CR2110M G
+		ON G.CORP_CD	= A.CORP_CD
+		AND G.RS_NO		= A.RS_NO
+		AND G.TEMP_NO	= F.TEMP_NO
+		WHERE A.CORP_CD = #corpCd#
+		AND A.RS_NO 	= #rsNo#
+		AND A.CFM_YN	= 'Y'
+		AND A.RSI_NO3 IS NOT NULL
+	</sql>
+
+	<!-- 피험자별 CRF작성관리 리스트 -->
+	<select id="Ecr0201DAO.selectEcr0201ChkList" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecr0201DAO.selectEcr0201ChkList */
+	<![CDATA[
+	SELECT
+		Z.* 
+		FROM 
+		(
+			SELECT
+				ROW_NUMBER() OVER(order by A.RS_NO DESC) rownum
+				, A.CORP_CD 	AS corpCd 
+				, A.RS_NO 		AS rsNo
+				, A.SUB_NO 		AS subNo 
+				, A.RSJ_NO 		AS rsjNo
+				, A.RSI_NO 		AS rsiNo 
+				, A.RSI_NO3		AS rsiNo3
+				, A.RSJ_NAME 	AS rsjName
+				, C.BR_DT 		AS brDt
+				, FLOOR(CAST(DATEDIFF(DAY,C.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age
+				, C.GEN_YN 		AS genYn
+				, CASE C.GEN_YN 
+					WHEN '1' THEN '남'
+					WHEN '2' THEN '여'
+				  END AS genYnNm		
+				, C.HP_NO		AS hpNo
+				, A.ETC	        AS etc
+				, (SELECT COUNT(*)
+					FROM CR2110M D
+					WHERE D.CORP_CD = A.CORP_CD
+					AND D.RS_NO = A.RS_NO) AS tmplCnt
+				, (SELECT COUNT(*)
+					FROM CR2120M E
+					WHERE E.CORP_CD = A.CORP_CD
+					AND E.RS_NO = A.RS_NO
+					AND E.RSI_NO = A.RSI_NO
+					AND E.MK_YN = 'Y') AS mkCnt
+				, E.MK_YN		AS mkYn
+				, E.TEMP_NO		AS tempNo
+				, A.DOUT_YN		AS doutYn
+				, A.DOUT_CONT	AS doutCont
+				, A.DOUT_DT		AS doutDt
+				, A.DOUT_CLS	AS doutCls
+				, F.UPAGE_CNT	AS upageCnt
+				, G.SPAGE_CNT 	AS spageCnt
+				, D.TPAGE_CNT	AS tpageCnt
+				, CONCAT(LOWER(A.CORP_CD),LOWER(A.RS_NO),LOWER(A.RSI_NO),LOWER(E.TEMP_NO)) AS mapKey
+				, CONCAT(LOWER(A.CORP_CD),LOWER(A.RS_NO),LOWER(A.RSI_NO)) AS mapKey2
+				, CONCAT(D.RS_NO1,D.RS_NO2,'-',A.RSI_NO) AS setRsNo
+			  ]]>
+		<include refid="where_cr3210mChk22ecrFin" />	<![CDATA[				
+			) Z 
+			ORDER   BY
+	                Z.corpCd
+             	  , z.rsNo
+             	  , z.rsiNo3			
+		]]>	
+	</select>
+	
+	<!-- 피험자별 CRF작성관리 cnt -->
+	<select id="Ecr0201DAO.selectEcr0201ChkListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ecr0201DAO.selectEcr0201ChkListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+	]]>
+		<include refid="where_cr3210mChk22ecrFin" />
+	</select>
+
+	<!-- 연구대상자  제품사용일괄 등록 -->
+	<insert id="Ecr0201DAO.insertEcr0201ItemUse" parameterClass="egovMap">
+	/* Ecr0201DAO..insertEcr0201ItemUse */
+	INSERT CR3210M(
+					CORP_CD
+					, RS_NO
+					, RSJ_NO
+					, CHK_STDT
+					, CHK_ENDT
+					, CHK_CNT
+					, TCHK_CNT
+					, RE_YN
+					, ST_YN
+					, REMK
+					, DATA_REGDT
+					, DATA_REGNT)
+			SELECT 
+					A.CORP_CD
+					, A.RS_NO
+					, A.RSJ_NO
+					, #chkStdt#
+					, #chkEndt#
+					, 0
+					, ((DATEDIFF(DD, B.CHK_STDT, B.CHK_ENDT) + 1)/B.CHK_TRM) * B.CHK_TRM * B.CHK_CNT
+					, ''
+					, 'N'
+					,''
+					, GETDATE()
+					, #dataRegnt#
+			FROM RS2000M A
+			INNER JOIN cr3200M B
+			on B.CORP_CD = A.CORP_CD
+			and B.RS_NO = A.RS_NO
+			WHERE A.CORP_CD = #corpCd#
+			AND A.RS_NO = #rsNo#
+			AND A.CFM_YN = 'Y'
+			AND A.RSI_NO3 IS NOT NULL
+	</insert>		
+	<!-- /CRF작성관리****************************************************************************************************************************************** -->
+
+	
+	<!-- 연구대상자 체크시작, 종료일자 일괄 수정 -->
+	<update id="Ecr0201DAO.updateEcr0201AjaxSaveStep" parameterClass="egovMap">
+	/* Ecr0201DAO.updateEcr0201AjaxSaveStep */
+	UPDATE
+			CR3210M
+		SET
+			CHK_STDT = #step1#
+			, CHK_ENDT = #step2#
+			, DATA_REGDT = GETDATE()
+		WHERE
+			CORP_CD = #corpCd#
+			AND RS_NO = #rsNo#
+			AND RSJ_NO IN (
+							SELECT
+								RSJ_NO
+							FROM
+								RS2000M
+							WHERE
+								CORP_CD = #corpCd#
+								AND RS_NO = #rsNo#
+								AND CONCAT(RS_NO,RSJ_NO) 	
+								<iterate open="(" close=")" conjunction="," prepend="IN" property="rsjSeq">
+									#rsjSeq[]#
+								</iterate>
+						  )														
+	</update>
+	
+	<select id="Ecr0201DAO.selectEcr0201RsjMkList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ecr0201DAO.selectEcr0201RsjMkList */
+	<![CDATA[
+		SELECT  
+				ROW_NUMBER() OVER(order by A.RS_NO DESC) rownum
+		      , A.CORP_CD                     AS corpCd            
+		      , A.RS_NO                       AS rsNo
+		      , A.TEMP_NO                     AS tempNo
+		      , A.RSI_NO                      AS rsiNo
+		      , A.MK_YN                       AS mkYn
+		      , A.MK_DT                       AS mkDt            
+		      , A.REMK                        AS remk              
+		      , A.DATA_REGDT                  AS dataRegdt         
+		      , A.DATA_REGNT                  AS dataRegnt
+		      , B.TITLE						  AS title
+		      , B.SV_STDT					  AS svStdt
+		      , B.SV_ENDT					  AS svEndt
+		      , B.MT_CLS					  AS mtCls
+		      , B.CONTENT					  AS content
+		      , B.SV_SEQ					  AS svSeq
+		      , C.RSJ_NO					  AS rsjNo
+		      , D.RS_CD						  AS rsCd 
+		      , CONCAT(LOWER(A.CORP_CD),LOWER(A.RS_NO),LOWER(A.RSI_NO),LOWER(A.TEMP_NO)) AS mapKey         
+		FROM   CR2120M A
+		INNER JOIN CR2110M B
+		ON 		A.CORP_CD 		= B.CORP_CD
+		AND 	A.RS_NO			= B.RS_NO
+		AND		A.TEMP_NO		= B.TEMP_NO
+		INNER JOIN RS2010M C
+		ON 		C.CORP_CD		= A.CORP_CD
+		AND		C.RS_NO			= A.RS_NO
+		AND		C.RSI_NO		= A.RSI_NO
+		INNER JOIN RS1010M D
+		ON 		D.CORP_CD		= A.CORP_CD
+		AND		D.RS_NO			= A.RS_NO
+		WHERE   A.CORP_CD       = #corpCd#              
+		AND     A.RS_NO         = #rsNo#                
+		AND     A.RSI_NO        = #rsiNo# 
+		ORDER   BY
+		        A.CORP_CD, A.RS_NO, A.RSI_NO, B.SV_SEQ 
+		]]>	
+	</select>
+	
+	<!-- 연구대상자정보  -->
+	<select id="Ecr0201DAO.selectEcr0201Rsj" parameterClass="rs2010mVO" resultClass="rs2010mVO">
+	/* Ecr0201DAO.selectEcr0201Rsj */
+	<![CDATA[
+	SELECT
+		Z.* FROM 
+		(
+			SELECT
+				ROW_NUMBER() OVER(order by A.RS_NO DESC) rownum
+				, A.CORP_CD AS corpCd 
+				, A.RS_NO AS rsNo
+				, A.SUB_NO AS subNo 
+				, A.RSJ_NO AS rsjNo
+				, A.RSI_NO AS rsiNo
+				, A.RSJ_NAME AS rsjName
+				, C.BR_DT AS brDt
+				, FLOOR(CAST(DATEDIFF(DAY,C.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age
+				, C.GEN_YN AS genYn
+				, CASE C.GEN_YN 
+					WHEN '1' THEN '남'
+					WHEN '2' THEN '여'
+				  END AS genYnNm		
+				, C.HP_NO AS hpNo
+			FROM RS2010M A
+			LEFT OUTER JOIN SB1000M C
+			ON 		C.CORP_CD 	= A.CORP_CD 
+			AND 	C.RSJ_NO 	= A.RSJ_NO 
+			WHERE 	A.CORP_CD 	= #corpCd#
+			AND 	A.RS_NO 	= #rsNo#
+			AND 	A.RSI_NO 	= #rsjNo#) Z			
+		]]>	
+	</select>
+	
+	<!-- 사용정보 cnt -->
+	<select id="Ecr0201DAO.selectEcr0201Cnt" parameterClass="cr3200mVO"
+		resultClass="int">
+		/*Ecr0201DAO.selectEcr0201Cnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM CR3200M
+		WHERE CORP_CD = #corpCd#
+		AND RS_NO = #rsNo#	
+	]]>
+	</select>
+	
+	
+	<!-- 실사용체크수 cnt -->
+	<select id="Ecr0201DAO.selectEcr0201ChkCnt" parameterClass="cr3200mVO"
+		resultClass="int">
+		/*Ecr0201DAO.selectEcr0201ChkCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM CR3210M
+		WHERE CORP_CD = #corpCd#
+		AND RS_NO = #rsNo#
+		AND CHK_CNT > 0  	
+	]]>
+	</select>
+	
+	
+	<!-- 개인사용설정 삭제 -->
+	<delete id="Ecr0201DAO.deleteEcr0201Chk" parameterClass="cr3200mVO">
+		/* Ecr0201DAO.deleteEcr0201Chk */
+	<![CDATA[
+		DELETE
+        FROM
+                CR3210M
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     RS_NO           = #rsNo#
+	]]>
+	</delete>
+	
+	<!-- 팝업사용 -->
+	<select id="Ecr0201DAO.selectEcr0201Map" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecr0201DAO.selectEcr0201Map */
+	<![CDATA[
+		SELECT
+			A.CORP_CD
+			, A.RS_NO
+			, B.RSJ_NO
+			, A.ITEM_NAME
+			, B.CHK_STDT
+			, B.CHK_ENDT
+			, A.CONT
+			, A.CHK_TRM
+			, A.CHK_CNT
+			, A.DSP_NAME1
+			, A.DSP_NAME2
+			, A.DSP_NAME3
+			, A.DSP_NAME4
+			, A.DSP_NAME5
+			, A.TCHK_CNT
+			, A.USE_YN
+			, A.RE_YN
+			, A.DATA_REGDT
+			, A.DATA_REGNT
+		FROM
+			CR3200M A
+			INNER JOIN CR3210M B
+			ON A.CORP_CD = B.CORP_CD
+			AND A.RS_NO = B.RS_NO
+		WHERE
+			A.USE_YN = 'Y'
+		AND
+			A.CORP_CD = #corpCd#
+		AND
+			A.RS_NO = #rsNo#
+		AND
+			B.RSJ_NO = #searchCondition1#
+	]]>
+	</select>
+	
+	<!-- 팝업사용2 -->
+	<select id="Ecr0201DAO.selectEcr0201PopList" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecr0201DAO.selectEcr0201PopList */
+	<![CDATA[
+		SELECT
+			A.CORP_CD
+			, A.RS_NO
+			, A.RSJ_NO
+			, A.CHK_DT
+			, A.CHK_CNT
+			, A.CHK1
+			, A.CHK1_DT
+			, A.CHK2
+			, A.CHK2_DT
+			, A.CHK3
+			, A.CHK3_DT
+			, A.CHK4
+			, A.CHK4_DT
+			, A.CHK5
+			, A.CHK5_DT
+			, A.REMK
+			, A.DATA_REGDT
+			, A.DATA_REGNT
+		FROM
+			CR3240M A
+		WHERE
+			A.CORP_CD = #corpCd#
+		AND
+			A.RS_NO = #rsNo#
+		AND
+			A.RSJ_NO = #searchCondition1#
+		ORDER BY
+			A.CHK_DT ASC
+	]]>
+	</select>
+	
+	<!-- 개인사용일정 삭제 -->
+	<delete id="Ecr0201DAO.deleteEcr0201AjaxChkDtDel" parameterClass="egovmap">
+		/* Ecr0201DAO.deleteEcr0201AjaxChkDtDel */
+	<![CDATA[
+		DELETE
+        FROM
+                CR3240M
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     RS_NO           = #rsNo#
+        AND 	RSJ_NO			= #rsjNo#
+        AND 	CHK_DT 			= #chkDt#
+	]]>
+	</delete>
+	
+	<!-- 사용일자 확인  cnt -->
+	<select id="Ecr0201DAO.selectEcr0201ChkDtCnt" parameterClass="cr3240mVO"
+		resultClass="int">
+		/*Ecr0201DAO.selectEcr0201ChkDtCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM CR3240M
+		WHERE CORP_CD = #corpCd#
+		AND RS_NO = #rsNo#
+		AND RSJ_NO = #rsjNo#
+		AND CHK_DT = #chkDt#	
+	]]>
+	</select>
+	
+	<!-- 연구대상자 사용일자 추가 -->
+	<insert id="Ecr0201DAO.insertEcr0201ChkDt" parameterClass="cr3240mVO">
+	/* Ecr0201DAO.insertEcr0201ChkDt */
+		INSERT  CR3240M(
+                CORP_CD                     
+              , RS_NO
+              , RSJ_NO
+              , CHK_DT
+              , CHK_CNT
+              , CHK1
+              , CHK1_DT
+              , CHK2
+              , CHK2_DT
+              , CHK3
+              , CHK3_DT
+              , CHK4
+              , CHK4_DT
+              , CHK5
+              , CHK5_DT
+              , REMK                       
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #rsNo#
+              , #rsjNo#
+              , #chkDt#
+              , #chkCnt#
+              , #chk1#
+              , CASE WHEN #chk1# = 'Y' THEN GETDATE() END
+              , #chk2#
+              , CASE WHEN #chk2# = 'Y' THEN GETDATE() END
+              , #chk3#
+              , CASE WHEN #chk3# = 'Y' THEN GETDATE() END
+              , #chk4#
+              , CASE WHEN #chk4# = 'Y' THEN GETDATE() END
+              , #chk5#
+              , CASE WHEN #chk5# = 'Y' THEN GETDATE() END
+              , #remk#
+              , GETDATE()
+              , #dataRegnt#
+        )
+	</insert>
+	
+	<!-- 연구대상자 사용횟수 갱신 -->
+	<update id="Ecr0201DAO.updateEcr0201ChkCnt" parameterClass="cr3210mVO">
+	/* Ecr0201DAO.updateEcr0201ChkCnt */
+	<![CDATA[
+		UPDATE CR3210M 
+			SET CHK_CNT = ISNULL((SELECT SUM(CHK_CNT)
+							FROM CR3240M B
+							WHERE CORP_CD = #corpCd#
+							AND RS_NO = #rsNo#
+							AND RSJ_NO = #rsjNo#
+							GROUP BY RSJ_NO),0)
+		WHERE CORP_CD = #corpCd#
+		AND RS_NO = #rsNo#
+		AND RSJ_NO = #rsjNo#
+	]]>
+	</update>
+	
+	<!-- 연구대상자 사용내역 상세보기 -->
+	<select id="Ecr0201DAO.selectEcr0201ChkmgView" parameterClass="cr3240mVO"
+		resultClass="cr3240mVO">
+		/* Ecr0201DAO.selectEcr0201ChkmgView */
+	<![CDATA[
+     	SELECT  
+                 A.CORP_CD		AS corpCd                     
+	              , A.RS_NO		AS rsNo
+	              , A.RSJ_NO	AS rsjNo
+	              , A.CHK_DT	AS chkDt
+	              , A.CHK_CNT	AS chkCnt
+	              , A.CHK1		AS chk1
+	              , A.CHK1_DT	AS chk1Dt
+	              , A.CHK2		AS chk2
+	              , A.CHK2_DT	AS chk2Dt
+	              , A.CHK3		AS chk3
+	              , A.CHK3_DT	AS chk3Dt
+	              , A.CHK4		AS chk4
+	              , A.CHK4_DT	AS chk4Dt
+	              , A.CHK5		AS chk5
+	              , A.CHK5_DT	AS chk5Dt
+	              , A.REMK		AS remk                       
+	              , A.DATA_REGDT	AS dataRegdt                  
+	              , A.DATA_REGNT	AS dataRegnt
+	              , B.RS_CD		AS rsCd              
+        FROM    CR3240M A
+        INNER JOIN RS1000M B
+        ON 		B.CORP_CD 		= A.CORP_CD
+        AND 	B.RS_NO			= A.RS_NO  	
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RS_NO         = #rsNo#                
+        AND     A.RSJ_NO        = #rsjNo#
+        AND	    A.CHK_DT		= #chkDt#
+	]]>
+	</select>
+	
+	<!-- 연구대상자 사용횟수 갱신 -->
+	<update id="Ecr0201DAO.updateEcr0201AjaxSaveChkmg" parameterClass="egovmap">
+	/* EEcr0201DAO.updateEcr0201AjaxSaveChkmg */
+	<![CDATA[
+		UPDATE CR3240M 
+			SET CHK_CNT = #chkCnt#
+				, CHK1 = #chk1#
+				, CHK2 = #chk2#
+				, CHK3 = #chk3#
+				, CHK4 = #chk4#
+				, CHK5 = #chk5#]]>
+				<dynamic prepend="">
+					<isNotEmpty property="chk1Dt" prepend="">
+						<isEqual property="chk1Dt" compareValue="Y">
+							, CHK1_DT = GETDATE()
+						</isEqual>
+						<isEqual property="chk1Dt" compareValue="N">
+						</isEqual>
+					</isNotEmpty>
+					<isNotEmpty property="chk2Dt" prepend="">
+						<isEqual property="chk2Dt" compareValue="Y">
+							, CHK2_DT = GETDATE()
+						</isEqual>
+						<isEqual property="chk2Dt" compareValue="N">
+						</isEqual>
+					</isNotEmpty>
+					<isNotEmpty property="chk3Dt" prepend="">
+						<isEqual property="chk3Dt" compareValue="Y">
+							, CHK3_DT = GETDATE()
+						</isEqual>
+						<isEqual property="chk3Dt" compareValue="N">
+						</isEqual>
+					</isNotEmpty>
+					<isNotEmpty property="chk4Dt" prepend="">
+						<isEqual property="chk4Dt" compareValue="Y">
+							, CHK4_DT = GETDATE()
+						</isEqual>
+						<isEqual property="chk4Dt" compareValue="N">
+						</isEqual>
+					</isNotEmpty>
+					<isNotEmpty property="chk5Dt" prepend="">
+						<isEqual property="chk5Dt" compareValue="Y">
+							, CHK5_DT = GETDATE()
+						</isEqual>
+						<isEqual property="chk5Dt" compareValue="N">
+						</isEqual>
+					</isNotEmpty>
+				</dynamic>				
+			<![CDATA[	
+				, REMK = #remk#
+				, DATA_REGDT = GETDATE()
+				, DATA_REGNT = #dataRegnt#
+		WHERE CORP_CD 	= #corpCd#
+		AND RS_NO 		= #rsNo#
+		AND RSJ_NO 		= #rsjNo#
+		AND CHK_DT 		= #chkDt#
+	]]>
+	</update>
+	<!-- , CHK1_DT = CASE WHEN #chk1Dt# = 'Y' THEN GETDATE() ELSE #chk1Dt# END -->
+
+	<!-- 연구대상자별 제품사용내역 엑셀 리스트 -->
+	<select id="Ecr0201DAO.selectEcr0201RsjUseExcel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecr0201DAO.selectEcr0201RsjUseExcel */
+	<![CDATA[
+		SELECT  
+				ROW_NUMBER() OVER(order by A.RS_NO DESC) rownum
+		      , A.CORP_CD                     AS corpCd            
+		      , A.RS_NO                       AS rsNo              
+		      , A.RSJ_NO                      AS rsjNo             
+		      , A.CHK_DT                      AS chkDt             
+		      , A.CHK_CNT                     AS chkCnt
+		      , CASE A.CHK1 
+					WHEN 'Y' THEN '사용'
+					WHEN 'N' THEN '미사용'
+				  END AS chk1
+			  , CASE A.CHK2 
+					WHEN 'Y' THEN '사용'
+					WHEN 'N' THEN '미사용'
+				  END AS chk2	                
+			  , CASE A.CHK3 
+					WHEN 'Y' THEN '사용'
+					WHEN 'N' THEN '미사용'
+				  END AS chk3	                
+			  , CASE A.CHK4 
+					WHEN 'Y' THEN '사용'
+					WHEN 'N' THEN '미사용'
+				  END AS chk4	                
+			  , CASE A.CHK5 
+					WHEN 'Y' THEN '사용'
+					WHEN 'N' THEN '미사용'
+				  END AS chk5	                
+		      , A.CHK1_DT                     AS chk1Dt            
+		      , A.CHK2_DT                     AS chk2Dt            
+		      , A.CHK3_DT                     AS chk3Dt            
+		      , A.CHK4_DT                     AS chk4Dt            
+		      , A.CHK5_DT                     AS chk5Dt            
+		      , A.REMK                        AS remk              
+		      , A.DATA_REGDT                  AS dataRegdt         
+		      , A.DATA_REGNT                  AS dataRegnt
+		      , B.RSJ_NAME					  AS rsjName
+		      , B.HP_NO						  AS hpNo	         
+		FROM    CR3240M A
+		INNER JOIN SB1000M B
+		ON B.CORP_CD 			= A.CORP_CD
+		AND B.RSJ_NO			= A.RSJ_NO
+		WHERE   A.CORP_CD       = #corpCd#              
+		AND     A.RS_NO         = #rsNo#                
+		AND     A.RSJ_NO        = #rsjNo# 
+		ORDER   BY
+		        A.CORP_CD
+		      , A.RS_NO
+		      , A.RSJ_NO
+		      , A.CHK_DT
+		]]>	
+	</select>
+	
+	<!-- 연구대상자  CRF작성 신규등록 -->
+	<insert id="Ecr0201DAO.insertEcr0201AjaxSaveStep" parameterClass="egovMap">
+	/* Ecr0201DAO.insertEcr0201AjaxSaveStep */
+		INSERT CR2120M(
+						CORP_CD
+						, RS_NO
+						, TEMP_NO
+						, RSI_NO
+						, MK_YN
+						, DATA_REGDT
+						, DATA_REGNT
+		) VALUES(
+						#corpCd#
+						, #rsNo#
+						, #tempNo#
+						, #rsiNo#
+						, 'N'
+						, GETDATE()
+						, #dataRegnt#
+		)
+	</insert>		
+	
+	<!-- 연구대상자 CRF작성정보 cnt / 신규등록전 등록여부 판단-->
+	<select id="Ecr0201DAO.selectEcr0201AjaxSaveStepCnt" parameterClass="egovMap" resultClass="int">
+		/*Ecr0201DAO.selectEcr0201AjaxSaveStepCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM CR2120M
+		WHERE CORP_CD 	= #corpCd#
+		AND RS_NO		= #rsNo#
+		AND TEMP_NO		= #tempNo#
+		AND RSI_NO		= #rsiNo#
+		]]> 	
+	</select>
+	
+	<!-- 연구대상자 회수정보 일괄등록 -->
+	<update id="Ecr0201DAO.updateEcr0201AjaxSaveStep3" parameterClass="egovMap">
+	/* Ecr0201DAO.updateEcr0201AjaxSaveStep3 */
+	<![CDATA[
+		UPDATE CR3210M 
+			SET RE_YN = 'Y'
+		WHERE CORP_CD = #corpCd#
+		AND RS_NO = #rsNo#
+		AND CONCAT(RS_NO,RSJ_NO)
+		]]> 	
+			<iterate open="(" close=")" conjunction="," prepend="IN" property="rsjSeq">
+				#rsjSeq[]#
+			</iterate>	
+	</update>
+	
+	<!-- 연구대상자 제품사용정보 상세보기 -->
+	<select id="Ecr0201DAO.selectEcr0201RsjUseView" parameterClass="cr3210mVO"
+		resultClass="cr3210mVO">
+		/* Ecr0201DAO.selectEcr0201RsjUseView */
+	<![CDATA[
+     SELECT  
+    			A.CORP_CD                     AS corpCd
+              , A.RS_NO                       AS rsNo
+              , A.RSJ_NO                      AS rsjNo
+              , A.CHK_STDT                    AS chkStdt
+              , A.CHK_ENDT                    AS chkEndt
+              , A.CHK_CNT                     AS chkCnt
+              , A.TCHK_CNT                    AS tchkCnt
+              , A.RE_YN                       AS reYn
+              , A.ST_YN                       AS stYn
+              , A.REMK                        AS remk
+              , A.DATA_REGDT                  AS dataRegdt
+              , A.DATA_REGNT                  AS dataRegnt
+              , B.RSJ_NAME					  AS rsjName
+              , B.BR_DT						  AS brDt
+              , FLOOR(CAST(DATEDIFF(DAY,B.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age
+              , HP_NO						  AS hpNo
+              , CASE B.GEN_YN 
+					WHEN '1' THEN '남'
+					WHEN '2' THEN '여'
+				  END AS genYnNm 
+        FROM    CR3210M A
+                INNER JOIN SB1000M B
+        ON      B.CORP_CD       = A.CORP_CD
+        AND     B.RSJ_NO        = A.RSJ_NO
+                INNER JOIN RS1000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.RS_NO         = A.RS_NO
+                       
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RS_NO         = #rsNo#                
+        AND     A.RSJ_NO        = #rsjNo#
+	]]>
+	</select>
+	
+	<!-- 연구대상자 사용정보 수정 아이템회수, 중지여부, 특이사항 -->
+	<update id="Ecr0201DAO.updateEcr0201RsjUse" parameterClass="cr3210mVO">
+	/* Ecr0201DAO.updateEcr0201RsjUse */
+	<![CDATA[
+		UPDATE CR3210M 
+			SET RE_YN 			= #reYn#
+				, ST_YN 		= #stYn#
+				, REMK 			= #remk#	
+				, DATA_REGDT 	= GETDATE()
+				, DATA_REGNT 	= #dataRegnt#
+		WHERE CORP_CD 	= #corpCd#
+		AND RS_NO		= #rsNo#
+		AND RSJ_NO		= #rsjNo# 
+	]]>	 	
+	</update>
+	
+	<select id="Ecr0201.selectEcr0201eCrfList" parameterClass="egovMap" resultClass="egovMap">
+    /* Ecr0201.selectEcr0201eCrfList */
+    <![CDATA[
+    	SELECT
+    		  A.CORP_CD
+			, A.RS_NO
+			, A.TEMP_NO
+			, A.SV_SEQ
+			, A.SV_CNT
+			, A.TITLE
+			, A.CONTENT
+			, A.SV_STDT
+			, A.SV_ENDT
+			, A.MT_CLS
+			, A.DATA_REGDT
+			, A.DATA_REGNT
+			, B.TEMP_TYPE
+			, C.CD_NAME 
+    	FROM
+    		CR2110M A
+    	INNER JOIN CR2100M B
+    	ON B.CORP_CD = A.CORP_CD 
+    	AND B.TEMP_NO = A.TEMP_NO 
+    	INNER JOIN CM4000M C 
+    	ON C.CORP_CD = A.CORP_CD 
+    	AND C.CD_CLS = 'CT3020'
+    	AND C.CD = B.TEMP_TYPE 
+    	WHERE
+    		A.CORP_CD = #corpCd#
+    	AND
+    		A.RS_NO = #rsNo#
+    ]]>
+    </select>
+	
+	<!-- CRF템플릿 일괄다운로드 리스트 -->
+	<select id="Ecr0201DAO.selectEcr0201ListCrfFile" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecr0201DAO.selectEcr0201ListCrfFile */
+	SELECT
+		Z.* 
+		FROM 
+		(
+			SELECT
+				ROW_NUMBER() OVER(order by A.RS_NO DESC) rownum
+				, A.CORP_CD 	AS corpCd 
+				, A.RS_NO 		AS rsNo
+				, A.SUB_NO 		AS subNo 
+				, A.RSJ_NO 		AS rsjNo
+				, A.RSI_NO 		AS rsiNo 
+				, C.RSJ_NAME 	AS rsjName
+				, C.BR_DT 		AS brDt
+				, D.RS_CD		AS rsCd
+				, FLOOR(CAST(DATEDIFF(DAY,C.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age
+				, C.GEN_YN 		AS genYn
+				, CASE C.GEN_YN 
+					WHEN '1' THEN '남'
+					WHEN '2' THEN '여'
+				  END AS genYnNm		
+				, C.HP_NO		AS hpNo
+				, A.ETC	        AS etc
+				, (SELECT COUNT(*)
+					FROM CR2110M D
+					WHERE D.CORP_CD = A.CORP_CD
+					AND D.RS_NO = A.RS_NO) AS tmplCnt
+				, (SELECT COUNT(*)
+					FROM CR2120M E
+					WHERE E.CORP_CD = A.CORP_CD
+					AND E.RS_NO = A.RS_NO
+					AND E.RSI_NO = A.RSI_NO
+					AND E.MK_YN = 'Y') 	AS mkCnt
+				, CONCAT(LOWER(A.CORP_CD),LOWER(A.RS_NO),LOWER(A.RSI_NO)) AS mapKey	
+		FROM RS2010M A
+		INNER JOIN SB1000M C
+		ON C.CORP_CD 	= A.CORP_CD 
+		AND C.RSJ_NO 	= A.RSJ_NO
+		INNER JOIN RS1010M D
+		ON D.CORP_CD 	= A.CORP_CD
+		AND D.RS_NO		= A.RS_NO 
+		WHERE A.CORP_CD = #corpCd#
+		AND A.RS_NO 	= #rsNo#
+		AND A.CFM_YN	= 'Y'
+		AND A.RSI_NO3 IS NOT NULL
+	    <!-- AND A.RSI_NO 
+			<iterate open="(" close=")" conjunction="," prepend="IN" property="rsjSeq">
+				#rsjSeq[]#
+			</iterate>	 -->		
+		) Z 
+		ORDER BY Z.corpCd, z.rsNo, z.rsiNo			
+	</select>
+	
+	<!-- SMS팝업 대상자 리스트 -->
+	<select id="Ecr0201DAO.selectEcr0201SendList" parameterClass="egovMap" resultClass="egovMap">
+		/* Ecr0201DAO.selectEcr0201SendList */
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT
+					ROW_NUMBER() OVER(order by A.RSJ_NO DESC) rownum  	  
+	              , A.CORP_CD					AS corpCd            
+	              , A.RSJ_NO                    AS rsjNo             
+	              , B.RSJ_NAME                  AS rsjName
+	              , B.HP_NO						AS hpNo
+	              , A.RS_NO						AS rsNo
+	              , C.RS_CD						AS rsCd
+	              , A.APPSTA_CLS				AS appstaCls
+	              , K.CD_NAME					AS appstaClsNm
+	        	FROM RS2010M A
+	        	INNER JOIN SB1000M B
+	        	ON 		A.CORP_CD 	= B.CORP_CD
+	        	AND 	A.RSJ_NO	= B.RSJ_NO
+	        	INNER JOIN RS1010M C
+	        	ON 		C.CORP_CD	= A.CORP_CD
+	        	AND 	C.RS_NO		= A.RS_NO
+	        	INNER JOIN CM4000M K
+	        	ON      K.CORP_CD   = A.CORP_CD
+	        	AND     K.CD_CLS    = 'CT2050'
+	        	AND     K.CD        = A.APPSTA_CLS
+				WHERE 	A.CORP_CD = #corpCd#
+		        AND 	A.RSI_NO   
+						<iterate open="(" close=")" conjunction="," prepend="IN" property="rsjSeq">
+							#rsjSeq[]#
+						</iterate>
+			) A 
+		ORDER BY A.rsjNo DESC
+	</select>
+	
+	<!-- 신규 연구대상자선정 추가 -->
+    <insert id="Ecr0201DAO.insertEcr0201Sub" parameterClass="rs2000mVO">	
+	/* Ecr0201DAO.insertEcr0201Sub */
+	<selectKey keyProperty="subNo" resultClass="string" type="pre">
+        <!-- DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                      
+        DECLARE @V_RS_NO                    NVARCHAR(0020) = #rsNo#                                                        
+        DECLARE @P_RTN_KEY                  INT            = 0                                                             
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 4)                                       
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  @P_RTN_KEY = CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.SUB_NO), 0)) + 1)                      
+        FROM    RS2010M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     A.RS_NO                     = @V_RS_NO -->
+        DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                      
+        DECLARE @V_RS_NO                    NVARCHAR(0020) = #rsNo#                                                        
+        DECLARE @P_RTN_KEY                  INT            = 0                                                             
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 4)                                       
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.SUB_NO), 0)) + 1) as subNo                      
+        FROM    RS2010M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     A.RS_NO                     = @V_RS_NO
+        
+        
+        
+	</selectKey>
+	
+    <![CDATA[
+                                                                     
+ 
+        INSERT   RS2010M(
+                CORP_CD                     
+              , RS_NO                       
+              , SUB_NO                      
+              , RSI_NO1                     
+              , RSI_NO2                     
+              , RSI_NO3                     
+              , RSI_NO                      
+              , RSJ_NO                      
+              , APPSTA_CLS                  
+              , APP_STDT                    
+              , APP_ENDT                    
+              , ETC                         
+              , APP_YN                      
+              , POOL_YN                     
+              , FIRST_ST                    
+              , CFM_YN              
+              , DATA_REGDT                  
+              , DATA_REGNT
+              , RS_CD
+              , RSJ_NAME  
+        ) VALUES(
+                #corpCd#
+              , #rsNo#
+              , #subNo#
+              , #rsiNo1#
+              , #rsiNo2#
+              , #rsiNo3#
+              , #rsiNo#
+              , #rsjNo#
+              , #appstaCls#
+              , #appStdt#
+              , #appEndt#
+              , #etc#
+              , #appYn#
+              , #poolYn#
+              , #firstSt#
+              , #cfmYn#
+              , GETDATE()
+              , #dataRegnt#
+              , #rsCd#
+              , #rsjName#
+        )
+    ]]>
+    </insert>
+    
+    <select id="Ecr0201DAO.selectEcr0201RsNoRsCd" parameterClass="rs2010mVO" resultClass="String">
+    /* Ecr0201DAO.selectEcr0201RsNoRsCd */
+    <![CDATA[
+    	SELECT
+    		DISTINCT(A.RS_CD) AS rsCd
+    	FROM
+    		RS2010M A
+    	WHERE
+    		A.CORP_CD = #corpCd#
+    	AND
+    		A.RS_NO = #rsNo#
+    ]]>
+    </select>
+    
+    <!-- CRF 재작성 설정 MK_YN Y -> N 설정 TEMP구분 1030 연구종료확인서-->
+    <update id="Ecr0201DAO.updateEcr0201ReMkCrf" parameterClass="egovMap">
+	/* Ecr0201DAO.updateReMkCrf */
+	<![CDATA[
+		UPDATE CR2120M 
+			SET MK_YN		 = 'N'
+				, MK_DT		 = NULL
+				, DATA_REGNT = #dataRegnt#
+				, DATA_REGDT = GETDATE()
+		WHERE CORP_CD 	=#corpCd#
+		AND RS_NO		= #rsNo#
+		AND RSI_NO		= #rsiNo#
+		AND TEMP_NO		= #tempNo#
+    ]]>
+ 	</update>
+ 	
+ 	<!-- 연구관리 CRF작성완료 재설정 MK_YN -> N -->
+ 	<!-- 1000 작성중 1010 승인요청 1020 승인대기 1030 승인완료 -->
+ 	<update id="Ecr0201DAO.updateEcr0201ReMkCrfRs" parameterClass="egovMap">
+	/* Ecr0201DAO.updateReMkCrfRs */
+	<![CDATA[
+		UPDATE RS1010M 
+			SET MK_YN		 = 'N'
+				, MK_CLS	 = '1020'				
+		WHERE CORP_CD 	=#corpCd#
+		AND RS_NO		= #rsNo#
+    ]]>
+ 	</update>
+ 	
+ 	<!-- CRF재작성 첨부파일 삭제 -->
+	<delete id="Ecr0201DAO.deleteEcr0201ReMkCrfAttach" parameterClass="egovmap">
+		/* Ecr0201DAO.deleteEcr0201ReMkCrfAttach */
+	<![CDATA[
+		DELETE
+        FROM
+                CT7000M
+        WHERE
+                ATTACH_NO       = #attachNo#
+	]]>
+	</delete>
+	
+	<!-- 승인요청 반려-->
+ 	<update id="Ecr0201DAO.updateEcr0201AjaxReject" parameterClass="egovMap">
+	/* Ecr0201DAO.updateEcr0201AjaxReject */
+	<![CDATA[
+		UPDATE RS1010M 
+			SET MK_YN		 = 'N'
+				, MK_CLS	 = '1010'				
+		WHERE CORP_CD 	=#corpCd#
+		AND RS_NO		= #rsNo#
+    ]]>
+ 	</update>
+	
+			
+	<!-- /CRF작성관리****************************************************************************************************************************************** -->
+
+</sqlMap>

@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+ 
+    <!-- 피부특성관리 시작 **************************************** -->
+    <sql id="where_ech0204List">
+ 		FROM    RS1010M A
+        INNER JOIN CM4000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.CD_CLS        = 'CT2030'
+        AND     G.CLS_CAT       = '3'
+        AND     G.CD            = A.RS_NO3              
+                INNER JOIN CM4000M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.CD_CLS        = 'CT2050'
+        AND     J.CLS_CAT       = '3'
+        AND     J.CD            = A.RSST_CLS            
+                INNER JOIN CM4000M N
+        ON      N.CORP_CD       = A.CORP_CD
+        AND     N.CD_CLS        = 'CM1350'
+        AND     N.CLS_CAT       = '3'
+        AND     N.CD            = A.ECRF_STATE
+         		INNER JOIN CT1020M M
+        ON      M.CORP_CD       = A.CORP_CD
+        AND     M.BRANCH_CD     = A.BRANCH_CD 
+        WHERE	1=1
+        <isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+       	</isNotEmpty>
+       	<isNotEmpty property="searchCondition8" prepend="AND">
+       		(A.RS_CD = #searchCondition8#)
+       	</isNotEmpty>
+        <isNotEmpty prepend="AND" property="searchCondition6">
+        	A.RSST_CLS = #searchCondition6#
+        </isNotEmpty>
+        <isNotEmpty prepend="AND" property="searchCondition5">
+        	A.ECRF_STATE = #searchCondition5#
+        </isNotEmpty>
+        <isNotEmpty property="searchCondition4" prepend="">
+			<isEqual property="searchCondition4" compareValue="1">
+				<isNotEmpty property="searchCondition1" prepend="AND">
+					<isNotEmpty property="searchCondition2" >
+						CONVERT(CHAR(10), A.RS_STDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+					</isNotEmpty>
+				</isNotEmpty>
+			</isEqual>
+			<isEqual property="searchCondition4" compareValue="2">
+				<isNotEmpty property="searchCondition1" prepend="AND">
+					<isNotEmpty property="searchCondition2" >
+						CONVERT(CHAR(10), A.RS_ENDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+					</isNotEmpty>
+				</isNotEmpty>
+			</isEqual>
+		</isNotEmpty>
+        <isNotEmpty property="searchType" prepend="AND">
+			<!-- 연구명칭 -->
+        	<isEqual property="searchType" compareValue="1">
+	        	<isNotEmpty property="searchWord" >
+					(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+				</isNotEmpty>
+			</isEqual>
+			<!-- 연구코드 -->
+        	<isEqual property="searchType" compareValue="2">
+	        	<isNotEmpty property="searchWord">
+					(A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+				</isNotEmpty>
+			</isEqual>
+		</isNotEmpty>
+		
+        
+    </sql>
+ 
+    <!-- 피부특성관리 리스트 -->
+    <select id="ech0204.selectech0204List" parameterClass="searchVO" resultClass="egovMap">
+    /* ech0204.selectech0204List */
+    <![CDATA[
+    	SELECT Z.* FROM
+        (
+			SELECT
+                A.CORP_CD            
+              , A.RS_NO              
+              , A.RS_NO3             
+              , G.CD_NAME                     AS RS_NO3_NM           
+              , A.RS_NO5             
+              , A.RS_NO6             
+              , A.RS_CD              
+              , A.REG_DT
+              , A.RS_SCNT            
+              , A.RS_MSCNT           
+              , A.RSST_CLS           
+              , J.CD_NAME                     AS RSST_CLS_NM         
+              , A.RS_NAME            
+              , A.RS_PPS             
+              , A.RS_PTC             
+              , A.IRBSM_YN           
+              , A.BRANCH_CD          
+              , A.DEL_YN             
+              , A.DATA_REGDT         
+              , A.DATA_REGNT         
+              , A.ECRF_STATE
+              , N.CD_NAME                     AS STATE_CLS_NM
+              , (SELECT COUNT(*) 
+              		FROM RS2010M T1 
+              		WHERE A.CORP_CD = T1.CORP_CD 
+              		AND A.RS_NO = T1.RS_NO 
+              		AND CFM_YN = 'Y' 
+              		AND RSI_NO IS NOT NULL) AS RSI_CNT
+    ]]>
+    <include refid="where_ech0204List" />
+    <![CDATA[
+    ) Z
+    ORDER   BY   
+                Z.CORP_CD DESC
+              , Z.RS_NO DESC
+            OFFSET #firstIndex# ROWS
+			FETCH NEXT #recordCountPerPage# ROWS ONLY  
+    ]]>
+    </select>
+ 
+    <!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+ 
+    <!-- 피부특성관리 Cnt -->
+    <select id="ech0204.selectech0204ListCnt" parameterClass="searchVO" resultClass="int">
+    /* ech0204.selectech0204ListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_ech0204List" />
+    </select>
+    
+    <!-- 피부특성관리 상세보기 -->
+    <select id="ech0204.selectech0204View" parameterClass="egovMap" resultClass="rs1000mVO">
+    /* ech0204.selectech0204View */
+    <![CDATA[
+ 		SELECT
+                A.CORP_CD				AS corpCd	            
+              , A.RS_NO					AS rsNo              
+              , A.RS_CD					AS rsCd              
+	          , A.RS_NAME				AS rsName            
+              , N.CD_NAME				AS ecrfState
+        FROM    RS1010M A
+                INNER JOIN CM4000M N
+        ON      N.CORP_CD       = A.CORP_CD
+        AND     N.CD_CLS        = 'CM1350'
+        AND     N.CLS_CAT       = '3'
+        AND     N.CD            = A.ECRF_STATE
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RS_NO         = #rsNo#                
+        AND     A.DEL_YN        = 'N'
+    ]]>
+    </select>
+    
+    <!-- 피부특성관리 수정 -->
+    <update id="ech0204.updateech0204" parameterClass="rs1000mVO">
+    /* ech0204.updateech0204 */
+    <![CDATA[
+        UPDATE
+                RS1000M
+        SET
+                ECRF_STATE                = #ecrfState#                  
+        WHERE
+                CORP_CD                   = #corpCd#                      
+        AND     RS_NO                     = #rsNo#
+    ]]>
+    </update>
+    
+    <!-- 템플릿 질문 목록 -->
+    <select id="ech0204.selectEch0204TempList" parameterClass="egovMap" resultClass="egovMap">
+    /* ech0204.selectEch0204TempList*/
+    <![CDATA[
+    	SELECT
+    		  CORP_CD                     
+              , TEMP_NO                     
+              , TEMP_NM                     
+              , TEMP_TYPE                   
+              , USE_YN                      
+              , ST_DATE                     
+              , ED_DATE                     
+              , DATA_REGDT                  
+              , DATA_REGNT
+    	FROM
+    		  CR2020M
+    	WHERE
+    		  CORP_CD = #corpCd#
+    ]]>
+    	<isNotEmpty prepend="AND" property="tempType">
+    		  TEMP_TYPE = #tempType#
+    	</isNotEmpty>
+    </select>
+    
+    <!-- eCRF 등록 -->
+    <insert id="ech0204.insertech0204eCRF" parameterClass="cr1000mVO">
+    /* ech0204.insertech0204eCRF */
+    <![CDATA[
+    	INSERT INTO CR1000M(
+    		  CORP_CD
+			, RS_NO
+			, TEMP_NO
+			, SV_SEQ
+			, SV_CNT
+			, TITLE
+			, CONTENT
+			, SV_STDT
+			, SV_ENDT
+			, MT_CLS
+			, DATA_REGDT
+			, DATA_REGNT
+    	)VALUES(
+    		  #corpCd#
+			, #rsNo#
+			, #tempNo#
+			, #svSeq#
+			, #svCnt#
+			, #title#
+			, #content#
+			, #svStdt#
+			, #svEndt#
+			, #mtCls#
+			, GETDATE()
+			, #dataRegnt#
+    	)
+    ]]>
+    </insert>
+    
+    <!-- eCRF 목록 -->
+    <select id="ech0204.selectEch0204eCrfList" parameterClass="egovMap" resultClass="egovMap">
+    /* ech0204.selectEch0204eCrfList */
+    <![CDATA[
+    	SELECT
+    		  CORP_CD
+			, RS_NO
+			, TEMP_NO
+			, SV_SEQ
+			, SV_CNT
+			, TITLE
+			, CONTENT
+			, SV_STDT
+			, SV_ENDT
+			, MT_CLS
+			, DATA_REGDT
+			, DATA_REGNT
+    	FROM
+    		CR1000M
+    	WHERE
+    		SV_SEQ = 0
+    	AND
+    		SV_CNT = 0
+    	AND
+    		CORP_CD = #corpCd#
+    	AND
+    		RS_NO = #rsNo#
+    ]]>
+    </select>
+    
+    <delete id="ech0204.deleteech0204eCRF" parameterClass="egovMap">
+    /* ech0204.deleteech0204eCRF */
+    <![CDATA[
+    	DELETE
+    	FROM
+    		CR1000M
+    	WHERE
+    		CORP_CD = #corpCd#
+    	AND
+    		RS_NO = #rsNo#
+    	AND
+    		SV_SEQ = 0
+    	AND
+    		SV_CNT = 0
+    ]]>
+    </delete>
+    
+    <sql id="where_ech0204MemList">
+		FROM RS2010M A
+		INNER JOIN SB1000M C
+		ON C.CORP_CD = A.CORP_CD 
+		AND C.RSJ_NO = A.RSJ_NO 
+		WHERE A.CORP_CD = #corpCd#
+		AND A.RS_NO = #rsNo#
+		AND A.CFM_YN = 'Y'
+		AND A.RSI_NO3 IS NOT NULL
+	</sql>
+
+	<!-- 피험자 리스트 -->
+	<select id="ech0204.selectEch0204MemList" parameterClass="egovMap" resultClass="egovMap">
+	/* ech0204.selectEch0204MemList */
+	<![CDATA[
+	SELECT
+		Z.* 
+		FROM 
+		(
+			SELECT
+				ROW_NUMBER() OVER(order by A.RS_NO DESC) rownum
+				, A.CORP_CD AS corpCd 
+				, A.RS_NO AS rsNo
+				, A.SUB_NO AS subNo 
+				, A.RSJ_NO AS rsjNo
+				, A.RSI_NO AS rsiNo 
+				, C.RSJ_NAME AS rsjName
+				, C.BR_DT AS brDt
+				, FLOOR(CAST(DATEDIFF(DAY,C.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age
+				, C.GEN_YN AS genYn
+				, CASE C.GEN_YN 
+					WHEN '1' THEN '남'
+					WHEN '2' THEN '여'
+				  END AS genYnNm		
+				, C.HP_NO AS hpNo
+				, (
+					SELECT
+						CASE
+							WHEN COUNT(*) > 0 THEN 'TRUE'
+							ELSE 'FALSE'
+						END
+					FROM
+						CR3010M T
+					WHERE
+						T.CORP_CD = A.CORP_CD
+					AND
+						T.RS_NO = A.RS_NO
+					AND
+						T.RSI_NO = A.RSI_NO
+					AND
+						T.RSJ_NO = A.RSJ_NO
+					AND
+						T.TEMP_NO = #tempNo#
+				) AS ANSW_STATE
+				, CONCAT(LOWER(A.CORP_CD),LOWER(A.RS_NO),A.RSI_NO) AS mapKey
+			  ]]>
+		<include refid="where_ech0204MemList" />	<![CDATA[				
+			) Z 
+			ORDER   BY
+	                Z.corpCd
+             	  , z.rsNo
+             	  , z.rsiNo			
+		]]>	
+	</select>
+    
+    <!-- 피부특성관리 종료 **************************************** -->
+    
+</sqlMap>

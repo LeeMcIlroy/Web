@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<!-- 피험자관리 리스트 -->
+	<select id="Ech0303DAO.selectEch0303List" parameterClass="searchVO" resultClass="egovMap">
+		/* Ech0303DAO.selectEch0303List */
+	<![CDATA[
+	
+   		SELECT      
+		         MAX(A.CORP_CD)     AS corpCd
+		        ,B.RS_NO            AS rsNo           
+		        ,A.RESR_DT          AS resrDt     
+		        ,B.RS_CD            AS rsCd   
+		        ,Z.resrCnt
+	
+
+		FROM    RS4000M A
+		        
+		        INNER JOIN RS1000M B
+		ON      B.CORP_CD   = A.CORP_CD
+		AND     B.RS_NO     = A.RS_NO
+		        
+		        INNER JOIN RS2000M C
+		ON      C.CORP_CD   = A.CORP_CD
+		AND     C.RSJ_NO    = A.RSJ_NO
+		AND     C.RS_NO     = A.RS_NO
+		        
+		        INNER JOIN SB1000M D
+		ON      D.CORP_CD   = A.CORP_CD
+		AND     D.RSJ_NO    = A.RSJ_NO
+
+		        INNER JOIN CM4000M E
+		ON      E.CORP_CD       = A.CORP_CD
+		AND     E.CD_CLS        = 'CT1030'
+		AND     E.CLS_CAT       = '3'
+		AND     E.CD            = A.MT_ST
+
+
+     
+		        INNER JOIN (SELECT   A.RESR_DT
+		                            ,B.RS_CD
+                                    ,B.RS_NO
+				                    ,COUNT(RESR_DT) AS resrCnt
+		
+				            FROM    RS4000M A
+
+		                            INNER JOIN RS1000M B
+		                    ON      B.CORP_CD  =A.CORP_CD
+		                    AND     B.RS_NO    =A.RS_NO
+
+                            	    INNER JOIN RS2000M C
+		                    ON      C.CORP_CD   = A.CORP_CD
+		                    AND     C.RSJ_NO    = A.RSJ_NO
+		                    AND     C.RS_NO     = A.RS_NO
+
+				            GROUP BY RESR_DT,B.RS_CD,B.RS_NO
+                            ) Z
+
+		                    ON      A.RESR_DT   = Z.RESR_DT
+                            AND     A.RSJ_NO    = C.RSJ_NO
+                            AND     A.RS_NO     = Z.RS_NO
+                            
+        
+		GROUP BY Z.resrCnt
+                ,B.RS_CD
+                ,B.RS_NO
+                ,A.RESR_DT
+                
+        ORDER BY A.RESR_DT
+   		
+	]]>	
+	</select>
+	
+
+	<!-- 피험자관리 cnt -->
+	<select id="Ech0303DAO.selectEch0303ListCnt" parameterClass="searchVO" resultClass="int">
+		/*Ech0303DAO.selectEch0303ListCnt */
+	<![CDATA[
+		SELECT  
+		        COUNT(*) AS resrCnt 
+        FROM RS4000M
+
+		
+			
+	]]>
+		
+	</select>
+
+	<!-- 피험자관리 상세보기 -->
+	<select id="Ech0303DAO.selectEch0303View" parameterClass="string" resultClass="egovMap">
+		/* Ech0303DAO.selectEch0303One */
+	<![CDATA[
+			SELECT   A.CORP_CD      AS corpCd
+					,A.RS_NO        AS rsNo
+					,A.RSJ_NO       AS rsjNo
+					,A.RESR_DT      AS resrDt
+					,A.MT_ST        AS mtSt
+					,E.CD_NAME      AS mtStNm           
+					,B.RS_CD        AS rsCd
+					,D.RSJ_NAME     AS rsjName
+					,D.BR_DT        AS brDt
+					,D.HP_NO        AS hpNo
+					,D.GEN_YN       AS genYn			
+					,CASE D.GEN_YN 
+							    WHEN '1' THEN '남'
+							    WHEN '2' THEN '여'
+							    ELSE '미정'
+							END 						  AS genYnNm
+					,FLOOR(CAST(DATEDIFF(DAY,D.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age   
+					,CONVERT(NVARCHAR,A.RESR_DT) +' ' + CONVERT(NVARCHAR,A.RESR_HR) +':'+ CONVERT(NVARCHAR,A.RESR_MM) AS resrStat
+					
+							                		
+			FROM    RS4000M A
+					        
+					INNER JOIN RS1000M B
+			ON      B.CORP_CD   = A.CORP_CD
+			AND     B.RS_NO     = A.RS_NO
+					        
+					INNER JOIN RS2000M C
+			ON      C.CORP_CD   = A.CORP_CD
+			AND     C.RSJ_NO    = A.RSJ_NO
+			AND     C.RS_NO     = A.RS_NO
+					        
+					INNER JOIN SB1000M D
+			ON      D.CORP_CD   = A.CORP_CD
+			AND     D.RSJ_NO    = A.RSJ_NO
+					INNER JOIN CM4000M E
+			ON      E.CORP_CD       = A.CORP_CD
+			AND     E.CD_CLS        = 'CT1030'
+			AND     E.CLS_CAT       = '3'
+			AND     E.CD            = A.MT_ST
+				
+			WHERE 	A.RESR_DT = #resrDt#
+			ORDER 	BY resrStat ASC
+	]]>
+	</select>
+	
+</sqlMap>

@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<select id="Ecf0201DAO.selectEcf0201RsList" parameterClass="sb1000mVO" resultClass="egovMap">
+	/* Ecf0201DAO.selectEcf0201RsList */
+	<![CDATA[
+		SELECT
+			A.RS_NO
+			, B.RS_NAME
+			, A.RSI_NO
+		FROM
+			RS2000M A
+			INNER JOIN RS1000M B ON A.RS_NO = B.RS_NO
+		WHERE
+			A.CORP_CD = #corpCd#
+		AND
+			A.RSJ_NO = #rsjNo#
+		AND
+			A.RSI_NO != ''
+		AND
+			A.RSI_NO IS NOT NULL
+	]]>
+	</select>
+	
+	<select id="Ecf0201DAO.selectEcf0201Map" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecf0201DAO.selectEcf0201Map */
+	<![CDATA[
+		SELECT
+			A.CORP_CD
+			, A.RS_NO
+			, B.RSJ_NO
+			, A.ITEM_NAME
+			, B.CHK_STDT
+			, B.CHK_ENDT
+			, A.CONT
+			, A.CHK_TRM
+			, A.CHK_CNT
+			, A.DSP_NAME1
+			, A.DSP_NAME2
+			, A.DSP_NAME3
+			, A.DSP_NAME4
+			, A.DSP_NAME5
+			, A.TCHK_CNT
+			, A.USE_YN
+			, A.RE_YN
+			, A.DATA_REGDT
+			, A.DATA_REGNT
+		FROM
+			CR3200M A
+			INNER JOIN CR3210M B
+			ON A.CORP_CD = B.CORP_CD
+			AND A.RS_NO = B.RS_NO
+		WHERE
+			A.USE_YN = 'Y'
+		AND
+			A.CORP_CD = #corpCd#
+		AND
+			A.RS_NO = #rsNo#
+		AND
+			B.RSJ_NO = #searchCondition1#
+	]]>
+	</select>
+
+	<select id="Ecf0201DAO.selectEcf0201List" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecf0201DAO.selectEcf0201List */
+	<![CDATA[
+		SELECT
+			A.CORP_CD
+			, A.RS_NO
+			, A.RSJ_NO
+			, A.CHK_DT
+			, A.CHK_CNT
+			, A.CHK1
+			, A.CHK1_DT
+			, A.CHK2
+			, A.CHK2_DT
+			, A.CHK3
+			, A.CHK3_DT
+			, A.CHK4
+			, A.CHK4_DT
+			, A.CHK5
+			, A.CHK5_DT
+			, A.REMK
+			, A.DATA_REGDT
+			, A.DATA_REGNT
+		FROM
+			CR3240M A
+		WHERE
+			A.CORP_CD = #corpCd#
+		AND
+			A.RS_NO = #rsNo#
+		AND
+			A.RSJ_NO = #searchCondition1#
+		ORDER BY
+			A.CHK_DT ASC
+	]]>
+	</select>
+	
+	<select id="Ecf0201DAO.selectEcf0201DuplChk" parameterClass="egovMap" resultClass="string">
+	/* Ecf0201DAO.selectEcf0201DuplChk */
+	<![CDATA[
+		SELECT
+			CASE WHEN COUNT(*) > 0 THEN 'FALSE' ELSE 'TRUE' END
+		FROM
+			CR3240M A
+		WHERE
+			A.CORP_CD = #corpCd#
+		AND
+			A.RS_NO = #rsNo#
+		AND
+			A.RSJ_NO = #rsjNo#
+		AND
+			A.CHK_DT = #chkDt#
+	]]>
+	</select>
+	
+	<insert id="Ecf0201DAO.insertEcf0201" parameterClass="egovMap">
+	/* Ecf0201DAO.insertEcf0201 */
+	<![CDATA[
+		INSERT INTO CR3240M(
+			CORP_CD
+			, RS_NO
+			, RSJ_NO
+			, CHK_DT
+			, CHK_CNT
+	]]>
+		<isEqual property="chkNum" compareValue="1">
+			, CHK1
+			, CHK1_DT
+		</isEqual>
+		<isEqual property="chkNum" compareValue="2">
+			, CHK2
+			, CHK2_DT
+		</isEqual>
+		<isEqual property="chkNum" compareValue="3">
+			, CHK3
+			, CHK3_DT
+		</isEqual>
+		<isEqual property="chkNum" compareValue="4">
+			, CHK4
+			, CHK4_DT
+		</isEqual>
+		<isEqual property="chkNum" compareValue="5">
+			, CHK5
+			, CHK5_DT
+		</isEqual>
+	<![CDATA[
+			, DATA_REGDT
+			, DATA_REGNT
+		)VALUES(
+			#corpCd#
+			, #rsNo#
+			, #rsjNo#
+			, #chkDt#
+			, 1
+	]]>
+		<isEqual property="chkNum" compareValue="1">
+			, 'Y'
+			, GETDATE()
+		</isEqual>
+		<isEqual property="chkNum" compareValue="2">
+			, 'Y'
+			, GETDATE()
+		</isEqual>
+		<isEqual property="chkNum" compareValue="3">
+			, 'Y'
+			, GETDATE()
+		</isEqual>
+		<isEqual property="chkNum" compareValue="4">
+			, 'Y'
+			, GETDATE()
+		</isEqual>
+		<isEqual property="chkNum" compareValue="5">
+			, 'Y'
+			, GETDATE()
+		</isEqual>
+	<![CDATA[
+			, GETDATE()
+			, #dataRegnt#
+		)
+	]]>
+	</insert>
+	
+	<update id="Ecf0201DAO.updateEcf0201" parameterClass="egovMap">
+	/* Ecf0201DAO.updateEcf0201 */
+	<![CDATA[
+		UPDATE
+			CR3240M
+		SET
+			CHK_CNT = (CHK_CNT+1)
+	]]>
+		<isEqual property="chkNum" compareValue="1">
+			, CHK1 = 'Y'
+			, CHK1_DT = GETDATE()
+		</isEqual>
+		<isEqual property="chkNum" compareValue="2">
+			, CHK2 = 'Y'
+			, CHK2_DT = GETDATE()
+		</isEqual>
+		<isEqual property="chkNum" compareValue="3">
+			, CHK3 = 'Y'
+			, CHK3_DT = GETDATE()
+		</isEqual>
+		<isEqual property="chkNum" compareValue="4">
+			, CHK4 = 'Y'
+			, CHK4_DT = GETDATE()
+		</isEqual>
+		<isEqual property="chkNum" compareValue="5">
+			, CHK5 = 'Y'
+			, CHK5_DT = GETDATE()
+		</isEqual>
+	<![CDATA[
+		WHERE
+			CORP_CD = #corpCd#
+		AND
+			RS_NO = #rsNo#
+		AND
+			RSJ_NO = #rsjNo#
+		AND
+			CHK_DT = #chkDt#
+	]]>
+	</update>
+	
+	<update id="Ecf0201DAO.updateEcf0201ChkCnt" parameterClass="egovMap">
+	/* Ecf0201DAO.updateEcf0201ChkCnt */
+	<![CDATA[
+		UPDATE CR3210M 
+			SET CHK_CNT = ISNULL((SELECT SUM(CHK_CNT)
+							FROM CR3240M B
+							WHERE CORP_CD = #corpCd#
+							AND RS_NO = #rsNo#
+							AND RSJ_NO = #rsjNo#
+							GROUP BY RSJ_NO),0)
+		WHERE CORP_CD = #corpCd#
+		AND RS_NO = #rsNo#
+		AND RSJ_NO = #rsjNo#
+	]]>
+	</update>
+
+	<insert id="Ecf0201DAO.insertEcf0201Remk" parameterClass="egovMap">
+	/* Ecf0201DAO.insertEcf0201 */
+	<![CDATA[
+		INSERT INTO CR3240M(
+			CORP_CD
+			, RS_NO
+			, RSJ_NO
+			, CHK_DT
+			, CHK_CNT
+			, REMK
+			, DATA_REGDT
+			, DATA_REGNT
+		)VALUES(
+			#corpCd#
+			, #rsNo#
+			, #rsjNo#
+			, #chkDt#
+			, 1
+			, #remk#
+			, #dataRegdt#
+			, GETDATE()
+		)
+	]]>
+	</insert>
+	
+	<update id="Ecf0201DAO.updateEcf0201Remk" parameterClass="egovMap">
+	/* Ecf0201DAO.updateEcf0201 */
+	<![CDATA[
+		UPDATE
+			CR3240M
+		SET
+			REMK = #remk#
+		WHERE
+			CORP_CD = #corpCd#
+		AND
+			RS_NO = #rsNo#
+		AND
+			RSJ_NO = #rsjNo#
+		AND
+			CHK_DT = #chkDt#
+	]]>
+	</update>
+
+</sqlMap>

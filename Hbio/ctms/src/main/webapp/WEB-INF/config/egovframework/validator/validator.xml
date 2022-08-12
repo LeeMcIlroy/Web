@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation PUBLIC 
+    "-//Apache Software Foundation//DTD Commons Validator Rules Configuration 1.1//EN" 
+    "http://jakarta.apache.org/commons/dtds/validator_1_1.dtd">
+
+<form-validation>
+
+	<formset>
+		<!-- 게시물관리 : 공지사항 -->
+		<form name="newsVO">
+			<field property="bltnTitl" depends="required"><arg0 key="제목"/></field>
+		</form>
+		
+		<!-- 게시물관리 : FAQ -->
+		<form name="faqVO">
+			<field property="bltnTitl" depends="required"><arg0 key="제목"/></field>
+		</form>
+		
+		<!-- 게시물관리 : Q&A -->
+		<form name="qnaVO">
+			<field property="bltnTitl" depends="required"><arg0 key="제목"/></field>
+		</form>
+		
+		<!-- 게시물관리 : 누리마당 -->
+		<form name="frbdVO">
+			<field property="bltnTitl" depends="required"><arg0 key="제목" /></field>
+		</form>
+		
+		<!-- 지역정보 : 공공기관 jsp(page에 삽입된 pbitVO) -->
+		<form name="pbitVO">
+			<field property="korPbitNm" depends="required"><arg0 key="기관명" /></field>
+			<field property="pbitDvsnCd" depends="required"><arg0 key="기관구분" /></field>
+			<field property="pscd" depends="required,integer,minlength">
+				<arg0 key="우편번호" />
+				<arg1 key="5"/><var><var-name>minlength</var-name><var-value>5</var-value></var>
+			</field>
+			<field property="korAddr" depends="required"><arg0 key="주소"/></field>
+			<field property="englAddr" depends="nonKorean"><arg0 key="영문주소"/></field>
+			<field property="korHmpgUrl" depends="nonKorean"><arg0 key="홈페이지"/></field>
+			<field property="korTel" depends="phone"><arg0 key="연락처"/></field>
+		</form>
+		
+		<!-- 지역정보 : 공공기관 java(controller에서 받는 paramVO명칭이 publicInstitutionVO )-->
+		<form name="publicInstitutionVO">
+			<field property="korPbitNm" depends="required"><arg0 key="기관명" /></field>
+			<field property="pbitDvsnCd" depends="required"><arg0 key="기관구분" /></field>
+			<field property="pscd" depends="required,integer,minlength">
+				<arg0 key="우편번호" />
+				<arg1 key="5"/><var><var-name>minlength</var-name><var-value>5</var-value></var>
+			</field>
+			<field property="korAddr" depends="required"><arg0 key="주소"/></field>
+			<field property="englAddr" depends="nonKorean"><arg0 key="영문주소"/></field>
+			<field property="korHmpgUrl" depends="nonKorean"><arg0 key="홈페이지"/></field>
+			<field property="korTel" depends="phone"><arg0 key="연락처"/></field>
+		</form>
+		
+		<!-- 지역정보 : 도서관 -->
+		<form name="pblbVO">
+			<field property="pblbNm" depends="required"><arg0 key="도서관명" /></field>
+			<field property="pblbDvsnCd" depends="required"><arg0 key="도서관 구분" /></field>
+			<field property="hjdDvsnCd" depends="required"><arg0 key="행정동" /></field>
+			<field property="pscd" depends="required,integer,minlength">
+				<arg0 key="우편번호" />
+				<arg1 key="5"/><var><var-name>minlength</var-name><var-value>5</var-value></var>
+			</field>
+			<field property="pblbAddr" depends="required"><arg0 key="주소"/></field>
+			<field property="fcltPnstDetlCont" depends="required"><arg0 key="운영시간"/></field>
+			<field property="clsrDetlCont" depends="required"><arg0 key="휴관정보"/></field>
+			<field property="hmpgUrl" depends="nonKorean"><arg0 key="홈페이지"/></field>
+			<field property="pblbTel" depends="phone"><arg0 key="전화번호"/></field>
+		</form>
+		
+		<!-- 지역정보 : 문화행사 -->
+		<form name="cltrVO">
+			<field property="evntTitl" depends="required"><arg0 key="제목"/></field>
+			<field property="pfmcDtGuid" depends="required"><arg0 key="공연일시"/></field>
+			<field property="evntDetlGuid" depends="required"><arg0 key="공연내용"/></field>
+			<field property="rsvtDtGuid" depends="required"><arg0 key="예매일시"/></field>
+			<field property="evntPlacGuid" depends="required"><arg0 key="공연장소"/></field>
+			<field property="pricGuid" depends="required"><arg0 key="관람료"/></field>
+			<field property="chgeDprtNm" depends="required"><arg0 key="공연문의"/></field>
+			<field property="imageUrl" depends="nonKorean"><arg0 key="이미지 URL"/></field>
+			<field property="hmpgUrl" depends="nonKorean"><arg0 key="홈페이지"/></field>
+		</form>	
+		
+		<!-- 영문관리 : 공지사항 -->
+		<form name="engNewsVO">
+			<field property="bltnTitl" depends="required, nonKorean"><arg0 key="제목"/></field>
+		</form>
+		
+		<!-- 영문관리: 공공기관 jsp -->
+		<form name="engPbitVO">
+			<field property="englPbitNm" depends="required, nonKorean"><arg0 key="영문기관명" /></field>
+			<field property="pscd" depends="required,integer,minlength">
+				<arg0 key="우편번호" />
+				<arg1 key="5"/><var><var-name>minlength</var-name><var-value>5</var-value></var>
+			</field>
+			<field property="englAddr" depends="required, nonKorean"><arg0 key="영문주소"/></field>
+			<field property="englHmpgUrl" depends="nonKorean"><arg0 key="영문 홈페이지"/></field>
+			<field property="englTel" depends="phone"><arg0 key="연락처(영어)"/></field>
+		</form>
+		
+		<!-- 영문관리: 공공기관 -->
+		<form name="engPublicInstitutionVO">
+			<field property="englPbitNm" depends="required, nonKorean"><arg0 key="영문기관명" /></field>
+			<field property="pscd" depends="required,integer,minlength">
+				<arg0 key="우편번호" />
+				<arg1 key="5"/><var><var-name>minlength</var-name><var-value>5</var-value></var>
+			</field>
+			<field property="englAddr" depends="required, nonKorean"><arg0 key="영문주소"/></field>
+			<field property="englHmpgUrl" depends="nonKorean"><arg0 key="영문 홈페이지"/></field>
+			<field property="englTel" depends="phone"><arg0 key="연락처(영어)"/></field>
+		</form>
+		
+		<!-- 영문관리:숙박시설 -->
+		<form name="hotelVO">
+			<field property="hotelNm" depends="required, nonKorean"><arg0 key="호텔명"/></field>
+			<field property="pscd" depends="required, integer, minlength">
+				<arg0 key="우편번호"/>
+				<arg1 key="5"/><var><var-name>minlength</var-name><var-value>5</var-value></var>
+			</field>
+			<field property="englAddr" depends="required, nonKorean"><arg0 key="영문주소"/></field>
+			<field property="roomCnt" depends="integer"><arg0 key="객실수"/></field>
+			<field property="hmpgUrl" depends="nonKorean"><arg0 key="홈페이지"/></field>
+			<field property="hotelTel" depends="phone"><arg0 key="연락처"/></field>
+		</form>
+		
+		<!-- 사이트관리:팝업창 -->
+		<form name="popupVO">
+			<field property="poupNm" depends="required"><arg0 key="팝업명"/></field>
+			<field property="poupStrtYmd" depends="required,date">
+			    <arg0 key="팝업시작기간"/>
+			    <var>
+				    <var-name>datePatternStrict</var-name>
+				    <var-value>yyyyMMdd</var-value>
+			    </var>
+			</field>
+			<field property="poupEndYmd" depends="required,date">
+			    <arg0 key="팝업종료기간"/>
+			    <var>
+				    <var-name>datePatternStrict</var-name>
+				    <var-value>yyyyMMdd</var-value>
+			    </var>
+			</field>
+			<field property="useYn" depends="required"><arg0 key="사용여부"/></field>
+			<field property="linkUrl" depends="nonKorean"><arg0 key="연결 URL"/></field>
+			<!-- 팝업이미지 -->
+			<field property="poupHrznSize" depends="required,integer"><arg0 key="팝업창 가로크기"/></field>
+			<field property="poupVrtcSize" depends="required,integer"><arg0 key="팝업창 세로크기"/></field>
+			<field property="poupHrznLctn" depends="required,integer"><arg0 key="팝업창 가로위치"/></field>
+			<field property="poupVrtcLctn" depends="required,integer"><arg0 key="팝업창 세로위치"/></field>
+		</form>
+		
+		<!-- 사이트관리:배너 -->
+		<form name="bannerVO">
+			<field property="bnerNm" depends="required"><arg0 key="배너명"/></field>
+			<field property="useYn" depends="required"><arg0 key="사용여부"/></field>
+			<!-- 배너이미지 -->
+			<field property="linkUrl" depends="required, nonKorean"><arg0 key="연결 URL"/></field>
+		</form>
+		
+		<!-- 사이트관리:퀵메뉴-->
+		<form name="quickMenuVO">
+			<field property="quicNm" depends="required"><arg0 key="퀵메뉴명"/></field>
+			<field property="nwdwYn" depends="required"><arg0 key="새창여부"/></field>
+			<!-- 배너이미지 -->
+			<field property="linkUrl" depends="required, nonKorean"><arg0 key="연결 URL"/></field>
+		</form>
+		
+		<!-- 코드관리:공통코드 -->
+		<form name="cmmnCodeVO">
+			<field property="clsfCd" depends="required"><arg0 key="분류코드"/></field>
+			<field property="cmmnCd" depends="required, nonKorean"><arg0 key="공통코드"/></field>
+			<field property="cmmnCdNm" depends="required"><arg0 key="공통코드명"/></field>
+		</form>
+		
+		<!-- 코드관리:분류코드 -->
+		<form name="clsfCodeVO">
+			<field property="clsfCd" depends="required, integer"><arg0 key="분류코드"/></field>
+			<field property="clsfCdNm" depends="required"><arg0 key="분류코드명"/></field>
+		</form>
+		
+		<!-- 관리자관리:관리자정보관리 -->
+		<form name="managerVO">
+			<field property="mngrId" depends="required, nonKorean"><arg0 key="아이디"/></field>
+			<field property="mngrNm" depends="required"><arg0 key="이름"/></field>
+			<field property="mngrTel" depends="phone"><arg0 key="연락처"/></field>
+			<field property="mngrEmal" depends="email, nonKorean"><arg0 key="이메일"/></field>
+			<!-- 비밀번호 -->
+		</form>
+		
+		<!-- 관리자관리:권한관리 -->
+		<form name="managerAuthorityVO">
+			<field property="athrNm" depends="required,maxlength"><arg0 key="권한명" />
+				<arg1 key="20"/><var><var-name>maxlength</var-name><var-value>20</var-value></var>
+			</field>
+			<field property="athrCont" depends="required,maxlength"><arg0 key="권한설명" />
+				<arg1 key="300"/>
+				<var><var-name>maxlength</var-name><var-value>300</var-value></var>
+			</field>
+			<field property="menuIds" depends="required"><arg0 key="권한설정"/></field>
+		</form>
+		
+	</formset>
+
+</form-validation>

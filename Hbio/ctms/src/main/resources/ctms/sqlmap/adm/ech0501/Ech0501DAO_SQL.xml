@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 연구과제******************************************************************************************************************************************* -->
+	<sql id="where_rs5000m">
+	
+	FROM RS5000M
+	</sql>
+	 <sql id="where_rs5000mSearch">
+          
+	        <dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.RS_CD = #searchCondition6#)
+	        	</isNotEmpty>
+	        	
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), B.PLRV_STDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), B.PLRV_EDDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				
+	        	<isNotEmpty property="searchCondition5" prepend="AND">
+	        		A.RSST_CLS  LIKE CONCAT ('%',#searchCondition5#,'%')
+	        	</isNotEmpty>
+	        
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구명칭 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					
+					<!-- 연구코드 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+	<!-- 연구과제 리스트 -->
+	<select id="AdmEch0501DAO.selectAdmEch0501List" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEch0501DAO.selectAdmEch0501List */
+	 <![CDATA[
+     
+  	  SELECT    DISTINCT 
+  	  			A.RS_NO					      AS rsNo
+	      	   ,A.CORP_CD					  AS corpCd
+	      	   ,A.RS_NAME					  AS rsName
+	      	   ,A.RS_CD					      AS rsCd
+	   	       ,A.RSST_CLS       			  AS rsstCls
+	   	       ,J.CD_NAME                     AS rsstClsNm
+	           ,B.RV_APPLY_DT                 AS rvApplyDt         
+	           ,B.RV_CLS                      AS rvCls             
+	           ,B.RV_ST                       AS rvSt              
+	           ,B.RVDOC_CLS                   AS rvdocCls          
+	           ,B.RV_DT                       AS rvDt              
+	           ,B.PLRV_DT                     AS plrvDt            
+	           ,B.CHRV_DT                     AS chrvDt            
+	           ,B.RSRV_DT                     AS rsrvDt            
+	           ,B.PLRV_STDT                   AS plrvStdt          
+	           ,B.PLRV_EDDT                   AS plrvEddt          
+	           ,B.RSRV_STDT                   AS rsrvStdt          
+	           ,B.RSRV_EDDT                   AS rsrvEddt          
+	           ,B.DATA_REGDT                  AS dataRegdt         
+	           ,A.DATA_REGNT                  AS dataRegnt
+	           ,A.DEL_YN					  AS delYn 
+               ,A.DATA_LOCK_YN                AS dateLockyn
+	      	   ,STUFF((SELECT ',' + CASE  WHEN C.RPT_CLS = 'korRpt'     THEN '국문보고서' 
+	                                      WHEN C.RPT_CLS = 'engRpt'     THEN '영문보고서'
+	                                      WHEN C.RPT_CLS = 'draftRpt'   THEN '초안보고서'
+	                                      WHEN C.RPT_CLS = 'finalRpt'   THEN '최종보고서'
+	                                      WHEN C.RPT_CLS = 'summary'    THEN '최종요약문'
+	                                      WHEN C.RPT_CLS = 'rsImage'    THEN '연구이미지'
+	                                      WHEN C.RPT_CLS = 'rsPlan'     THEN '연구계획서'
+	                                      WHEN C.RPT_CLS = 'gita1'      THEN '기타1'
+	                                      WHEN C.RPT_CLS = 'gita2'      THEN '기타2'     
+	                                 END 
+		                FROM RS5020M C 
+		                WHERE C.RS_NO  		= A.RS_NO 
+		        FOR XML PATH('')),1,1,'')  AS report
+           
+	  FROM      RS1000M A
+	  
+	            LEFT OUTER JOIN RS5000M B
+
+	  ON        B.RS_NO   = A.RS_NO
+      AND       B.CORP_CD = A.CORP_CD
+      
+         	    INNER JOIN CM4000M J
+      ON        J.CORP_CD       = A.CORP_CD
+      AND       J.CD_CLS        = 'CT2050'
+      AND       J.CLS_CAT       = '3'
+      AND       J.CD            = A.RSST_CLS 
+    ]]>
+      <include refid="where_rs5000mSearch" />   	  
+      <![CDATA[
+      AND  	  	A.DEL_YN = 'N'
+      
+      ORDER  	BY  A.RS_NO DESC
+       			OFFSET #firstIndex# ROWS
+			 	FETCH NEXT #recordCountPerPage# ROWS ONLY  
+    ]]>
+            
+   
+   
+	
+	</select>
+
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- 연구과제 cnt -->
+	            
+	<select id="AdmEch0501DAO.selectAdmEch0501ListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmEch0501DAO.selectAdmEch0501ListCnt */
+	<![CDATA[
+		  SELECT  COUNT(*)
+		  FROM 	  RS1000M A
+			
+				  LEFT OUTER JOIN RS5000M B
+
+		  ON      A.RS_NO   = B.RS_NO
+	      AND     A.CORP_CD = B.CORP_CD
+	      
+	         	  INNER JOIN CM4000M J
+	      ON      J.CORP_CD       = A.CORP_CD
+	      AND     J.CD_CLS        = 'CT2050'
+	      AND     J.CLS_CAT       = '3'
+	      AND     J.CD            = A.RSST_CLS 
+	]]>
+ 		<include refid="where_rs5000mSearch" />   
+ 		<![CDATA[
+      	  AND  	  A.DEL_YN = 'N'
+      
+   
+    ]]>
+ 	</select>
+	
+	<!-- 연구과제 상세보기 -->
+	<select id="AdmEch0501DAO.selectEch0501ViewOne" parameterClass="string" resultClass="egovMap" >
+	/* AdmEch0501DAO.selectAdmEch0501View */
+	 <![CDATA[
+	 	 SELECT  A.CORP_CD                     AS corpCd 
+                ,J.BRANCH_NAME                 AS branchNm
+                ,A.RS_NO                       AS rsNo 
+				,A.RS_CD					   AS rsCd            
+                ,A.RS_NAME                     AS rsName
+                ,A.RS_PPS					   AS rsPps
+                ,A.RS_STDT					   AS rsStdt
+                ,A.RS_ENDT					   AS rsEndt         
+                ,F.RV_NO                       AS rvNo              
+                ,F.RV_NO1                      AS rvNo1             
+                ,F.RV_NO2                      AS rvNo2             
+                ,F.RV_NO3                      AS rvNo3             
+                ,F.RV_NO4                      AS rvNo4             
+                ,F.RV_NO5                      AS rvNo5             
+                ,F.RV_APPLY_DT                 AS rvApplyDt         
+                ,F.RV_CLS                      AS rvCls             
+                ,F.RV_ST                       AS rvSt
+                ,CASE WHEN F.RV_ST ='1' THEN '심의중' ELSE '완료' END  AS rvStNm              
+                ,F.RVDOC_CLS                   AS rvdocCls          
+                ,F.RV_DT                       AS rvDt              
+                ,F.PLRV_DT                     AS plrvDt            
+                ,F.CHRV_DT                     AS chrvDt            
+                ,F.RSRV_DT                     AS rsrvDt            
+                ,F.PLRV_STDT                   AS plrvStdt          
+                ,F.PLRV_EDDT                   AS plrvEddt          
+                ,F.RSRV_STDT                   AS rsrvStdt          
+                ,F.RSRV_EDDT                   AS rsrvEddt
+                ,K.VEND_NAME                   AS vendNm
+                ,A.DATA_LOCK_YN                AS dateLockyn          
+                ,A.DATA_REGDT                  AS dataRegdt         
+                ,A.DATA_REGNT                  AS dataRegnt         
+        FROM    RS1000M A
+                LEFT OUTER JOIN RS5000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.RS_NO         = A.RS_NO               
+                LEFT OUTER  JOIN CT1000M G
+        ON      G.CORP_CD       = F.CORP_CD
+        AND     G.RV_NO1        = F.RV_NO1              
+                LEFT OUTER  JOIN CM4000M H
+        ON      H.CORP_CD       = F.CORP_CD
+        AND     H.CD_CLS        = 'CT2070'
+        AND     H.CLS_CAT       = '3'
+        AND     H.CD            = F.RV_NO3           
+                INNER  JOIN CT1020M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.BRANCH_CD     = A.BRANCH_CD
+          		INNER  JOIN CT2000M K		 
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.VEND_NO       = A.VEND_NO
+        
+        WHERE   A.RS_NO			= #rsNo#
+        
+        ORDER   BY
+                A.CORP_CD
+              , A.RS_NO
+              , F.RV_NO
+        
+    ]]>
+	</select>
+	
+
+    <!-- 연구과제 삭제 -->
+	<delete id="AdmEch0501DAO.deleteAdmEch0501" parameterClass="string">
+		/* AdmEch0501DAO.deleteAdmEch0501 */
+	<![CDATA[
+		DELETE	FROM 
+				RS5000M
+		WHERE
+				RS_NO = #rsNo#
+	]]>
+	</delete>
+	
+	<select id="AdmEch0501DAO.selectEch0501Excel" parameterClass="searchVO" resultClass="egovMap">
+		/* Ech0501DAO.selectEch0501Excel */
+	 <![CDATA[
+     
+  	  SELECT    DISTINCT 
+  	  			A.RS_NO					      AS rsNo
+	      	   ,A.CORP_CD					  AS corpCd
+	      	   ,A.RS_NAME					  AS rsName
+	      	   ,A.RS_CD					   	  AS rsCd
+	   	       ,A.RSST_CLS       			  AS rsstCls
+	   	       ,J.CD_NAME                     AS rsstClsNm
+	           ,B.RV_APPLY_DT                 AS rvApplyDt         
+	           ,B.RV_CLS                      AS rvCls             
+	           ,B.RV_ST                       AS rvSt              
+	           ,B.RVDOC_CLS                   AS rvdocCls          
+	           ,B.RV_DT                       AS rvDt              
+	           ,B.PLRV_DT                     AS plrvDt            
+	           ,B.CHRV_DT                     AS chrvDt            
+	           ,B.RSRV_DT                     AS rsrvDt            
+	           ,B.PLRV_STDT                   AS plrvStdt          
+	           ,B.PLRV_EDDT                   AS plrvEddt          
+	           ,B.RSRV_STDT                   AS rsrvStdt          
+	           ,B.RSRV_EDDT                   AS rsrvEddt          
+	           ,B.DATA_REGDT                  AS dataRegdt         
+	           ,A.DATA_REGNT                  AS dataRegnt
+	           ,A.DEL_YN					  AS delYn 
+               ,A.DATA_LOCK_YN                AS dateLockyn
+	      	   ,STUFF((SELECT ',' + CASE WHEN C.RPT_CLS = 'korRpt'     THEN '국문보고서' 
+	                                      WHEN C.RPT_CLS = 'engRpt'     THEN '영문보고서'
+	                                      WHEN C.RPT_CLS = 'draftRpt'   THEN '초안보고서'
+	                                      WHEN C.RPT_CLS = 'finalRpt'   THEN '최종보고서'
+	                                      WHEN C.RPT_CLS = 'summary'    THEN '최종요약문'
+	                                      WHEN C.RPT_CLS = 'rsImage'    THEN '연구이미지'
+	                                      WHEN C.RPT_CLS = 'rsPlan'     THEN '연구계획서'
+	                                      WHEN C.RPT_CLS = 'gita1'      THEN '기타1'
+	                                      WHEN C.RPT_CLS = 'gita2'      THEN '기타2'     
+	                                 END 
+		                FROM RS5020M C 
+		                WHERE C.RS_NO  		= A.RS_NO 
+		        FOR XML PATH('')),1,1,'')  AS report
+           
+	  FROM    	RS1000M A
+	  
+	          	LEFT OUTER JOIN RS5000M B
+
+	  ON      	A.RS_NO   = B.RS_NO
+      AND     	A.CORP_CD = B.CORP_CD
+      
+         	  	INNER JOIN CM4000M J
+      ON      	J.CORP_CD       = A.CORP_CD
+      AND     	J.CD_CLS        = 'CT2050'
+      AND     	J.CLS_CAT       = '3'
+      AND     	J.CD            = A.RSST_CLS 
+    ]]>
+      <include refid="where_rs5000mSearch" />   	  
+      <![CDATA[
+      AND  	  	A.DEL_YN = 'N'
+      
+      ORDER  	BY  A.RS_NO DESC
+       			
+    ]]>
+	</select>
+	<!--RS5020 등록된 보고서 조회  -->
+	<select id="AdmEch0501DAO.selectEch0501rptname" parameterClass="egovMap" resultClass="rs5020mVO" >
+	/* AdmEch0501DAO.selectAdmEch0501View */
+	<![CDATA[
+			SELECT 
+		         A.RS_NO 	AS rsNo
+		        ,A.RPT_NO   AS rptNo
+		        ,A.RPT_CLS  AS rptCls
+        
+		FROM    RS5020M A
+		
+		        INNER JOIN CT7000M B
+		ON      B.FILE_KEY   = A.RPT_CLS
+        AND     B.BOARD_NO   = A.RS_NO
+		AND     B.BOARD_TYPE = 'REPORT'
+
+	]]>
+	</select>
+	<!--RS5020 등록된 보고서 조회  -->
+	<select id="AdmEch0501DAO.selectEch0501selectOneModel" parameterClass="egovMap" resultClass="rs5020mVO" >
+	/* AdmEch0501DAO.selectAdmEch0501View */
+	<![CDATA[
+		SELECT   A.RS_NO 	AS rsNo
+		        ,A.RPT_NO   AS rptNo
+		        ,A.RPT_CLS  AS rptCls
+        		,A.RPT_DT	AS rptDt
+		FROM    RS5020M A
+		WHERE 	A.RS_NO	=#rsNo#
+		
+		    
+
+	]]>
+	</select>
+	<!--RS5020 보고서 상세조회  -->
+	<select id="AdmEch0501DAO.selectEch0501rptOne" parameterClass="string" resultClass="rs5020mVO" >
+	/* AdmEch0501DAO.selectAdmEch0501View */
+	<![CDATA[
+		SELECT 
+		         A.RS_NO 	AS rsNo
+		        ,A.RPT_NO   AS rptNo
+		        ,A.RPT_CLS  AS rptCls
+        		
+		FROM    RS5020M A
+		WHERE 	RPT_NO 	= #rptNo#
+		 
+
+	]]>
+	</select>
+	<!-- 보고서업로드 추가 -->
+	<insert id="AdmEch0501DAO.insertAdmEch0501" parameterClass="rs5000mVO">
+	 <selectKey keyProperty="rsNo" resultClass="string" type="post">
+        (SELECT MAX(RS_NO) FROM RS5000M)
+     </selectKey>
+    <![CDATA[
+ 
+ 
+ 
+        INSERT  RS5000M(
+                CORP_CD                     
+              , RS_NO                       
+              , RV_NO                       
+              , RV_NO1                      
+              , RV_NO2                      
+              , RV_NO3                      
+              , RV_NO4                      
+              , RV_NO5                      
+              , RV_APPLY_DT                 
+              , RV_CLS                      
+              , RV_ST                       
+              , RVDOC_CLS                   
+              , RV_DT                       
+              , PLRV_DT                     
+              , CHRV_DT                     
+              , RSRV_DT                     
+              , PLRV_STDT                   
+              , PLRV_EDDT                   
+              , RSRV_STDT                   
+              , RSRV_EDDT                   
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #rsNo#
+              , #rvNo#
+              , #rvNo1#
+              , #rvNo2#
+              , #rvNo3#
+              , #rvNo4#
+              , #rvNo5#
+              , #rvApplyDt#
+              , #rvCls#
+              , #rvSt#
+              , #rvdocCls#
+              , #rvDt#
+              , #plrvDt#
+              , #chrvDt#
+              , #rsrvDt#
+              , #plrvStdt#
+              , #plrvEddt#
+              , #rsrvStdt#
+              , #rsrvEddt#
+              , GETDATE()
+              , #dataRegnt#
+        )
+    ]]>
+	</insert>
+	
+	 <!--RS5020M 보고서테이블   추가 -->
+    <insert id="AdmEch0501DAO.insertAdmEch0501rsreport" parameterClass="rs5020mVO">
+    <selectKey keyProperty="rptNo" resultClass="String" type="post">
+        (SELECT MAX(RPT_NO) FROM RS5020M)
+    </selectKey>
+    <![CDATA[
+ 
+ 
+ 
+        INSERT  RS5020M(
+                CORP_CD                     
+              , BRANCH_CD                   
+              , RS_NO                                                  
+              , RPT_CLS                     
+              , RPT_DT                      
+              , REMK                        
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #branchCd#
+              , #rsNo#    
+              , #rptCls#
+           	  , #rptDt#
+              , #remk#
+              , getdate()
+              , #dataRegnt#
+        )
+    ]]>
+    </insert>
+    <!-- RS5020M 테이블 내 보고서 삭제 -->
+	<delete id="AdmEch0501DAO.deleteAdmEch0501rsreport" parameterClass="string">
+		/* AdmEch0501DAO.deleteAdmEch0501rsreport */
+	<![CDATA[
+		DELETE	FROM 
+				RS5020M
+		WHERE
+				RPT_NO = #rptNo#
+	]]>
+	</delete>
+	
+	<!-- 보고서관리 보고일자수정 -->
+	<update id="AdmEch0501DAO.updateAdmEch0501" parameterClass="rS5020mVO">
+		/* AdmEch0501DAO.updateAdmEch0501 */
+	<![CDATA[
+        UPDATE  RS5020M
+        
+        SET		RPT_DT			= #rptDt#
+             
+        WHERE   CORP_CD         = #corpCd#              
+        AND     RS_NO           = #rsNo#                
+        AND     RPT_NO          = #rptNo#      
+    ]]>
+	</update>
+	
+	<!-- /연구과제****************************************************************************************************************************************** -->
+
+</sqlMap>

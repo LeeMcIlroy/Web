@@ -1,0 +1,306 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>H&amp;Bio 관리자</title>
+<link rel="stylesheet" type="text/css" href="../css/ui/adm_common.css">
+<script type="text/javascript" src="../js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="../js/jquery-ui.js"></script>
+<script type="text/javascript" src="../js/common.ui.js"></script>
+
+<!--[if lt IE 9]>
+<script type="text/javascript" src="../js/html5.js"></script>
+<script type="text/javascript" src="../js/respond.min.js"></script>
+<![endif]-->
+	
+</head>
+<body>
+<!-- wrap -->
+<div class="wrap">
+	<!-- header -->
+	<div class="header">
+		<div>
+			<h1><a href="#">H&amp;Bio</a></h1>
+			<!-- util -->
+			<div class="util">
+				<span><em>홍길동(111111)</em>님</span>
+				<a href="#" title="로그아웃">로그아웃</a>
+			</div>
+			<!-- gnb -->
+			<nav class="gnb" id="gnb">
+				<ul>
+					<li>
+						<a href="#" class="top-heading">연구관리</a>
+						<div class="dropdown sub1">
+							<ul>
+								<li><a href="#">연구관리</a></li>
+								<li><a href="#">피험자선정</a></li>
+								<li><a href="#">예약관리</a></li>
+								<li><a href="#">IRB심의</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#" class="top-heading">eCRF관리</a>
+						<div class="dropdown sub2">
+							<ul>
+								<li><a href="#">eCRF관리</a></li>
+								<li><a href="#">템플릿관리</a></li>
+								<li><a href="#">질문답변관리</a></li>
+								<li><a href="#">제품사용관리</a></li>
+								<li><a href="#">연구동의서관리</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">피험자관리</a>
+						<div class="dropdown sub3">
+							<ul>
+								<li><a href="#">피험자관리</a></li>
+								<li><a href="#">연구일정</a></li>
+								<li><a href="#">예약일정</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">자료추출</a>
+						<div class="dropdown sub4">
+							<ul>
+								<li><a href="#">시험결과추출</a></li>
+								<li><a href="#">피부자극결과</a></li>
+								<li><a href="#">종합통계</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">보고서</a>
+						<div class="dropdown sub5">
+							<ul>
+								<li><a href="#">보고서관리</a></li>
+								<li><a href="#">보고서 양식관리</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">발송관리</a>
+						<div class="dropdown sub6">
+							<ul>
+								<li><a href="#">보고서발송</a></li>
+								<li><a href="#">이메일발송내역</a></li>
+								<li><a href="#">SMS발송내역</a></li>
+								<li><a href="#">SMS발송메시지</a></li>
+							</ul>
+						</div>
+					</li>
+					<li>
+						<a href="#">기준정보관리</a>
+						<div class="dropdown sub7">
+							<ul>
+								<li><a href="#">회사관리</a></li>
+								<li><a href="#">사용자관리</a></li>
+								<li><a href="#">지사관리</a></li>
+								<li><a href="#">고객사관리</a></li>
+								<li><a href="#">메뉴관리</a></li>
+								<li><a href="#">권한관리</a></li>
+								<li><a href="#">공통코드관리</a></li>
+							</ul>
+						</div>
+					</li>
+				</ul>		
+			</nav>
+			<!-- //gnb -->
+		</div>
+	</div>
+	<!-- //header -->
+	<!-- container -->
+	<div class="container">
+		<h2>연구관리</h2>
+		<!-- contents -->
+		<div class="contents">
+			<!-- 타이틀 -->
+			<div class="title_area">
+				<h3>연구관리</h3>
+				<!-- 현재위치 -->
+				<div class="breadcrumb">
+					<a href="#">홈</a>
+					<span>&gt;</span>
+					연구관리
+					<span>&gt;</span>
+					연구관리
+				</div>
+			</div>
+			<!-- //타이틀 -->
+			<!-- 검색영역 -->
+			<div class="srch_area">
+				<ul>
+					<li>
+						<p>연구코드</p>
+						<span class="type01">
+							<input type="text" placeholder="연구코드" />
+						</span>
+						<span>
+							<select>
+								<option>년도</option>
+							</select>
+						</span>
+						<span class="type01">
+							<select>
+								<option>연구코드/연구명</option>
+							</select>
+						</span>
+					</li>
+					<li>
+						<p>연구분야</p>
+						<span>
+							<select>
+								<option>진행중</option>
+							</select>
+						</span>
+					</li>
+                    <li>
+						<p>연구상태</p>
+						<span>
+							<select>
+								<option>진행중</option>
+							</select>
+						</span>
+					</li>
+					<li>
+						<p>기간</p>
+                        <span>
+                            <select>
+								<option>검색조건</option>
+							</select>
+                        </span>
+						<span>
+							<input type="text" class="date" />
+							<a href="#" class="btn_cld">날짜검색</a>
+						</span>
+						<em>~</em>
+						<span>
+							<input type="text" class="date" />
+							<a href="#" class="btn_cld">날짜검색</a>
+						</span>
+						<span class="type00">
+							<input type="radio" name="period" id="period01" /> <label for="period01">1년</label>
+							<input type="radio" name="period" id="period02" /> <label for="period02">3개월</label>
+							<input type="radio" name="period" id="period03" /> <label for="period03">1개월</label>
+						</span>
+					</li>                    
+                    <li>
+						<p>검색어</p>
+						<span>
+							<select>
+								<option>검색조건</option>
+							</select>
+						</span>
+                        <span class="type02">
+                            <input type="text" placeholder="검색어 입력" />
+                        </span>
+					</li>
+				</ul>
+				<!-- 조회버튼 -->
+				<a href="#">조회</a>
+			</div>
+			<!-- //검색영역 -->
+			<!-- 테이블 상단 정보 -->
+			<div class="tbl_top_info">
+				<span>총 10건</span>
+				<!-- 버튼 -->
+				<div>
+					<a href="#" class="btn_excel">엑셀</a>
+				</div>
+			</div>
+			<!-- //테이블 상단 정보 -->
+			<!-- 목록 -->
+			<table class="tbl_list tr_link">
+				<colgroup>
+					<col style="width:12%" />
+					<col style="width:8%" />
+					<col style="width:auto" />
+					<col style="width:8%" />
+					<col style="width:12%" />
+					<col style="width:12%" />
+					<col style="width:6%" />
+                    <col style="width:6%" />
+                    <col style="width:12%" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th scope="col">연구코드</th>
+						<th scope="col">연구분야</th>
+						<th scope="col">연구명</th>
+						<th scope="col">연구상태</th>
+						<th scope="col">고객사명</th>
+						<th scope="col">연구지사</th>
+						<th scope="col">연구책임자</th>
+                        <th scope="col">연구담당자</th>
+                        <th scope="col">연구기간</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="nodata" colspan="9">연구 정보가 없습니다.</td>
+					</tr>
+					<tr onclick="location.href='#'">
+						<td>HBSE-MLG-20057-1</td>
+                        <td>관찰연구</td>
+						<td class="ta_l">Ecrf 관찰연구 1회</td>
+						<td>진행중</td>
+						<td>고객사명</td>
+						<td>연구센터A</td>
+						<td>홍길동</td>
+						<td>아무개</td>
+                        <td>2020-12-12 ~ 2020-12-12</td>
+					</tr>
+					<tr onclick="location.href='#'">
+						<td>HBSE-MLG-20057-1</td>
+                        <td>관찰연구</td>
+						<td class="ta_l">Ecrf 관찰연구 1회</td>
+						<td>진행중</td>
+						<td>고객사명</td>
+						<td>연구센터A</td>
+						<td>홍길동</td>
+						<td>아무개</td>
+                        <td>2020-12-12 ~ 2020-12-12</td>
+					</tr>
+					<tr onclick="location.href='#'">
+						<td>HBSE-MLG-20057-1</td>
+                        <td>관찰연구</td>
+						<td class="ta_l">Ecrf 관찰연구 1회</td>
+						<td>진행중</td>
+						<td>고객사명</td>
+						<td>연구센터A</td>
+						<td>홍길동</td>
+						<td>아무개</td>
+                        <td>2020-12-12 ~ 2020-12-12</td>
+					</tr>
+				</tbody>
+			</table>
+			<!-- //목록 -->
+			<!-- 페이징 -->
+			<div class="pagenate">
+				<a href="#" class="pg_first">처음</a>
+				<a href="#" class="pg_prev">이전</a>
+				<a href="#" class="active">1</a>
+				<a href="#">2</a>
+				<a href="#">3</a>
+				<a href="#">4</a>
+				<a href="#">5</a>
+				<a href="#">6</a>
+				<a href="#">7</a>
+				<a href="#">8</a>
+				<a href="#">9</a>
+				<a href="#">10</a>
+				<a href="#" class="pg_next">다음</a>
+				<a href="#" class="pg_last">마지막</a>
+			</div>
+			<!-- //페이징 -->
+		</div>
+		<!-- //contents -->
+	</div>
+	<!-- //container -->
+</div>	
+<!-- //wrap -->
+</body>
+</html>

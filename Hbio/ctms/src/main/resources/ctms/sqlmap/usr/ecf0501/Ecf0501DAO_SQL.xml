@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 연구대상자(피험자관리)******************************************************************************************************************************************* -->
+	<!-- 변수목록 연구대상자 SB1000M
+                A.CORP_CD                     AS corpCd            회사코드
+                A.RSJ_NO                      AS rsjNo             연구대상자번호
+                A.RSJ_NAME                    AS rsjName           이름
+                A.REG_DT                      AS regDt             등록일자
+                A.BR_DT                       AS brDt              생년월일
+                A.JREG_NO                     AS jregNo            주민등록번호
+                A.ACCT_NO                     AS acctNo            통장번호
+                A.BANK_NAME                   AS bankName          은행명칭
+                A.ACCT_NAME                   AS acctName          예금주
+                A.ACCT_CP                     AS acctCp            통장사본
+                A.POST_NO                     AS postNo            우편번호
+                A.ADDR_MAIN                   AS addrMain          기본주소
+                A.ADDR_GITA                   AS addrGita          기타주소
+                A.RSJ_ST_CLS                  AS rsjStCls          연구순응도상태
+                F.CD_NAME                     AS rsjStClsNm        연구순응도상태명
+                A.GEN_YN                      AS genYn             성별
+                A.HP_NO                       AS hpNo              휴대폰번호
+                A.EMAIL                       AS email             메일주소
+                A.POSITION                    AS position          직급
+                A.USER_ID                     AS userId            아이디
+                A.PW_NO                       AS pwNo              비밀번호
+                A.BRANCH_CD                   AS branchCd          지사코드
+                G.BRANCH_NAME                 AS branchName        지사코드명
+                A.SPOT                        AS spot              직위
+                A.RLOGIN_DT                   AS rloginDt          최근로그인일시
+                A.USER_ST                     AS userSt            사용자상태
+                H.CD_NAME                     AS userStNm          사용자상태명
+                A.REMK                        AS remk              비고
+                A.EFF_STDT                    AS effStdt           유효시작일
+                A.EFF_ENDT                    AS effEndt           유효종료일
+                A.LOGIN_FAIL				  AS loginFail        로그인실패횟수
+                A.CFM_DT                      AS cfmDt             최종확인일자
+                A.CFM_DT                      AS cfmDt             최종확인일자
+                A.CFM_YN                      AS cfmYn             확인여부
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->
+    <!-- 변수목록 연구대상자유형 SB1010M
+                A.CORP_CD                     AS corpCd            회사코드
+                A.RSJ_NO                      AS rsjNo             연구대상자번호
+                A.FA_YN                       AS faYn              안면여드름
+                A.BA_YN                       AS baYn              등여드름
+                A.NF_YN                       AS nfYn              팔자주름
+                A.CL_YN                       AS clYn              셀룰라이트
+                A.WE_YN                       AS weYn              눈가주름
+                A.DC_YN                       AS dcYn              다크서클
+                A.LT_YN                       AS ltYn              광피부타입
+                A.PM_YN                       AS pmYn              색소침착
+                A.HL_YN                       AS hlYn              탈모
+                A.EB_YN                       AS ebYn              아이백
+                A.SN_YN                       AS snYn              민감여부
+                A.DD_YN                       AS ddYn              비듬
+                A.FL_YN                       AS flYn              홍조
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->    
+
+	<!-- 피험자관리 상세보기 -->
+	<select id="Ecf0501DAO.selectEcf0501View" parameterClass="sb1000mVO"
+		resultClass="sb1000mVO">
+		/* Ecf0501DAO.selectEcf0501View */
+	<![CDATA[
+	    SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RSJ_NO                      AS rsjNo             
+              , A.RSJ_NAME                    AS rsjName           
+              , A.REG_DT                      AS regDt             
+              , A.BR_DT                       AS brDt
+              , FLOOR(CAST(DATEDIFF(DAY,A.BR_DT,GETDATE()) AS INTEGER)/365.2422) AS age              
+              , A.JREG_NO                     AS jregNo            
+              , A.ACCT_NO                     AS acctNo            
+              , A.BANK_NAME                   AS bankName          
+              , A.ACCT_NAME                   AS acctName          
+              , A.ACCT_CP                     AS acctCp            
+              , A.POST_NO                     AS postNo            
+              , A.ADDR_MAIN                   AS addrMain          
+              , A.ADDR_GITA                   AS addrGita          
+              , A.GEN_YN                      AS genYn
+              , CASE A.GEN_YN
+              		WHEN '1' THEN '남'
+              		WHEN '2' THEN '여'
+              	  	ELSE '미정'
+              	END AS genName                   	           
+              , A.HP_NO                       AS hpNo              
+              , A.EMAIL                       AS email             
+              , A.POSITION                    AS position          
+              , A.USER_ID                     AS userId            
+              , A.PW_NO                       AS pwNo              
+              , A.BRANCH_CD                   AS branchCd          
+              , A.SPOT                        AS spot              
+              , A.RLOGIN_DT                   AS rloginDt          
+              , A.USER_ST                     AS userSt        
+              , A.REMK                        AS remk              
+              , A.EFF_STDT                    AS effStdt           
+              , A.EFF_ENDT                    AS effEndt           
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , A.CFM_DT					  AS cfmDt
+              , A.CFM_YN					  AS cfmYn
+              , A.LOGIN_FAIL				  AS loginFail
+        FROM    SB1000M A                     
+                INNER JOIN SB1010M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.RSJ_NO        = A.RSJ_NO             
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RSJ_NO        = #rsjNo#               
+        ORDER   BY
+                A.CORP_CD
+              , A.RSJ_NO
+	]]>
+	</select>
+
+	<!-- 피험자관리 수정 -->
+	<update id="Ecf0501DAO.updateEcf0501" parameterClass="sb1000mVO">
+		/* Ecf0501DAO.updateEcf0501 */
+	<![CDATA[
+	    UPDATE
+                SB1000M
+        SET
+              RSJ_NAME                    = #rsjName#                      
+              , BR_DT                       = #brDt#                        
+              , ACCT_NO                     = #acctNo#                      
+              , BANK_NAME                   = #bankName#                    
+              , ACCT_NAME                   = #acctName#                    
+              , ACCT_CP                     = #acctCp#                      
+              , POST_NO                     = #postNo#                      
+              , ADDR_MAIN                   = #addrMain#                    
+              , ADDR_GITA                   = #addrGita#                    
+              , GEN_YN                      = #genYn#                       
+              , HP_NO                       = #hpNo#                        
+              , EMAIL                       = #email#                     
+              , LOGIN_FAIL				  	= #loginFail#                    
+              , DATA_REGDT                  = GETDATE()                   
+              , DATA_REGNT                  = #dataRegnt#
+              , REG_LV		                = #regLv#
+        WHERE
+                CORP_CD         = #corpCd#              
+              	AND RSJ_NO      = #rsjNo#   
+	]]>
+	</update>
+	
+	<!-- 연구대상자(피험자관리)유형 상세보기 -->
+	<select id="Ecf0501DAO.selectEcf0501ResearchCls" parameterClass="sb1010mVO"
+		resultClass="sb1010mVO">
+		/* Ecf0501DAO.selectEcf0501ResearchCls */
+	<![CDATA[
+	    SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RSJ_NO                      AS rsjNo             
+              , F.RSJ_NAME                    AS rsjName           
+              , A.FA_YN                       AS faYn              
+              , A.BA_YN                       AS baYn              
+              , A.NF_YN                       AS nfYn              
+              , A.CL_YN                       AS clYn              
+              , A.WE_YN                       AS weYn              
+              , A.DC_YN                       AS dcYn              
+              , A.LT_YN                       AS ltYn              
+              , A.PM_YN                       AS pmYn              
+              , A.HL_YN                       AS hlYn              
+              , A.EB_YN                       AS ebYn              
+              , A.SN_YN                       AS snYn              
+              , A.DD_YN                       AS ddYn              
+              , A.FL_YN                       AS flYn              
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt         
+        FROM    SB1010M A
+                INNER JOIN SB1000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.RSJ_NO        = A.RSJ_NO              
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RSJ_NO        = #rsjNo#               
+	]]>
+	</select>
+		
+	<!-- 연구대상자(피험자관리)유형 수정 -->
+	<update id="Ecf0501DAO.updateEcf0501ResearchCls" parameterClass="sb1010mVO">
+		/* Ecf0501DAO.updateEcf0501ResearchCls */
+	<![CDATA[
+	   UPDATE
+                SB1010M
+        SET
+                CORP_CD                     = #corpCd#                      
+              , RSJ_NO                      = #rsjNo#                       
+              , FA_YN                       = #faYn#                        
+              , BA_YN                       = #baYn#                        
+              , NF_YN                       = #nfYn#                        
+              , CL_YN                       = #clYn#                        
+              , WE_YN                       = #weYn#                        
+              , DC_YN                       = #dcYn#                        
+              , LT_YN                       = #ltYn#                        
+              , PM_YN                       = #pmYn#                        
+              , HL_YN                       = #hlYn#                        
+              , EB_YN                       = #ebYn#                        
+              , SN_YN                       = #snYn#                        
+              , DD_YN                       = #ddYn#                        
+              , FL_YN                       = #flYn#                        
+              , DATA_REGDT                  = GETDATE()                   
+              , DATA_REGNT                  = #dataRegnt#                   
+        WHERE
+                CORP_CD         = #corpCd#              
+              	AND RSJ_NO          = #rsjNo#      
+	]]>
+	</update>
+	
+	<!-- 연구대상자(회원) 비밀번호 수정 -->
+	<update id="Ecf0501DAO.ecf0501AjaxPasswordUpdate" parameterClass="sb1000mVO">
+	/* Ecf0501DAO.ecf0501AjaxPasswordUpdate */
+		UPDATE
+			SB1000M
+		SET
+			PW_NO 			= #pwNo#
+			, PW_REGDT 		= GETDATE()
+			, DATA_REGDT 	= GETDATE()
+			, DATA_REGNT 	= #dataRegnt# 
+		WHERE
+			CORP_CD 	 = #corpCd#
+			AND USER_ID  = #userId#
+	</update>
+	
+	<!-- 연구대상자(회원) 프로필 조회 -->
+	<select id="Ecf0501DAO.selectEcf0501Profile" parameterClass="egovMap" resultClass="sb1000mVO">
+	/* Ecf0501DAO.selectEcf0501Profile */
+	<![CDATA[
+	SELECT
+                A.CORP_CD                   AS corpCd
+              , A.RSJ_NO					AS rsjNo
+              , A.RSJ_NAME					AS rsjName
+              , A.PW_NO						AS pwNo
+              , A.USER_ID					AS userId
+        FROM    SB1000M A
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.USER_ID        = #userId#
+	]]>	
+	</select>	
+	
+	<!-- 연구대상자(회원) 비밀번호 체크 -->
+	<select id="Ecf0501DAO.selectEcf0501AjaxUsrPwChk" parameterClass="sb1000mVO" resultClass="int">
+	/* Ecf0501DAO.selectEcf0501AjaxUsrPwChk */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			SB1000M
+		WHERE
+			CORP_CD = #corpCd#
+			AND USER_ID = #userId#
+			AND PW_NO = #pwNo#
+	]]>
+	</select>
+
+
+		
+	<!-- /피험자관리****************************************************************************************************************************************** -->
+
+</sqlMap>

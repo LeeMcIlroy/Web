@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+ 
+	<!-- 입금관리******************************************************************************************************************************************* -->
+    <!-- 변수목록
+    -->
+    <sql id="where_cs2020m">
+			FROM    CS2020M A
+			INNER JOIN CS2000M B
+	        ON      B.CORP_CD       = A.CORP_CD
+	        AND     B.CTRT_NO       = A.CTRT_NO
+	        INNER JOIN CT1030M C
+	        ON      C.CORP_CD       = A.CORP_CD
+	        AND     C.EMP_NO        = A.EMP_NO
+	        LEFT JOIN CT2000M D
+	        ON      D.CORP_CD       = A.CORP_CD
+	        AND     D.VEND_NO       = A.VEND_NO             
+	        INNER JOIN CT1020M E
+	        ON      E.CORP_CD       = A.CORP_CD
+	        AND     E.BRANCH_CD     = A.BRANCH_CD
+	        INNER JOIN CM4000M F
+	        ON      F.CORP_CD       = B.CORP_CD
+	        AND     F.CD_CLS        = 'CM1360'
+	        AND     F.CLS_CAT       = '3'
+	        AND     F.CD            = B.CTRT_CLS
+	        <dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="branchCd" prepend="AND">
+	        		(A.BRANCH_CD = #branchCd#)
+	        	</isNotEmpty>
+	        	<!-- <isNotEmpty property="searchCondition8" prepend="AND">
+	        		(A.RS_CD = #searchCondition8#)
+	        	</isNotEmpty> -->
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.IN_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<!-- <isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_ENDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual> -->
+				</isNotEmpty>
+				<!-- <isNotEmpty property="searchCondition5" prepend="AND">
+	        		(A.RS_NO3 = #searchCondition5#)
+	        	</isNotEmpty> -->
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(B.CTRT_CLS = #searchCondition6#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(B.CTRT_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR B.CTRT_CD LIKE CONCAT ('%',#searchWord#,'%')
+							OR D.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 계약명 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(B.CTRT_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 고객사명 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(D.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 계약번호 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(B.CTRT_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+ 
+    <!--  리스트 -->
+    <select id="Ech0904DAO.selectEch0904List" parameterClass="searchVO" resultClass="egovMap">
+    /* Ech0904DAO.selectEch0904List */
+    <![CDATA[
+        SELECT Z.* FROM
+        (
+        	SELECT
+					A.CORP_CD 	                  AS corpCd            
+	              , A.IN_NO                       AS inNo              
+				  , A.CTRT_No                     AS ctrtNo
+				  , B.CTRT_CD                     AS ctrtCd
+				  , B.CTRT_DT                     AS ctrtDt
+				  , B.CTRT_NAME					  AS ctrtName
+				  , B.RS_PAY					  AS rsPay
+				  , B.RS_PAYVT					  AS rsPayvt
+				  , B.RS_TPAY					  AS rsTpay
+				  , B.CTRT_CLS					  AS ctrtCls
+				  , F.CD_NAME					  AS ctrtClsNm
+				  , A.IN_SQ						  AS inSq
+				  , A.IN_AMT					  AS inAmt
+				  , B.IN_TAMT					  AS inTamt
+				  , B.IN_BAMT					  AS inBamt
+				  , A.IN_DT						  AS inDt
+				  , A.RECI_DT					  AS reciDt
+				  , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName 	
+				  , A.VEND_NO	                  AS vendNo
+	              , D.VEND_NAME					  AS vendName
+				  , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+    ]]>
+    <include refid="where_cs2020m" />
+    
+    <![CDATA[
+    ) Z
+    ORDER   BY   
+                Z.corpCd DESC
+              , Z.inNo DESC
+ 			OFFSET #firstIndex# ROWS
+			FETCH NEXT #recordCountPerPage# ROWS ONLY  
+    ]]>
+    </select>
+ 
+ 	<!-- 입금관리 엑셀 리스트 -->
+	<select id="Ech0904DAO.selectEch0904Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0904DAO.selectEch0904Excel */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+        	SELECT  
+					A.CORP_CD 	                  AS corpCd            
+	              , A.IN_NO                       AS inNo              
+				  , A.CTRT_No                     AS ctrtNo
+				  , B.CTRT_CD                     AS ctrtCd
+				  , B.CTRT_DT                     AS ctrtDt
+				  , B.CTRT_NAME					  AS ctrtName
+				  , B.RS_PAY					  AS rsPay
+				  , B.RS_PAYVT					  AS rsPayvt
+				  , B.RS_TPAY					  AS rsTpay
+				  , B.CTRT_CLS					  AS ctrtCls
+				  , F.CD_NAME					  AS ctrtClsNm
+				  , A.IN_SQ						  AS inSq
+				  , A.IN_AMT					  AS inAmt
+				  , B.IN_TAMT					  AS inTamt
+				  , B.IN_BAMT					  AS inBamt
+				  , A.IN_DT						  AS inDt
+				  , A.RECI_DT					  AS reciDt
+				  , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName 	
+				  , A.VEND_NO	                  AS vendNo
+	              , D.VEND_NAME					  AS vendName
+				  , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+				]]>
+		<include refid="where_cs2020m" />	
+		<![CDATA[	
+			) Z 
+			ORDER   BY   
+                Z.corpCd DESC
+              , Z.inNo DESC
+			
+		]]>	
+	</select>
+
+	<!--  Cnt -->
+    <select id="Ech0904DAO.selectEch0904ListCnt" parameterClass="searchVO" resultClass="int">
+    /* Ech0904DAO.selectEch0904ListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_cs2020m" />
+    </select>
+    
+    <!--  상세보기 -->
+    <select id="Ech0904DAO.selectEch0904View" parameterClass="cs2020mVO" resultClass="cs2020mVO">
+    /* Ech0904DAO.selectEch0904View */
+    <![CDATA[
+         	SELECT  
+					A.CORP_CD 	                  AS corpCd            
+	              , A.IN_NO                       AS inNo              
+				  , A.CTRT_No                     AS ctrtNo
+				  , B.CTRT_CD                     AS ctrtCd
+				  , B.CTRT_NAME					  AS ctrtName
+				  , B.RS_PAY					  AS rsPay
+				  , B.RS_PAYVT					  AS rsPayvt
+				  , B.RS_TPAY					  AS rsTpay
+				  , A.IN_SQ						  AS inSq
+				  , A.IN_AMT					  AS inAmt
+				  , B.IN_TAMT					  AS inTamt
+				  , B.IN_BAMT					  AS inBamt
+				  , A.IN_DT						  AS inDt
+				  , A.RECI_DT					  AS reciDt
+				  , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName 	
+				  , A.VEND_NO	                  AS vendNo
+	              , D.VEND_NAME					  AS vendName
+				  , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt         
+			FROM    CS2020M A
+			INNER JOIN CS2000M B
+	        ON      B.CORP_CD       = A.CORP_CD
+	        AND     B.CTRT_NO       = A.CTRT_NO
+	        INNER JOIN CT1030M C
+	        ON      C.CORP_CD       = A.CORP_CD
+	        AND     C.EMP_NO        = A.EMP_NO
+	        LEFT JOIN CT2000M D
+	        ON      D.CORP_CD       = A.CORP_CD
+	        AND     D.VEND_NO       = A.VEND_NO             
+	        INNER JOIN CT1020M E
+	        ON      E.CORP_CD       = A.CORP_CD
+	        AND     E.BRANCH_CD     = A.BRANCH_CD
+	        WHERE   A.CORP_CD       = #corpCd#              
+	        AND     A.IN_NO       	= #inNo#
+    ]]>
+    </select>
+        
+    <!--  추가 -->
+    <insert id="Ech0904DAO.insertEch0904" parameterClass="cs2020mVO">
+    <selectKey keyProperty="inNo" resultClass="string" type="pre">
+        DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                      
+        DECLARE @V_REG_DT                   NVARCHAR(0010) = #inDt#                                                       
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_REG_DT, 1, 4)                                                   
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.IN_NO), @BDT04 + '0000')) + 1) AS csNo       
+        FROM    CS2020M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.IN_DT, 1, 4)   = @BDT04        
+    </selectKey>
+    <![CDATA[
+		INSERT  CS2020M(
+					A.CORP_CD            
+	              , A.IN_NO              
+				  , A.CTRT_No
+				  , A.IN_SQ
+				  , A.IN_AMT
+				  , A.IN_TAMT
+				  , A.IN_BAMT
+				  , A.IN_DT
+				  , A.RECI_DT
+				  , A.EMP_NO
+				  , A.VEND_NO
+				  , A.REMK
+	              , A.BRANCH_CD
+	              , A.DATA_REGDT         
+	              , A.DATA_REGNT         
+		) VALUES(
+					#corpCd#            
+	              , #inNo#              
+				  , #ctrtNo#
+				  , #inSq#
+				  , #inAmt#
+				  , #inAmt#
+				  , #inAmt#
+				  , #inDt#
+				  , #reciDt#
+				  , #empNo#
+				  , #vendNo#
+				  , #remk#
+	              , #branchCd#
+	              , GETDATE()         
+	              , #dataRegnt#         
+		)
+    ]]>
+    </insert>
+    
+    <!--  수정 -->
+    <update id="Ech0904DAO.updateEch0904" parameterClass="cs2020mVO">
+    /* Ech0904DAO.updateEch0904 */
+    <![CDATA[
+        UPDATE
+                CS2020M
+        SET
+				  CTRT_No		= #ctrtNo#
+				  , IN_SQ		= #inSq#
+				  , IN_AMT		= #inAmt#
+				  , IN_TAMT		= #inAmt#
+				  , IN_BAMT		= #inAmt#
+				  , IN_DT		= #inDt#
+				  , RECI_DT		= #reciDt#
+				  , EMP_NO		= #empNo#
+				  , VEND_NO		= #vendNo#
+				  , REMK		= #remk#
+	              , BRANCH_CD	= #branchCd#
+	              , DATA_REGDT	= GETDATE()         
+	              , DATA_REGNT	= #dataRegnt#      
+        WHERE
+                CORP_CD     = #corpCd#              
+        AND     IN_NO     	= #inNo#                                
+    ]]>
+    </update>
+   
+   	<!-- 입금관리 삭제 -->
+	<delete id="Ech0904DAO.deleteEch0904" parameterClass="cs2020mVO">
+		/* Ech0904DAO.deleteEch0904 */
+	<![CDATA[
+		DELETE FROM 
+			CS2020M
+		WHERE
+			CORP_CD 	= #corpCd#
+	    	AND IN_NO 	= #inNo#
+	]]>
+	</delete>
+    
+    <!-- 견적정보  -->
+    <sql id="where_cs1020mOpIn">
+        FROM    CS1020M A
+        WHERE   A.CORP_CD	= #corpCd#              
+        AND     A.VEND_NO   = #vendNo#
+    </sql>
+        
+    <!-- 견적정보 리스트 -->
+	<select id="Ech0904DAO.selectEch0904OpList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0904DAO.selectEch0904OpList */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+			SELECT
+			   ROW_NUMBER() OVER(order by A.OP_NO DESC) rownum  
+              , A.CORP_CD                     AS corpCd            
+              , A.OP_NO                       AS opNo              
+			  , A.OP_CD                       AS opCd                          
+              , A.OP_DT                       AS opDt
+              , A.OP_NAME                     AS opName
+              , A.RS_PAY                      AS rsPay
+              , A.RS_PAYVT                    AS rsPayvt
+              , A.RS_TPAY                     AS rsTpay
+              , A.VMNG_NAME					  AS vmngName                       
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+            ]]> 
+			<include refid="where_cs1020mOpIn" />	<![CDATA[
+				
+			) Z 
+	        ORDER BY
+                Z.corpCd
+              , Z.opNo
+		]]>	
+	</select>
+	
+	<!-- 견적정보 Cnt -->
+    <select id="Ech0904DAO.selectEch0904OpListCnt" parameterClass="egovMap" resultClass="int">
+    /* Ech0904DAO.selectEch0904OpListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_cs1020mOpIn" />
+    </select>
+ 
+     <!-- 상담정보 목록  -->
+    <sql id="where_cs1000mCsIn">
+      	FROM    CS1000M A
+        INNER JOIN CM4000M B
+        ON      B.CORP_CD       = A.CORP_CD
+        AND     B.CD_CLS        = 'CM1360'
+        AND     B.CLS_CAT       = '3'
+        AND     B.CD            = A.CS_CLS              
+        INNER JOIN CT1030M C
+        ON      C.CORP_CD       = A.CORP_CD
+        AND     C.EMP_NO        = A.EMP_NO
+        LEFT JOIN CT2000M D
+        ON      D.CORP_CD       = A.CORP_CD
+        AND     D.VEND_NO       = A.VEND_NO             
+        INNER JOIN CT1020M E
+        ON      E.CORP_CD       = A.CORP_CD
+        AND     E.BRANCH_CD     = A.BRANCH_CD            
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.VEND_NO       = #vendNo#
+    </sql>
+        
+    <!-- 상담정보 리스트 -->
+	<select id="Ech0904DAO.selectEch0904CsList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0904DAO.selectEch0904CsList */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+				SELECT
+				   ROW_NUMBER() OVER(order by A.CS_NO DESC) rownum  
+	              , A.CORP_CD 		              AS corpCd            
+	              , A.CS_NO                       AS csNo              
+	              , A.CS_DT                       AS csDt 
+	              , A.VEND_NO	                  AS vendNo
+	              , D.VEND_NAME					  AS vendName
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.CS_CLS					  AS csCls
+	              , B.CD_NAME					  AS csClsNm
+	              , A.CS_CONT					  AS csCont
+	              , A.RCS_NAME					  AS rcsName
+	              , A.RCS_TEL					  AS rcsTel
+	              , A.RCS_EMAIL					  AS rcsEmail
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME                 AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+            ]]> 
+			<include refid="where_cs1000mCsIn" />	<![CDATA[
+				
+			) Z 
+	        ORDER BY
+                Z.corpCd
+              , Z.csNo DESC
+		]]>	
+	</select>
+	
+	<!-- 상담정보 Cnt -->
+    <select id="Ech0904DAO.selectEch0904CsListCnt" parameterClass="egovMap" resultClass="int">
+    /* Ech0904DAO.selectEch0904CsListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_cs1000mCsIn" />
+    </select>
+ 
+ 	<!-- 입금정보 일괄등록 - 중복  목록 산출 계약번호+입금일자+입금액 -->
+	<select id="Ech0904DAO.selectEch0904DupInList" parameterClass="egovMap" resultClass="egovMap" >
+	/* Ech0904DAO.selectEch0904DupInList */
+		SELECT
+			   *
+		  FROM
+			   CS2020M A
+		INNER JOIN CS2000M B
+		ON	B.CORP_CD		= A.CORP_CD
+		AND B.CTRT_NO		= A.CTRT_NO
+		AND B.CTRT_CD		= #ctrtCd#  	    
+		WHERE
+			A.CORP_CD		= #corpCd#
+		AND A.IN_DT			= #inDt#
+		<!-- AND A.IN_AMT		= #inAmt# -->
+	</select>
+	
+ 	<!-- 계약 상세보기 -->
+    <select id="Ech0904DAO.selectEch0904Ctrt" parameterClass="cs2000mVO" resultClass="cs2000mVO">
+    /* Ech0904DAO.selectEch0904Ctrt */
+    <![CDATA[
+        SELECT  
+					A.CORP_CD 	                  AS corpCd            
+	              , A.CTRT_NO                     AS ctrtNo              
+				  , A.CTRT_CD                     AS ctrtCd                          
+	              , A.CTRT_DT                     AS ctrtDt 
+	              , A.CTRT_CLS                    AS ctrtCls 
+	              , B.CD_NAME					  AS ctrtClsNm   
+	              , A.VEND_NO	                  AS vendNo
+	              , D.VEND_NAME					  AS vendName
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.CTRT_STDT                   AS ctrtStdt
+	              , A.CTRT_ENDT                   AS ctrtEndt
+	              , A.OP_NO                       AS opNo 
+	              , A.RS_PAY                      AS rsPay
+	              , A.RS_PAYVT                    AS rsPayvt
+	              , A.RS_TPAY                     AS rsTpay		
+	              , A.IN_COND                     AS inCond
+	              , A.ES_DT					  	  AS esDt	 
+	              , A.PS_DT					  	  AS psDt
+	              , A.RT_YN						  AS rtYn
+	              , A.CTRT_CONT                   AS ctrtCont
+	              , A.VMNG_NAME					  AS vmngName				  
+	              , A.VMNG_ORG					  AS vmngOrg
+	              , A.VMNGHP_NO					  AS vmnghpNo	              
+	              , A.VMNG_EMAIL				  AS vmngEmail
+	              , A.CTRT_NAME				      AS ctrtName
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , F.OP_CD						  AS opCd
+	              , A.IN_TAMT					  AS inTamt
+	              , A.IN_BAMT					  AS inBamt
+		FROM    CS2000M A
+        INNER JOIN CM4000M B
+        ON      B.CORP_CD       = A.CORP_CD
+        AND     B.CD_CLS        = 'CM1360'
+        AND     B.CLS_CAT       = '3'
+        AND     B.CD            = A.CTRT_CLS              
+        INNER JOIN CT1030M C
+        ON      C.CORP_CD       = A.CORP_CD
+        AND     C.EMP_NO        = A.EMP_NO
+        LEFT JOIN CT2000M D
+        ON      D.CORP_CD       = A.CORP_CD
+        AND     D.VEND_NO       = A.VEND_NO             
+        INNER JOIN CT1020M E
+        ON      E.CORP_CD       = A.CORP_CD
+        AND     E.BRANCH_CD     = A.BRANCH_CD 
+        LEFT OUTER JOIN CS1020M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.OP_NO		    = A.OP_NO
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.CTRT_CD       = #ctrtCd#
+    ]]>
+    </select>
+    
+    <!-- 입금건수, 누적금액  -->
+    <select id="Ech0904DAO.selectEch0904InAmt" parameterClass="cs2020mVO" resultClass="cs2020mVO">
+    /* Ech0904DAO.selectEch0904InAmt */
+    <![CDATA[
+        SELECT  
+					COUNT(*)					  AS inSq            
+	              , SUM(IN_AMT)                   AS inAmt
+	              , SUM(IN_TAMT)                  AS inTamt
+	              , SUM(IN_BAMT)                  AS inBamt              
+		FROM    CS2020M A
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.CTRT_NO       = #ctrtNo#
+        
+    ]]>
+    </select>
+    
+    <!-- 입금건수, 누적금액  - 현재 입금번호 제외-->
+    <select id="Ech0904DAO.selectEch0904InAmt2" parameterClass="cs2020mVO" resultClass="cs2020mVO">
+    /* Ech0904DAO.selectEch0904InAmt2 */
+    <![CDATA[
+        SELECT  
+					COUNT(*)					  AS inSq            
+	              , SUM(IN_AMT)                   AS inAmt
+	              , SUM(IN_TAMT)                  AS inTamt
+	              , SUM(IN_BAMT)                  AS inBamt              
+		FROM    CS2020M A
+        WHERE   A.CORP_CD       = #corpCd#             
+        AND     A.CTRT_NO       = #ctrtNo#
+        AND 	A.IN_NO			NOT IN (#inNo#)
+        
+    ]]>
+    </select>
+ 
+ 	<!-- 계약정보의 누적입금액, 잔금 Update -->
+    <update id="Ech0904DAO.updateEch0904Ctrt" parameterClass="cs2000mVO">
+    /* Ech0904DAO.updateEch0904Ctrt */
+    <![CDATA[
+        UPDATE
+                CS2000M
+        SET
+              	IN_TAMT		= #inTamt#
+              , IN_BAMT		= #inBamt#
+        WHERE
+                CORP_CD     = #corpCd#              
+        AND     CTRT_NO     = #ctrtNo#                                
+    ]]>
+    </update>
+    
+    <!-- 계약 상세보기 -->
+    <select id="Ech0904DAO.selectEch0904Ctrt2" parameterClass="cs2000mVO" resultClass="cs2000mVO">
+    /* Ech0904DAO.selectEch0904Ctrt2 */
+    <![CDATA[
+        SELECT  
+					A.CORP_CD 	                  AS corpCd            
+	              , A.CTRT_NO                     AS ctrtNo              
+				  , A.CTRT_CD                     AS ctrtCd                          
+	              , A.CTRT_DT                     AS ctrtDt 
+	              , A.CTRT_CLS                    AS ctrtCls 
+	              , B.CD_NAME					  AS ctrtClsNm   
+	              , A.VEND_NO	                  AS vendNo
+	              , D.VEND_NAME					  AS vendName
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.CTRT_STDT                   AS ctrtStdt
+	              , A.CTRT_ENDT                   AS ctrtEndt
+	              , A.OP_NO                       AS opNo 
+	              , A.RS_PAY                      AS rsPay
+	              , A.RS_PAYVT                    AS rsPayvt
+	              , A.RS_TPAY                     AS rsTpay		
+	              , A.IN_COND                     AS inCond
+	              , A.ES_DT					  	  AS esDt	 
+	              , A.PS_DT					  	  AS psDt
+	              , A.RT_YN						  AS rtYn
+	              , A.CTRT_CONT                   AS ctrtCont
+	              , A.VMNG_NAME					  AS vmngName				  
+	              , A.VMNG_ORG					  AS vmngOrg
+	              , A.VMNGHP_NO					  AS vmnghpNo	              
+	              , A.VMNG_EMAIL				  AS vmngEmail
+	              , A.CTRT_NAME				      AS ctrtName
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , F.OP_CD						  AS opCd
+	              , A.IN_TAMT					  AS inTamt
+	              , A.IN_BAMT					  AS inBamt
+	              , (SELECT COUNT(*) FROM CS2020M G
+						WHERE G.CORP_CD  = A.CORP_CD 
+						AND G.CTRT_NO = A.CTRT_NO) AS inSq
+		FROM    CS2000M A
+        INNER JOIN CM4000M B
+        ON      B.CORP_CD       = A.CORP_CD
+        AND     B.CD_CLS        = 'CM1360'
+        AND     B.CLS_CAT       = '3'
+        AND     B.CD            = A.CTRT_CLS              
+        INNER JOIN CT1030M C
+        ON      C.CORP_CD       = A.CORP_CD
+        AND     C.EMP_NO        = A.EMP_NO
+        LEFT JOIN CT2000M D
+        ON      D.CORP_CD       = A.CORP_CD
+        AND     D.VEND_NO       = A.VEND_NO             
+        INNER JOIN CT1020M E
+        ON      E.CORP_CD       = A.CORP_CD
+        AND     E.BRANCH_CD     = A.BRANCH_CD 
+        LEFT OUTER JOIN CS1020M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.OP_NO		    = A.OP_NO
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.CTRT_NO       = #ctrtNo#
+    ]]>
+    </select>
+    
+    <!-- 입금정보 일괄삭제 -->
+	<delete id="Ech0904DAO.deleteEch0904AjaxInDel" parameterClass="egovMap">
+	/* Ech0904DAO.deleteEch0904AjaxInDel */
+		DELETE
+			CS2020M
+		WHERE
+			CORP_CD = #corpCd#
+			AND IN_NO IN (
+							SELECT
+								IN_NO
+							FROM
+								CS2020M
+							WHERE
+								CORP_CD = #corpCd#
+								AND IN_NO 	
+								<iterate open="(" close=")" conjunction="," prepend="IN" property="inSeq">
+									#inSeq[]#
+								</iterate>
+						  )														
+	</delete>
+	
+	
+    <!-- 입금관리******************************************************************************************************************************************* -->
+    
+</sqlMap>

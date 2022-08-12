@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<!-- 사용자 로그인 아이디 확인 -->
+	<select id="LoginDAO.selectUsrLoginIdChk" parameterClass="sb1000mVO" resultClass="string">
+	<![CDATA[
+		SELECT
+			CASE
+				WHEN COUNT(*) > 0 THEN 'SUCCESS'
+				WHEN COUNT(*) = 0 THEN 'FAIL'
+			END AS ID_CHECK
+		FROM
+			SB1000M
+		WHERE
+			USER_ID = #userId#
+        AND
+        	USER_ST = '1'
+	]]>
+	</select>
+	
+	<!-- 사용자 로그인 -->
+	<select id="LoginDAO.selectUsrLoginProc" parameterClass="sb1000mVO" resultClass="sb1000mVO">
+	<![CDATA[
+		SELECT  
+           	A.CORP_CD		AS corpCd
+			, A.RSJ_NO		AS rsjNo
+			, A.RSJ_NAME	AS rsjName
+			, A.REG_DT		AS regDt
+			, A.BR_DT		AS brDt
+			, A.JREG_NO		AS jregNo
+			, A.ACCT_NO		AS acctNo
+			, A.BANK_NAME	AS bankName
+			, A.ACCT_NAME	AS acctName
+			, A.ACCT_CP		AS acctCp
+			, A.POST_NO		AS postNo
+			, A.ADDR_MAIN	AS addrMain
+			, A.ADDR_GITA	AS addrGita
+			, A.RSJ_ST_CLS	AS rsjStCls
+			, A.GEN_YN		AS genYn
+			, A.HP_NO		AS hpNo
+			, A.EMAIL		AS email
+			, A.POSITION	AS position
+			, A.USER_ID		AS userId
+			, A.PW_NO		AS pwNo
+			, A.BRANCH_CD	AS branchCd
+			, A.SPOT		AS spot
+			, A.RLOGIN_DT	AS rloginDt
+			, A.USER_ST		AS userSt
+			, A.REMK		AS remk
+			, A.EFF_STDT	AS effStdt
+			, A.EFF_ENDT	AS effEndt
+			, A.DATA_REGDT	AS dataRegdt
+			, A.DATA_REGNT	AS dataRegnt
+			, A.REG_LV		AS regLv
+        FROM
+        	SB1000M A
+        WHERE
+        	A.USER_ID = #userId#
+        AND
+        	A.PW_NO = #pwNo#
+        AND
+        	A.USER_ST = '1'
+	]]>
+	</select>
+	
+	<!-- 사용자 최근접속 일시 수정 -->
+	<update id="LoginDAO.updateLoginDateTime" parameterClass="sb1000mVO">
+	<![CDATA[
+		UPDATE
+			SB1000M
+		SET
+			RLOGIN_DT = GETDATE()
+        WHERE
+        	USER_ID = #userId#
+        AND
+        	PW_NO = #pwNo#
+	]]>
+	</update>
+	
+	<!-- 회원(연구대상자) 등록 -->
+	<insert id="LoginDAO.insertMember" parameterClass="sb1000mVO">
+	<selectKey keyProperty="rsjNo" resultClass="string" type="pre">
+		DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                  
+        DECLARE @V_REG_DT                   NVARCHAR(0010) = #regDt#                                                   
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_REG_DT, 1, 4)                                                   
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.RSJ_NO), @BDT04 + '0000')) + 1) as rsjNo      
+        FROM    SB1000M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.REG_DT, 1, 4)   = @BDT04		
+
+	</selectKey>
+	/* LoginDAO.insertMember */
+	<![CDATA[
+        INSERT  SB1000M(
+                CORP_CD                     
+              , RSJ_NO                      
+              , RSJ_NAME                    
+              , REG_DT                      
+              , BR_DT 
+              , ACCT_CP                     
+              , RSJ_ST_CLS                  
+              , GEN_YN                      
+              , HP_NO                       
+              , USER_ID                     
+              , PW_NO                       
+              , BRANCH_CD                   
+              , USER_ST                     
+              , EFF_STDT                    
+              , EFF_ENDT
+              , USE_RULE_YN
+              , PRIV_RULE_YN
+              , DATA_REGDT                  
+              , DATA_REGNT
+              , REG_LV                   
+        ) VALUES(
+                #corpCd#
+              , #rsjNo#
+              , #rsjName#
+              , #regDt#
+              , #brDt#
+              , #acctCp#
+              , #rsjStCls#
+              , #genYn#
+              , #hpNo#
+              , #userId#
+              , #pwNo#
+              , #branchCd#
+              , #userSt#
+              , #effStdt#
+              , #effEndt#
+              , #useRuleYn#
+              , #privRuleYn#
+              , GETDATE()
+              , #dataRegnt#
+			  , #regLv#
+        )
+	]]>
+	</insert>
+	
+	<!-- 회원(연구대상자)유형 추가 -->
+	<insert id="LoginDAO.insertMemberResearchCls" parameterClass="sb1010mVO">	
+	/* LoginDAO.insertMemberResearchCls */
+	<![CDATA[
+		INSERT  SB1010M(
+                CORP_CD                     
+              , RSJ_NO                      
+              , FA_YN                       
+              , BA_YN                       
+              , NF_YN                       
+              , CL_YN                       
+              , WE_YN                       
+              , DC_YN                       
+              , LT_YN                       
+              , PM_YN                       
+              , HL_YN                       
+              , EB_YN                       
+              , SN_YN                       
+              , DD_YN                       
+              , FL_YN                       
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+                #corpCd#
+              , #rsjNo#
+              , #faYn#
+              , #baYn#
+              , #nfYn#
+              , #clYn#
+              , #weYn#
+              , #dcYn#
+              , #ltYn#
+              , #pmYn#
+              , #hlYn#
+              , #ebYn#
+              , #snYn#
+              , #ddYn#
+              , #flYn#
+              , GETDATE()
+              , #dataRegnt#
+        )
+	]]>
+	</insert>
+	
+	
+	<!-- 이용약관 조회 -->
+	<select id="LoginDAO.selectRule" parameterClass="ct1000mVO" resultClass="ct1000mVO">
+	<![CDATA[
+		SELECT  
+           	A.CORP_CD		AS corpCd
+           	, A.USE_RULE    AS useRule
+           	, A.PRIV_RULE 	AS privRule 
+        FROM
+        	ct1000M A
+        WHERE
+        	A.CORP_CD = 'HNBSRC'
+	]]>
+	</select>
+	
+	<!-- 회원(연구대상자)아이디 중복체크 -->
+	<select id="LoginDAO.selectUserIdChk" parameterClass="egovMap" resultClass="int">
+	/* LoginDAO.selectUserIdChk */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			SB1000M
+		WHERE
+			CORP_CD = #corpCd#
+			AND USER_ID = #userId#
+	]]>
+	</select>
+	
+	
+	<!-- 휴대폰등록여부 확인 cnt -->
+	<select id="LoginDAO.selectUsrHpCnt" parameterClass="sb1000mVO" resultClass="int">
+		/*LoginDAO.selectUsrHpCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM SB1000M
+		WHERE CORP_CD 	= #corpCd#
+		AND RSJ_NAME	= #rsjName#
+		AND HP_NO		= #hpNo#		
+	]]>
+	</select>
+	
+	<!-- 인증번호 설정 -->
+	<insert id="LoginDAO.insertAuthCd" parameterClass="ct1060mVO">
+		/* LoginDAO.insertAuthNo */
+	<![CDATA[	
+		INSERT  CT1060M(
+              AUTH1
+              , AUTH2
+              , AUTH_CD
+              , DEL_YN 
+              , DATA_REGDT                  
+              , DATA_REGNT                  
+        ) VALUES(
+              #auth1#
+              , #auth2#
+              , #authCd#
+              , #delYn#
+              , GETDATE()
+              , #dataRegnt#
+        )
+    ]]>    
+	</insert>
+	
+	<!-- 인증번호확인 -->
+	<select id="LoginDAO.selectAuthCd" parameterClass="ct1060mVO" resultClass="String">
+		/*LoginDAO.selectAuthCd */
+	<![CDATA[
+		SELECT
+			AUTH_Cd AS authCd
+		FROM CT1060M
+		WHERE AUTH1	 = #auth1#
+		AND AUTH2	 = #auth2#	
+		AND DEL_YN = 'N'	
+	]]>
+	</select>
+	
+	
+	<!-- 인증번호 상태변경 DEL_YN = 'Y' 폐기 -->
+	<update id="LoginDAO.updateAuthCdSt" parameterClass="ct1060mVO">
+		/* LoginDAO.updateAuthCdSt */
+	<![CDATA[	
+		UPDATE
+			CT1060M
+		SET
+			DEL_YN = 'Y'
+        WHERE
+        	AUTH1 = #auth1#
+        	AND AUTH2 = #auth2# 
+    ]]>    
+	</update>
+	
+	<!-- 아이디 목록 -->
+	<select id="LoginDAO.selectIdList" parameterClass="searchVO" resultClass="egovMap">
+		/* LoginDAO.selectIdList */
+	<![CDATA[
+		SELECT  
+               A.CORP_CD                     AS corpCd            
+             , A.USER_ID                     AS userId
+             , A.REG_DT                      AS regDt
+        FROM SB1000M A
+        WHERE A.CORP_CD 	= #searchCondition1#
+        AND A.HP_NO  		= #searchCondition2#
+        AND A.RSJ_NAME  	= #searchCondition3#
+    ]]>	
+	</select>
+
+	<!-- 비밀번호찾기 휴대폰등록여부 확인 cnt -->
+	<select id="LoginDAO.selectUsrHpCntPw" parameterClass="sb1000mVO" resultClass="int">
+		/*LoginDAO.selectUsrHpCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+		FROM SB1000M
+		WHERE CORP_CD 	= #corpCd#
+		AND USER_ID		= #userId#
+		AND HP_NO		= #hpNo#		
+	]]>
+	</select>
+
+	<!-- 회원 비밀번호 변경 -->
+	<update id="LoginDAO.usrAjaxPasswordUpdate" parameterClass="sb1000mVO">
+	/* LoginDAO.usrAjaxPasswordUpdate */
+		UPDATE
+			SB1000M
+		SET
+			PW_NO = #pwNo#
+			, DATA_REGDT = GETDATE()
+			, DATA_REGNT = #userId# 
+		WHERE
+			CORP_CD = #corpCd#
+			AND USER_ID = #userId#
+	</update>
+
+	<!-- 사용자 로그인 핸드폰번호 확인 -->
+	<select id="LoginDAO.selectUsrLoginHpNoChk" parameterClass="sb1000mVO" resultClass="string">
+	/* LoginDAO.selectUsrLoginHpNoChk */
+	<![CDATA[
+		SELECT
+			CASE
+				WHEN COUNT(*) > 0 THEN 'SUCCESS'
+				WHEN COUNT(*) = 0 THEN 'FAIL'
+			END AS ID_CHECK
+		FROM
+			SB1000M
+		WHERE
+			HP_NO = #hpNo#
+        AND
+        	USER_ST = '1'
+	]]>
+	</select>
+	
+	<!-- 사용자 로그인 -->
+	<select id="LoginDAO.selectUsrLoginProcHpNo" parameterClass="sb1000mVO" resultClass="sb1000mVO">
+	<![CDATA[
+		SELECT  
+           	A.CORP_CD		AS corpCd
+			, A.RSJ_NO		AS rsjNo
+			, A.RSJ_NAME	AS rsjName
+			, A.REG_DT		AS regDt
+			, A.BR_DT		AS brDt
+			, A.JREG_NO		AS jregNo
+			, A.ACCT_NO		AS acctNo
+			, A.BANK_NAME	AS bankName
+			, A.ACCT_NAME	AS acctName
+			, A.ACCT_CP		AS acctCp
+			, A.POST_NO		AS postNo
+			, A.ADDR_MAIN	AS addrMain
+			, A.ADDR_GITA	AS addrGita
+			, A.RSJ_ST_CLS	AS rsjStCls
+			, A.GEN_YN		AS genYn
+			, A.HP_NO		AS hpNo
+			, A.EMAIL		AS email
+			, A.POSITION	AS position
+			, A.USER_ID		AS userId
+			, A.PW_NO		AS pwNo
+			, A.BRANCH_CD	AS branchCd
+			, A.SPOT		AS spot
+			, A.RLOGIN_DT	AS rloginDt
+			, A.USER_ST		AS userSt
+			, A.REMK		AS remk
+			, A.EFF_STDT	AS effStdt
+			, A.EFF_ENDT	AS effEndt
+			, A.DATA_REGDT	AS dataRegdt
+			, A.DATA_REGNT	AS dataRegnt
+			, A.REG_LV		AS regLv
+        FROM
+        	SB1000M A
+        WHERE
+        	A.HP_NO = #hpNo#
+        AND
+        	A.USER_ST = '1'
+	]]>
+	</select>
+	
+	<!-- mac address 등록여부 확인 -->
+	<select id="LoginDAO.selectLoginMacAddress" parameterClass="egovMap" resultClass="string">
+	<![CDATA[
+		SELECT
+			CASE
+				WHEN COUNT(*) > 0 THEN 'SUCCESS'
+				WHEN COUNT(*) = 0 THEN 'FAIL'
+			END AS ID_CHECK
+		FROM
+			CT1080M
+		WHERE
+			CLS1 = 'MAC'
+        AND
+        	VAR1 IN (#strmac#)
+	]]>
+	</select>
+	
+	
+</sqlMap>

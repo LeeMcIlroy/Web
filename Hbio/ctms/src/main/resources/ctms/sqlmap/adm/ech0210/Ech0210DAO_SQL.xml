@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+ 
+	<!-- CRF템플릿관리******************************************************************************************************************************************* -->
+    <!-- 변수목록
+    -->
+    <sql id="where_cr2100m">
+			FROM    CR2100M A
+            INNER JOIN CM4000M B
+	        ON      B.CORP_CD       = A.CORP_CD
+	        AND     B.CD_CLS        = 'CT3020'
+	        AND     B.CLS_CAT       = '3'
+	        AND     B.CD            = A.TEMP_TYPE              
+	        INNER JOIN CT1030M C
+	        ON      C.CORP_CD       = A.CORP_CD
+	        AND     C.EMP_NO        = A.EMP_NO
+	        INNER JOIN CT1020M E
+	        ON      E.CORP_CD       = A.CORP_CD
+	        AND     E.BRANCH_CD     = A.BRANCH_CD
+	        <dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="branchCd" prepend="AND">
+	        		(A.BRANCH_CD = #branchCd#)
+	        	</isNotEmpty>
+	        	<!-- <isNotEmpty property="searchCondition8" prepend="AND">
+	        		(A.RS_CD = #searchCondition8#)
+	        	</isNotEmpty> -->
+	        	<isNotEmpty prepend="AND" property="searchCondition5">
+       				A.USE_YN		= #searchCondition5#
+       			</isNotEmpty>
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.REG_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.ST_DATE, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="3">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.ED_DATE, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty property="searchCondition5" prepend="AND">
+	        		(A.USE_YN = #searchCondition5#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.TEMP_TYPE = #searchCondition6#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.TEMP_NM LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.TEMP_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- CRF템플릿명 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.TEMP_NM LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- CRF템플릿번호 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(A.TEMP_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+ 
+    <!--  리스트 -->
+    <select id="Ech0210DAO.selectEch0210List" parameterClass="searchVO" resultClass="egovMap">
+    /* Ech0210DAO.selectEch0210List */
+    <![CDATA[
+        SELECT Z.* FROM
+        (
+        	SELECT  
+              A.CORP_CD 	                  AS corpCd            
+	              , A.TEMP_NO                     AS tempNo              
+				  , A.TEMP_CD                     AS tempCd                          
+	              , A.TEMP_NM                     AS tempNm
+	              , A.REG_DT					  AS regDt
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.TEMP_TYPE					  AS tempType
+	              , B.CD_NAME					  AS tempTypeNm
+	              , A.USE_YN                      AS useYn
+	              , A.ST_DATE                     AS stDate	              
+	              , A.ED_DATE                     AS edDate
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , A.UPAGE_CNT					  AS upageCnt
+	              , CASE A.TEMP_TYPE 
+						WHEN '4000' THEN 'Y'
+						WHEN '4010' THEN 'Y'
+						WHEN '4110' THEN 'Y'
+						WHEN '4020' THEN 'Y'
+						WHEN '4120' THEN 'Y'
+						ELSE 'N'
+					END AS svyYn        	
+    ]]>
+    <include refid="where_cr2100m" />
+    	AND A.MK_TYPE = '1'
+    
+    <![CDATA[
+    ) Z
+    ORDER   BY   
+                Z.corpCd DESC
+              , Z.tempNo DESC
+ 			OFFSET #firstIndex# ROWS
+			FETCH NEXT #recordCountPerPage# ROWS ONLY  
+    ]]>
+    </select>
+ 
+ 	<!-- 연구과제 엑셀 리스트 -->
+	<select id="Ech0210DAO.selectEch0210Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0210DAO.selectEch0210Excel */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+ 				SELECT  
+             		 A.CORP_CD 	                  AS corpCd            
+	              , A.TEMP_NO                     AS tempNo              
+				  , A.TEMP_CD                     AS tempCd                          
+	              , A.TEMP_NM                     AS tempNm
+	              , A.REG_DT					  AS regDt
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.TEMP_TYPE					  AS tempType
+	              , B.CD_NAME					  AS tempTypeNm
+	              , A.USE_YN                      AS useYn
+	              , A.ST_DATE                     AS stDate	              
+	              , A.ED_DATE                     AS edDate
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , A.UPAGE_CNT					  AS upageCnt
+				]]>
+		<include refid="where_cr2100m" />
+		AND A.MK_TYPE = '1'	
+		<![CDATA[	
+			) Z 
+			ORDER   BY   
+                Z.corpCd DESC
+              , Z.tempNo DESC
+			
+		]]>	
+	</select>
+
+	<!--  Cnt -->
+    <select id="Ech0210DAO.selectEch0210ListCnt" parameterClass="searchVO" resultClass="int">
+    /* Ech0210DAO.selectEch0210ListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_cr2100m" />
+        AND A.MK_TYPE = '1'
+    </select>
+    
+    <!--  상세보기 -->
+    <select id="Ech0210DAO.selectEch0210View" parameterClass="cr2100mVO" resultClass="cr2100mVO">
+    /* Ech0210DAO.selectEch0210View */
+    <![CDATA[
+		SELECT  
+              A.CORP_CD 	                  AS corpCd            
+	              , A.TEMP_NO                     AS tempNo              
+				  , A.TEMP_CD                     AS tempCd                          
+	              , A.TEMP_NM                     AS tempNm
+	              , A.REG_DT					  AS regDt
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.TEMP_TYPE					  AS tempType
+	              , B.CD_NAME					  AS tempTypeNm
+	              , A.USE_YN                      AS useYn
+	              , A.ST_DATE                     AS stDate	              
+	              , A.ED_DATE                     AS edDate
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , A.UPAGE_CNT					  AS upageCnt        
+		FROM    CR2100M A
+        INNER JOIN CM4000M B
+        ON      B.CORP_CD       = A.CORP_CD
+        AND     B.CD_CLS        = 'CT3020'
+        AND     B.CLS_CAT       = '3'
+        AND     B.CD            = A.TEMP_TYPE              
+        INNER JOIN CT1030M C
+        ON      C.CORP_CD       = A.CORP_CD
+        AND     C.EMP_NO        = A.EMP_NO
+        INNER JOIN CT1020M E
+        ON      E.CORP_CD       = A.CORP_CD
+        AND     E.BRANCH_CD     = A.BRANCH_CD            
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.TEMP_NO       = #tempNo#
+    ]]>
+    </select>
+        
+    <!--  추가 -->
+    <insert id="Ech0210DAO.insertEch0210" parameterClass="cr2100mVO">
+    <selectKey keyProperty="tempNo" resultClass="string" type="pre">
+        DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                      
+        DECLARE @V_REG_DT                   NVARCHAR(0010) = #regDt#                                                       
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_REG_DT, 1, 4)                                                   
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.TEMP_NO), @BDT04 + '0000')) + 1) AS tempNo       
+        FROM    CR2100M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.REG_DT, 1, 4)   = @BDT04        
+    </selectKey>
+    <![CDATA[
+		INSERT  CR2100M(
+              CORP_CD            
+	            , TEMP_NO              
+				, TEMP_CD                          
+	            , TEMP_NM
+	            , REG_DT
+	            , EMP_NO
+	            , TEMP_TYPE
+	            , USE_YN
+	            , ST_DATE	              
+	            , ED_DATE
+	            , REMK
+	            , BRANCH_CD
+	            , DATA_REGDT         
+	            , DATA_REGNT
+	            , UPAGE_CNT
+	            , MK_TYPE
+	            , SR_TYPE      
+		) VALUES(
+              #corpCd#            
+              , #tempNo#              
+			  , CONCAT(#tempNo1#,'-',#tempNo#)
+	          , #tempNm#
+	          , #regDt#
+	          , #empNo#
+	          , #tempType#
+	          , #useYn#
+	          , #stDate#	              
+	          , #edDate#
+	          , #remk#
+	          , #branchCd#
+	          , GETDATE()         
+	          , #dataRegnt#
+	          , #upageCnt#
+	          , #mkType#
+	          , #srType#
+		)
+    ]]>
+    </insert>
+    
+    <!--  수정 -->
+    <update id="Ech0210DAO.updateEch0210" parameterClass="cr2100mVO">
+    /* Ech0210DAO.updateEch0210 */
+    <![CDATA[
+        UPDATE
+                CR2100M
+        SET
+	            TEMP_NM                     = #tempNm#
+	            , REG_DT					  = #regDt#
+	            , EMP_NO					  = #empNo#
+	            , TEMP_TYPE					  = #tempType#
+	            , USE_YN                      = #useYn#
+	            , ST_DATE                     = #stDate#	              
+	            , ED_DATE                     = #edDate#
+	            , REMK						  = #remk#
+	            , BRANCH_CD					  = #branchCd#
+	            , DATA_REGDT                  = GETDATE()         
+	            , DATA_REGNT                  = #dataRegnt#
+	            , UPAGE_CNT					  = #upageCnt#     
+        WHERE
+                CORP_CD     = #corpCd#              
+        AND     TEMP_NO       = #tempNo#                                
+    ]]>
+    </update>
+   
+   	<!-- CRF템플릿관리 삭제 -->
+	<delete id="Ech0210DAO.deleteEch0210" parameterClass="cr2100mVO">
+		/* Ech0210DAO.deleteEch0210 */
+	<![CDATA[
+		DELETE FROM 
+			CR2100M
+		WHERE
+			CORP_CD 	= #corpCd#
+	    	AND TEMP_NO = #tempNo#
+	]]>
+	</delete>
+    
+    <!-- CRF템플릿 일괄다운로드 리스트 -->
+	<select id="Ech0210DAO.selectEch0210ListCrfTemp" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0210DAO.selectEch0210ListCrfTemp */
+	<![CDATA[
+		SELECT
+			Z.* FROM 
+			(
+				SELECT 
+					ROW_NUMBER() OVER(order by A.TEMP_NO DESC) rownum
+	              , A.CORP_CD 	                  AS corpCd            
+	              , A.TEMP_NO                     AS tempNo              
+				  , A.TEMP_CD                     AS tempCd                          
+	              , A.TEMP_NM                     AS tempNm
+	              , A.REG_DT					  AS regDt
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.TEMP_TYPE					  AS tempType
+	              , B.CD_NAME					  AS tempTypeNm
+	              , A.USE_YN                      AS useYn
+	              , A.ST_DATE                     AS stDate	              
+	              , A.ED_DATE                     AS edDate
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , A.UPAGE_CNT					  AS upageCnt
+				  , CONCAT(LOWER(A.CORP_CD),A.TEMP_NO) AS mapKey
+				  , CONCAT(LOWER(A.CORP_CD),A.TEMP_NO) AS mapKey2
+				  ]]>
+			<include refid="where_cr2100m" />	<![CDATA[				
+				) Z 
+				ORDER   BY
+		                Z.corpCd
+	             	  , z.tempNo		
+		]]>	
+	</select>
+	
+	<!--  수정 -->
+    <update id="Ech0210DAO.updateEch0210UpageCnt" parameterClass="cr2100mVO">
+    /* Ech0210DAO.updateEch0210UpageCnt */
+    <![CDATA[
+        UPDATE
+                CR2100M
+        SET
+	            UPAGE_CNT	= #upageCnt#     
+        WHERE
+                CORP_CD     = #corpCd#              
+        AND     TEMP_NO     = #tempNo#                                
+    ]]>
+    </update>
+    
+    
+    <!-- CRF템플릿관리******************************************************************************************************************************************* -->
+    
+</sqlMap>

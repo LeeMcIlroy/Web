@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	 
+	<!-- 관리자 로그인 -->
+	<select id="AdmLoginDAO.selectAdmLoginProc" parameterClass="adminVO" resultClass="adminVO">
+/* AdmLoginDAO.selectAdmLoginProc */
+	<![CDATA[
+		SELECT 
+			A.CORP_CD				AS corpCd
+			, A.EMP_NO				AS empNo
+			, A.EMP_NAME			AS name
+			, A.ORG_NO				AS depart
+			, A.INC_DT				AS incDt 
+			, A.HP_NO				AS hpNo
+			, A.EMAIL				AS email
+			, A.[POSITION]			AS position 
+			, A.EMP_CLS				AS empCls
+			, A.USER_ID				AS adminId
+			, A.PW_NO				AS adminPw
+			, A.BRANCH_CD			AS branchCd
+			, A.SPOT				AS spot
+			, A.RS_CLS				AS rsCls
+			, A.RS_AUTH_CLS			AS rsAuthCls
+			, A.ADMIN_TYPE			AS adminType
+			, A.RLOGIN_DT			AS rloginDt
+			, A.USER_ST				AS useYn
+			, A.EFF_STDT			AS effStdt  
+			, A.EFF_ENDT			AS effEndt
+			, A.LOGIN_FAIL			AS loginFail
+			, A.ACCE_IP				AS acceIp
+			, A.IP_ALL_YN			AS ipAllYn
+			, A.RSMG				AS rsmg
+            , A.ECRF				AS ecrf
+            , A.RSJT				AS rsjt
+            , A.EXTR				AS extr
+            , A.REPT				AS rept
+            , A.SEND				AS send
+            , A.STND				AS stnd
+            , A.OPER				AS oper
+            , A.SALE				AS sale
+			, A.DATA_REGDT			AS dataRegdt 
+			, A.DATA_REGNT			AS dataRegnt
+			, B.RS_NO1            	AS rsNo1
+			, B.RV_NO1				AS rvNo1
+			, A.EXAUTH				AS exauth
+			, B.OP_NO1				AS opNo1
+			, B.CTRT_NO1			AS ctrtNo1
+			, A.MCRF				AS mcrf
+			, A.ACRF				AS acrf
+		FROM CT1030M A
+		INNER JOIN CT1000M B
+		ON B.CORP_CD = A.CORP_CD 
+		WHERE 
+			A.CORP_CD='HNBSRC' 
+			AND A.USER_ID = #adminId#
+	]]>	
+	</select>
+	
+	<update id="AdmLoginDAO.updateAdmLoginDateTime" parameterClass="adminVO">
+	/* AdmLoginDAO.updateAdmLoginDateTime */
+		UPDATE
+			CT1030M
+		SET
+			RLOGIN_DT = GETDATE()
+		WHERE
+			CORP_CD = #corpCd# 
+			AND USER_ID = #adminId#
+	</update>
+	
+	<update id="AdmLoginDAO.updateAdmLoginFail" parameterClass="adminVO">
+	/* AdmLoginDAO.updateAdmLoginFail */
+	<![CDATA[
+		UPDATE
+			CT1030M
+		SET
+			LOGIN_FAIL = #loginFail#
+		WHERE
+			CORP_CD = #corpCd# 
+			AND USER_ID = #adminId#
+	]]>
+	</update>
+</sqlMap>

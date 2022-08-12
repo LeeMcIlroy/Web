@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 사용자관리******************************************************************************************************************************************* -->
+	<!-- 변수목록
+                A.CORP_CD                     AS corpCd            회사코드*
+                A.EMP_NO                      AS empNo             구성원번호*
+                A.EMP_NAME                    AS empName           구성원이름
+                A.ORG_NO                      AS orgNo             소속부서
+                F.CD_NAME                     AS orgNm             소속부서명
+                A.INC_DT                      AS incDt             입사일자
+                A.HP_NO                       AS hpNo              휴대폰번호
+                A.EMAIL                       AS email             메일주소
+                A.POSITION                    AS position          직급
+                A.EMP_CLS                     AS empCls            사원구분
+                G.CD_NAME                     AS empClsNm          사원구분명
+                A.USER_ID                     AS userId            아이디
+                A.PW_NO                       AS pwNo              비밀번호
+                A.BRANCH_CD                   AS branchCd          지사코드
+                H.BRANCH_NAME                 AS branchName        지사코드명
+                A.SPOT                        AS spot              직위
+                A.RS_CLS                      AS rsCls             연구자구분
+                I.CD_NAME                     AS rsClsNm           연구자구분명
+                A.RS_AUTH_CLS                 AS rsAuthCls         연구권한
+                J.CD_NAME                     AS rsAuthClsNm       연구권한명
+                A.RLOGIN_DT                   AS rloginDt          최근로그인일시
+                A.USER_ST                     AS userSt            사용자상태
+                K.CD_NAME                     AS userStNm          사용자상태명
+                A.EFF_STDT                    AS effStdt           유효시작일
+                A.EFF_ENDT                    AS effEndt           유효종료일
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+                A.EXAUTH	                  AS exauth      	      엑셀다운로드권한
+    -->
+	<sql id="where_ct1030m">
+		FROM    CT1030M A
+                INNER JOIN CM4000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.CD_CLS        = 'CM1220'
+        AND     F.CD            = A.ORG_NO              
+                INNER JOIN CM4000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.CD_CLS        = 'CM1230'
+        AND     G.CD            = A.EMP_CLS             
+                INNER JOIN CT1020M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.BRANCH_CD     = A.BRANCH_CD           
+                INNER JOIN CM4000M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.CD_CLS        = 'CM1240'        
+        AND     I.CD            = A.RS_CLS              
+                INNER JOIN CM4000M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.CD_CLS        = 'CM1210'
+        AND     J.CD            = A.RS_AUTH_CLS         
+                INNER JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CM1250'
+        AND     K.CD            = A.USER_ST
+		  <dynamic prepend="WHERE">
+        	<isNotEmpty property="corpCd" prepend="AND">
+        		(A.CORP_CD = #corpCd#)
+        	</isNotEmpty>
+        	<isNotEmpty property="searchCondition5" prepend="AND">
+	        	<!-- 정상 -->
+	        	<isEqual property="searchCondition5" compareValue="1">
+		        	USER_ST = '1'
+				</isEqual>
+				<!-- 정지(로그인차단) -->
+	        	<isEqual property="searchCondition5" compareValue="2">
+	        		USER_ST = '2'
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition6" prepend="AND">
+	        	<!-- 연구담당자 -->
+	        	<isEqual property="searchCondition6" compareValue="1">
+		        	RS_AUTH_CLS = '10'
+				</isEqual>
+				<!-- 연구책임자 -->
+	        	<isEqual property="searchCondition6" compareValue="2">
+	        		RS_AUTH_CLS = '20'
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition4" prepend="">
+				<isEqual property="searchCondition4" compareValue="1">
+					<isNotEmpty property="searchCondition1" prepend="AND">
+						<isNotEmpty property="searchCondition2" >
+							INC_DT BETWEEN #searchCondition1# AND #searchCondition2#
+						</isNotEmpty>
+					</isNotEmpty>
+				</isEqual>
+				<isEqual property="searchCondition4" compareValue="2">
+					<isNotEmpty property="searchCondition1" prepend="AND">
+						<isNotEmpty property="searchCondition2" >
+							CONVERT(CHAR(10), A.RLOGIN_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+						</isNotEmpty>
+					</isNotEmpty>
+				</isEqual>
+			</isNotEmpty>
+			<isNotEmpty property="branchCd" prepend="AND">
+				A.BRANCH_CD = #branchCd#
+	        </isNotEmpty>
+			<isNotEmpty property="searchCondition3" prepend="AND">
+	        	<!-- 전체 -->
+	        	<isEqual property="searchCondition3" compareValue="1">
+		        	<isNotEmpty property="searchWord" >
+						(A.EMP_NAME LIKE CONCAT ('%',#searchWord#,'%')
+						OR A.USER_ID LIKE CONCAT ('%',#searchWord#,'%'))
+					</isNotEmpty>
+				</isEqual>
+				<!-- 이름 -->
+	        	<isEqual property="searchCondition3" compareValue="2">
+		        	<isNotEmpty property="searchWord" >
+						(A.EMP_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+					</isNotEmpty>
+				</isEqual>
+				<!-- 아이디 -->
+	        	<isEqual property="searchCondition3" compareValue="3">
+		        	<isNotEmpty property="searchWord">
+						(A.USER_ID LIKE CONCAT ('%',#searchWord#,'%'))
+					</isNotEmpty>
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 사용자관리 리스트 -->
+	<select id="Ech0702DAO.selectEch0702List" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0702DAO.selectEch0702List */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(	
+				SELECT	
+				    A.CORP_CD                     AS corpCd            
+	              , A.EMP_NO                      AS empNo             
+	              , A.EMP_NAME                    AS empName           
+	              , A.ORG_NO                      AS orgNo             
+	              , F.CD_NAME                     AS orgNm             
+	              , A.INC_DT                      AS incDt             
+	              , A.HP_NO                       AS hpNo              
+	              , A.EMAIL                       AS email             
+	              , A.POSITION                    AS position          
+	              , A.EMP_CLS                     AS empCls            
+	              , G.CD_NAME                     AS empClsNm          
+	              , A.USER_ID                     AS userId            
+	              , A.PW_NO                       AS pwNo              
+	              , A.BRANCH_CD                   AS branchCd          
+	              , H.BRANCH_NAME                 AS branchName        
+	              , A.SPOT                        AS spot              
+	              , A.RS_CLS                      AS rsCls             
+	              , I.CD_NAME                     AS rsClsNm           
+	              , A.RS_AUTH_CLS                 AS rsAuthCls         
+	              , J.CD_NAME                     AS rsAuthClsNm       
+	              , A.RLOGIN_DT                   AS rloginDt          
+	              , A.USER_ST                     AS userSt            
+	              , K.CD_NAME                     AS userStNm          
+	              , A.EFF_STDT                    AS effStdt           
+	              , A.EFF_ENDT                    AS effEndt
+	              , A.LOGIN_FAIL				  AS loginFail
+	              , A.ACCE_IP					  AS acceIp
+	              , A.IP_ALL_YN					  AS ipAllYn
+	              , A.ADMIN_TYPE				  AS adminType
+	              , A.RSMG						  AS rsmg
+	              , A.ECRF						  AS ecrf
+	              , A.RSJT						  AS rsjt
+	              , A.EXTR						  AS extr
+	              , A.REPT						  AS rept
+	              , A.SEND						  AS send
+	              , A.STND						  AS stnd
+	              , A.OPER						  AS oper
+	              , A.SALE						  AS sale
+	              , A.PW_REGDT					  AS pwRegdt
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , A.EXAUTH					  AS exauth
+	              , A.MCRF						  AS mcrf
+	              , A.ACRF						  AS acrf  
+				]]>
+		<include refid="where_ct1030m" />	<![CDATA[
+				
+			) A
+			ORDER BY A.empNo DESC
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY
+			
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- 사용자관리 엑셀 리스트 -->
+	<select id="Ech0702DAO.selectEch0702Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0702DAO.selectEch0702Excel */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(		
+				SELECT					
+				  CORP_CD                     
+	              , EMP_NO                      
+	              , EMP_NAME                    
+	              , ORG_NO
+	              , (SELECT CD_NAME FROM CM4000M C WHERE C.CORP_CD = CORP_CD AND CD_CLS = 'CM1220' AND CD = ORG_NO) as orgNm                       
+	              , INC_DT                      
+	              , HP_NO                       
+	              , EMAIL                       
+	              , POSITION                    
+	              , EMP_CLS
+	              , CASE EMP_CLS 
+	              		WHEN '10' THEN '직원'
+	              		WHEN '20' THEN '협력'
+	              		ELSE '기타'
+	              	ENd as empClsNm 
+	              , USER_ID                     
+	              , PW_NO                       
+	              , BRANCH_CD
+	              , (SELECT BRANCH_NAME FROM CT1020M B WHERE B.CORP_CD = CORP_CD AND B.BRANCH_CD = BRANCH_CD) as branchName
+	              , SPOT                        
+	              , RS_CLS
+	              , (SELECT CD_NAME FROM CM4000M C WHERE C.CORP_CD = CORP_CD AND CD_CLS = 'CM1240' AND CD = RS_CLS) as rsClsNm
+	              , RS_AUTH_CLS
+	              , (SELECT CD_NAME FROM CM4000M C WHERE C.CORP_CD = CORP_CD AND CD_CLS = 'CM1210' AND CD = RS_AUTH_CLS) as rsAuthClsNm                 
+	              , RLOGIN_DT        
+	              , USER_ST
+	              , (SELECT CD_NAME FROM CM4000M C WHERE C.CORP_CD = CORP_CD AND CD_CLS = 'CM1250' AND CD = USER_ST) as userStNm                    
+	              , EFF_STDT                    
+	              , EFF_ENDT
+	              , LOGIN_FAIL				      AS loginFail
+	              , ACCE_IP						  AS acceIp
+	              , IP_ALL_YN					  AS ipAllYn
+	              , ADMIN_TYPE					  AS adminType 
+	              , A.RSMG						  AS rsmg
+	              , A.ECRF						  AS ecrf
+	              , A.RSJT						  AS rsjt
+	              , A.EXTR						  AS extr
+	              , A.REPT						  AS rept
+	              , A.SEND						  AS send
+	              , A.STND						  AS stnd
+	              , A.OPER						  AS oper
+	              , A.SALE						  AS sale
+	              , A.PW_REGDT					  AS pwRegdt                   
+	              , DATA_REGDT                  
+	              , DATA_REGNT
+	              , A.EXAUTH					  AS exauth
+	              , A.MCRF						  AS mcrf
+	              , A.ACRF						  AS acrf
+				]]>
+		<include refid="where_ct1030m" />	<![CDATA[
+			) A			  
+			ORDER BY EMP_NO DESC
+		]]>	
+	</select>
+
+
+	<!-- 사용자관리 cnt -->
+	<select id="Ech0702DAO.selectEch0702ListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ech0702DAO.selectEch0702ListCnt */
+	<![CDATA[
+		SELECT
+			count(*) totalCnt
+	]]>
+		<include refid="where_ct1030m" />
+	</select>
+
+	<!-- 사용자관리 상세보기 -->
+	<select id="Ech0702DAO.selectEch0702View" parameterClass="ct1030mVO"
+		resultClass="ct1030mVO">
+		/* Ech0702DAO.selectEch0702View */
+	<![CDATA[	
+		SELECT
+                A.CORP_CD                     AS corpCd            
+              , A.EMP_NO                      AS empNo             
+              , A.EMP_NAME                    AS empName           
+              , A.ORG_NO                      AS orgNo             
+              , F.CD_NAME                     AS orgNm             
+              , A.INC_DT                      AS incDt             
+              , A.HP_NO                       AS hpNo              
+              , A.EMAIL                       AS email             
+              , A.POSITION                    AS position          
+              , A.EMP_CLS                     AS empCls            
+              , G.CD_NAME                     AS empClsNm          
+              , A.USER_ID                     AS userId            
+              , A.PW_NO                       AS pwNo              
+              , A.BRANCH_CD                   AS branchCd          
+              , H.BRANCH_NAME                 AS branchName        
+              , A.SPOT                        AS spot              
+              , A.RS_CLS                      AS rsCls             
+              , I.CD_NAME                     AS rsClsNm           
+              , A.RS_AUTH_CLS                 AS rsAuthCls         
+              , J.CD_NAME                     AS rsAuthClsNm       
+              , A.RLOGIN_DT                   AS rloginDt          
+              , A.USER_ST                     AS userSt            
+              , K.CD_NAME                     AS userStNm          
+              , A.EFF_STDT                    AS effStdt           
+              , A.EFF_ENDT                    AS effEndt
+              , A.LOGIN_FAIL				      AS loginFail
+              , A.ACCE_IP						  AS acceIp
+              , A.IP_ALL_YN					  AS ipAllYn
+              , A.ADMIN_TYPE					  AS adminType 
+              , A.RSMG						  AS rsmg
+              , A.ECRF						  AS ecrf
+              , A.RSJT						  AS rsjt
+              , A.EXTR						  AS extr
+              , A.REPT						  AS rept
+              , A.SEND						  AS send
+              , A.STND						  AS stnd
+              , A.OPER						  AS oper
+              , A.SALE						  AS sale
+              , A.PW_REGDT					  AS pwRegdt           
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , A.EXAUTH					  AS exauth
+              , A.MCRF						  AS mcrf
+              , A.ACRF						  AS acrf         
+        FROM    CT1030M A
+                INNER JOIN CM4000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.CD_CLS        = 'CM1220'
+        AND     F.CD            = A.ORG_NO              
+                INNER JOIN CM4000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.CD_CLS        = 'CM1230'
+        AND     G.CD            = A.EMP_CLS             
+                INNER JOIN CT1020M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.BRANCH_CD     = A.BRANCH_CD           
+                INNER JOIN CM4000M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.CD_CLS        = 'CM1240'        
+        AND     I.CD            = A.RS_CLS              
+                INNER JOIN CM4000M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.CD_CLS        = 'CM1210'
+        AND     J.CD            = A.RS_AUTH_CLS         
+                INNER JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CM1250'
+        AND     K.CD            = A.USER_ST             
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.EMP_NO        = #empNo#               
+        
+    ]]>
+	</select>
+	
+    <!-- 사용자관리 삭제 -->
+	<delete id="Ech0702DAO.deleteEch0702" parameterClass="ct1030mVO">
+		/* Ech0702DAO.deleteEch0702 */
+	<![CDATA[
+		DELETE FROM 
+			CT1030M
+		WHERE
+			CORP_CD = #corpCd#
+	    	AND EMP_NO = #empNo#
+	]]>
+	</delete>
+	
+	<!-- 사용자관리 추가 -->
+	<insert id="Ech0702DAO.insertEch0702" parameterClass="ct1030mVO">
+	/* Ech0702DAO.insertEch0702 */
+	<![CDATA[
+		DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                  
+        DECLARE @V_INC_DT                   NVARCHAR(0010) = #incDt#                                                   
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)
+                                                                         
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_INC_DT, 1, 4)                                                   
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  @P_RTN_KEY = CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.EMP_NO), @BDT04 + '0000')) + 1)      
+        FROM    CT1030M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.INC_DT, 1, 4)   = @BDT04                                                                       
+ 
+ 
+        INSERT  CT1030M(
+                CORP_CD                     
+              , EMP_NO                      
+              , EMP_NAME                    
+              , ORG_NO                      
+              , INC_DT                      
+              , HP_NO                       
+              , EMAIL                       
+              , POSITION                    
+              , EMP_CLS                     
+              , USER_ID                     
+              , PW_NO                       
+              , BRANCH_CD                   
+              , SPOT                        
+              , RS_CLS                      
+              , RS_AUTH_CLS                 
+              , USER_ST                     
+              , EFF_STDT                    
+              , EFF_ENDT
+              , LOGIN_FAIL
+              , ACCE_IP
+              , IP_ALL_YN
+              , ADMIN_TYPE
+              , RSMG
+	          , ECRF
+	          , RSJT
+	          , EXTR
+	          , REPT
+	          , SEND
+	          , STND
+	          , OPER
+	          , SALE
+	          , PW_REGDT              
+              , DATA_REGDT                  
+              , DATA_REGNT
+              , EXAUTH
+              , MCRF
+              , ACRF                  
+        ) VALUES(
+                #corpCd#
+              , @P_RTN_KEY
+              , #empName#
+              , #orgNo#
+              , #incDt#
+              , #hpNo#
+              , #email#
+              , #position#
+              , #empCls#
+              , #userId#
+              , #pwNo#
+              , #branchCd#
+              , #spot#
+              , #rsCls#
+              , #rsAuthCls#
+              , #userSt#
+              , CONVERT(date,GETDATE())
+              , CONVERT(date,'9999-12-31') 
+              , 0
+              , #acceIp#
+              , #ipAllYn#
+              , #adminType#
+              , #rsmg#
+	          , #ecrf#
+	          , #rsjt#
+	          , #extr#
+	          , #rept#
+	          , #send#
+	          , #stnd#
+	          , #oper#
+	          , #sale#
+	          , GETDATE()
+              , GETDATE()
+              , #dataRegnt#
+              , #exauth#
+              , #mcrf#
+              , #acrf#
+        )
+    ]]>
+    </insert>
+	<!-- 사용자관리 수정 -->
+	<update id="Ech0702DAO.updateEch0702" parameterClass="ct1030mVO">
+		/* Ech0702DAO.updateEch0702 */
+	<![CDATA[
+	    UPDATE
+                CT1030M
+        SET                                      
+              EMP_NAME                    = #empName#                     
+              , ORG_NO                      = #orgNo#                       
+              , INC_DT                      = #incDt#                       
+              , HP_NO                       = #hpNo#                        
+              , EMAIL                       = #email#                       
+              , POSITION                    = #position#                    
+              , EMP_CLS                     = #empCls#                      
+              , USER_ID                     = #userId#
+              , BRANCH_CD                   = #branchCd#                    
+              , SPOT                        = #spot#                        
+              , RS_CLS                      = #rsCls#                       
+              , RS_AUTH_CLS                 = #rsAuthCls#                   
+              , USER_ST                     = #userSt#                      
+              , EFF_STDT                    = #effStdt#                     
+              , EFF_ENDT                    = #effEndt#
+              , ACCE_IP						= #acceIp#
+              , IP_ALL_YN					= #ipAllYn#
+              , ADMIN_TYPE					= #adminType#
+              , RSMG						= #rsmg#
+	          , ECRF						= #ecrf#
+	          , RSJT						= #rsjt#
+	          , EXTR						= #extr#
+	          , REPT						= #rept#
+	          , SEND						= #send#
+	          , STND						= #stnd#
+	          , OPER						= #oper#
+	          , SALE						= #sale#
+              , DATA_REGDT                  = GETDATE()                   
+              , DATA_REGNT                  = #dataRegnt#
+              , EXAUTH					    = #exauth#
+              , MCRF						= #mcrf#
+              , ACRF						= #acrf#           
+        WHERE
+               CORP_CD         = #corpCd#              
+              AND EMP_NO          = #empNo#               
+	]]>
+	</update>
+	
+	<!-- 관리자 비밀번호 재설정 -->
+	<update id="Ech0702DAO.updateEch0702AjaxProfClearPw" parameterClass="ct1030mVO">
+		/* Ech0702DAO.updateEch0702AjaxProfClearPw */
+		UPDATE
+			CT1030M
+		SET
+			PW_NO = #pwNo#
+		WHERE
+			CORP_CD = #corpCd#
+		 	AND USER_ID = #userId#
+	</update>
+	
+	<update id="Ech0702DAO.updateEch0702AjaxClearLgnFail" parameterClass="egovMap">
+	/* Ech0702DAO.updateEch0702AjaxClearLgnFail */
+	<![CDATA[
+		UPDATE
+			CT1030M
+		SET
+			LOGIN_FAIL = '0'
+		WHERE
+			CORP_CD = #corpCd# 
+			AND USER_ID = #adminId#
+	]]>
+	</update>
+	
+	<!-- 업무담당자 사용자 아이디 중복체크  -->
+	<select id="Ech0702DAO.selectEch0702AdminIdChk" parameterClass="string" resultClass="int">
+	/* Ech0702DAO.selectEch0702AdminIdChk */
+	<![CDATA[
+		SELECT  
+			SUM(A.CNT) AS TCNT
+		FROM 
+		(
+				SELECT
+					COUNT(*) as cnt
+				FROM
+					CT1030M
+				WHERE
+					USER_ID = #adminId#
+		
+				UNION ALL 
+				SELECT
+					COUNT(*) as cnt
+				FROM
+					SB1000M
+				WHERE
+					USER_ID = #adminId#
+		
+		) A	
+	]]>
+	</select>
+	
+	
+	
+	<!-- 사용자 프로필 조회 -->
+	<select id="Ech0702DAO.selectEch0702Profile" parameterClass="egovMap" resultClass="ct1030mVO">
+	/* Ech0702DAO.selectEch0702Profile */
+	<![CDATA[
+	SELECT
+                A.CORP_CD                     AS corpCd            
+              , A.EMP_NO                      AS empNo             
+              , A.EMP_NAME                    AS empName           
+              , A.ORG_NO                      AS orgNo             
+              , F.CD_NAME                     AS orgNm             
+              , A.INC_DT                      AS incDt             
+              , A.HP_NO                       AS hpNo              
+              , A.EMAIL                       AS email             
+              , A.POSITION                    AS position          
+              , A.EMP_CLS                     AS empCls            
+              , G.CD_NAME                     AS empClsNm          
+              , A.USER_ID                     AS userId            
+              , A.PW_NO                       AS pwNo              
+              , A.BRANCH_CD                   AS branchCd          
+              , H.BRANCH_NAME                 AS branchName        
+              , A.SPOT                        AS spot              
+              , A.RS_CLS                      AS rsCls             
+              , I.CD_NAME                     AS rsClsNm           
+              , A.RS_AUTH_CLS                 AS rsAuthCls         
+              , J.CD_NAME                     AS rsAuthClsNm       
+              , A.RLOGIN_DT                   AS rloginDt          
+              , A.USER_ST                     AS userSt            
+              , K.CD_NAME                     AS userStNm          
+              , A.EFF_STDT                    AS effStdt           
+              , A.EFF_ENDT                    AS effEndt
+              , A.LOGIN_FAIL				      AS loginFail
+              , A.ACCE_IP						  AS acceIp
+              , A.IP_ALL_YN					  AS ipAllYn
+              , A.ADMIN_TYPE					  AS adminType 
+              , A.RSMG						  AS rsmg
+              , A.ECRF						  AS ecrf
+              , A.RSJT						  AS rsjt
+              , A.EXTR						  AS extr
+              , A.REPT						  AS rept
+              , A.SEND						  AS send
+              , A.STND						  AS stnd
+              , A.OPER						  AS oper
+              , A.SALE						  AS sale
+              , A.PW_REGDT					  AS pwRegdt 	          
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , A.EXAUTH					  AS exauth
+              , A.MCRF						  AS mcrf
+              , A.ACRF						  AS acrf         
+        FROM    CT1030M A
+                INNER JOIN CM4000M F
+        ON      F.CORP_CD       = A.CORP_CD
+        AND     F.CD_CLS        = 'CM1220'
+        AND     F.CD            = A.ORG_NO              
+                INNER JOIN CM4000M G
+        ON      G.CORP_CD       = A.CORP_CD
+        AND     G.CD_CLS        = 'CM1230'
+        AND     G.CD            = A.EMP_CLS             
+                INNER JOIN CT1020M H
+        ON      H.CORP_CD       = A.CORP_CD
+        AND     H.BRANCH_CD     = A.BRANCH_CD           
+                INNER JOIN CM4000M I
+        ON      I.CORP_CD       = A.CORP_CD
+        AND     I.CD_CLS        = 'CM1240'        
+        AND     I.CD            = A.RS_CLS              
+                INNER JOIN CM4000M J
+        ON      J.CORP_CD       = A.CORP_CD
+        AND     J.CD_CLS        = 'CM1210'
+        AND     J.CD            = A.RS_AUTH_CLS         
+                INNER JOIN CM4000M K
+        ON      K.CORP_CD       = A.CORP_CD
+        AND     K.CD_CLS        = 'CM1250'
+        AND     K.CD            = A.USER_ST             
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.EMP_NO        = #empNo#
+		
+	]]>	
+	</select>	
+	
+	<!-- 관리자 비밀번호 체크 -->
+	<select id="Ech0702DAO.selectEch0702AjaxAdminPwChk" parameterClass="ct1030mVO" resultClass="int">
+	/* Ech0702DAO.selectEch0702AjaxAdminPwChk */
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			CT1030M
+		WHERE
+			CORP_CD = #corpCd#
+			AND USER_ID = #userId#
+			AND PW_NO = #pwNo#
+	]]>
+	</select>
+	
+	<!-- 관리자 비밀번호 수정 -->
+	<update id="Ech0702DAO.ech0702AjaxPasswordUpdate" parameterClass="ct1030mVO">
+	/* Ech0702DAO.ech0702AjaxPasswordUpdate */
+		UPDATE
+			CT1030M
+		SET
+			PW_NO = #pwNo#
+			, PW_REGDT = GETDATE()
+			, DATA_REGDT = GETDATE()
+			, DATA_REGNT = #dataRegnt# 
+		WHERE
+			CORP_CD = #corpCd#
+			AND EMP_NO = #empNo#
+	</update>
+	
+	<!-- /사용자관리****************************************************************************************************************************************** -->
+
+</sqlMap>

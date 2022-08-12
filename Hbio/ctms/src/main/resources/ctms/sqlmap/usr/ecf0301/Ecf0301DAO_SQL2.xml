@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<select id="Ecf0301DAO.selectEcf0301RsList" parameterClass="sb1000mVO" resultClass="egovMap">
+	/* Ecf0301DAO.selectEcf0301RsList */
+	<![CDATA[
+		SELECT
+			A.RS_NO
+			, B.RS_NAME
+			, A.RSI_NO
+			, A.RSJ_NO
+			, (
+				SELECT
+					CASE
+						WHEN COUNT(*) > 0 THEN 'TRUE'
+						ELSE 'FALSE'
+					END
+				FROM
+					RS4000M T
+				WHERE
+					T.CORP_CD = A.CORP_CD
+					AND T.RS_NO = A.RS_NO
+					AND T.RSJ_NO = A.RSJ_NO
+					AND CONVERT(DATE, RESR_DT) = CONVERT(DATE, GETDATE())
+					AND T.MT_ST = '30'
+			) AS MT_ST
+		FROM
+			RS2000M A
+			INNER JOIN RS1000M B ON A.RS_NO = B.RS_NO
+		WHERE
+			A.CORP_CD = #corpCd#
+		AND
+			A.RSJ_NO = #rsjNo#
+		AND
+			A.RSI_NO != ''
+		AND
+			A.RSI_NO IS NOT NULL
+	]]>
+	</select>
+
+	<select id="Ecf0301DAO.selectEcf0301List" parameterClass="searchVO" resultClass="egovMap">
+	/* Ecf0301DAO.selectEcf0301List */
+	<![CDATA[
+		SELECT
+			CORP_CD
+			, RS_NO
+			, TEMP_NO
+			, SV_SEQ
+			, SV_CNT
+			, TITLE
+			, CONTENT
+			, SV_STDT
+			, SV_ENDT
+			, MT_CLS
+			, DATA_REGDT
+			, DATA_REGNT
+			, CASE
+				WHEN CONVERT(DATE, GETDATE()) < CONVERT(DATE, SV_STDT) THEN 'BEFORE'
+				WHEN CONVERT(DATE, GETDATE()) > CONVERT(DATE, SV_ENDT) THEN 'AFTER'
+				ELSE 'NOW'
+			END AS DT_STATE
+			, (
+				SELECT
+					CASE
+						WHEN COUNT(*) > 0 THEN 'TRUE'
+						ELSE 'FALSE'
+					END
+				FROM
+					CR3010M T
+				WHERE
+					T.CORP_CD = A.CORP_CD
+				AND
+					T.RS_NO = A.RS_NO
+				AND
+					T.RSJ_NO = #rsjNo#
+				AND
+					T.TEMP_NO = A.TEMP_NO
+			) AS ANSW_STATE
+		FROM
+			CR1000M A
+		WHERE
+			A.CORP_CD = #corpCd#
+		AND
+			A.RS_NO = #rsNo#
+		ORDER BY
+			SV_SEQ ASC, SV_CNT ASC
+	]]>
+	</select>
+
+</sqlMap>

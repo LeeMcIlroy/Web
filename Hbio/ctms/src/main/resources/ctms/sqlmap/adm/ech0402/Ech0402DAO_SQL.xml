@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+ 
+	<!-- 종합통계관리******************************************************************************************************************************************* -->
+    <!-- 변수목록
+                A.CORP_CD                     AS corpCd            회사코드
+                A.RS_NO                       AS rsNo              연구과제번호
+                A.RS_NO1                      AS rsNo1             연구고유번호
+                A.RS_NO2                      AS rsNo2             임상종류
+                F.CD_NAME                     AS rsNo2Nm           임상종류명
+                A.RS_NO3                      AS rsNo3             임상분류
+                G.CD_NAME                     AS rsNo3Nm           임상분류명
+                A.RS_NO4                      AS rsNo4             프로토콜
+                H.CD_NAME                     AS rsNo4Nm           프로토콜명
+                A.RS_NO5                      AS rsNo5             연구연도
+                A.RS_NO6                      AS rsNo6             차수시작
+                A.RS_NO7                      AS rsNo7             임상번호
+                A.RS_CD                       AS rsCd              연구코드
+                A.REG_DT                      AS regDt             등록일자
+                A.RS_DRT                      AS rsDrt             연구책임자
+                I.EMP_NAME                    AS rsName            연구책임자명
+                A.RS_SCNT                     AS rsScnt            연구대상인원
+                A.RS_MSCNT                    AS rsMscnt           최대지원자수
+                A.RS_STDT                     AS rsStdt            연구시작일자
+                A.RS_ENDT                     AS rsEndt            연구종료일자
+                A.RSST_CLS                    AS rsstCls           연구상태
+                J.CD_NAME                     AS rsstClsNm         연구상태명
+                A.REP_DT                      AS repDt             결과보고일
+                A.VISIT_CNT                   AS visitCnt          방문횟수
+                A.DUPL_YN                     AS duplYn            중복참여여부
+                A.RS_POS                      AS rsPos             대상부위
+                A.RS_NAME                     AS rsName            연구명
+                A.RS_PPS                      AS rsPps             연구목적
+                A.RS_PTC                      AS rsPtc             연구방법
+                A.VEND_NO                     AS vendNo            거래처번호
+                ISNULL(K.VEND_NAME, '')       AS vendName          거래처번호명
+                A.VMNG_NAME                   AS vmngName          거래처담당자명
+                A.VMNGHP_NO                   AS vmnghpNo          거래처담당자휴대폰
+                A.VMNG_EMAIL                  AS vmngEmail         거래처담당자이메일
+                A.RS_PAY                      AS rsPay             연구비
+                A.RS_PAYVT                    AS rsPayvt           연구비부가세
+                A.IRBSM_YN                    AS irbsmYn           IRB승인필요여부
+                A.ITEM_CLS                    AS itemCls           제품정보
+                L.CD_NAME                     AS itemClsNm         제품정보명
+                A.ITEM_NAME                   AS itemName          제품명
+                A.BRANCH_CD                   AS branchCd          등록지사
+                A.DEL_YN                      AS delYn             삭제여부
+                A.DATA_LOCK_YN                AS dataLockYn        데이터잠금여부
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->
+    <!-- 변수목록
+                A.CORP_CD                     AS corpCd            회사코드
+                F.CORP_NAME                   AS corpName          회사코드명
+                A.RS_NO                       AS rsNo              연구과제번호
+                G.RS_NAME                     AS rsName            연구과제번호명
+                A.BRANCH_CD                   AS branchCd          지사코드
+                H.BRANCH_NAME                 AS branchName        지사코드명
+                A.REG_DT                      AS regDt             등록일자
+                A.JN_STDT                     AS jnStdt            참여시작일자
+                A.JN_ENDT                     AS jnEndt            참여종료일자
+                A.RSST_CLS                    AS rsstCls           연구상태
+                J.CD_NAME                     AS rsstClsNm         연구상태명
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->
+    <!-- 변수목록
+                A.CORP_CD                     AS corpCd            회사코드
+                F.CORP_NAME                   AS corpName          회사코드명
+                A.RS_NO                       AS rsNo              연구과제번호
+                G.RS_NAME                     AS rsName            연구과제번호명
+                A.EMP_NO                      AS empNo             구성원번호
+                H.EMP_NAME                    AS empName           구성원번호명
+                A.REG_DT                      AS regDt             등록일자
+                A.JN_STDT                     AS jnStdt            참여시작일자
+                A.JN_ENDT                     AS jnEndt            참여종료일자
+                A.RSST_CLS                    AS rsstCls           연구상태
+                J.CD_NAME                     AS rsstClsNm         연구상태명
+                A.DATA_REGDT                  AS dataRegdt         등록수정일
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->
+    
+    <sql id="where_rstot">
+           FROM    RS1000M A
+                INNER JOIN CM4000M F
+	        ON      F.CORP_CD       = A.CORP_CD
+	        AND     F.CD_CLS        = 'CT2020'
+	        AND     F.CLS_CAT       = '3'
+	        AND     F.CD            = A.RS_NO2              
+	                INNER JOIN CM4000M G
+	        ON      G.CORP_CD       = A.CORP_CD
+	        AND     G.CD_CLS        = 'CT2030'
+	        AND     G.CLS_CAT       = '3'
+	        AND     G.CD            = A.RS_NO3              
+	                INNER JOIN CM4000M H
+	        ON      H.CORP_CD       = A.CORP_CD
+	        AND     H.CD_CLS        = 'CT2060'
+	        AND     H.CLS_CAT       = '3'
+	        AND     H.CD            = A.RS_NO4              
+	                INNER JOIN CT1030M I
+	        ON      I.CORP_CD       = A.CORP_CD
+	        AND     I.EMP_NO        = A.RS_DRT              
+	                INNER JOIN CM4000M J
+	        ON      J.CORP_CD       = A.CORP_CD
+	        AND     J.CD_CLS        = 'CT2050'
+	        AND     J.CLS_CAT       = '3'
+	        AND     J.CD            = A.RSST_CLS            
+	                LEFT JOIN CT2000M K
+	        ON      K.CORP_CD       = A.CORP_CD
+	        AND     K.VEND_NO       = A.VEND_NO             
+	                INNER JOIN CM4000M L
+	        ON      L.CORP_CD       = A.CORP_CD
+	        AND     L.CD_CLS        = 'CT2040'
+	        AND     L.CLS_CAT       = '3'
+	        AND     L.CD            = A.ITEM_CLS
+	         INNER JOIN CT1020M M
+	        ON      M.CORP_CD       = A.CORP_CD
+	        AND     M.BRANCH_CD     = A.BRANCH_CD
+	        LEFT JOIN RS5000M O
+	        ON      O.CORP_CD       = A.CORP_CD
+	        AND     O.RS_NO       	= A.RS_NO
+	        <dynamic prepend="INNER JOIN RS1020M N">
+	        	<isNotEmpty property="branchCd" prepend="ON">
+	        		ON		N.CORP_CD		= A.CORP_CD
+			        AND		N.RS_NO			= A.RS_NO
+			        AND		N.BRANCH_CD		= #branchCd#
+	        	</isNotEmpty>
+			</dynamic>
+			LEFT OUTER join (SELECT 
+	    						DISTINCT a.RS_NO ,
+	    						STUFF(( 
+	        							SELECT 
+	            						',' +BRANCH_NAME 
+	        							FROM 
+	           							 RS1020M b 
+								        WHERE
+								        	b.CORP_CD = A.CORP_CD 
+								            AND b.RS_NO = a.RS_NO
+								            FOR XML PATH('') ),1,1,'') AS BRANCH  
+								FROM 
+								    RS1020M a) Y
+			ON Y.RS_NO = A.RS_NO
+			LEFT OUTER join (SELECT 
+	    						DISTINCT a.RS_NO ,
+	    						STUFF(( 
+	        							SELECT 
+	            						',' +EMP_NAME 
+	        							FROM 
+	           							 RS1030M b 
+								        WHERE
+								        	b.CORP_CD = A.CORP_CD 
+								            AND b.RS_NO = a.RS_NO
+								            FOR XML PATH('') ),1,1,'') AS STAFF 
+								FROM 
+								    RS1030M a) U
+			ON U.RS_NO = A.RS_NO
+	        <dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition8" prepend="AND">
+	        		(A.RS_CD = #searchCondition8#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_STDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.RS_ENDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty property="searchCondition5" prepend="AND">
+	        		(A.RS_NO3 = #searchCondition5#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.RSST_CLS = #searchCondition6#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_CD LIKE CONCAT ('%',#searchWord#,'%')
+							OR K.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구명칭 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.RS_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 고객사명 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(K.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구코드 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+ 
+    <!--  리스트 -->
+    <select id="Ech0402DAO.selectEch0402List" parameterClass="searchVO" resultClass="egovMap">
+    /* Ech0402DAO.selectEch0402List */
+    <![CDATA[
+        SELECT Z.* FROM
+        (
+        	SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RS_NO                       AS rsNo              
+              , A.RS_NO1                      AS rsNo1             
+              , A.RS_NO2                      AS rsNo2             
+              , F.CD_NAME                     AS rsNo2Nm           
+              , A.RS_NO3                      AS rsNo3             
+              , G.CD_NAME                     AS rsNo3Nm           
+              , A.RS_NO4                      AS rsNo4             
+              , H.CD_NAME                     AS rsNo4Nm           
+              , A.RS_NO5                      AS rsNo5             
+              , A.RS_NO6                      AS rsNo6             
+              , A.RS_NO7                      AS rsNo7             
+              , A.RS_CD                       AS rsCd              
+              , A.REG_DT                      AS regDt             
+              , A.RS_DRT                      AS rsDrt             
+              , I.EMP_NAME                    AS rsDrtNm            
+              , A.RS_SCNT                     AS rsScnt            
+              , A.RS_MSCNT                    AS rsMscnt           
+              , A.RS_STDT                     AS rsStdt            
+              , A.RS_ENDT                     AS rsEndt            
+              , A.RSST_CLS                    AS rsstCls           
+              , J.CD_NAME                     AS rsstClsNm         
+              , A.REP_DT                      AS repDt             
+              , A.VISIT_CNT                   AS visitCnt          
+              , A.DUPL_YN                     AS duplYn            
+              , A.RS_POS                      AS rsPos             
+              , A.RS_NAME                     AS rsName            
+              , A.RS_PPS                      AS rsPps             
+              , A.RS_PTC                      AS rsPtc             
+              , A.VEND_NO                     AS vendNo            
+              , ISNULL(K.VEND_NAME, '')       AS vendName          
+              , A.VMNG_NAME                   AS vmngName          
+              , A.VMNGHP_NO                   AS vmnghpNo          
+              , A.VMNG_EMAIL                  AS vmngEmail         
+              , A.RS_PAY                      AS rsPay             
+              , A.RS_PAYVT                    AS rsPayvt           
+              , A.IRBSM_YN                    AS irbsmYn           
+              , A.ITEM_CLS                    AS itemCls           
+              , L.CD_NAME                     AS itemClsNm         
+              , A.ITEM_NAME                   AS itemName          
+              , A.BRANCH_CD                   AS branchCd
+              , M.BRANCH_NAME                 AS branchName
+              , A.DEL_YN                      AS delYn             
+              , A.DATA_LOCK_YN                AS dataLockYn
+              , A.ECRF_STATE                  AS ecrfState
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , Y.BRANCH				      AS branch  
+              , U.STAFF						  AS staff
+              
+              , O.RV_NO						  AS rvNo
+              , O.PLRV_DT					  AS rprvDt
+              , O.CHRV_DT					  AS chrvDt
+              , O.RSRV_DT					  AS rsrvDt
+                                
+    ]]>
+    <include refid="where_rstot" />
+    
+			<![CDATA[
+			AND A.DEL_YN = 'N'
+			]]>		
+    
+    <![CDATA[
+    ) Z
+    ORDER   BY   
+                Z.corpCd DESC
+              , Z.rsNo DESC
+ 			OFFSET #firstIndex# ROWS
+			FETCH NEXT #recordCountPerPage# ROWS ONLY  
+    ]]>
+    </select>
+ 
+ 	<!-- 연구과제 엑셀 리스트 -->
+	<select id="Ech0402DAO.selectEch0402Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0402DAO.selectEch0402Excel */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+        	SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RS_NO                       AS rsNo              
+              , A.RS_NO1                      AS rsNo1             
+              , A.RS_NO2                      AS rsNo2             
+              , F.CD_NAME                     AS rsNo2Nm           
+              , A.RS_NO3                      AS rsNo3             
+              , G.CD_NAME                     AS rsNo3Nm           
+              , A.RS_NO4                      AS rsNo4             
+              , H.CD_NAME                     AS rsNo4Nm           
+              , A.RS_NO5                      AS rsNo5             
+              , A.RS_NO6                      AS rsNo6             
+              , A.RS_NO7                      AS rsNo7             
+              , A.RS_CD                       AS rsCd              
+              , A.REG_DT                      AS regDt             
+              , A.RS_DRT                      AS rsDrt             
+              , I.EMP_NAME                    AS rsDrtNm            
+              , A.RS_SCNT                     AS rsScnt            
+              , A.RS_MSCNT                    AS rsMscnt           
+              , A.RS_STDT                     AS rsStdt            
+              , A.RS_ENDT                     AS rsEndt            
+              , A.RSST_CLS                    AS rsstCls           
+              , J.CD_NAME                     AS rsstClsNm         
+              , A.REP_DT                      AS repDt             
+              , A.VISIT_CNT                   AS visitCnt          
+              , A.DUPL_YN                     AS duplYn            
+              , A.RS_POS                      AS rsPos             
+              , A.RS_NAME                     AS rsName            
+              , A.RS_PPS                      AS rsPps             
+              , A.RS_PTC                      AS rsPtc             
+              , A.VEND_NO                     AS vendNo            
+              , ISNULL(K.VEND_NAME, '')       AS vendName          
+              , A.VMNG_NAME                   AS vmngName          
+              , A.VMNGHP_NO                   AS vmnghpNo          
+              , A.VMNG_EMAIL                  AS vmngEmail         
+              , A.RS_PAY                      AS rsPay             
+              , A.RS_PAYVT                    AS rsPayvt           
+              , A.IRBSM_YN                    AS irbsmYn           
+              , A.ITEM_CLS                    AS itemCls           
+              , L.CD_NAME                     AS itemClsNm         
+              , A.ITEM_NAME                   AS itemName          
+              , A.BRANCH_CD                   AS branchCd
+              , M.BRANCH_NAME                 AS branchName
+              , A.DEL_YN                      AS delYn             
+              , A.DATA_LOCK_YN                AS dataLockYn
+              , A.ECRF_STATE                  AS ecrfState        
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , Y.BRANCH				      AS branch  
+              , U.STAFF						  AS staff	  
+				]]>
+		<include refid="where_rstot" />	
+		<![CDATA[
+			AND A.DEL_YN = 'N'
+			]]>		
+		<![CDATA[	
+			) Z 
+			ORDER   BY   
+                Z.corpCd DESC
+              , Z.rsNo DESC
+			
+		]]>	
+	</select>
+
+	<!--  Cnt -->
+    <select id="Ech0402DAO.selectEch0402ListCnt" parameterClass="searchVO" resultClass="int">
+    /* Ech0402DAO.selectEch0402ListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_rs1000m" />
+        <![CDATA[
+			AND A.DEL_YN = 'N'
+			]]>	
+   
+    </select>
+      
+    <!-- 종합통계관리******************************************************************************************************************************************* -->
+    
+</sqlMap>

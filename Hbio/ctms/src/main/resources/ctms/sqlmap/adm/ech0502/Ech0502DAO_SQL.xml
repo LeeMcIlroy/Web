@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 보고서양식관리******************************************************************************************************************************************* -->
+	<sql id="where_rs5010m">
+		FROM
+			RS5010M
+	</sql>
+	 <sql id="where_rs5010mSearch">
+          
+	        <dynamic prepend="WHERE">
+	        	
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.DATA_REGDT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					
+				</isNotEmpty>
+				<isNotEmpty property="searchCondition6" prepend="AND">
+	        		A.RPT_CLS  LIKE CONCAT ('%',#searchCondition6#,'%')
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition5" prepend="AND">
+	        		A.RS_FIELD  LIKE CONCAT ('%',#searchCondition5#,'%')
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							A.RPTFR_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							
+						</isNotEmpty>
+					</isEqual>
+					<!-- 보고서명칭 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							A.RPTFR_NAME LIKE CONCAT ('%',#searchWord#,'%')
+						</isNotEmpty>
+					</isEqual>
+
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+	<!-- 보고서 양식 리스트 -->
+	<select id="AdmEch0502DAO.selectAdmEch0502List" parameterClass="searchVO" resultClass="egovMap" >
+	/* AdmEch0502DAO.selectAdmEch0502List */
+	<![CDATA[
+        SELECT   A.CORP_CD
+		        ,A.BRANCH_CD
+		     	,A.RPT_NO
+		     	,A.RS_FIELD
+		    	,A.RPT_CLS
+		    	,C.CD_NAME         AS rsFieldNm
+		    	,B.CD_NAME         AS rptClsNm
+		     	,A.RPTFR_NAME
+		     	,CONVERT(NVARCHAR(10), A.DATA_REGDT, 23) AS DATA_REGDT
+		     	,A.DATA_REGNT 
+		         
+	    FROM  	RS5010M A
+				INNER JOIN CM4000M B
+        ON      B.CORP_CD  = A.CORP_CD
+        AND     B.CD_CLS   ='CT2010'
+        AND     B.CLS_CAT  ='3'
+        AND     B.CD       = A.RPT_CLS
+        
+       			INNER JOIN CM4000M C
+        ON      C.CORP_CD  = A.CORP_CD
+        AND     C.CD_CLS   ='CT2030'
+        AND     C.CLS_CAT  ='3'
+        AND     C.CD       = A.RS_FIELD
+	]]>
+	 <include refid="where_rs5010mSearch" />   	
+	 <![CDATA[   
+	    ORDER BY 	A.DATA_REGDT DESC
+	    			OFFSET #firstIndex# ROWS
+			 		FETCH NEXT #recordCountPerPage# ROWS ONLY  
+	]]>
+
+	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- 연구과제 cnt -->
+	            
+	<select id="AdmEch0502DAO.selectAdmEch0502ListCnt" parameterClass="searchVO" resultClass="int">
+	/* AdmEch0502DAO.selectAdmEch0502ListCnt */
+	<![CDATA[
+		SELECT	COUNT(*)
+		FROM  	RS5010M A
+		
+				INNER JOIN CM4000M B
+        ON      B.CORP_CD  = A.CORP_CD
+        AND     B.CD_CLS   ='CT2010'
+        AND     B.CLS_CAT  ='3'
+        AND     B.CD       = A.RPT_CLS
+	]]>
+		 <include refid="where_rs5010mSearch" />   	
+
+	</select>
+	
+	<!-- 보고서양식 상세보기 -->
+	<select id="AdmEch0502DAO.selectEch0502ViewOne" parameterClass="int" resultClass="rs5010mVO" >
+	/* AdmEch0502DAO.selectAdmEch0502View */
+	<![CDATA[
+		SELECT    A.CORP_CD         AS corpCd
+			     ,A.BRANCH_CD       AS branchCd
+			     ,A.RPT_NO		    AS rptNo
+			     ,A.RS_FIELD        AS rsField
+			     ,C.CD_NAME         AS rsFieldNm
+			     ,A.RPT_CLS      	AS rptCls
+                 ,B.CD_NAME         AS rptClsNm
+			     ,A.RPTFR_NAME      AS rptfrName
+			     ,A.DATA_REGDT 	    AS dataRegDt
+			     ,A.DATA_REGNT      AS dataRegNt
+
+		FROM 	 RS5010M A
+		    	 INNER JOIN CM4000M B
+        ON       B.CORP_CD  = A.CORP_CD
+        AND      B.CD_CLS   ='CT2010'
+        AND      B.CLS_CAT  ='3'
+        AND      B.CD       = A.RPT_CLS
+				 INNER JOIN CM4000M C
+        ON       C.CORP_CD  = A.CORP_CD
+        AND      C.CD_CLS   ='CT2030'
+        AND      C.CLS_CAT  ='3'
+        AND      C.CD       = A.RS_FIELD    	 
+	    WHERE 
+	    RPT_NO  = #rptNo#
+	]]>
+	</select>
+	<!-- 보고서양식 상세보기 -->
+
+    <!-- 보고서양식 삭제 -->
+	<delete id="AdmEch0502DAO.deleteAdmEch0502" parameterClass="int">
+		/* AdmEch0502DAO.deleteAdmEch0502 */
+	<![CDATA[
+		DELETE
+		FROM 
+			RS5010M
+		WHERE
+			RPT_NO = #rptNo#
+	]]>
+	</delete>
+	
+	<!-- 보고서업로드 추가 -->
+	<insert id="AdmEch0502DAO.insertAdmEch0502" parameterClass="rs5010mVO">
+	<selectKey keyProperty="rptNo" resultClass="int" type="post">
+		(SELECT MAX(RPT_NO) FROM RS5010M)
+	</selectKey>
+	/* AdmEch0502DAO.insertAdmEch0502 */
+	<![CDATA[
+		INSERT INTO RS5010M(			
+			 CORP_CD    
+			,BRANCH_CD  
+			,RS_FIELD   
+			,RPT_CLS   
+			,RPTFR_NAME
+			,DATA_REGDT
+			,DATA_REGNT 
+
+		)VALUES(
+			 #corpCd#
+			,#branchCd#
+			,#rsField#
+			,#rptCls#
+			,#rptfrName#
+			,getdate()
+			,#dataRegNt#
+		)
+	]]>
+	</insert>
+	
+	<!-- 보고서 수정 -->
+	<update id="AdmEch0502DAO.updateAdmEch0502" parameterClass="rs5010mVO" >
+		/* AdmEch0502DAO.updateAdmEch0502 */
+	<![CDATA[
+	    UPDATE
+    	RS5010M
+    	
+	    SET 
+	    	  RS_FIELD		= #rsField#
+		     ,RPT_CLS      	= #rptCls#
+		     ,RPTFR_NAME    = #rptfrName#
+		     ,DATA_REGDT   	= getdate()
+	    WHERE
+    		  RPT_NO 		= #rptNo#
+	]]>
+	</update>
+	<!-- 보고서이력 엑셀다운로드 -->
+	<select id="AdmEch0502DAO.selectAdmEch0502Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* AdmEch0502DAO.selectAdmEch0502Excel */
+	<![CDATA[
+        SELECT   A.CORP_CD
+		        ,A.BRANCH_CD
+		     	,A.RPT_NO
+		     	,A.RS_FIELD
+		    	,A.RPT_CLS
+		    	,C.CD_NAME         AS rsFieldNm
+		    	,B.CD_NAME         AS rptClsNm
+		     	,A.RPTFR_NAME
+		     	,CONVERT(NVARCHAR(10), A.DATA_REGDT, 23) AS DATA_REGDT
+		     	,A.DATA_REGNT 
+	         
+	    FROM  	RS5010M A
+				INNER JOIN CM4000M B
+        ON      B.CORP_CD  = A.CORP_CD
+        AND     B.CD_CLS   ='CT2010'
+        AND     B.CLS_CAT  ='3'
+        AND     B.CD       = A.RPT_CLS
+        
+       			INNER JOIN CM4000M C
+        ON      C.CORP_CD  = A.CORP_CD
+        AND     C.CD_CLS   ='CT2030'
+        AND     C.CLS_CAT  ='3'
+        AND     C.CD       = A.RS_FIELD
+	]]>
+	 <include refid="where_rs5010mSearch" />   	
+	 <![CDATA[   
+   		ORDER BY 	A.DATA_REGDT DESC
+	    		
+	]]>
+	</select>
+	<!-- /보고서양식관리****************************************************************************************************************************************** -->
+
+</sqlMap>

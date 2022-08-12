@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+ 
+    <!-- 변수목록
+                A.CORP_CD                     AS corpCd            회사코드
+                A.TEMP_NO                     AS tempNo            템플릿번호
+                A.TEMP_NM                     AS tempNm            템플릿 명
+                A.TEMP_TYPE                   AS tempType          템플릿 구분
+                A.USE_YN                      AS useYn             사용여부
+                A.ST_DATE                     AS stDate            사용시작일
+                A.ED_DATE                     AS edDate            사용종료일
+                A.DATA_REGDT                  AS dataRegdt         등록수정일시
+                A.DATA_REGNT                  AS dataRegnt         등록수정자
+    -->
+ 
+    <!-- 템플릿관리 시작 **************************************** -->
+    <sql id="where_cr2020m">
+        FROM 
+                CR2020M A
+                INNER JOIN CM4000M B
+        ON      B.CORP_CD       = A.CORP_CD
+        AND     B.CD_CLS        = 'CT3010'
+        AND     B.CLS_CAT       = '3'
+        AND     B.CD            = A.TEMP_TYPE
+       	WHERE   1=1
+       	<isNotEmpty prepend="AND" property="searchCondition1">
+       			A.TEMP_TYPE		= #searchCondition1#
+       	</isNotEmpty>
+       	<isNotEmpty prepend="AND" property="searchCondition2">
+       		A.USE_YN		= #searchCondition2#       	
+       	</isNotEmpty>
+       	<isNotEmpty property="searchCondition3" prepend="AND">
+       		(
+       		<isEqual property="searchCondition3" compareValue="1">
+		       	<isNotEmpty property="startDate">
+		       		A.DATA_REGDT	<![CDATA[>=]]> #startDate#
+		       	</isNotEmpty>
+		       	<isNotEmpty property="endDate">
+		       		<isNotEmpty property="startDate">AND</isNotEmpty>
+		       		A.DATA_REGDT	<![CDATA[<=]]> #endDate#
+		       	</isNotEmpty>
+       		</isEqual>
+       		<isEqual property="searchCondition3" compareValue="2">
+		       	<isNotEmpty property="startDate">
+		       		A.ST_DATE	<![CDATA[>=]]> #startDate#
+		       	</isNotEmpty>
+		       	<isNotEmpty property="endDate">
+		       		<isNotEmpty property="startDate">AND</isNotEmpty>
+		       		A.ED_DATE	<![CDATA[<=]]> #endDate#
+		       	</isNotEmpty>
+       		</isEqual>
+       		)
+       	</isNotEmpty>
+       	<isNotEmpty prepend="AND" property="searchWord">
+       		<isEqual property="searchType" compareValue="1">
+       			A.TEMP_NM LIKE CONCAT('%', #searchWord#, '%')
+       		</isEqual>
+       	</isNotEmpty>
+    </sql>
+ 
+    <!-- 템플릿관리 리스트 -->
+    <select id="ech0202.selectech0202List" parameterClass="searchVO" resultClass="egovMap">
+    /* ech0202.selectech0202List */
+    <![CDATA[
+    	SELECT 
+			Z.* FROM 
+			(
+		        SELECT
+		                A.CORP_CD                     
+		              , A.TEMP_NO                     
+		              , A.TEMP_NM                     
+		              , A.TEMP_TYPE                   
+		              , B.CD_NAME AS TEMP_TYPE_NM
+		              , A.USE_YN                      
+		              , A.ST_DATE                     
+		              , A.ED_DATE                     
+		              , CONVERT(NVARCHAR, A.DATA_REGDT, 23) AS DATA_REGDT                  
+		              , A.DATA_REGNT                  
+		              , (SELECT COUNT(*) FROM CR2050M B WHERE A.CORP_CD = B.CORP_CD AND A.TEMP_NO = B.TEMP_NO) AS QUES_NUM
+		              , A.TERM_TYPE
+    ]]>
+    <include refid="where_cr2020m" />
+    <![CDATA[
+       		) Z 
+        ORDER   BY   
+        	    Z.TEMP_NO DESC
+		OFFSET #firstIndex# ROWS
+		FETCH NEXT #recordCountPerPage# ROWS ONLY
+    ]]>
+    </select>
+ 
+    <!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+ 
+    <!-- 템플릿관리 Cnt -->
+    <select id="ech0202.selectech0202ListCnt" parameterClass="searchVO" resultClass="int">
+    /* ech0202.selectech0202ListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_cr2020m" />
+    </select>
+    
+    <!-- 템플릿관리 상세보기 -->
+    <select id="ech0202.selectech0202View" parameterClass="egovMap" resultClass="cr2020mVO">
+    /* ech0202.selectech0202View */
+    <![CDATA[
+        SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.TEMP_NO                     AS tempNo            
+              , A.TEMP_NM                     AS tempNm            
+              , A.TEMP_TYPE                   AS tempType          
+              , A.USE_YN                      AS useYn 
+              , B.CD_NAME                     AS tempTypeNm               
+              , CONVERT(NVARCHAR, A.ST_DATE, 23)                     AS stDate            
+              , CONVERT(NVARCHAR, A.ED_DATE, 23)                     AS edDate            
+              , CONVERT(NVARCHAR, A.DATA_REGDT, 23)                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , A.TERM_TYPE					  AS termType         
+        FROM    CR2020M A
+        		INNER JOIN CM4000M B
+        ON      B.CORP_CD   = A.CORP_CD
+        AND     B.CD_CLS    = 'CT3010'
+        AND     B.CLS_CAT   = '3'
+        AND     B.CD        = A.TEMP_TYPE
+        WHERE	A.CORP_CD	= #corpCd#
+        AND     A.TEMP_NO   = #tempNo#
+    ]]>
+    </select>
+    
+    <!-- 템플릿관리 삭제 -->
+    <delete id="ech0202.deleteech0202" parameterClass="egovMap">
+    /* ech0202.deleteech0202 */
+    <![CDATA[
+        DELETE
+        FROM
+            CR2020M
+        WHERE
+        	CORP_CD = #corpCd#                     
+        AND TEMP_NO = #tempNo#
+    ]]>
+    </delete>
+    
+    <!-- 템플릿관리 추가 -->
+    <!-- <selectKey keyProperty="tempNo" resultClass="string" type="pre">
+        (SELECT ISNULL(MAX(CONVERT(NUMERIC, TEMP_NO)), 0)+1 FROM CR2020M)
+    </selectKey> -->
+    <insert id="ech0202.insertech0202" parameterClass="cr2020mVO">
+    
+    
+    <selectKey keyProperty="tempNo" resultClass="string" type="pre">
+        DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                      
+        DECLARE @V_REG_DT                   NVARCHAR(0010) = #regDt#                                                       
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_REG_DT, 1, 4)                                                   
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.TEMP_NO), @BDT04 + '0000')) + 1) AS tempNo       
+        FROM    CR2100M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.REG_DT, 1, 4)   = @BDT04
+        AND		A.TEMP_NO NOT IN ('6','7')        
+    </selectKey>
+    
+    
+    <![CDATA[
+        INSERT  CR2020M(
+                CORP_CD                     
+              , TEMP_NO                     
+              , TEMP_NM                     
+              , TEMP_TYPE                   
+              , USE_YN                      
+              , ST_DATE                     
+              , ED_DATE                     
+              , DATA_REGDT                  
+              , DATA_REGNT
+              , TERM_TYPE                  
+        ) VALUES(
+                #corpCd#
+              , #tempNo#
+              , #tempNm#
+              , #tempType#
+              , #useYn#
+              , #stDate#
+              , #edDate#
+              , GETDATE()
+              , #dataRegnt#
+              , #termType#
+        )
+    ]]>
+    </insert>
+    
+    <!-- 템플릿관리 수정 -->
+    <update id="ech0202.updateech0202" parameterClass="cr2020mVO">
+    /* ech0202.updateech0202 */
+    <![CDATA[
+        UPDATE
+                CR2020M
+        SET
+                TEMP_NM                     = #tempNm#                      
+              , TEMP_TYPE                   = #tempType#                    
+              , USE_YN                      = #useYn#                       
+              , ST_DATE                     = #stDate#                      
+              , ED_DATE                     = #edDate#                      
+              , DATA_REGDT                  = GETDATE()
+              , DATA_REGNT                  = #dataRegnt#
+              , TERM_TYPE	                = #termType#                    
+        WHERE
+                CORP_CD                     = #corpCd#                      
+        AND     TEMP_NO                     = #tempNo#
+    ]]>
+    </update>
+    
+    <!-- 템플릿 질문 목록 -->
+    <select id="ech0202.selectEch0202QuesList" parameterClass="egovMap" resultClass="egovMap">
+    /* ech0202.selectEch0202QuesList */
+    <![CDATA[
+    	SELECT
+    		  CORP_CD
+			, TEMP_NO
+			, QUES_NO
+			, QUES_NM
+			, QUES_TYPE
+			, USE_YN
+			, QUES_CON
+			, QUES_ABB
+			, DATA_REGDT
+			, DATA_REGNT
+    	FROM
+    		CR2050M
+    	WHERE
+    		  CORP_CD = #corpCd#
+		AND	  TEMP_NO = #tempNo#
+    ]]>
+    </select>
+    
+    <!-- 템플릿 질문 등록 -->
+    <insert id="ech0202.insertech0202Ques" parameterClass="cr2050mVO">
+    <selectKey keyProperty="quesNo" resultClass="string" type="pre">
+    	SELECT ISNULL(MAX(CONVERT(NUMERIC, QUES_NO)), 0)+1 FROM CR2050M
+    </selectKey>
+    /* ech0202.insertech0202Ques */
+    <![CDATA[
+    	INSERT INTO CR2050M(
+    		  CORP_CD
+			, TEMP_NO
+			, QUES_NO
+			, QUES_NM
+			, QUES_TYPE
+			, USE_YN
+			, QUES_CON
+			, QUES_ABB
+			, DATA_REGDT
+			, DATA_REGNT
+    	)VALUES(
+    		  #corpCd#
+			, #tempNo#
+			, #quesNo#
+			, #quesNm#
+			, #quesType#
+			, #useYn#
+			, #quesCon#
+			, #quesAbb#
+			, GETDATE()
+			, #dataRegnt#
+    	)
+    ]]>
+    </insert>
+    
+    <!-- 템플릿 질문 삭제 -->
+    <delete id="ech0202.deleteech0202Ques" parameterClass="egovMap">
+    <![CDATA[
+    	DELETE
+    	FROM
+    		CR2050M
+    	WHERE
+    		CORP_CD = #corpCd#
+    	AND	TEMP_NO = #tempNo#
+    ]]>
+    </delete>
+    
+    <!-- 템플릿 질문답변 목록 -->
+    <select id="ech0202.selectEch0202AnswList" parameterClass="egovMap" resultClass="egovMap">
+    /* ech0202.selectEch0202AnswList */
+    <![CDATA[
+    	SELECT
+    		CORP_CD		AS corpCd
+    		, TEMP_NO	AS tempNo
+			, QUES_NO	AS quesNo
+			, ANSW_SORT	AS answSort
+			, ANSW_CON	AS answCon
+    	FROM
+    		CR2060M
+    	WHERE
+    		CORP_CD = #corpCd#
+    	AND
+    		TEMP_NO = #tempNo#
+    	AND
+    		QUES_NO = #quesNo#
+    	ORDER BY
+    		ANSW_SORT ASC
+    ]]>
+    </select>
+    
+    <!-- 템플릿 질문답변 등록 -->
+    <insert id="ech0202.insertech0202Answ" parameterClass="cr2060mVO">
+    /* ech0202.insertech0202Answ */
+    <![CDATA[
+    	INSERT INTO CR2060M(
+    		CORP_CD
+    		, TEMP_NO
+			, QUES_NO
+			, ANSW_SORT
+			, ANSW_CON
+    	)VALUES(
+    		#corpCd#
+    		, #tempNo#
+			, #quesNo#
+			, #answSort#
+			, #answCon#
+    	)
+    ]]>
+    </insert>
+    
+    <!-- 템플릿 질문답변 삭제 -->
+    <delete id="ech0202.deleteech0202Answ" parameterClass="egovMap">
+    /* ech0202.deleteech0202Answ */
+    <![CDATA[
+    	DELETE
+    	FROM
+    		CR2060M
+    	WHERE
+    		CORP_CD = #corpCd#
+    	AND
+    		TEMP_NO = #tempNo#
+    ]]>
+    </delete>
+    
+    <!-- 템플릿 복사 -->
+    <insert id="ech0202.insertEch0202Copy" parameterClass="egovMap">
+    /* ech0202.insertEch0202Copy */
+    <selectKey keyProperty="newTempNo" resultClass="string" type="pre">
+    DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                      
+        DECLARE @V_REG_DT                   NVARCHAR(0010) = #regDt#                                                       
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_REG_DT, 1, 4)                                                   
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.TEMP_NO), @BDT04 + '0000')) + 1) AS newTempNo       
+        FROM    CR2100M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.REG_DT, 1, 4)   = @BDT04
+        AND		A.TEMP_NO NOT IN ('6','7')    
+    </selectKey>
+    <![CDATA[
+    	INSERT INTO CR2020M
+    	SELECT
+  			  B.CORP_CD                     
+            , #newTempNo#
+            , CONCAT(B.TEMP_NM, '_복사') AS TEMP_NM                     
+            , B.TEMP_TYPE                   
+            , B.USE_YN                      
+            , B.ST_DATE                     
+            , B.ED_DATE                     
+            , GETDATE()
+            , B.DATA_REGNT
+            , B.TERM_TYPE
+        FROM
+        	CR2020M B
+        WHERE
+        	B.CORP_CD = #corpCd#
+        AND
+        	B.TEMP_NO = #tempNo#
+    ]]>
+    </insert>
+    
+    <!-- 질문 목록 조회 -->
+    <select id="ech0202.selectCr2030mList" parameterClass="egovMap" resultClass="egovMap">
+    /* ech0202.selectCr2030mList */
+    <![CDATA[
+    	SELECT
+    		CORP_CD
+    		, QUES_NO                     
+			, QUES_NM
+			, QUES_ABB
+    	FROM
+    		CR2030M
+    	WHERE
+    		CORP_CD = #corpCd#
+    	AND
+    		USE_YN = 'Y'
+    	AND DEL_YN = 'N'	
+    ]]>
+    </select>
+    
+    <!-- ajax 질문 조회 -->
+    <select id="ech0202.ajaxSelectQues" parameterClass="egovMap" resultClass="cr2030mVO">
+    /* ech0202.ajaxSelectQues */
+    <![CDATA[
+    	SELECT
+    		CORP_CD		AS corpCd 
+    		, QUES_NO	AS quesNo
+			, QUES_NM	AS quesNm
+			, QUES_TYPE	AS quesType
+			, QUES_CON	AS quesCon
+			, QUES_ABB	AS quesAbb
+    	FROM
+    		CR2030M
+    	WHERE
+    		CORP_CD = #corpCd#
+    	AND
+    		QUES_NO = #quesNo#
+    	AND
+    		USE_YN = 'Y'
+    	AND DEL_YN = 'N'
+    ]]>
+    </select>
+    
+    <!-- ajax 질문 답변 조회 -->
+    <select id="ech0202.ajaxSelectAnswList" parameterClass="egovMap" resultClass="cr2040mVO">
+    /* ech0202.ajaxSelectAnswList */
+    <![CDATA[
+    	SELECT
+    		CORP_CD		AS corpCd 
+    		, QUES_NO	AS quesNo
+    		, ANSW_CON	AS answCon
+    	FROM
+    		CR2040M
+    	WHERE
+    		CORP_CD = #corpCd#
+    	AND
+    		QUES_NO = #quesNo#
+    	AND DEL_YN	= 'N'	
+    	ORDER BY
+    		ANSW_SORT ASC
+    ]]>
+    </select>
+    
+    <!-- CRF templete 등록 -->
+    <insert id="ech0202DAO.insertEch0202CrfTemplete" parameterClass="cr2100mVO">    
+    /* ech0202DAO.insertEch0202CrfTemplete */
+    <![CDATA[
+    	INSERT  CR2100M(
+              CORP_CD            
+	            , TEMP_NO              
+				, TEMP_CD                          
+	            , TEMP_NM
+	            , REG_DT
+	            , EMP_NO
+	            , TEMP_TYPE
+	            , USE_YN
+	            , ST_DATE	              
+	            , ED_DATE
+	            , REMK
+	            , BRANCH_CD
+	            , DATA_REGDT         
+	            , DATA_REGNT
+	            , UPAGE_CNT
+	            , MK_TYPE      
+		) VALUES(
+              #corpCd#            
+              , #tempNo#              
+			  , CONCAT(#tempNo1#,'-',#tempNo#)
+	          , #tempNm#
+	          , #regDt#
+	          , #empNo#
+	          , #tempType#
+	          , #useYn#
+	          , #stDate#	              
+	          , #edDate#
+	          , #remk#
+	          , #branchCd#
+	          , GETDATE()         
+	          , #dataRegnt#
+	          , #upageCnt#
+	          , #mkType#
+		)
+    ]]>
+    </insert>
+    
+    <!-- CRF 템플릿 수정 -->
+    <update id="Ech0202DAO.updateEch0202CrfTemp" parameterClass="cr2100mVO">
+    /* Ech0202DAO.updateEch0202CrfTemp.updateEch0210 */
+    <![CDATA[
+        UPDATE
+                CR2100M
+        SET
+        		TEMP_NM			= #tempNm#
+	            , USE_YN			= #useYn#
+        WHERE
+                CORP_CD    		= #corpCd#              
+        AND     TEMP_NO       	= #tempNo#                                
+    ]]>
+    </update>
+    
+    
+    <!-- 템플릿관리 종료 **************************************** -->
+    
+</sqlMap>

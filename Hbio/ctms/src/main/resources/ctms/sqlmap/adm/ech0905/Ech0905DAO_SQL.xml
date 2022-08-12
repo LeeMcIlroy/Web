@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+ 
+	<!-- 자산관리******************************************************************************************************************************************* -->
+    <!-- 변수목록
+    -->
+    <sql id="where_ct3000m">
+			FROM    CT3000M A
+            INNER JOIN CM4000M B
+	        ON      B.CORP_CD       = A.CORP_CD
+	        AND     B.CD_CLS        = 'CM1370'
+	        AND     B.CLS_CAT       = '3'
+	        AND     B.CD            = A.AST_CLS              
+	        INNER JOIN CT1030M C
+	        ON      C.CORP_CD       = A.CORP_CD
+	        AND     C.EMP_NO        = A.EMP_NO
+	        INNER JOIN CT1020M E
+	        ON      E.CORP_CD       = A.CORP_CD
+	        AND     E.BRANCH_CD     = A.BRANCH_CD
+	        <dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<!-- <isNotEmpty property="searchCondition8" prepend="AND">
+	        		(A.RS_CD = #searchCondition8#)
+	        	</isNotEmpty> -->
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.PCH_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.DIS_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				<isNotEmpty property="searchCondition5" prepend="AND">
+	        		(A.USE_YN = #searchCondition5#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.AST_CLS = #searchCondition6#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.AST_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.FCTV_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.PCHV_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR C.EMP_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 자산명 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.AST_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 제조사 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(A.FCTV_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 구매처 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(A.PCHV_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 책임자 -->
+		        	<isEqual property="searchCondition3" compareValue="5">
+			        	<isNotEmpty property="searchWord">
+							(C.EMP_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+ 
+    <!--  리스트 -->
+    <select id="Ech0905DAO.selectEch0905List" parameterClass="searchVO" resultClass="egovMap">
+    /* Ech0905DAO.selectEch0905List */
+    <![CDATA[
+        SELECT Z.* FROM
+        (
+        	SELECT  
+                A.CORP_CD 		                  AS corpCd            
+	              , A.AST_NO                      AS astNo
+	              , A.AST_CD                      AS astCd              
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.AST_CLS					  AS astCls
+	              , B.CD_NAME					  AS astClsNm
+	              , A.AST_NAME					  AS astName
+	              , A.FCTV_NAME					  AS fctvName
+	              , A.PCHV_NAME					  AS pchvName
+	              , A.MNG_NAME					  AS mngName
+	              , A.PCHV_TEL					  AS pchvTel
+	              , A.PCHV_EMAIL				  AS pchvEmail
+	              , A.PCH_AMT				  	  AS pchAmt
+	              , A.PCH_AMTVT				  	  AS pchAmtvt
+	              , A.PCH_TAMT				  	  AS pchTamt
+	              , A.PCH_DT                      AS pchDt
+	              , A.DIS_DT                      AS disDt
+	              , A.USE_YN                      AS useYn
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME                 AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , A.S_NUM		                  AS sNum			  
+    ]]>
+    <include refid="where_ct3000m" />
+    
+    <![CDATA[
+    ) Z
+    ORDER   BY   
+                Z.corpCd DESC
+              , Z.astNo DESC
+ 			OFFSET #firstIndex# ROWS
+			FETCH NEXT #recordCountPerPage# ROWS ONLY  
+    ]]>
+    </select>
+ 
+ 	<!-- 연구과제 엑셀 리스트 -->
+	<select id="Ech0905DAO.selectEch0905Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0905DAO.selectEch0905Excel */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+        	SELECT  
+                A.CORP_CD 		                  AS corpCd            
+	              , A.AST_NO                      AS astNo
+	              , A.AST_CD                      AS astCd              
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.AST_CLS					  AS astCls
+	              , B.CD_NAME					  AS astClsNm
+	              , A.AST_NAME					  AS astName
+	              , A.FCTV_NAME					  AS fctvName
+	              , A.PCHV_NAME					  AS pchvName
+	              , A.MNG_NAME					  AS mngName
+	              , A.PCHV_TEL					  AS pchvTel
+	              , A.PCHV_EMAIL				  AS pchvEmail
+	              , A.PCH_AMT				  	  AS pchAmt
+	              , A.PCH_AMTVT				  	  AS pchAmtvt
+	              , A.PCH_TAMT				  	  AS pchTamt
+	              , A.PCH_DT                      AS pchDt
+	              , A.DIS_DT                      AS disDt
+	              , A.USE_YN                      AS useYn
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME                 AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , A.S_NUM		                  AS sNum
+				]]>
+		<include refid="where_ct3000m" />	
+		<![CDATA[	
+			) Z 
+			ORDER   BY   
+                Z.corpCd DESC
+              , Z.astNo DESC
+			
+		]]>	
+	</select>
+
+	<!--  Cnt -->
+    <select id="Ech0905DAO.selectEch0905ListCnt" parameterClass="searchVO" resultClass="int">
+    /* Ech0905DAO.selectEch0905ListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_ct3000m" />
+    </select>
+    
+    <!--  상세보기 -->
+    <select id="Ech0905DAO.selectEch0905View" parameterClass="ct3000mVO" resultClass="ct3000mVO">
+    /* Ech0905DAO.selectEch0905View */
+    <![CDATA[
+        	SELECT  
+                A.CORP_CD 		                  AS corpCd            
+	              , A.AST_NO                      AS astNo
+	              , A.AST_CD                      AS astCd              
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.AST_CLS					  AS astCls
+	              , B.CD_NAME					  AS astClsNm
+	              , A.AST_NAME					  AS astName
+	              , A.FCTV_NAME					  AS fctvName
+	              , A.PCHV_NAME					  AS pchvName
+	              , A.MNG_NAME					  AS mngName
+	              , A.PCHV_TEL					  AS pchvTel
+	              , A.PCHV_EMAIL				  AS pchvEmail
+	              , A.PCH_AMT				  	  AS pchAmt
+	              , A.PCH_AMTVT				  	  AS pchAmtvt
+	              , A.PCH_TAMT				  	  AS pchTamt
+	              , A.PCH_DT                      AS pchDt
+	              , A.DIS_DT                      AS disDt
+	              , A.USE_YN                      AS useYn
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME                 AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+	              , A.S_NUM		                  AS sNum         
+      	FROM    CT3000M A
+        INNER JOIN CM4000M B
+        ON      B.CORP_CD       = A.CORP_CD
+        AND     B.CD_CLS        = 'CM1370'
+        AND     B.CLS_CAT       = '3'
+        AND     B.CD            = A.AST_CLS              
+        INNER JOIN CT1030M C
+        ON      C.CORP_CD       = A.CORP_CD
+        AND     C.EMP_NO        = A.EMP_NO
+        INNER JOIN CT1020M E
+        ON      E.CORP_CD       = A.CORP_CD
+        AND     E.BRANCH_CD     = A.BRANCH_CD            
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.AST_NO         = #astNo#
+    ]]>
+    </select>
+        
+    <!--  추가 -->
+    <insert id="Ech0905DAO.insertEch0905" parameterClass="ct3000mVO">
+    <selectKey keyProperty="astNo" resultClass="string" type="pre">
+        DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                      
+        DECLARE @V_REG_DT                   NVARCHAR(0010) = #pchDt#                                                       
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_REG_DT, 1, 4)                                                   
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.AST_NO), @BDT04 + '0000')) + 1) AS astNo       
+        FROM    CT3000M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.PCH_DT, 1, 4)   = @BDT04        
+    </selectKey>
+    <![CDATA[
+		INSERT  CT3000M(
+		        CORP_CD  
+		      , AST_NO
+		      , AST_CD                       
+		      , PCH_DT
+		      , DIS_DT
+		      , AST_NAME
+		      , FCTV_NAME
+		      , PCHV_NAME
+		      , MNG_NAME
+		      , PCHV_TEL
+		      , PCHV_EMAIL
+		      , PCH_AMT
+		      , PCH_AMTVT
+		      , PCH_TAMT
+		      , EMP_NO
+		      , AST_CLS
+		      , USE_YN                      
+		      , REMK                      
+		      , BRANCH_CD                     
+		      , DATA_REGDT                    
+		      , DATA_REGNT
+		      , S_NUM      
+		) VALUES(
+		        #corpCd#
+		      , #astNo#
+		      , CONCAT(#corpCd#,'-',#astNo#)
+		      , #pchDt#
+		      , #disDt#
+		      , #astName#
+		      , #fctvName#
+		      , #pchvName#
+		      , #mngName#
+		      , #pchvTel#
+		      , #pchvEmail#
+		      , #pchAmt#
+		      , #pchAmtvt#
+		      , #pchTamt#
+		      , #empNo#
+		      , #astCls#
+		      , #useYn#
+		      , #remk#
+		      , #branchCd#
+		      , GETDATE()
+		      , #dataRegnt#
+		      , #sNum#
+		)
+    ]]>
+    </insert>
+    
+    <!--  수정 -->
+    <update id="Ech0905DAO.updateEch0905" parameterClass="ct3000mVO">
+    /* Ech0905DAO.updateEch0905 */
+    <![CDATA[
+        UPDATE
+                CT3000M
+        SET
+ 		      PCH_DT		= #pchDt#
+ 		      , DIS_DT		= #disDt#
+ 		      , AST_NAME	= #astName#
+ 		      , FCTV_NAME	= #fctvName#
+ 		      , PCHV_NAME	= #pchvName#
+ 		      , PCH_AMT		= #pchAmt#
+ 		      , PCH_AMTVT	= #pchAmtvt#
+ 		      , PCH_TAMT	= #pchTamt#
+ 		      , MNG_NAME    = #mngName#
+ 		      , PCHV_TEL	= #pchvTel#
+ 		      , PCHV_EMAIL	= #pchvEmail#
+		      , EMP_NO		= #empNo#	                      
+		      , AST_CLS		= #astCls#
+		      , USE_YN		= #useYn#                      
+		      , REMK		= #remk#	                      
+		      , BRANCH_CD	= #branchCd#                     
+		      , DATA_REGDT	= GETDATE()                    
+		      , DATA_REGNT	= #dataRegnt#
+		      , S_NUM		= #sNum#
+        WHERE
+                CORP_CD         = #corpCd#              
+        AND     AST_NO           = #astNo#                                
+    ]]>
+    </update>
+   
+   	<!-- 자산관리 삭제 -->
+	<delete id="Ech0905DAO.deleteEch0905" parameterClass="ct3000mVO">
+		/* Ech0905DAO.deleteEch0905 */
+	<![CDATA[
+		DELETE FROM 
+			CT3000M
+		WHERE
+			CORP_CD = #corpCd#
+	    	AND AST_NO = #astNo#
+	]]>
+	</delete>
+ 
+ 	<!-- 자산 일괄삭제 -->
+	<delete id="Ech0905DAO.deleteEch0905AjaxAstDel" parameterClass="egovMap">
+	/* Ech0905DAO.deleteEch0905AjaxAstDel */
+		DELETE
+			CT3000M
+		WHERE
+			CORP_CD = #corpCd#
+			AND AST_NO IN (
+							SELECT
+								AST_NO
+							FROM
+								CT3000M
+							WHERE
+								CORP_CD = #corpCd#
+								AND AST_NO 	
+								<iterate open="(" close=")" conjunction="," prepend="IN" property="keySeq">
+									#keySeq[]#
+								</iterate>
+						  )														
+	</delete>
+ 
+ 	<!-- 자산정보 일괄등록 - 중복  목록 산출 자산명+제조사+구매처+구매일 -->
+	<select id="Ech0905DAO.selectEch0905DupAstList" parameterClass="egovMap" resultClass="egovMap" >
+	/* Ech0905DAO.selectEch0905DupAstList */
+		SELECT
+			   *
+		  FROM
+			   CT3000M 
+		WHERE
+			CORP_CD		= #corpCd#
+		AND AST_NAME	= #astName#
+		AND FCTV_NAME	= #fctvName#
+		AND PCHV_NAME	= #pchvName#
+		AND PCH_DT		= #pchDt#
+	</select>
+	
+	<!-- 자산정보 일괄폐기 -->
+	<update id="Ech0905DAO.updateEch0905AjaxSaveDisDt" parameterClass="egovMap">
+	/* Ech0905DAO.updateEch0905AjaxSaveDisDt */
+	UPDATE
+			CT3000M
+		SET
+			DIS_DT = #step1#
+			, USE_YN = 'N'
+			, DATA_REGDT = GETDATE()
+			, DATA_REGNT = #step2#
+		WHERE
+			CORP_CD = #corpCd#
+			AND AST_NO IN (
+							SELECT
+								AST_NO
+							FROM
+								CT3000M
+							WHERE
+								CORP_CD = #corpCd#
+								AND (DIS_DT IS NULL OR DIS_DT = '')
+								AND AST_NO 	
+								<iterate open="(" close=")" conjunction="," prepend="IN" property="keySeq">
+									#keySeq[]#
+								</iterate>	
+							)														
+	</update>
+    
+    <!-- 삭제대상 확인 - 자산 정보 일괄 삭제 -->
+	<select id="Ech0905DAO.selectEch0905AjaxAstDel" parameterClass="egovMap" resultClass="int">
+	/* Ech0905DAO.selectEch0905AjaxAstDel */
+		SELECT COUNT(*)
+		FROM
+			CT3000M
+		WHERE
+			CORP_CD = #corpCd#
+			AND AST_NO IN (
+							SELECT
+								AST_NO
+							FROM
+								CT3000M
+							WHERE
+								CORP_CD = #corpCd#
+								AND AST_NO 	
+								<iterate open="(" close=")" conjunction="," prepend="IN" property="keySeq">
+									#keySeq[]#
+								</iterate>
+						  )														
+	</select>
+    
+    <!-- 자산관리******************************************************************************************************************************************* -->
+    
+</sqlMap>

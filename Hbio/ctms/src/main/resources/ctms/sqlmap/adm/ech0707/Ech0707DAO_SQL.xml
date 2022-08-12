@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 공통코드분류관리******************************************************************************************************************************************* -->
+	<sql id="where_cm4000m">
+		FROM
+		CM4000M
+		<dynamic prepend="WHERE">			
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				(CD_CLS LIKE CONCAT ('%',#searchCondition1#,'%'))
+			</isNotEmpty>
+			<isNotEmpty property="searchCondition2" prepend="AND">
+				(CD_CLS LIKE CONCAT ('%',#searchCondition2#,'%'))
+			</isNotEmpty>		
+			<isNotEmpty property="searchCondition3" prepend="AND">
+				<isEqual property="searchCondition3" compareValue="1">USE_YN
+					= 'Y'
+				</isEqual>
+				<isEqual property="searchCondition3" compareValue="2">USE_YN
+					= 'N'
+				</isEqual>				
+			</isNotEmpty>
+			<isNotEmpty property="searchWord" prepend="AND">
+				(CD_NAME LIKE CONCAT ('%',#searchWord#,'%') 
+				OR CD_DESC LIKE CONCAT ('%',#searchWord#,'%'))
+			</isNotEmpty>		
+		</dynamic>
+	</sql>
+	
+	<!-- <isNotEmpty property="ctmsCorpCd" prepend="AND">
+				(CORP_CD = ISNULL(#ctmsCorpCd#,'HNBSRC'))
+	</isNotEmpty>  -->
+	
+	
+	<!-- 공통코드분류관리 리스트 -->
+	<select id="Ech0707DAO.selectEch0707List" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0707DAO.selectEch0707List */
+	<![CDATA[
+		SELECT 
+			a.* FROM 
+			(
+				SELECT
+	                	CORP_CD
+		              , CD_CLS	
+		              , CD
+		              , CD_NAME
+		              , CD_DESC
+		              , REFER1
+		              , REFER2
+		              , DSP_SEQ
+		              , USE_YN
+		              , CASE USE_YN 
+		              		WHEN 'Y' THEN '사용'
+		              		WHEN 'N' THEN '미사용'
+		              		ELSE '미정'
+		              	END useYnNm
+		              , CLS_CAT
+		              , CASE CLS_CAT 
+		              		WHEN '1' THEN '대분류'
+		              		WHEN '2' THEN '중분류'
+		              		WHEN '3' THEN '소분류'
+		              		ELSE '미분류'
+		              	END clsCatNm	
+		              , DATA_REGDT
+		              , DATA_REGNT
+				]]>
+		<include refid="where_cm4000m" />	<![CDATA[
+			) A
+			ORDER BY A.CORP_CD
+					, A.CD_CLS
+					, A.DSP_SEQ
+					, A.CD 
+				OFFSET #firstIndex# ROWS
+				FETCH NEXT #recordCountPerPage# ROWS ONLY
+		]]>	
+	</select>
+	
+	<!--  LIMIT #firstIndex#, #recordCountPerPage# -->
+
+	<!-- 공통코드분류관리 엑셀 리스트 -->
+	<select id="Ech0707DAO.selectEch0707Excel" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0707DAO.selectEch0707Excel */
+	<![CDATA[
+		SELECT 
+			A.* FROM 
+			(		
+				SELECT  
+						CORP_CD
+		              , CD_CLS
+		              , CD
+		              , CD_NAME
+		              , CD_DESC
+		              , REFER1
+		              , REFER2
+		              , DSP_SEQ
+		              , USE_YN
+		              , CASE USE_YN 
+		              		WHEN 'Y' THEN '사용'
+		              		WHEN 'N' THEN '미사용'
+		              		ELSE '미정'
+		              	END useYnNm
+		              , CLS_CAT
+		              , CASE CLS_CAT 
+		              		WHEN '1' THEN '대분류'
+		              		WHEN '2' THEN '중분류'
+		              		WHEN '3' THEN '소분류'
+		              		ELSE '미분류'
+		              	END clsCatNm
+		              , DATA_REGDT
+		              , DATA_REGNT  										
+				]]>
+		<include refid="where_cm4000m" />	<![CDATA[
+				
+			) A 
+			ORDER BY	A.CORP_CD
+					, A.CD_CLS
+					, A.CD			
+		]]>	
+	</select>
+
+
+	<!-- 공통코드분류관리 cnt -->
+	<select id="Ech0707DAO.selectEch0707ListCnt" parameterClass="searchVO"
+		resultClass="int">
+		/*Ech0707DAO.selectEch0707ListCnt */
+	<![CDATA[
+		SELECT
+			COUNT(*) totalCnt
+	]]>
+		<include refid="where_cm4000m" />
+	</select>
+
+	<!-- 공통코드분류관리 상세보기 -->
+	<select id="Ech0707DAO.selectEch0707View" parameterClass="cm4000mVO"
+		resultClass="cm4000mVO">
+		/* Ech0707DAO.selectEch0707View */
+	<!-- CORP_CD 회사코드, .... -->	
+	<![CDATA[
+	    SELECT  
+			  	A.CORP_CD                     AS corpCd
+              , A.CD_CLS                      AS cdCls
+              , A.CD                          AS cd
+              , A.CD_NAME                     AS cdName
+              , A.CD_DESC                     AS cdDesc
+              , A.REFER1                      AS refer1
+              , A.REFER2                      AS refer2
+              , A.DSP_SEQ                     AS dspSeq
+              , A.USE_YN                      AS useYn
+              , A.CLS_CAT                     AS clsCat
+              , A.DATA_REGDT                  AS dataRegdt
+              , A.DATA_REGNT                  AS dataRegnt
+	    FROM 
+	        CM4000M A
+	    WHERE 
+	    	CORP_CD = #corpCd#
+	    	AND CD_CLS = #cdCls#
+	    	AND CD = #cd#
+	]]>
+	</select>
+	
+    <!-- 공통코드분류관리 삭제 -->
+	<delete id="Ech0707DAO.deleteEch0707" parameterClass="cm4000mVO">
+		/* Ech0707DAO.deleteEch0707 */
+	<![CDATA[
+		DELETE FROM 
+			CM4000M
+		WHERE
+			CORP_CD = #corpCd#
+	    	AND CD_CLS = #cdCls#
+	    	AND CD = #cd#
+	]]>
+	</delete>
+	
+	<!-- 공통코드분류관리 추가 -->
+	<insert id="Ech0707DAO.insertEch0707" parameterClass="cm4000mVO">
+	/* Ech0707DAO.insertEch0707 */
+	<![CDATA[
+		INSERT INTO CM4000M
+			(
+	  			CORP_CD
+              , CD_CLS
+              , CD
+              , CD_NAME
+              , CD_DESC
+              , REFER1
+              , REFER2
+              , DSP_SEQ
+              , USE_YN
+              , CLS_CAT
+              , DATA_REGDT
+              , DATA_REGNT
+			) 
+		VALUES 
+			(
+   			  #corpCd#
+              , #cdCls#
+              , #cd#
+              , #cdName#
+              , #cdDesc#
+              , #refer1#
+              , #refer2#
+              , #dspSeq#
+              , #useYn#
+              , #clsCat#
+              , GETDATE()
+              , #dataRegnt#
+			)
+	]]>
+	</insert>
+
+	<!-- 공통코드분류관리 수정 -->
+	<update id="Ech0707DAO.updateEch0707" parameterClass="cm4000mVO">
+		/* Ech0707DAO.updateEch0707 */
+	<![CDATA[
+	    UPDATE
+	    	CM4000M
+	    SET 
+	    	  CD_NAME                     = #cdName#
+              , CD_DESC                     = #cdDesc#
+              , REFER1                      = #refer1#
+              , REFER2                      = #refer2#
+              , DSP_SEQ                     = #dspSeq#
+              , USE_YN                      = #useYn#
+              , CLS_CAT                     = #clsCat#
+              , DATA_REGDT                  = GETDATE()
+              , DATA_REGNT                  = #dataRegnt#
+	    WHERE
+	    	CORP_CD = #corpCd#
+	    	AND CD_CLS = #cdCls#
+	    	AND CD = #cd#
+	]]>
+	</update>
+	
+	<!-- 공통코드 대분류 설정  -->
+	<select id="Ech0707DAO.selectEch0707ClsCat1" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0707DAO.selectEch0707ClsCat1 */
+	<![CDATA[
+		SELECT 
+			A.* FROM 
+			(		
+				SELECT  
+		              CD_CLS
+		              , CD
+		              , CD_NAME
+		              , CORP_CD  										
+				FROM CM4000M 
+				WHERE CLS_CAT = '1' 				
+			) A 
+			ORDER BY	A.CORP_CD
+					, A.CD_CLS
+					, A.CD			
+		]]>	
+	</select>
+	
+	<!-- 공통코드 중분류 설정  -->
+	<select id="Ech0707DAO.selectEch0707ClsCat2" parameterClass="searchVO"
+		resultClass="egovMap">
+		/* Ech0707DAO.selectEch0707ClsCat2 */
+	<![CDATA[
+		SELECT 
+			A.* FROM 
+			(		
+				SELECT  
+		              CD_CLS
+		              , CD
+		              , CD_NAME
+		              , CORP_CD  										
+				FROM CM4000M 
+				WHERE CLS_CAT = '2'
+				 AND CD_CLS IN ('CT00','CM00')  
+			) A 
+			ORDER BY	A.CORP_CD
+					, A.CD_CLS
+					, A.CD			
+		]]>	
+	</select>
+	
+	
+		
+	<!-- 공통코드 대분류와 연동하여 중분류 가져오기 -->
+	<select id="Ech0707DAO.selectEch0707AjaxClsCat2" parameterClass="string" resultClass="egovMap">
+	/* Ech0707DAO.selectEch0707AjaxClsCat2 */
+	<![CDATA[
+		SELECT 
+			A.* FROM 
+			(		
+				SELECT  
+		              CD_CLS
+		              , CD
+		              , CD_NAME
+		              , CORP_CD  										
+				FROM CM4000M
+			) A 
+			ORDER BY	A.CORP_CD
+					, A.CD_CLS
+					, A.CD			
+		]]>	
+	</select>
+	
+	<!-- 공통코드분류관리 일련번호 - 사용안함 -->
+	<!-- <select id="Ech0707DAO.selectEch0707Max" parameterClass="cm4000mVO" resultClass="string">
+	/* Ech0707DAO.selectEch0707Max */
+		SELECT
+			MAX(CD) + 1 as cd
+		FROM
+			CM4000M		
+	</select>  -->
+	
+	
+	<!-- /공통코드분류관리****************************************************************************************************************************************** -->
+
+</sqlMap>

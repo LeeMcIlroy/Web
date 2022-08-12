@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+	<title>학사관리시스템</title>
+
+	<link rel="stylesheet" media="screen" href="../css/style.css">
+	<link rel="stylesheet" media="screen" href="../css/mobile-layout.css">
+	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+	<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="../js/front.js"></script>
+	<script>
+		function closeLayer( obj ) {
+			$(obj).parent().parent().hide();
+		}
+
+		$(function(){
+
+			/* 클릭 클릭시 클릭을 클릭한 위치 근처에 레이어가 나타난다. */
+			$('.imgSelect').click(function(e)
+			{
+				var sWidth = window.innerWidth;
+				var sHeight = window.innerHeight;
+
+				var oWidth = $('.popupLayer').width();
+				var oHeight = $('.popupLayer').height();
+
+				// 레이어가 나타날 위치를 셋팅한다.
+				var divLeft = e.clientX + 10;
+				var divTop = e.clientY + 5;
+
+				// 레이어가 화면 크기를 벗어나면 위치를 바꾸어 배치한다.
+				if( divLeft + oWidth > sWidth ) divLeft -= oWidth;
+				if( divTop + oHeight > sHeight ) divTop -= oHeight;
+
+				// 레이어 위치를 바꾸었더니 상단기준점(0,0) 밖으로 벗어난다면 상단기준점(0,0)에 배치하자.
+				if( divLeft < 0 ) divLeft = 0;
+				if( divTop < 0 ) divTop = 0;
+
+				$('.popupLayer').css({
+					"top": divTop,
+					"left": divLeft,
+					"position": "absolute"
+				}).show();
+			});
+
+		});
+	</script>
+</head>
+<body>
+    <header>
+		<div class="top-area">
+			<div class="content-box">
+				<!-- gnd -->
+				<div class="header-info web">
+					접속시간 : 2019.10.10 18:20 (20분 경과)
+					<i class="icon-user ml20"></i>
+					<label for="user-pop">홍길동님</label>
+					<input type="checkbox" id="user-pop">
+					<div class="user-popup">
+						<a href="">Profile</a>
+						<a href="">시간연장</a>
+						<a href="">Logout</a>
+					</div>
+				</div>
+				<!-- // gnd -->
+				<div class="header-menu">
+					<!-- 모바일 메뉴 열기 -->
+					<div class="btn_menu_list mob"> <!-- 모바일 수정 -->
+						<a href="#"><img src="../img/menu_list_btn.png" alt="메뉴 리스트 버튼" class="menu_list_btn"></a>
+					</div>
+					<!-- 모바일 메뉴 열기 -->
+
+					<!-- logo -->
+					<h1><a href="">한성대학교 HANSUNG UNIVERSITY 한국어교육과정 학사관리시스템</a></h1>
+					<!--// logo -->
+
+					<!-- top menu -->
+					<nav class="web"> <!-- 모바일 수정 -->
+						<a href=""><span>강의실</span></a>
+						<a href="" class="on"><span>마이페이지</span></a>
+					</nav>
+					<!--// top menu -->
+
+					<!-- 모바일 수정 -->
+					<div class="sh-room icon-room">
+						<label for="op-class-list">
+							강의실
+						</label>
+					</div>
+					<input type="checkbox" id="op-class-list" class="hidden" />
+					<div class="op-class-list">
+						<div class="pop-title">
+							<p>강의실</p>
+							<label for="op-class-list" class="icon-pop-close">닫기</label>
+						</div>
+						<div class="pop-classroom-list">
+							<ul>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+								<li><a href="">강의실 제목이 들어갑니다.</a></li>
+							</ul>
+						</div>
+					</div>
+					<!-- 모바일 수정 -->
+				</div>
+			</div>
+		</div>
+      	<!-- 모바일 수정 -->
+		<!-- mobile menu -->
+		<div class="side_menu">
+
+			<ul>
+				<li><a href="#" class="depth01"><span>수업</span></a>
+					<ul class="depth02" style="display:none;">
+						<li><a href=""><span>- 강의계획</span></a></li>
+						<li><a href=""><span>- 강의공지</span></a></li>
+						<li><a href=""><span>- 수강인원</span></a></li>
+						<li><a href=""><span>- 상담</span></a></li>
+						<li><a href=""><span>- 학생평가</span></a></li>
+						<li><a href=""><span>- 수업만족도</span></a></li>
+					</ul>
+				</li>
+				<li><a href="#" class="depth01"><span>과제</span></a>
+					<ul class="depth02" style="display:none;">
+						<li><a href=""><span>- 과제출제</span></a></li>
+						<li><a href=""><span>- 과제확인</span></a></li>
+					</ul>
+				</li>
+				<li><a href="#" class="depth01"><span>출결</span></a>
+					<ul class="depth02" style="display:none;">
+						<li><a href=""><span>- 출결확인</span></a></li>
+						<li><a href=""><span>- 출결현황</span></a></li>
+					</ul>
+				</li>
+				<li><a href="#" class="depth01"><span>성적</span></a>
+					<ul class="depth02" style="display:none;">
+						<li><a href=""><span>- 성적등록</span></a></li>
+						<li><a href=""><span>- 성적현황</span></a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<!--// mobile menu -->
+		<!--// 모바일 수정 -->
+    </header>
+
+	<!-- contents -->
+	<div class="content-box">
+		<div class="contents">
+			<!-- left menu -->
+			<div id="cssmenu" class="web"> <!-- 모바일 수정 -->
+				<div class="left-title"><span>마이페이지</span></div>
+				<ul>
+					<!-- 2뎁스 메뉴추가시 li class="has-sub" 추가됨.-->
+				   <li><a href="#" class="on">공지사항</a></li>
+				   <li><a href="#">강의시간표</a></li>
+				   <li><a href="#">Profile</a></li>
+				</ul>
+
+			</div>
+			<!--// left menu -->
+			<div class="main-content">
+				<div class="title-area">
+					<p class="page-lv01">공지사항</p>
+					<div class="navi web"> <!-- 모바일 수정 -->
+						<span class="icon-home">Home</span>
+						<span>마이페이지</span>
+						<span>공지사항</span>
+					</div>
+				</div>
+
+				<p class="sub-title">공지내용</p>
+				<!-- table -->
+				<div class="list-table-box web">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col style="width:23%;" />
+							<col style="width:10%;" />
+							<col style="width:23%;" />
+							<col style="width:10%;" />
+							<col />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th>제목</th>
+								<td colspan="5">
+									공지사항 제목입니다 &nbsp;&nbsp;<img src="../img/icon-new.png" style="vertical-align:middle;" alt="새글" />
+								</td>
+							</tr>
+							<tr>
+								<th>작성자</th>
+								<td>홍길동</td>
+								<th>작성일</th>
+								<td>2019.10.10</td>
+								<th>조회수</th>
+								<td>10</td>
+							</tr>
+							<tr>
+								<th>내용</th>
+								<td colspan="5">
+									정당의 설립은 자유이며, 복수정당제는 보장된다. 정부는 회계연도마다 예산안을 편성하여 회계연도 개시 90일전까지 국회에 제출하고, 국회는 회계연도 개시 30일전까지 이를 의결하여야 한다. 헌법개정은 국회재적의원 과반수 또는 대통령의 발의로 제안된다. 대한민국의 경제질서는 개인과 기업의 경제상의 자유와 창의를 존중함을 기본으로 한다.
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+				<div class="mob">
+					<div class="mob-write">
+						<ul>
+							<li>
+								<p class="title">
+									<span>공지제목</span>
+								</p>
+								<p class="option">
+									<span>작성자 홍길동</span>
+									<span>작성일 2019.10.10</span>
+									<span>조회수 109</span>
+								</p>
+								<p>
+									정당의 설립은 자유이며, 복수정당제는 보장된다. 정부는 회계연도마다 예산안을 편성하여 회계연도 개시 90일전까지 국회에 제출하고, 국회는 회계연도 개시 30일전까지 이를 의결하여야 한다. 헌법개정은 국회재적의원 과반수 또는 대통령의 발의로 제안된다. 대한민국의 경제질서는 개인과 기업의 경제상의 자유와 창의를 존중함을 기본으로 한다.
+								</p>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<p class="sub-title">첨부파일</p>
+				<!-- table -->
+				<div class="list-table-box web">
+					<table class="normal-wmv-table">
+						<colgroup>
+							<col style="width:10%;" />
+							<col />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th><sup>*</sup>첨부파일</th>
+								<td>
+									<p class="file-upload"><a href="">첨부된공지파일1.hwp</a></p>
+									<p class="file-upload"><a href="">첨부된공지파일2.doc</a></p>
+									<p class="file-upload"><a href="">첨부된공지파일3.xls </a></p>
+									<p class="file-upload"><a href="">첨부된공지파일4.jpg </a></p>
+									<p class="file-upload"><a href="">첨부된공지파일5.png </a></p>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!--// table -->
+
+				<div class="mob mb20">
+					<div class="mob-write">
+						<ul>
+							<li>
+								<p class="file-upload"><a href="">첨부된공지파일1.hwp</a></p>
+								<p class="file-upload"><a href="">첨부된공지파일2.doc</a></p>
+								<p class="file-upload"><a href="">첨부된공지파일3.xls </a></p>
+								<p class="file-upload"><a href="">첨부된공지파일4.jpg </a></p>
+								<p class="file-upload"><a href="">첨부된공지파일5.png </a></p>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="table-button">
+					<div class="btn-box">
+						<a href="" class="white btn-list">목록</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--// contents -->
+	<!-- footer -->
+    <footer>
+       <p>COPYRIGHT@2019 KREI All Rights Reserved.</p>
+    </footer>
+		<!--// footer -->
+
+	<!-- 모바일 수정 -->
+	<div class="black"></div>
+	<!--// 모바일 수정 -->
+
+</body>
+</html>

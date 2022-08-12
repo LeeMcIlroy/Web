@@ -1,0 +1,648 @@
+<?xml version="1.0" encoding="UTF-8"?>                                 
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+ 
+	<!-- 시험제품관리******************************************************************************************************************************************* -->
+    <!-- 변수목록
+    -->
+    <sql id="where_rs3000m">
+			FROM    RS3000M A
+			INNER JOIN RS1000M B
+	        ON      B.CORP_CD       = A.CORP_CD
+	        AND     B.RS_NO  	    = A.RS_NO
+	        INNER JOIN CT1030M C
+	        ON      C.CORP_CD       = A.CORP_CD
+	        AND     C.EMP_NO        = A.EMP_NO
+	        LEFT JOIN CT2000M D
+	        ON      D.CORP_CD       = A.CORP_CD
+	        AND     D.VEND_NO       = A.VEND_NO             
+	        INNER JOIN CT1020M E
+	        ON      E.CORP_CD       = A.CORP_CD
+	        AND     E.BRANCH_CD     = A.BRANCH_CD
+	        INNER JOIN CM4000M F
+	        ON      F.CORP_CD       = A.CORP_CD
+	        AND     F.CD_CLS        = 'CT2040'
+	        AND     F.CLS_CAT       = '3'
+	        AND     F.CD            = A.ITEM_CLS
+	        <dynamic prepend="WHERE">
+	        	<isNotEmpty property="corpCd" prepend="AND">
+	        		(A.CORP_CD = #corpCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="branchCd" prepend="AND">
+	        		(A.BRANCH_CD = #branchCd#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition8" prepend="AND">
+	        		(A.RS_CD = #searchCondition8#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.RE_YN = #searchCondition6#)
+	        	</isNotEmpty>
+				<isNotEmpty property="searchCondition4" prepend="">
+					<isEqual property="searchCondition4" compareValue="1">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.INH_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+					<isEqual property="searchCondition4" compareValue="2">
+						<isNotEmpty property="searchCondition1" prepend="AND">
+							<isNotEmpty property="searchCondition2" >
+								CONVERT(CHAR(10), A.DISPO_DT, 23) BETWEEN #searchCondition1# AND #searchCondition2#
+							</isNotEmpty>
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+				<!-- <isNotEmpty property="searchCondition5" prepend="AND">
+	        		(A.RS_NO3 = #searchCondition5#)
+	        	</isNotEmpty>
+	        	<isNotEmpty property="searchCondition6" prepend="AND">
+	        		(A.RSST_CLS = #searchCondition6#)
+	        	</isNotEmpty> -->
+				<isNotEmpty property="searchCondition3" prepend="AND">
+		        	<!-- 전체 -->
+		        	<isEqual property="searchCondition3" compareValue="1">
+			        	<isNotEmpty property="searchWord" >
+							(A.ITEM_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR D.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.RS_CD LIKE CONCAT ('%',#searchWord#,'%')
+							OR A.REMK LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 제품명 -->
+		        	<isEqual property="searchCondition3" compareValue="2">
+			        	<isNotEmpty property="searchWord" >
+							(A.ITEM_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 고객사명 -->
+		        	<isEqual property="searchCondition3" compareValue="3">
+			        	<isNotEmpty property="searchWord">
+							(D.VEND_NAME LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 연구코드 -->
+		        	<isEqual property="searchCondition3" compareValue="4">
+			        	<isNotEmpty property="searchWord">
+							(A.RS_CD LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+					<!-- 비고 -->
+		        	<isEqual property="searchCondition3" compareValue="5">
+			        	<isNotEmpty property="searchWord">
+							(A.REMK LIKE CONCAT ('%',#searchWord#,'%'))
+						</isNotEmpty>
+					</isEqual>
+				</isNotEmpty>
+			</dynamic>
+	</sql>
+ 
+    <!--  리스트 -->
+    <select id="Ech0106DAO.selectEch0106List" parameterClass="searchVO" resultClass="egovMap">
+    /* Ech0106DAO.selectEch0106List */
+    <![CDATA[
+        SELECT Z.* FROM
+        (
+        	SELECT
+					A.CORP_CD 	                  AS corpCd            
+	              , A.ITEM_NO                     AS itemNo              
+				  , A.RS_NO                       AS rsNo
+				  , B.RS_NAME                     AS rsName
+				  , A.RS_CD						  AS rsCd
+				  , A.ITEM_NAME                   AS itemName
+				  , A.ITEM_CLS                    AS itemCls
+				  , F.CD_NAME                     AS itemClsNm
+				  , A.VEND_NO					  AS vendNo
+				  , D.VEND_NAME					  AS vendName
+				  , A.EMP_NO					  AS empNo
+				  , C.EMP_NAME					  AS empName
+				  , A.INH_DT					  AS inhDt
+				  , A.OUT_DT					  AS outDt
+				  , A.SEND_DT					  AS sendDt
+				  , A.RE_DT					  	  AS reDt
+				  , A.DISPO_DT					  AS dispoDt
+				  , A.RE_YN					  	  AS reYn
+				  , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt    
+	]]>
+    <include refid="where_rs3000m" />
+    
+    <![CDATA[
+    ) Z
+    ORDER   BY   
+                Z.corpCd DESC
+              , Z.itemNo DESC
+ 			OFFSET #firstIndex# ROWS
+			FETCH NEXT #recordCountPerPage# ROWS ONLY  
+    ]]>
+    </select>
+ 
+ 	<!-- 시험제품관리 엑셀 리스트 -->
+	<select id="Ech0106DAO.selectEch0106Excel" parameterClass="searchVO" resultClass="egovMap">
+	/* Ech0106DAO.selectEch0106Excel */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+        	SELECT
+					A.CORP_CD 	                  AS corpCd            
+	              , A.ITEM_NO                     AS itemNo              
+				  , A.RS_NO                       AS rsNo
+				  , B.RS_NAME                     AS rsName
+				  , A.RS_CD						  AS rsCd
+				  , A.ITEM_NAME                   AS itemName
+				  , A.ITEM_CLS                    AS itemCls
+				  , F.CD_NAME                     AS itemClsNm
+				  , A.VEND_NO					  AS vendNo
+				  , D.VEND_NAME					  AS vendName
+				  , A.EMP_NO					  AS empNo
+				  , C.EMP_NAME					  AS empName
+				  , A.INH_DT					  AS inhDt
+				  , A.OUT_DT					  AS outDt
+				  , A.SEND_DT					  AS sendDt
+				  , A.RE_DT					  	  AS reDt
+				  , A.DISPO_DT					  AS dispoDt
+				  , A.RE_YN					  	  AS reYn
+				  , CASE A.RE_YN
+				  		WHEN 'Y' THEN '수거'
+				  		WHEN 'N' THEN '미수거'
+				  		ELSE '미정'
+				  	END 						  AS reYnNm
+				  , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+				]]>
+		<include refid="where_rs3000m" />	
+		<![CDATA[	
+			) Z 
+			ORDER   BY   
+                Z.corpCd DESC
+              , Z.itemNo DESC
+			
+		]]>	
+	</select>
+
+	<!--  Cnt -->
+    <select id="Ech0106DAO.selectEch0106ListCnt" parameterClass="searchVO" resultClass="int">
+    /* Ech0106DAO.selectEch0106ListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_rs3000m" />
+    </select>
+    
+    <!--  상세보기 -->
+    <select id="Ech0106DAO.selectEch0106View" parameterClass="rs3000mVO" resultClass="rs3000mVO">
+    /* Ech0106DAO.selectEch0106View */
+    <![CDATA[
+         	SELECT  
+					A.CORP_CD 	                  AS corpCd            
+	              , A.ITEM_NO                     AS itemNo              
+				  , A.RS_NO                       AS rsNo
+				  , B.RS_NAME                     AS rsName
+				  , A.RS_CD						  AS rsCd
+				  , A.ITEM_NAME                   AS itemName
+				  , A.ITEM_CLS                    AS itemCls
+				  , F.CD_NAME                     AS itemClsNm
+				  , A.VEND_NO					  AS vendNo
+				  , D.VEND_NAME					  AS vendName
+				  , A.EMP_NO					  AS empNo
+				  , C.EMP_NAME					  AS empName
+				  , A.INH_DT					  AS inhDt
+				  , A.OUT_DT					  AS outDt
+				  , A.SEND_DT					  AS sendDt
+				  , A.RE_DT					  	  AS reDt
+				  , A.DISPO_DT					  AS dispoDt
+				  , A.RE_YN					  	  AS reYn
+				  , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME				  AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt         
+			FROM    RS3000M A
+			INNER JOIN RS1000M B
+	        ON      B.CORP_CD       = A.CORP_CD
+	        AND     B.RS_NO  	    = A.RS_NO
+	        INNER JOIN CT1030M C
+	        ON      C.CORP_CD       = A.CORP_CD
+	        AND     C.EMP_NO        = A.EMP_NO
+	        LEFT JOIN CT2000M D
+	        ON      D.CORP_CD       = A.CORP_CD
+	        AND     D.VEND_NO       = A.VEND_NO             
+	        INNER JOIN CT1020M E
+	        ON      E.CORP_CD       = A.CORP_CD
+	        AND     E.BRANCH_CD     = A.BRANCH_CD
+	        INNER JOIN CM4000M F
+	        ON      F.CORP_CD       = A.CORP_CD
+	        AND     F.CD_CLS        = 'CT2040'
+	        AND     F.CLS_CAT       = '3'
+	        AND     F.CD            = A.ITEM_CLS
+	        WHERE   A.CORP_CD       = #corpCd#              
+	        AND     A.ITEM_NO       = #itemNo#
+    ]]>
+    </select>
+        
+    <!--  추가 -->
+    <insert id="Ech0106DAO.insertEch0106" parameterClass="rs3000mVO">
+    <selectKey keyProperty="itemNo" resultClass="string" type="pre">
+        DECLARE @R_CORP_CD                  NVARCHAR(0008) = #corpCd#                                                      
+        DECLARE @V_REG_DT                   NVARCHAR(0010) = #inhDt#                                                       
+        DECLARE @P_RTN_KEY                  NVARCHAR(0020)                                                                 
+        DECLARE @BDT04                      NVARCHAR(0004)                                                                 
+        DECLARE @BDT06                      NVARCHAR(0006)                                                                 
+        DECLARE @BDT10                      NVARCHAR(0010)                                                                 
+        SET     @BDT10                      = CONVERT(NVARCHAR(10), GETDATE(), 23)                                         
+        SET     @BDT04                      = SUBSTRING(@V_REG_DT, 1, 4)                                                   
+        SET     @BDT06                      = SUBSTRING(DBO.UFN_DTG08(@BDT10), 1, 6)                                       
+                                                                                                                           
+        SELECT  CONVERT(NVARCHAR, CONVERT(DECIMAL(18, 0), ISNULL(MAX(A.ITEM_NO), @BDT04 + '0000')) + 1) AS itemNo       
+        FROM    RS3000M A                                                                                                  
+        WHERE   A.CORP_CD                   = @R_CORP_CD                                                                   
+        AND     SUBSTRING(A.INH_DT, 1, 4)   = @BDT04        
+    </selectKey>
+    <![CDATA[
+		INSERT  RS3000M(
+					CORP_CD            
+	              , ITEM_NO              
+				  , RS_NO
+				  , RS_CD
+				  , ITEM_NAME
+				  , ITEM_CLS
+				  , VEND_NO
+				  , EMP_NO
+				  , INH_DT
+				  , OUT_DT
+				  , SEND_DT
+				  , RE_DT
+				  , DISPO_DT
+				  , RE_YN
+				  , REMK
+	              , BRANCH_CD
+	              , DATA_REGDT         
+	              , DATA_REGNT         
+		) VALUES(
+					#corpCd#            
+	              , #itemNo#              
+				  , #rsNo#
+				  , #rsCd#
+				  , #itemName#
+				  , #itemCls#
+				  , #vendNo#
+				  , #empNo#
+				  , #inhDt#
+				  , #outDt#
+				  , #sendDt#
+				  , #reDt#
+				  , #dispoDt#
+				  , #reYn#
+				  , #remk#
+	              , #branchCd#
+	              , GETDATE()         
+	              , #dataRegnt#         
+		)
+    ]]>
+    </insert>
+    
+    <!--  수정 -->
+    <update id="Ech0106DAO.updateEch0106" parameterClass="rs3000mVO">
+    /* Ech0106DAO.updateEch0106 */
+    <![CDATA[
+        UPDATE
+                RS3000M
+        SET
+				  RS_NO			= #rsNo#
+				  , RS_CD		= #rsCd#
+				  , ITEM_NAME	= #itemName#
+				  , ITEM_CLS	= #itemCls#
+				  , VEND_NO		= #vendNo#
+				  , EMP_NO		= #empNo#
+				  , INH_DT		= #inhDt#
+				  , OUT_DT		= #outDt#
+				  , SEND_DT		= #sendDt#
+				  , RE_DT		= #reDt#
+				  , DISPO_DT	= #dispoDt#
+				  , RE_YN		= #reYn#
+				  , REMK		= #remk#
+	              , BRANCH_CD	= #branchCd#
+	              , DATA_REGDT	= GETDATE()         
+	              , DATA_REGNT	= #dataRegnt#
+        WHERE
+                CORP_CD     = #corpCd#              
+        AND     ITEM_NO     = #itemNo#                                
+    ]]>
+    </update>
+   
+   	<!-- 시험제품관리 삭제 -->
+	<delete id="Ech0106DAO.deleteEch0106" parameterClass="rs3000mVO">
+		/* Ech0106DAO.deleteEch0106 */
+	<![CDATA[
+		DELETE FROM 
+			RS3000M
+		WHERE
+			CORP_CD 	= #corpCd#
+	    	AND ITEM_NO = #itemNo#
+	]]>
+	</delete>
+    
+    <!-- 견적정보  -->
+    <sql id="where_cs1020mOpItem">
+        FROM    CS1020M A
+        WHERE   A.CORP_CD	= #corpCd#              
+        AND     A.VEND_NO   = #vendNo#
+    </sql>
+        
+    <!-- 견적정보 리스트 -->
+	<select id="Ech0106DAO.selectEch0106OpList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0106DAO.selectEch0106OpList */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+			SELECT
+			   ROW_NUMBER() OVER(order by A.OP_NO DESC) rownum  
+              , A.CORP_CD                     AS corpCd            
+              , A.OP_NO                       AS opNo              
+			  , A.OP_CD                       AS opCd                          
+              , A.OP_DT                       AS opDt
+              , A.OP_NAME                     AS opName
+              , A.RS_PAY                      AS rsPay
+              , A.RS_PAYVT                    AS rsPayvt
+              , A.RS_TPAY                     AS rsTpay
+              , A.VMNG_NAME					  AS vmngName                       
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+            ]]> 
+			<include refid="where_cs1020mOpItem" />	<![CDATA[
+				
+			) Z 
+	        ORDER BY
+                Z.corpCd
+              , Z.opNo
+		]]>	
+	</select>
+	
+	<!-- 견적정보 Cnt -->
+    <select id="Ech0106DAO.selectEch0106OpListCnt" parameterClass="egovMap" resultClass="int">
+    /* Ech0106DAO.selectEch0106OpListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_cs1020mOpItem" />
+    </select>
+ 
+     <!-- 상담정보 목록  -->
+    <sql id="where_cs1000mCsItem">
+      	FROM    CS1000M A
+        INNER JOIN CM4000M B
+        ON      B.CORP_CD       = A.CORP_CD
+        AND     B.CD_CLS        = 'CM1360'
+        AND     B.CLS_CAT       = '3'
+        AND     B.CD            = A.CS_CLS              
+        INNER JOIN CT1030M C
+        ON      C.CORP_CD       = A.CORP_CD
+        AND     C.EMP_NO        = A.EMP_NO
+        LEFT JOIN CT2000M D
+        ON      D.CORP_CD       = A.CORP_CD
+        AND     D.VEND_NO       = A.VEND_NO             
+        INNER JOIN CT1020M E
+        ON      E.CORP_CD       = A.CORP_CD
+        AND     E.BRANCH_CD     = A.BRANCH_CD            
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.VEND_NO       = #vendNo#
+    </sql>
+        
+    <!-- 상담정보 리스트 -->
+	<select id="Ech0106DAO.selectEch0106CsList" parameterClass="egovMap" resultClass="egovMap">
+	/* Ech0106DAO.selectEch0106CsList */
+	<![CDATA[
+		SELECT 
+			Z.* FROM 
+			(		
+				SELECT
+				   ROW_NUMBER() OVER(order by A.CS_NO DESC) rownum  
+	              , A.CORP_CD 		              AS corpCd            
+	              , A.CS_NO                       AS csNo              
+	              , A.CS_DT                       AS csDt 
+	              , A.VEND_NO	                  AS vendNo
+	              , D.VEND_NAME					  AS vendName
+	              , A.EMP_NO					  AS empNo
+	              , C.EMP_NAME                    AS empName
+	              , A.CS_CLS					  AS csCls
+	              , B.CD_NAME					  AS csClsNm
+	              , A.CS_CONT					  AS csCont
+	              , A.RCS_NAME					  AS rcsName
+	              , A.RCS_TEL					  AS rcsTel
+	              , A.RCS_EMAIL					  AS rcsEmail
+	              , A.REMK						  AS remk
+	              , A.BRANCH_CD					  AS branchCd
+	              , E.BRANCH_NAME                 AS branchName
+	              , A.DATA_REGDT                  AS dataRegdt         
+	              , A.DATA_REGNT                  AS dataRegnt
+            ]]> 
+			<include refid="where_cs1000mCsItem" />	<![CDATA[
+				
+			) Z 
+	        ORDER BY
+                Z.corpCd
+              , Z.csNo DESC
+		]]>	
+	</select>
+	
+	<!-- 상담정보 Cnt -->
+    <select id="Ech0106DAO.selectEch0106CsListCnt" parameterClass="egovMap" resultClass="int">
+    /* Ech0106DAO.selectEch0106CsListCnt */
+    <![CDATA[
+        SELECT  COUNT(*)
+    ]]>
+        <include refid="where_cs1000mCsItem" />
+    </select>
+ 
+ 
+    <!-- 연구코드  가져오기 -->
+    <select id="Ech0106DAO.selectEch0106AjaxRsCdCheck" parameterClass="egovMap" resultClass="rs1000mVO">
+    /* Ech0106DAO.selectEch0106AjaxRsCdCheck */
+    <![CDATA[
+        SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RS_NO                       AS rsNo              
+              , A.RS_NO1                      AS rsNo1             
+              , A.RS_NO2                      AS rsNo2
+              , A.RS_NO3                      AS rsNo3
+              , A.RS_NO4                      AS rsNo4
+              , A.RS_NO5                      AS rsNo5             
+              , A.RS_NO6                      AS rsNo6             
+              , A.RS_NO7                      AS rsNo7             
+              , A.RS_CD                       AS rsCd              
+              , A.REG_DT                      AS regDt             
+              , A.RS_DRT                      AS rsDrt
+              , B.EMP_NAME					  AS rsDrtNm
+              , A.RS_SCNT                     AS rsScnt            
+              , A.RS_MSCNT                    AS rsMscnt           
+              , A.RS_STDT                     AS rsStdt            
+              , A.RS_ENDT                     AS rsEndt            
+              , A.RSST_CLS                    AS rsstCls           
+              , A.REP_DT                      AS repDt             
+              , A.VISIT_CNT                   AS visitCnt          
+              , A.DUPL_YN                     AS duplYn            
+              , A.RS_POS                      AS rsPos             
+              , A.RS_NAME                     AS rsName            
+              , A.RS_PPS                      AS rsPps             
+              , A.RS_PTC                      AS rsPtc             
+              , A.VEND_NO                     AS vendNo
+              , A.VMNG_NAME                   AS vmngName          
+              , A.VMNGHP_NO                   AS vmnghpNo          
+              , A.VMNG_EMAIL                  AS vmngEmail         
+              , A.RS_PAY                      AS rsPay             
+              , A.RS_PAYVT                    AS rsPayvt           
+              , A.IRBSM_YN                    AS irbsmYn           
+              , A.ITEM_CLS                    AS itemCls
+              , A.ITEM_NAME                   AS itemName          
+              , A.BRANCH_CD                   AS branchCd          
+              , A.DEL_YN                      AS delYn             
+              , A.DATA_LOCK_YN                AS dataLockYn
+              , A.ECRF_STATE  	              AS ecrfState
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , A.RS_GRT					  AS rsGrt
+              , C.EMP_NAME					  AS rsGrtNm
+              , A.RS_TSTDT					  AS rsTstdt
+			  , A.RS_TENDT					  AS rsTendt
+			  , A.GEN_YN					  AS genYn
+			  , A.AGE_ST					  AS ageSt
+			  , A.AGE_EN					  AS ageEn
+			  , A.RSPL_DT					  AS rsplDt
+              , A.RSIT_DT					  AS rsitDt
+              , A.RSIRB_DT					  AS rsirbDt
+              , A.RSR_STDT					  AS rsrStdt
+              , A.RSR_ENDT					  AS rsrEndt
+              , A.REP2_DT					  AS rep2Dt
+        FROM    RS1000M A
+        INNER JOIN CT1030M B
+        ON  B.CORP_CD			= A.CORP_CD 
+        AND B.EMP_NO 			= A.RS_DRT
+        INNER JOIN CT1030M C
+        ON  C.CORP_CD 			= A.CORP_CD 
+        AND C.EMP_NO 			= A.RS_GRT
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RS_NO	        = #rsNo#
+    ]]>
+    </select>
+ 
+    <!-- 연구코드  가져오기 -->
+    <select id="Ech0106DAO.selectEch0106AjaxRsCdCheck2" parameterClass="egovMap" resultClass="rs1000mVO">
+    /* Ech0106DAO.selectEch0106AjaxRsCdCheck2 */
+    <![CDATA[
+        SELECT  
+                A.CORP_CD                     AS corpCd            
+              , A.RS_NO                       AS rsNo              
+              , A.RS_NO1                      AS rsNo1             
+              , A.RS_NO2                      AS rsNo2
+              , A.RS_NO3                      AS rsNo3
+              , A.RS_NO4                      AS rsNo4
+              , A.RS_NO5                      AS rsNo5             
+              , A.RS_NO6                      AS rsNo6             
+              , A.RS_NO7                      AS rsNo7             
+              , A.RS_CD                       AS rsCd              
+              , A.REG_DT                      AS regDt             
+              , A.RS_DRT                      AS rsDrt
+              , B.EMP_NAME					  AS rsDrtNm
+              , A.RS_SCNT                     AS rsScnt            
+              , A.RS_MSCNT                    AS rsMscnt           
+              , A.RS_STDT                     AS rsStdt            
+              , A.RS_ENDT                     AS rsEndt            
+              , A.RSST_CLS                    AS rsstCls           
+              , A.REP_DT                      AS repDt             
+              , A.VISIT_CNT                   AS visitCnt          
+              , A.DUPL_YN                     AS duplYn            
+              , A.RS_POS                      AS rsPos             
+              , A.RS_NAME                     AS rsName            
+              , A.RS_PPS                      AS rsPps             
+              , A.RS_PTC                      AS rsPtc             
+              , A.VEND_NO                     AS vendNo
+              , A.VMNG_NAME                   AS vmngName          
+              , A.VMNGHP_NO                   AS vmnghpNo          
+              , A.VMNG_EMAIL                  AS vmngEmail         
+              , A.RS_PAY                      AS rsPay             
+              , A.RS_PAYVT                    AS rsPayvt           
+              , A.IRBSM_YN                    AS irbsmYn           
+              , A.ITEM_CLS                    AS itemCls
+              , A.ITEM_NAME                   AS itemName          
+              , A.BRANCH_CD                   AS branchCd          
+              , A.DEL_YN                      AS delYn             
+              , A.DATA_LOCK_YN                AS dataLockYn
+              , A.ECRF_STATE  	              AS ecrfState
+              , A.DATA_REGDT                  AS dataRegdt         
+              , A.DATA_REGNT                  AS dataRegnt
+              , A.RS_GRT					  AS rsGrt
+              , C.EMP_NAME					  AS rsGrtNm
+              , A.RS_TSTDT					  AS rsTstdt
+			  , A.RS_TENDT					  AS rsTendt
+			  , A.GEN_YN					  AS genYn
+			  , A.AGE_ST					  AS ageSt
+			  , A.AGE_EN					  AS ageEn
+			  , A.RSPL_DT					  AS rsplDt
+              , A.RSIT_DT					  AS rsitDt
+              , A.RSIRB_DT					  AS rsirbDt
+              , A.RSR_STDT					  AS rsrStdt
+              , A.RSR_ENDT					  AS rsrEndt
+              , A.REP2_DT					  AS rep2Dt
+        FROM    RS1000M A
+        INNER JOIN CT1030M B
+        ON  B.CORP_CD			= A.CORP_CD 
+        AND B.EMP_NO 			= A.RS_DRT
+        INNER JOIN CT1030M C
+        ON  C.CORP_CD 			= A.CORP_CD 
+        AND C.EMP_NO 			= A.RS_GRT
+        WHERE   A.CORP_CD       = #corpCd#              
+        AND     A.RS_NO1	    = #rsNo1#
+        AND     A.RS_NO2	    = #rsNo2#
+        AND     A.RS_NO3	    = #rsNo3#
+        AND     A.RS_NO4	    = #rsNo4#
+        AND     A.RS_NO5	    = #rsNo5#
+        AND     A.RS_NO6	    = #rsNo6#
+        AND     A.RS_NO7	    = #rsNo7#
+    ]]>
+    </select>
+ 
+ 	<!-- 시험제품 일괄등록 - 중복  목록 산출 연구번호+제품명 -->
+	<select id="Ech0106DAO.selectEch0106DupItemList" parameterClass="egovMap" resultClass="egovMap" >
+	/* Ech0106DAO.selectEch0106DupItemList */
+		SELECT
+			   *
+		  FROM
+			   RS3000M 
+		WHERE
+			CORP_CD		= #corpCd#
+		AND RS_NO		= #rsNo#
+		AND ITEM_NAME	= #itemName#
+	</select>
+    
+    <!-- 시험제품 일괄삭제 -->
+	<delete id="Ech0106DAO.deleteEch0106AjaxItemDel" parameterClass="egovMap">
+	/* Ech0106DAO.deleteEch0106AjaxItemDel */
+		DELETE
+			RS3000M
+		WHERE
+			CORP_CD = #corpCd#
+			AND ITEM_NO IN (
+							SELECT
+								ITEM_NO
+							FROM
+								RS3000M
+							WHERE
+								CORP_CD = #corpCd#
+								AND ITEM_NO 	
+								<iterate open="(" close=")" conjunction="," prepend="IN" property="itemSeq">
+									#itemSeq[]#
+								</iterate>
+						  )														
+	</delete>
+    
+    <!-- 시험제품관리******************************************************************************************************************************************* -->
+    
+</sqlMap>
