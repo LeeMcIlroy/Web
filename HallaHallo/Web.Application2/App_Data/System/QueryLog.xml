@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--로그-->
+<QueryList>
+  <!--등록-->
+	<Query id="Log.Create">
+		<![CDATA[
+		INSERT INTO TB_LOG( LOG_ID, SESSION_ID, USER_ID, USER_IP, HOST, URL, CONTROLLER, ACTION, TARGET_ID, REQUEST_DATE, BEGIN_IS, END_IS, HTTP_USER_AGENT, HTTP_REFERER, HTTP_REFERER_HOST, USER_NM, EMP_NO, USER_EMAIL, USER_GRADE_ID, USER_GRADE_NM, USER_POSITION_ID, USER_POSITION_NM, USER_COMP_ID, USER_COMP_NM, USER_DEPT_ID, USER_DEPT_NM, USER_DEPT_PATH, CONNECT_PATH )
+		VALUES( @LOG_ID, @SESSION_ID, @USER_ID, @USER_IP, @HOST, @URL, @CONTROLLER, @ACTION, @TARGET_ID, @REQUEST_DATE, @BEGIN_IS, @END_IS, @HTTP_USER_AGENT, @HTTP_REFERER, @HTTP_REFERER_HOST, @USER_NM, @EMP_NO, @USER_EMAIL, @USER_GRADE_ID, @USER_GRADE_NM, @USER_POSITION_ID, @USER_POSITION_NM, @USER_COMP_ID, @USER_COMP_NM, @USER_DEPT_ID, @USER_DEPT_NM, @USER_DEPT_PATH, @CONNECT_PATH )
+		]]>
+	</Query>
+
+  <!--단일 선택-->
+	<Query id="Log.Get">
+		<![CDATA[
+		SELECT * FROM TB_LOG 
+		WHERE LOG_ID=@LOG_ID
+		]]>
+	</Query>
+
+  <!--해시태그 히트수-->
+  <Query id="Log.GetHitHashtagCount">
+    <![CDATA[
+		SELECT count(*) FROM TB_LOG 
+		WHERE TARGET_ID=@ArticleID AND HTTP_USER_AGENT=@Word
+		]]>
+  </Query>
+
+  <!--회사 목록-->
+  <Query id="Log.GetCompList">
+    <![CDATA[
+		SELECT distinct USER_COMP_NM FROM TB_LOG 
+		]]>
+  </Query>
+
+  <!--접속 통계-->
+  <Query id="Log.GetStats">
+    <![CDATA[
+		SELECT 
+      count(*) cnt
+      , #ColHour# #ColDay# #ColMonth# #ColYear# #ColGrade# #ColPosition#
+    FROM (
+      SELECT LOG_ID, DATE_ADD(REQUEST_DATE, INTERVAL @Timezones HOUR) REQUEST_DATE, #GroupHour# #GroupDay# #GroupMonth# #GroupYear# #GroupGrade# #GroupPosition# STR_DATE FROM TB_LOG
+      WHERE REQUEST_DATE BETWEEN DATE_SUB(@StartDate,INTERVAL 1 DAY) AND DATE_ADD(Date(@EndDate),INTERVAL 2 DAY) AND USER_ID>''
+      #UserCompNm#
+    ) l
+    #Unique#
+    WHERE REQUEST_DATE BETWEEN @StartDate AND DATE_ADD(Date(@EndDate),INTERVAL 1 DAY)
+    GROUP BY #GroupHour# #GroupDay# #GroupMonth# #GroupYear# #GroupGrade# #GroupPosition#
+		]]>
+    
+    <Sub id="UserCompNm">
+      <![CDATA[
+				AND USER_COMP_NM=@UserCompNm
+			  ]]>
+    </Sub>
+    <!--중복 제거-->
+    <Sub id="Unique">
+      <![CDATA[
+				INNER JOIN (
+          SELECT max(LOG_ID) LOG_ID, #GroupHour# #GroupDay# #GroupMonth# #GroupYear# #GroupGrade# #GroupPosition# STR_DATE FROM TB_LOG
+          WHERE REQUEST_DATE BETWEEN DATE_SUB(@StartDate,INTERVAL 1 DAY) AND DATE_ADD(Date(@EndDate),INTERVAL 2 DAY) AND USER_ID>''
+          GROUP BY USER_ID, #GroupHour# #GroupDay# #GroupMonth# #GroupYear# #GroupGrade# #GroupPosition#
+        ) m ON l.LOG_ID=m.LOG_ID AND l.STR_DATE=m.STR_DATE
+			  ]]>
+    </Sub>
+
+    <Sub id="ColGrade" property="DateType" mode="include" value="Grade">
+      <![CDATA[
+				USER_GRADE_NM
+			  ]]>
+    </Sub>
+    <Sub id="GroupGrade" property="DateType" mode="include" value="Grade">
+      <![CDATA[
+				USER_GRADE_NM
+			  ]]>
+    </Sub>
+
+    <Sub id="ColPosition" property="DateType" mode="include" value="Position">
+      <![CDATA[
+				USER_POSITION_NM
+			  ]]>
+    </Sub>
+    <Sub id="GroupPosition" property="DateType" mode="include" value="Position">
+      <![CDATA[
+				USER_POSITION_NM
+			  ]]>
+    </Sub>
+
+    <Sub id="ColHour" property="DateType" mode="include" value="Hour">
+      <![CDATA[
+				HOUR(REQUEST_DATE) Hour
+			  ]]>
+    </Sub>
+    <Sub id="GroupHour" property="DateType" mode="include" value="Hour">
+      <![CDATA[
+				HOUR(REQUEST_DATE)
+			  ]]>
+    </Sub>
+
+	<Sub id="ColDay" property="DateType" mode="include" value="Day">
+      <![CDATA[
+				DAY(REQUEST_DATE) Day
+			  ]]>
+    </Sub>
+    <Sub id="GroupDay" property="DateType" mode="include" value="Day">
+      <![CDATA[
+				DAY(REQUEST_DATE)
+			  ]]>
+    </Sub>
+
+    <Sub id="ColMonth" property="DateType" mode="include" value="Month">
+      <![CDATA[
+				MONTH(REQUEST_DATE) Month
+			  ]]>
+    </Sub>
+    <Sub id="GroupMonth" property="DateType" mode="include" value="Month">
+      <![CDATA[
+				MONTH(REQUEST_DATE)
+			  ]]>
+    </Sub>
+
+    <Sub id="ColYear" property="DateType" mode="include" value="Year">
+      <![CDATA[
+				YEAR(REQUEST_DATE) Year
+			  ]]>
+    </Sub>
+    <Sub id="GroupYear" property="DateType" mode="include" value="Year">
+      <![CDATA[
+				YEAR(REQUEST_DATE)
+			  ]]>
+    </Sub>
+  </Query>
+
+	<!--접속 통계 상세 데이터-->
+	<Query id="Log.GetStatsData">
+		<![CDATA[
+		SELECT 
+		*
+	FROM (
+		SELECT *, DATE_ADD(REQUEST_DATE, INTERVAL @Timezones HOUR) LOCAL_DATE, #GroupHour# #GroupDay# #GroupMonth# #GroupYear# STR_DATE FROM TB_LOG
+		WHERE REQUEST_DATE BETWEEN DATE_SUB(@StartDate,INTERVAL 1 DAY) AND DATE_ADD(Date(@EndDate),INTERVAL 2 DAY) AND USER_ID>''
+	) l
+	#Unique#
+	WHERE LOCAL_DATE BETWEEN @StartDate AND DATE_ADD(Date(@EndDate),INTERVAL 1 DAY)
+		]]>
+
+		<!--중복 제거-->
+		<Sub id="Unique">
+			<![CDATA[
+				INNER JOIN (
+			SELECT max(LOG_ID) LOG_ID, #GroupHour# #GroupDay# #GroupMonth# #GroupYear# STR_DATE FROM TB_LOG
+			WHERE REQUEST_DATE BETWEEN DATE_SUB(@StartDate,INTERVAL 1 DAY) AND DATE_ADD(Date(@EndDate),INTERVAL 2 DAY) AND USER_ID>''
+			GROUP BY USER_ID, #GroupHour# #GroupDay# #GroupMonth# #GroupYear#
+		) m ON l.LOG_ID=m.LOG_ID AND l.STR_DATE=m.STR_DATE
+				]]>
+		</Sub>
+		<Sub id="GroupHour" property="DateType" mode="include" value="Hour">
+			<![CDATA[
+			HOUR(REQUEST_DATE)
+			]]>
+		</Sub>
+		<Sub id="GroupDay" property="DateType" mode="include" value="Day">
+			<![CDATA[
+			DAY(REQUEST_DATE)
+			]]>
+		</Sub>
+		<Sub id="GroupMonth" property="DateType" mode="include" value="Month">
+			<![CDATA[
+			MONTH(REQUEST_DATE)
+			]]>
+		</Sub>
+		<Sub id="GroupYear" property="DateType" mode="include" value="Year">
+			<![CDATA[
+			YEAR(REQUEST_DATE)
+			]]>
+		</Sub>
+	</Query>	
+	
+  <!--게시물별 통계-->
+  <Query id="Log.GetTargetStats">
+    <![CDATA[
+		SELECT 
+      count(*) cnt
+      , DATE_FORMAT(REQUEST_DATE,'%Y-%m-%d') Day
+    FROM (
+      SELECT *, DATE_ADD(REQUEST_DATE, INTERVAL @Timezones HOUR) LOCAL_DATE FROM TB_LOG
+      WHERE REQUEST_DATE BETWEEN DATE_SUB(@StartDate,INTERVAL 1 DAY) AND DATE_ADD(Date(@EndDate),INTERVAL 2 DAY) AND TARGET_ID=@TargetID AND USER_ID>''
+      #UserCompNm#
+    ) l
+    #Unique#
+    WHERE LOCAL_DATE BETWEEN @StartDate AND DATE_ADD(Date(@EndDate),INTERVAL 1 DAY)
+    GROUP BY DATE_FORMAT(REQUEST_DATE,'%Y-%m-%d')
+		]]>
+    <Sub id="UserCompNm">
+      <![CDATA[
+				AND USER_COMP_NM=@UserCompNm
+			  ]]>
+    </Sub>
+    <Sub id="Unique">
+      <![CDATA[
+				INNER JOIN (
+          SELECT max(LOG_ID) LOG_ID FROM TB_LOG
+          WHERE REQUEST_DATE BETWEEN DATE_SUB(@StartDate,INTERVAL 1 DAY) AND DATE_ADD(Date(@EndDate),INTERVAL 2 DAY)
+          GROUP BY USER_ID
+        ) m ON l.LOG_ID=m.LOG_ID
+			  ]]>
+    </Sub>
+
+  </Query>
+
+  <!--게시물별 통계 상세데이터-->
+  <Query id="Log.GetTargetData">
+    <![CDATA[
+		SELECT 
+      *
+    FROM (
+      SELECT *, DATE_ADD(REQUEST_DATE, INTERVAL @Timezones HOUR) LOCAL_DATE FROM TB_LOG
+      WHERE TARGET_ID=@TargetID AND USER_ID>''
+      #UserCompNm#
+    ) l
+    #Unique#
+		]]>
+    <Sub id="UserCompNm">
+      <![CDATA[
+				AND USER_COMP_NM=@UserCompNm
+			  ]]>
+    </Sub>
+    <Sub id="Unique">
+      <![CDATA[
+				INNER JOIN (
+          SELECT max(LOG_ID) LOG_ID FROM TB_LOG
+          WHERE REQUEST_DATE BETWEEN DATE_SUB(@StartDate,INTERVAL 1 DAY) AND DATE_ADD(Date(@EndDate),INTERVAL 2 DAY)
+          GROUP BY USER_ID
+        ) m ON l.LOG_ID=m.LOG_ID
+			  ]]>
+    </Sub>
+
+  </Query>
+
+  <!--단일 수정-->
+  <Query id="Log.Update">
+		<![CDATA[
+		UPDATE TB_LOG SET 
+		LOG_ID=@LOG_ID
+		, SESSION_ID=@SESSION_ID
+		, USER_ID=@USER_ID
+		, USER_IP=@USER_IP
+		, HOST=@HOST
+		, URL=@URL
+		, CONTROLLER=@CONTROLLER
+		, ACTION=@ACTION
+		, TARGET_ID=@TARGET_ID
+		, REQUEST_DATE=@REQUEST_DATE
+		, BEGIN_IS=@BEGIN_IS
+		, END_IS=@END_IS
+		, HTTP_USER_AGENT=@HTTP_USER_AGENT
+		, HTTP_REFERER=@HTTP_REFERER
+		, HTTP_REFERER_HOST=@HTTP_REFERER_HOST
+		, USER_NM=@USER_NM
+		, EMP_NO=@EMP_NO
+		, USER_EMAIL=@USER_EMAIL
+		, USER_GRADE_ID=@USER_GRADE_ID
+		, USER_GRADE_NM=@USER_GRADE_NM
+		, USER_POSITION_ID=@USER_POSITION_ID
+		, USER_POSITION_NM=@USER_POSITION_NM
+		, USER_COMP_ID=@USER_COMP_ID
+		, USER_COMP_NM=@USER_COMP_NM
+		, USER_DEPT_ID=@USER_DEPT_ID
+		, USER_DEPT_NM=@USER_DEPT_NM
+		, USER_DEPT_PATH=@USER_DEPT_PATH
+		WHERE LOG_ID=@LOG_ID
+		]]>
+	</Query>
+
+  <!--단일 삭제-->
+  <Query id="Log.Delete">
+		<![CDATA[
+		DELETE FROM TB_LOG WHERE LOG_ID=@LOG_ID
+		]]>
+	</Query>
+
+</QueryList>

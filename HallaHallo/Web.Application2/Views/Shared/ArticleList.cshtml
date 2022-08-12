@@ -1,0 +1,41 @@
+﻿@model List<ArticleEntity>
+@{
+    var list = Model;
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+}
+
+<ul class="item_list">
+    @foreach (var item in list)
+    {
+        string type = "txt";
+        if (item.ArticleType == "Image")
+        {
+            type = "img";
+        }
+        if (item.ArticleType == "Video")
+        {
+            type = "video";
+        }
+
+        string path = item.ThumbPath;
+        if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(Server.MapPath(path)))
+        {
+            path = $"{Config.AppPath}inc/images/contents/default.jpg";
+        }
+        <li>
+            <a href="~/Article/Read?id=@item.ArticleID">
+                <div class="img_wrap">
+                    <p class="label">@menu[menu[item.CategoryCode].ParentID].GetName(User.Language)</p>
+                    <span class="classify @type"></span>
+                    <span class="icon_more"></span>
+                    <p class="img"><img src="@path" alt=""></p>
+                </div>
+            </a>
+            <div class="txt_wrap">
+                <p class="tit"><a href="~/Article/Read?id=@item.ArticleID">@item.Title</a></p>
+                <p class="date">@item.RegDate.TimeZone10(User.TimeZones)</p>
+                <p class="like"><span>@item.LikeCount</span></p>
+            </div>
+        </li>
+    }
+</ul>

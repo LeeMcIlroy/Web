@@ -1,0 +1,126 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var mainList = ViewData["mainList"] as List<ArticleEntity>;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+
+}
+
+@section scripts{
+    <script src="//cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/chartjs-plugin-colorschemes.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+
+    <script>
+        $(function () {
+            $("#btSearch").click(function () {
+                var search = {
+                    CategoryCode: $("#category").val(),
+                    Area: $("#ddlArea").val(),
+                    Word: $("#tbWord").val()
+                };
+
+                $.post("MainArticleSearch", { search: search, type: 'Stats' }, function (html) {
+                    $("#pList tbody").html($(html).find("tbody").html());
+                }, 'html')
+            });
+
+            $("#tbWord").keydown(function (e) {
+                if (e.keyCode == 13) {
+                    $("#btSearch").click();
+                }
+            });
+
+            $("#pList").on("click", ".add", function (e) {
+                e.preventDefault();
+
+                var tr = $(this).parents("tr:first");
+                if ($("#pMainList tr[data-id='" + tr.data("id") + "']").length > 0) {
+                    alert('이미 추가한 항목입니다.');
+                    return;
+                }
+                $.post("MainArticleItem", { type: "New", id: tr.data("id") }, function (html) {
+                    $("#pMainList tbody").append(html);
+                }, 'html');
+
+            });
+
+            $("#pList").on("click", ".pViewCount", function (e) {
+                e.preventDefault();
+                var wrap = $(this).parents("tr:first");
+                var search = {
+                    TargetID: wrap.data("id")
+                };
+
+                $.post("StatsContentsChart", { search }, function (html) {
+                    $(".info").html(html);
+                }, 'html');
+
+            });
+
+            $("#pList").on("click", ".pExcel", function (e) {
+                e.preventDefault();
+                var wrap = $(this).parents("tr:first");
+
+                $("#hTargetID").val(wrap.data("id"));
+
+                $("form").submit();
+            });
+        });
+    </script>
+}
+
+    <form action="StatsContentsChart" method="post">
+        <input type="hidden" id="hTargetID" name="TargetID" value="" />
+        <input type="hidden" id="hUseExcel" name="UseExcel" value="Y" />
+    </form>
+
+<div class="con_area">
+    <div class="ta01">
+        <div class="main_title">컨텐츠 통계</div>
+        <div class="table_set">
+            <!--인풋그룹-->
+            <div class="input_group">
+                <div class="sel_category">
+                    <select id="category" name="CategoryCode" class="w150">
+                        <option value="">전체</option>
+                        @foreach (var top in topmenu)
+                        {
+                            if (top.IsDisplay == "N") { continue; }
+                            <optgroup label="@top.CategoryKornm">
+                                @foreach (var item in menu.Values.Where(p => p.ParentID == top.CategoryID))
+                                {
+                                    if (item.IsDisplay == "N") { continue; }
+                                    <option value="@item.CategoryID">@item.CategoryKornm</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                </div>
+                @Html.Partial("MainSearch")
+            </div>
+            <!--테이블-->
+            <table id="pList" class="ta_carousel">
+                <colgroup><col><col><col><col></colgroup>
+                <thead>
+                    <tr>
+                        <th>카테고리</th>
+                        <th>제목</th>
+                        <th>등록일</th>
+                        <th>조회수</th>
+                        <th>Excel</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="info">
+        
+    </div>
+</div>
+

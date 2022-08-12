@@ -1,0 +1,230 @@
+﻿@{
+    ViewBag.Title = "Index";
+
+    var carousel = ViewData["carousel"] as List<ArticleEntity>;
+    var hot = ViewData["hot"] as List<ArticleEntity>;
+    var newList = ViewData["new"] as List<ArticleEntity>;
+
+    var bannerTop = ViewData["bannerTop"] as List<ArticleEntity>;
+    var bannerMiddle = ViewData["bannerMiddle"] as List<ArticleEntity>;
+
+    var hashtag = ViewData["hashtag"] as List<ArticleEntity>;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+}
+
+
+@section scripts{
+
+    <script>
+
+
+
+        $(function () {
+            function getCookie(name) {
+                var nameOfCookie = name + "=";
+                var x = 0;
+                while (x <= document.cookie.length) {
+                    var y = (x + nameOfCookie.length);
+                    if (document.cookie.substring(x, y) == nameOfCookie) {
+                        if ((endOfCookie = document.cookie.indexOf(";", y)) == -1)
+                            endOfCookie = document.cookie.length;
+                        return unescape(document.cookie.substring(y, endOfCookie));
+                    }
+                    x = document.cookie.indexOf(" ", x) + 1;
+                    if (x == 0)
+                        break;
+                }
+                return "";
+            }
+
+            var val = getCookie("EP_USER_KEY");
+
+            if (val == "" || val == null) {
+
+                alert('연결된 사용자 계정이 존재하지 않습니다. 관리자에게 문의 바랍니다');
+                location.href = "https://ep.halla.com";
+            }
+            $(".hashtag_wrap li a").click(function (e) {
+                var wrap = $(this).parents("li:first");
+                $.postSync("HitHashtag", { id: wrap.data("id"), word: wrap.find("span").text() });
+            });
+
+            $(".banner a").click(function (e) {
+                $.postSync("HitBanner", { id: $(this).data("id") });
+            });
+
+            $(".hero_cont .btn_layer_open").click(function (e) {
+                if ($(this).data("type") == "Video") {
+                    e.preventDefault();
+
+                    var html = $($(this).find("input").val()).find("iframe");
+                    $(html).attr("width", "100%");
+                    $(html).attr("height", "100%");
+
+                    $("#pop_video_player").html(html);
+                    setTimeout(function () {
+                        initPlayer(function (controller) {
+                            controller.play();
+                        });
+                    }, 1000)
+                    return;
+
+                    setTimeout(function () {
+                        var controller = $("#pop_video_player iframe").data("controller");
+                        controller.on('loaded', function () {
+                            controller.play();
+                        });
+                        controller.play();
+                    }, 1000)
+                }
+            });
+
+            $("#pop_video").on("hide", function () {
+                $("#pop_video_player").html(' ');
+                $(".layerpop_bg").hide();
+                $(".layerpop_bg").unbind('click');
+            })
+        });
+
+    </script>
+}
+
+
+<!-- visual_wrap -->
+<div class="visual_wrap">
+    <div class="top_area">
+        <div class="hashtag_wrap">
+            <ul>
+                @foreach (var item in hashtag)
+                {
+                    foreach (string t in item.Hashtag.Split('#'))
+                    {
+                        if (string.IsNullOrEmpty(t)) { continue; }
+                        <li data-id="@item.ArticleID"><a href="~/Article/Search?area=Hashtag&word=@t">#<span>@t</span></a></li>
+                    }
+                    break;
+                }
+
+            </ul>
+        </div>
+
+        <div class="banner">
+            @foreach (var item in bannerTop)
+            {
+                <a href="@item.Body" data-id="@item.ArticleID"><img src="@item.ThumbPath" alt="" style="width:400px; height:90px;"></a>
+                break;
+            }
+
+        </div>
+    </div>
+
+    <div class="hero_cont">
+        <!-- main_cont -->
+        <div class="main_cont">
+            @Html.Partial("MainArticleCarosel", carousel.Find(p => p.SectionCode == "CarouselLeft"))
+        </div>
+        <!-- //main_cont -->
+        <!-- sub_cont -->
+        <div class="sub_cont">
+            @Html.Partial("MainArticleCarosel", carousel.Find(p => p.SectionCode == "CarouselRightTop"))
+            @Html.Partial("MainArticleCarosel", carousel.Find(p => p.SectionCode == "CarouselRightBottom"))
+        </div>
+        <!-- //sub_cont -->
+    </div>
+
+    <div class="bottom_area">
+        <ul class="banner_list">
+            @{
+                int count = 0;
+            }
+            @foreach (var item in bannerMiddle)
+            {
+                count++;
+                <li><a href="@item.Body"><img src="@item.ThumbPath" alt="" style="width:663px; height:140px;"></a></li>
+                if (count == 2) { break; }
+            }
+        </ul>
+    </div>
+</div>
+<!-- //visual_wrap -->
+<!-- 인기 콘텐츠 -->
+<style>
+    .cont_wrap .right_cont .cont_box {
+        height: 200px;
+    }
+
+    .cont_wrap .left_cont .cont_box {
+        height: 418px;
+    }
+</style>
+<div class="full_section">
+    <div class="inner">
+        <div class="popularity_cont">
+            <div class="section_tit_wrap">
+                <h2 class="section_tit">@Text["인기 콘텐츠"]</h2>
+            </div>
+
+            <div class="cont_wrap">
+                <div class="right_cont">
+                    @Html.Partial("MainArticleHot", hot.Find(p => p.SectionCode == "HotLeftLeftTop"))  <!-- 좌우상 -->
+                    @Html.Partial("MainArticleHot", hot.Find(p => p.SectionCode == "HotLeftRightTop")) 
+                    @Html.Partial("MainArticleHot", hot.Find(p => p.SectionCode == "HotLeftLeftBottom"))
+                    @Html.Partial("MainArticleHot", hot.Find(p => p.SectionCode == "HotLeftRightBottom"))
+                </div>
+                <div class="left_cont">
+                    @Html.Partial("MainArticleHot", hot.Find(p => p.SectionCode == "HotRight"))
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- //인기 콘텐츠 -->
+<!-- 최신 콘텐츠 -->
+<!--TODO: 최신콘텐츠 VIEW-->
+<div class="latest_cont">
+    <div class="section_tit_wrap">
+        <h2 class="section_tit">@Text["최신 콘텐츠"]</h2>
+    </div>
+
+    <ul class="item_list">
+        @foreach (var item in newList)
+        {
+
+            string type = "txt";
+            if (item.ArticleType == "Image")
+            {
+                type = "img";
+            }
+            if (item.ArticleType == "Video")
+            {
+                type = "video";
+            }
+
+            string path = item.ThumbPath;
+            if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(Server.MapPath(path)))
+            {
+                path = $"{Config.AppPath}inc/images/contents/default.jpg";
+            }
+            <li>
+                <a href="~/Article/Read?id=@item.ArticleID">
+                    <div class="img_wrap">
+                        <p class="label">@menu[menu[item.CategoryCode].ParentID].GetName(User.Language)</p>
+                        <span class="classify @type"></span>
+                        <span class="icon_more"></span>
+                        <p class="img"><img src="@path" alt=""></p>
+                    </div>
+                </a>
+                <div class="txt_wrap">
+                    <p class="tit"><a href="~/Article/Read?id=@item.ArticleID">@item.Title</a></p>
+                    <p class="date">@item.RegDate.TimeZone10(User.TimeZones)</p>
+                    <p class="like"><span>@item.LikeCount</span></p>
+                </div>
+            </li>
+        }
+
+    </ul>
+</div>
+<!-- //최신 콘텐츠 -->

@@ -1,0 +1,33 @@
+﻿
+@{
+
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+}
+
+<table id="pList" class="ta_carousel">
+    <colgroup><col><col><col><col><col><col></colgroup>
+    <thead>
+        <tr>
+            <th>카테고리</th>
+            <th>제목</th>
+            <th>등록일</th>
+            <th>조회수</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in list)
+        {
+            <tr data-id="@item.ArticleID">
+                <td class="al_left">@menu[item.CategoryCode].GetName(User.Language)</td>
+                <td class="al_left"><a href="~/Article/Read?id=@item.ArticleID" target="_blank">@item.Title</a></td>
+                <td>@item.RegDate.TimeZone10(User.TimeZones)</td>
+                <td><a href="#" class="pViewCount">@item.ViewCount</a></td>
+                <td><a href="#" class="pExcel">Download</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

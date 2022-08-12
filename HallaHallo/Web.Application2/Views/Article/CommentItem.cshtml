@@ -1,0 +1,58 @@
+﻿@model CommentEntity
+@{
+    var comment = Model;
+    var commentFiles = ViewData["commentFiles"] as List<FileEntity>;
+
+    bool reply = comment.CommentLevel > 0;
+
+    if (string.IsNullOrEmpty(comment.CreatePhoto))
+    {
+        comment.CreatePhoto = $"{Config.AppPath}inc/images/contents/pr_01.png";
+    }
+}
+<div class="@(reply?"reply_comment":"comment_group")">
+    <div class="inner" data-id="@comment.CommentID" data-group="@comment.GroupID">
+        <p class="profile_thumb"><img src="@comment.CreatePhoto" onerror="this.src='@(Config.AppPath)inc/images/contents/pr_01.png'" alt=""></p>
+        <div class="user_info">
+            <p class="name">@comment.GetName(User.Language)</p>
+            <p class="date">@comment.CreateDate.TimeZone19(User.TimeZones)</p>
+        </div>
+        @if (comment.IsSecret == Const.True && User.UserId != comment.CreateID && User.UserType != AuthType.ADMIN)
+        {
+        <p class="comment">@Text["비밀글입니다."]</p>
+        }
+        else
+        {
+            <p class="comment">@Html.Raw(comment.Body)</p>
+
+            <div class="attached_wrap">
+                @foreach (var item in commentFiles.FindAll(p => p.ObjectID == comment.CommentID))
+                {
+                    <div class="file_tag btn_layer_open" data-id="@item.FileID" data-layer-id="pop_video" data-path="@item.Path"><span>@item.FileNm</span></div>
+                }
+            </div>
+        }
+
+        <div class="btn_wrap">
+            @if (comment.IsSecret == Const.True)
+            {
+                <button class="btn_secret current" style="cursor:default;">&nbsp;</button>
+            }
+            @if (!reply && comment.IsSecret != Const.True)
+            {
+                <button type="button" class="btn_comment">@Text["답글"]</button>
+            }
+
+            @if (User.UserId == comment.CreateID)
+            {
+                if (comment.IsSecret != Const.True)
+                {
+                <button type="button" class="btn_modify">@Text["수정"]</button>
+                }
+
+                <button type="button" class="btn_del">@Text["삭제"]</button>
+            }
+        </div>
+    </div>
+
+</div>

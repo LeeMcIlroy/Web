@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--알람-->
+<QueryList>
+
+  <!--등록-->
+	<Query id="Alarm.Create">
+		<![CDATA[
+		INSERT INTO TB_ALARM( ALARM_ID, ALARM_TYPE, ARTICLE_CATEGORY, ARTICLE_TITLE, TARGET_ID, USER_KORNM, USER_ENGNM, USER_CHNNM, ALARM_STATE, REG_ID, REG_DATE )
+		VALUES( @ALARM_ID, @ALARM_TYPE, @ARTICLE_CATEGORY, @ARTICLE_TITLE, @TARGET_ID, @USER_KORNM, @USER_ENGNM, @USER_CHNNM, @ALARM_STATE, @REG_ID, @REG_DATE )
+		]]>
+	</Query>
+
+  <!--단일 선택-->
+	<Query id="Alarm.Get">
+		<![CDATA[
+		SELECT * FROM TB_ALARM 
+		WHERE ALARM_ID=@ALARM_ID
+		]]>
+	</Query>
+
+  <!--유무 확인-->
+  <Query id="Alarm.Exist">
+    <![CDATA[
+		SELECT ALARM_ID FROM TB_ALARM 
+		WHERE REG_ID=@REG_ID
+    LIMIT 1
+		]]>
+  </Query>
+  
+  <!--단일 수정-->
+  <Query id="Alarm.Update">
+		<![CDATA[
+		UPDATE TB_ALARM SET 
+		ALARM_ID=@ALARM_ID
+		, ALARM_TYPE=@ALARM_TYPE
+		, ARTICLE_CATEGORY=@ARTICLE_CATEGORY
+		, ARTICLE_TITLE=@ARTICLE_TITLE
+		, TARGET_ID=@TARGET_ID
+		, USER_KORNM=@USER_KORNM
+		, USER_ENGNM=@USER_ENGNM
+		, USER_CHNNM=@USER_CHNNM
+		, ALARM_STATE=@ALARM_STATE
+		, REG_ID=@REG_ID
+		, REG_DATE=@REG_DATE
+		WHERE ALARM_ID=@ALARM_ID
+		]]>
+	</Query>
+
+  <!--읽음 상태 기록-->
+  <Query id="Alarm.Read">
+    <![CDATA[
+		UPDATE TB_ALARM SET 
+		  ALARM_STATE='Read'
+		WHERE ALARM_ID=@ALARM_ID
+		]]>
+  </Query>
+
+  <!--단일 삭제-->
+	<Query id="Alarm.Delete">
+		<![CDATA[
+		DELETE FROM TB_ALARM WHERE ALARM_ID=@ALARM_ID
+		]]>
+	</Query>
+
+  <!--읽은 알람 삭제-->
+  <Query id="Alarm.DeleteRead">
+    <![CDATA[
+		DELETE FROM TB_ALARM WHERE REG_ID=@REG_ID AND ALARM_STATE='Read'
+		]]>
+  </Query>
+
+  <!--사용자 알람 모두 삭제-->
+  <Query id="Alarm.DeleteAll">
+    <![CDATA[
+		DELETE FROM TB_ALARM WHERE REG_ID=@REG_ID
+		]]>
+  </Query>
+
+</QueryList>

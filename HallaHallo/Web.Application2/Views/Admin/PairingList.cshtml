@@ -1,0 +1,83 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+}
+
+@section scripts{
+    <script>
+        $(function () {
+            $("#btSearch").click(function () {
+                $("#hPageNumber").val(1);
+                search();
+            });
+
+            $("#tbWord").keydown(function (e) {
+                if (e.keyCode == 13) {
+                    $("#btSearch").click();
+                }
+            });
+
+            function search() {
+                $("form").submit();
+            }
+
+            $(".con_area").on("click", "[data-page]", function (e) {
+                e.preventDefault();
+                $("#hPageNumber").val($(this).data("page"));
+                search();
+            });
+
+            $("#btWrite").click(function () {
+                location.href = "PairingWrite";
+            });
+        });
+    </script>
+}
+
+
+<div class="con_area">
+    <div class="ta01">
+        <div class="main_title">편성표 관리</div>
+        <div class="table_set">
+            <!--인풋그룹-->
+            <div class="input_group" style="margin-bottom:5px;">
+                <div class="sel_category">
+                    <div class="al_right"><input type="submit" id="btWrite" value="등록" /></div>
+                </div>
+            </div>
+
+            <!--테이블-->
+            <table class="ta_carousel">
+                <colgroup><col><col><col><col><col><col></colgroup>
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>채널</th>
+                        <th>제목</th>
+                        <th>편성일</th>
+                        <th class="non">등록일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in list)
+                    {
+                        <tr>
+                            <td>@item["rnum"]</td>
+                            <td>@menu[item.CategoryCode].GetName(User.Language)</td>
+                            <td class="al_left"><a href="PairingWrite?id=@item.ArticleID">@item.Title</a></td>
+                            <td>@item.StartDate.ToDate() ~ @item.EndDate.ToDate()</td>
+                            <td class="non">@item.RegDate.TimeZone10(User.TimeZones)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!--paging-->
+            @Html.Partial("PageNavigator", search)
+        </div>
+    </div>
+</div>

@@ -1,0 +1,180 @@
+﻿
+@{
+    //관리자 관리
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var list = ViewData["List"] as List<CategoryEntity>;
+}
+
+@section scripts{
+    <script>
+        $(function () {
+            $(".grid-delete-row-checked").click(function (e) {
+                e.preventDefault();
+
+                if (!confirm("삭제하시겠습니까?")) return;
+
+                var list = [];
+                $(".grid tbody.item .check-input:checked").each(function () {
+                    var row = $(this).closest("tr")
+                    var id = row.data("id");
+                    if (id.length == 0) _library.CancelGridRow($(this));
+
+                    list[list.length] = id;
+                });
+
+                if (list.length == 0) {
+                    alert('삭제할 항목이 없습니다.');
+                    return;
+                }
+
+                $.post("DeleteManager", $.param({ list: list},true))
+                    .done(function (e) {
+                        location.reload();
+                    }).fail(function (e) {
+                        alert('오류가 발생하였습니다.');
+
+                    });
+            });
+
+            $(".grid-edit-row-checked").click(function (e) {
+                e.preventDefault();
+
+                var list = $(".grid tbody.item .check-input:checked").each(function () {
+                    _library.EditGridRow($(this));
+                });
+                
+                $(".grid tbody.item .check-input").prop("checked", false);
+            });
+
+            $(".grid-save").click(function (e) {
+                e.preventDefault();
+
+                var list = _library.GetGridEntity();
+                var rex = /@(@"^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}")/;
+                var dummy = "";
+
+                if (list.length == 0) {
+                    alert('저장할 항목이 없습니다.');
+                    return;
+                }
+
+                if ($.validate()) {
+                    /*
+                    for (var i = 0; i < list.length; i++) {
+                        var pw = list[i].Data;
+                        if (!pw.match(rex)) {
+                            alert('패스워드 규칙이 올바르지 않습니다.')
+                            list[i]._row.find("[name='Data']").focus();
+                            return;
+                        }
+
+                    }*/
+
+                    if (confirm("저장하시겠습니까?")) {
+                        $.post("SaveManager", { list: JSON.stringify(list) })
+                            .done(function (e) {
+                                location.reload();
+                            }).fail(function (e) {
+                                alert('오류가 발생하였습니다.');
+
+                            });
+                    }
+                }
+            });
+        });
+    </script>
+}
+
+
+    <div class="con_area">
+        <div class="ta01">
+            <div class="main_title">관리자 관리</div>
+            <div class="table_set grid">
+                <!--인풋그룹-->
+                <div class="input_group">
+                    <div class="sel_category" style="width:100%;">
+                        <div class="al_left" style=" float:left;">
+                            <input type="submit" class="btn large grid-add-row" value="신규">
+                            <input type="submit" class="btn large grid-edit-row-checked" value="수정">
+                            <input type="submit" class="btn large grid-delete-row-checked" value="삭제">
+                        </div>
+                        <div class="al_right" style=" float:right;">
+                            <input type="submit" class="btn large primary grid-save" value="저장">
+                        </div>
+                    </div>
+                </div>
+
+                <table class="ta_carousel table-list-wrap grid-body grid-header" f-validate="required">
+                    <colgroup>
+                        @*<col style="width:60px" />
+                        <col style="width:10%" />
+                        <col style="width:15%" />
+                        <col style="width:15%"/>
+                        <col />
+                        <col style="width:120px" />*@
+                        <col style="width:60px" />
+                        <col />
+                        <col />
+                        <col />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>
+                                <label class="checkbox">
+                                    <input type="checkbox" class="check-input all">
+                                    <span class="check-label font-14 font-naumsq bold text-blue"><i class="icon checkbox-arrow"></i></span>
+                                </label>
+                            </th>
+                            <th data-name="CategoryKornm"><span class="item"><span>성명</span></span></th>
+                            <th data-name="CategoryCode"><span class="item"><span>계정(아이디)</span></span></th>
+                            @*<th data-name="Data"><span class="item"><span>비번</span></span></th>*@
+                            @*<th data-name="Description"><span class="item"><span>설명</span></span></th>*@
+                            <th data-name="RegDate"><span class="item"><span>등록일</span></span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="template" style="display:none;">
+                        <tr>
+                            <td>
+                                <label class="checkbox ">
+                                    <input type="checkbox" class="check-input">
+                                    <span class="check-label font-14 font-naumsq bold text-blue"><i class="icon checkbox-arrow"></i></span>
+                                </label>
+                            </td>
+                            <td><input type="text" name="CategoryKornm" class="input input-single"></td>
+                            <td><input type="text" name="CategoryCode" f-type="userId" class="input input-single" style="ime-mode:disabled;"></td>
+                            @*<td><input type="text" name="Data" class="input input-single"></td>*@
+                            @*<td><input type="text" name="Description" class="input input-single"></td>*@
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <tbody class="item">
+                        @foreach (var item in list)
+                        {
+                            <tr data-id="@item.CategoryID">
+                                <td>
+                                    <label class="checkbox ">
+                                        <input type="checkbox" class="check-input">
+                                        <span class="check-label font-14 font-naumsq bold text-blue"><i class="icon checkbox-arrow"></i></span>
+                                    </label>
+                                </td>
+                                <td class="left"><span name="CategoryKornm">@item.CategoryKornm</span></td>
+                                <td class="left"><span name="CategoryCode">@item.CategoryCode</span></td>
+                                @*<td class="left"><span name="Data">@item.Data</span></td>*@
+                                @*<td class="left"><span name="Description">@item.Description</span></td>*@
+                                <td><span name="RegDate">@item.RegDate.AddHours(9).ToDate()</span></td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="grid-property" style="display:none;">
+                    <input type="hidden" data-name="Key" value="CategoryID" />
+                    <input type="hidden" data-name="Batch" value="" />
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+

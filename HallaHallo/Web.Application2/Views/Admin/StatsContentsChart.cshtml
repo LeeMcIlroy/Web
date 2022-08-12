@@ -1,0 +1,110 @@
+﻿
+@{
+    DataTable dt = ViewData["dt"] as DataTable;
+    var search = ViewData["search"] as StatsSearchModel;
+    var list = ViewData["list"] as List<LogEntity>;
+
+    string[] label = new string[31];
+    long[] data = new long[31];
+
+
+    foreach (DataRow dr in dt.Rows)
+    {
+        long cnt = (long)dr["cnt"];
+        DateTime date = DateTime.Parse((string)dr["Day"]);
+
+        data[(date - search.StartDate).Days] = cnt;
+    }
+
+    DateTime cur = search.StartDate;
+    int i = 0; ;
+    while(true)
+    {
+        label[i] = cur.ToString("MM-dd");
+        i++;
+        cur = cur.AddDays(1);
+        if (cur > search.EndDate) { break; }
+    }
+}
+
+
+<canvas id="chartConnect" style="width:100%; height:300px"></canvas>
+<script>
+    $(function () {
+        var ctx = document.getElementById('chartConnect').getContext('2d');
+        var chartConnect = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(label)),
+                datasets: [{
+                    label: "접속자",
+                    data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(data)),
+
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return tooltipItem.yLabel;
+                        }
+                    }
+                },
+                spanGaps: false,
+                elements: {
+                    line: {
+                        tension: 0.000001
+                    }
+                },
+                plugins: {
+                    filler: {
+                        propagate: false
+                    }
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function (value) { if (value % 1 === 0) { return value; } }
+                        }
+                    }]
+                },
+                plugins: {
+                    colorschemes: {
+                        scheme: 'tableau.Tableau20'
+                    }
+                }
+            },
+        });
+    });
+
+</script>
+
+<table id="pUserList" class="ta_carousel" style="margin-top:20px;">
+    <colgroup><col><col><col><col><col><col></colgroup>
+    <thead>
+        <tr>
+            <th>일시</th>
+            <th>사용자명</th>
+            <th>메일주소</th>
+            <th>회사명</th>
+            <th>접속경로</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var item in list)
+        {
+        <tr>
+            <td>@item.LocalDate.ToString(Const.DateHHmmss)</td>
+            <td>@item.UserNm</td>
+            <td>@item.UserEmail</td>
+            <td>@item.UserCompNm</td>
+            <td>@item.ConnectPath</td>
+        </tr>
+        }
+    </tbody>
+</table>

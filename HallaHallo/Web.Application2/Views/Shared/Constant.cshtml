@@ -1,0 +1,30 @@
+﻿@using System.Reflection
+@{
+    Layout = null;
+}
+
+
+_code= {}
+_constant= {
+@foreach (FieldInfo fi in typeof(Const).GetFields())
+{
+    <text>@fi.Name : "@fi.GetValue(null)",</text>
+}
+}
+
+_config = {
+    AppName: "@Config.AppName",
+    AppPath: "@Config.AppPath",
+}
+
+@if (User == null || User.User == null)
+{
+    return;
+}
+
+_user = {
+
+    UserKornm: "@User.UserKornm",
+    UserId: "@User.UserId",
+    Language:"@User.Language"
+}

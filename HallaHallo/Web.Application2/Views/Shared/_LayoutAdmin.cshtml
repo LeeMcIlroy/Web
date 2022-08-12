@@ -1,0 +1,105 @@
+﻿@{ 
+    var develop = (bool)ViewData["_Develop"];
+}
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>::한라 히어로 관리자모드::</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--[if lt IE 9]>
+    <script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js"></script>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="~/_css/font.css">
+    @Styles.Render("~/Admin/css")
+    <link rel="stylesheet" href="~/Content/jquery-ui.css">
+    @RenderSection("styles", required: false)
+
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="~/Scripts/jquery-3.4.1.js"></script>
+    <script src="~/Scripts/jquery.form.js"></script>
+
+    <script src="~/Scripts/jquery-ui.js"></script>
+</head>
+<body>
+    <div id="wrap">
+        <!-- 왼쪽메뉴트리 -->
+        <div id="Left">
+            <div class="grad">
+                <div class="logo"><img src="~/_img/logo.png" alt="히어로/한마루" /></div>
+                <div class="lmenu_group">
+                    <div class="m_title">Contents</div>
+                    <ul class="lmenu">
+                        <li><a href="~/Admin/Menu" class="on">메뉴 관리</a></li>
+                        <li><a href="~/Article/Write" target="_blank">글쓰기</a></li>
+                        <li>
+                            <span class="caret">메인 컨텐츠 관리</span>
+                            <ul class="nested">
+                                <li><a href="~/Admin/Carousel/MainArticle">- Home Carousel 관리</a></li>
+                                <li><a href="~/Admin/Hot/MainArticle">- 인기 컨텐츠 관리</a></li>
+                                <li><a href="~/Admin/New/MainArticle">- Home 최신 컨텐츠 관리</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="~/Admin/BannerList">배너 관리</a></li>
+                        <li><a href="~/Admin/HashtagList">추천 검색어 관리</a></li>
+                        <li><a href="~/Admin/PairingList">편성표 관리</a></li>
+                        <li><a href="~/Admin/VideoList">영상 관리</a></li>
+                        <li><a href="~/Admin/Manager">관리자 관리</a></li>
+                        <li>
+                            <span class="caret">통계 정보</span>
+                            <ul class="nested">
+                                <li><a href="~/Admin/StatsConnect">- 접속일별 통계</a></li>
+                                <li><a href="~/Admin/StatsContents">- 컨텐츠 통계</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- 컨텐츠 -->
+        <div id="Container">
+            <!-- 네비게이션 -->
+            <section style="display:none;">
+                <div class="tmnnu">
+                    <nav>
+                        <ul class="snip1226">
+                            <li><a href="#" class="on" data-hover="뉴스">뉴스</a></li>
+                            <li><a href="#" data-hover="커리어">커리어</a></li>
+                            <li><a href="#" data-hover="스토리">스토리</a></li>
+                            <li><a href="#" data-hover="이벤트">이벤트</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="toggle-menu"></div>
+                <div class="search">
+                    <input type="search" class="msearch" placeholder="검색어를 입력해 주세요." />
+                </div>
+            </section>
+
+            <!-- 컨텐츠 영역 -->
+            @RenderBody()
+        </div>
+
+    </div>
+    <script src="~/Constant"></script>
+    <script src="~/Js/library.js"></script>
+    <script src="~/Js/libraryJquery.js"></script>
+    <script src="~/Js/libraryLanguage.js"></script>
+    <script src="~/Js/librarySite.js"></script>
+    <script src="~/Js/libraryProperty.js"></script>
+    <script src="~/Js/libraryGrid.js"></script>
+    <script src="~/Js/site.js"></script>
+
+    @Html.RenderScript()
+    <script>
+        $(function () {
+            $(".caret").click(function () {
+                $(this).siblings("ul.nested").toggleClass("active");
+            });
+        });
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

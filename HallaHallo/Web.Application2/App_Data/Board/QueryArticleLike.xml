@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--좋아요-->
+<QueryList>
+
+  <!--등록-->
+	<Query id="ArticleLike.Create">
+		<![CDATA[
+		INSERT INTO TB_ARTICLE_LIKE( LIKE_ID, ARTICLE_ID, REG_ID, REG_DATE )
+		VALUES( @LIKE_ID, @ARTICLE_ID, @REG_ID, @REG_DATE )
+		]]>
+	</Query>
+
+  <!--단일 선택-->
+	<Query id="ArticleLike.Get">
+		<![CDATA[
+		SELECT * FROM TB_ARTICLE_LIKE 
+		WHERE LIKE_ID=@LIKE_ID
+		]]>
+	</Query>
+
+  <!--사용자 좋아요 선택-->
+  <Query id="ArticleLike.GetLike">
+    <![CDATA[
+		SELECT * FROM TB_ARTICLE_LIKE 
+		WHERE ARTICLE_ID=@ARTICLE_ID AND REG_ID=@REG_ID
+		]]>
+  </Query>
+
+  <!--단일 수정-->
+	<Query id="ArticleLike.Update">
+		<![CDATA[
+		UPDATE TB_ARTICLE_LIKE SET 
+		LIKE_ID=@LIKE_ID
+		, ARTICLE_ID=@ARTICLE_ID
+		, REG_ID=@REG_ID
+		, REG_DATE=@REG_DATE
+		WHERE LIKE_ID=@LIKE_ID
+		]]>
+	</Query>
+
+  <!--단일 삭제-->
+	<Query id="ArticleLike.Delete">
+		<![CDATA[
+		DELETE FROM TB_ARTICLE_LIKE WHERE LIKE_ID=@LIKE_ID
+		]]>
+	</Query>
+
+  <!--사용자 좋아요 삭제-->
+  <Query id="ArticleLike.DeleteLike">
+    <![CDATA[
+		DELETE FROM TB_ARTICLE_LIKE WHERE ARTICLE_ID=@ARTICLE_ID AND REG_ID=@REG_ID
+		]]>
+  </Query>
+
+</QueryList>

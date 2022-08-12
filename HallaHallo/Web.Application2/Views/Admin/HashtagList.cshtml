@@ -1,0 +1,82 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+}
+
+@section scripts{
+    <script>
+        $(function () {
+            $("#btSearch").click(function () {
+                $("#hPageNumber").val(1);
+                search();
+            });
+
+            $("#tbWord").keydown(function (e) {
+                if (e.keyCode == 13) {
+                    $("#btSearch").click();
+                }
+            });
+
+            function search() {
+                $("form").submit();
+            }
+
+            $(".con_area").on("click", "[data-page]", function (e) {
+                e.preventDefault();
+                $("#hPageNumber").val($(this).data("page"));
+                search();
+            });
+
+            $("#btWrite").click(function () {
+                location.href = "HashtagWrite";
+            });
+        });
+    </script>
+}
+
+
+<div class="con_area">
+    <div class="ta01">
+        <div class="main_title">추천 검색어 관리</div>
+        <div class="table_set">
+            <!--인풋그룹-->
+            <div class="input_group" style="margin-bottom:5px;">
+                <div class="sel_category">
+                    <div class="al_right"><input type="submit" id="btWrite" value="등록" /></div>
+                </div>
+            </div>
+
+            <!--테이블-->
+            <table class="ta_carousel">
+                <colgroup><col><col><col><col><col><col></colgroup>
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>추천검색어</th>
+                        <th>노출기간</th>
+                        <th>등록일</th>
+                        <th class="non">클릭수</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in list)
+                    {
+                        <tr>
+                            <td>@item["rnum"]</td>
+                            <td class="al_left"><a href="HashtagWrite?id=@item.ArticleID">@item.Hashtag</a></td>
+                            <td>@item.StartDate.ToDate() ~ @item.EndDate.ToDate()</td>
+                            <td>@item.RegDate.TimeZone10(User.TimeZones)</td>
+                            <td class="non">@item.ViewCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!--paging-->
+            @Html.Partial("PageNavigator", search)
+        </div>
+    </div>
+</div>

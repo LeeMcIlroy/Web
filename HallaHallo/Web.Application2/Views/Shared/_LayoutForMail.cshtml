@@ -1,0 +1,243 @@
+﻿@{
+    string type = ViewContext.RouteData.Values["type"] as string;
+    string controller = ViewContext.RouteData.Values["controller"] as string;
+    string action = ViewContext.RouteData.Values["action"] as string;
+
+    var develop = (bool)ViewData["_Develop"];
+}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>HALLO</title>
+
+    <!--[if lt IE 9]>
+    <script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js"></script>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    @Styles.Render("~/inc/css/css")
+    <link rel="stylesheet" href="~/Content/jquery-ui.css">
+
+    @RenderSection("styles", required: false)
+
+    <script>
+        @Html.Partial("Constant")
+    </script>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryui")
+    <style>
+    </style>
+</head>
+<body class="main">
+    <!-- wrap -->
+    <div id="wrap">
+        <!-- header -->
+        <div id="header">
+            @Html.Partial("HeaderForMail")
+        </div>
+        <!-- //header -->
+        <!-- container -->
+        <div id="container">
+            @RenderBody()
+        </div>
+        <!-- //container -->
+        <!-- footer -->
+        <div id="footer">
+            @Html.Partial("FooterForMail")
+        </div>
+        <!-- //footer -->
+    </div>
+    <!-- //wrap -->
+
+    <div class='layerpop_bg'></div>
+
+
+
+    <!-- 검색 경고창 얼럿 -->
+    <div id="pop_alert" class="layerpop alert">
+        <div class="inner">
+            <div class="txt_wrap">
+                <img src="@(Config.AppPath)inc/images/common/logo.png" alt="HALLO">
+                <p class="txt"></p>
+            </div>
+            <div class="btn_wrap">
+                <button type="button" class="btn_confirm">@Text["확인"]</button>
+            </div>
+            <button type="button" class="btn_layer_close">@Text["팝업 닫기"]</button>
+        </div>
+    </div>
+    <!-- //검색 경고창 얼럿 -->
+
+    <div id="pop_video" class="layerpop video">
+        <div class="inner">
+            <div class="videoWrap">
+                <div id="pop_video_player" style="width:100%; height:710px; overflow:hidden; font-size:40px; text-align:center;"></div>
+            </div>
+            <button type="button" class="btn_layer_close">@Text["팝업 닫기"]</button>
+        </div>
+    </div>
+
+
+    <script type="text/javascript" src="~/inc/js/lib/TweenMax.min.js"></script>
+    <script type="text/javascript" src="~/inc/js/ui.js"></script>
+
+
+
+    @if (develop)
+    {
+        <script src="~/Js/library.js"></script>
+        <script src="~/Js/libraryJquery.js"></script>
+        <script src="~/Js/libraryLanguage.js"></script>
+        <script src="~/Js/librarySite.js"></script>
+        <script src="~/Js/libraryProperty.js"></script>
+        <script src="~/Js/libraryGrid.js"></script>
+        <script src="~/Js/site.js"></script>
+    }
+    else
+    {
+        @Scripts.Render("~/bundles/library")
+    }
+
+
+    @Html.RenderScript()
+    <script>
+        $(function () {
+
+            $("#pop_video").on("show", function () {
+                $(".layerpop_bg").show();
+                $(".layerpop_bg").click(function () {
+                    $("#pop_video").hide();
+                })
+            })
+
+            $("#pop_video").on("hide", function () {
+                $(".layerpop_bg").hide();
+                $(".pop_video").unbind('click');
+            })
+
+            $("#pop_alert").on("show", function () {
+                $(".layerpop_bg").show();
+                $(".layerpop_bg").click(function () {
+                    $("#pop_alert").hide();
+                })
+            })
+
+            $("#pop_alert").on("hide", function () {
+                $(".layerpop_bg").hide();
+                $(".layerpop_bg").unbind('click');
+            });
+
+            $("#pop_preview").on("show", function () {
+                $(".layerpop_bg").show();
+                $(".layerpop_bg").click(function () {
+                    $("#pop_preview").hide();
+                })
+            })
+
+            $("#pop_preview").on("hide", function () {
+                $(".layerpop_bg").hide();
+                $(".layerpop_bg").unbind('click');
+            });
+
+
+
+            $(".search_input").keydown(function (e) {
+                if (e.keyCode == 13) {
+                    $("#btSearchTop").click();
+                }
+            });
+
+            $("#btSearchTop").click(function () {
+                var word = $.trim($(".search_input").val());
+                if (word.length == 0) {
+                    $(".layerpop.alert .txt").text(_text("msgInputField", { Name: _text("검색어") }));
+                    $(".layerpop.alert").show();
+                    return;
+                }
+                location.href = _config.AppPath + "Article/Search?area=Integrate&word=" + word;
+            });
+
+            $(".langList a").click(function (e) {
+                e.preventDefault();
+                var lang = $(this).text();
+                $.post(_config.AppPath + "/ChangeLanguage", { lang: lang }, function () {
+                    location.reload();
+                })
+            })
+
+            var remain = $(".menu .time span").text().split(':');
+            remain = parseInt(remain[0]) * 60 * 60 + parseInt(remain[1]) * 60 + parseInt(remain[2]);
+            var timer=setInterval(function () {
+                remain--;
+                var hour = parseInt(remain / 60 / 60);
+                if (hour < 10) hour = "0" + hour;
+
+                var minutes = parseInt(remain / 60 % 60);
+                if (minutes < 10) minutes = "0" + minutes;
+
+                var second = parseInt(remain % 60);
+                if (second < 10) second = "0" + second;
+
+                $(".menu .time span").text(hour + ":" + minutes + ":" + second);
+                if (remain == 0) {
+                    clearInterval(timer);
+                    location.href = _config.AppPath +"Logout";
+                }
+            },1000);
+            
+        });
+    </script>
+
+    <script src="http://file.kollus.com/vgcontroller/vg-controller-client.1.1.9.min.js"></script>
+    <script>
+        function initPlayer(callback) {
+            $("iframe").each(function (idx) {
+                if ($(this).attr("src").indexOf("://v.kr.kollus.com")>0) {
+                    //var id = "player" + idx;
+                    //$(this).attr("id", id);
+                    if ($(this).attr("data-player")) return;
+
+                    $(this).attr("data-player", "Y");
+
+                    try {
+                        var controller = new VgControllerClient({
+                            target_window: this.contentWindow
+                        });
+
+                        $("iframe").data("controller", controller);
+                        // 여기서부터 이벤트 리스너를 등록하거나, 웹페이지 Element에 메소드를 bind하면 됩니다.
+
+                        controller.on('play', function () {
+                            $.post(_config.AppPath + "Video/HeartBeat");
+                        });
+
+                        var step = 0;
+                        controller.on('progress', function (percent, position, duration) {
+                            step++;
+                            if (step % 60 == 0) {
+                                $.post(_config.AppPath + "Video/HeartBeat");
+                            }
+                        });
+                        controller.on('loaded', function () {
+                            callback(controller);
+                        });
+
+                        
+                    } catch (e) {
+                        // Videogateweay Controller Library는 window.postMessage API를 이용하기 때문에
+                        // 해당 기능을 지원하지 않는 웹브라우져에서는 동작하지 않습니다.
+                        // 이 부분에 적절한 fail-over 코드를 추가하여 주십시요.
+                        console.error(e);
+                    }
+                }
+            });
+        }
+        window.onload = function () {
+            initPlayer();
+        };
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

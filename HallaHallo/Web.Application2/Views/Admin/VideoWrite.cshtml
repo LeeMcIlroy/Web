@@ -1,0 +1,433 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+
+    var article = ViewData["article"] as ArticleEntity;
+    var attach = ViewData["attach"] as List<FileEntity>;
+
+    bool create = string.IsNullOrEmpty(article.ArticleID);
+}
+
+@section scripts{
+    <script type="text/javascript">
+        var G_UploadID;
+
+        function fn_addFile() {
+            var files = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(attach));
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                DEXT5UPLOAD.AddUploadedFile(file.FileID, file.FileNm, file.Path, file.Size, '', G_UploadID);
+            }
+            // DEXT5UPLOAD.AddUploadedFile('3', 'dext5_logo.png', 'http://www.dext5.com/page/images/dext5_logo.png', '2232', '', G_UploadID);
+        }
+
+        // 생성완료 이벤트
+        function DEXT5UPLOAD_OnCreationComplete(uploadID) {
+            G_UploadID = uploadID;
+
+            var logBox = document.getElementById("logBox");
+            logBox.innerHTML = '업로드 생성 완료 : ' + uploadID + '<br/>';
+
+            fn_addFile();
+        }
+
+        // 전송시작 이벤트
+        function DEXT5UPLOAD_OnTransfer_Start(uploadID) {
+            G_UploadID = uploadID;
+
+            var logBox = document.getElementById("logBox");
+            logBox.innerHTML += '업로드 시작 : ' + uploadID + '<br/>';
+        }
+
+        // 전송완료 이벤트
+        function DEXT5UPLOAD_OnTransfer_Complete(uploadID) {
+            G_UploadID = uploadID;
+
+            var logBox = document.getElementById("logBox");
+
+            // DEXT5 Upload는 json, xml, text delimit 방식으로 결과값을 제공합니다.
+
+            // 파일에 대한 정보 중 업로드가 완료된 파일의 정보(업로드 된 파일경로,업로드 된 파일명)는
+            // DEXT5UPLOAD_OnTransfer_Complete 이벤트 안에서만 추출이 가능합니다.
+
+            // 신규 업로드된 파일
+             var jsonNew = DEXT5UPLOAD.GetNewUploadListForJson(G_UploadID);
+
+            // 삭제된 파일
+             var jsonDel = DEXT5UPLOAD.GetDeleteListForJson(G_UploadID);
+
+            // 전체결과
+            var jsonAll = DEXT5UPLOAD.GetAllFileListForJson(G_UploadID);
+
+            logBox.innerHTML += '<br/>' + '업로드 완료 : ' + G_UploadID + '<br/>';
+
+            var files = [];
+            if (jsonAll.newFile) {
+                var len = jsonAll.newFile.originalName.length;
+                for (var i = 0; i < len; i++) {
+                    files.push({
+                        ObjectType: 'Attach',
+                        FileNm: jsonAll.newFile.originalName[i],
+                        Path: jsonAll.newFile.uploadPath[i],
+                        Extension: "." + jsonAll.newFile.extension[i],
+                        Size: jsonAll.newFile.size[i],
+                        FlieOrder: jsonAll.newFile.order[i],
+                    });
+                }
+            }
+
+            if (jsonAll.webFile) {
+                var len = jsonAll.webFile.originalName.length;
+                for (var i = 0; i < len; i++) {
+                    files.push({
+                        FileID: jsonAll.webFile.uniqKey[i],
+                        ObjectType: 'Attach',
+                        FileNm: jsonAll.webFile.originalName[i],
+                        Path: jsonAll.webFile.uploadPath[i],
+                        //Extension: "." + jsonAll.webFile.extension[i],
+                        Size: jsonAll.webFile.size[i],
+                        FlieOrder: jsonAll.newFile.order[i],
+                    });
+                }
+            }
+
+
+            var delFiles = [];
+            if (jsonDel) {
+                var len = jsonDel.originalName.length;
+                for (var i = 0; i < len; i++) {
+                    delFiles.push(jsonDel.uniqKey[i]);
+                }
+            }
+
+
+            var entity = $(".tbl_write").getEntity();
+            entity.Body = $("#tbBody").html();
+
+
+            $.post("", { entity: entity, files: JSON.stringify(files), delFiles: JSON.stringify(delFiles) }, function () {
+                location.href = _config.AppPath + "Article/Contents/List?CategoryCode=" + entity.CategoryCode;
+            });
+        }
+
+        // 오류 이벤트
+        function DEXT5UPLOAD_OnError(uploadID, code, message, uploadedFileListObj) {
+            var logBox = document.getElementById("logBox");
+            logBox.innerHTML += 'Error : ' + code + ', ' + message + '<br/>';
+
+            if (uploadedFileListObj != null && uploadedFileListObj != '') {
+                logBox.innerHTML += '업로드 된 파일 리스트 - <br/>';
+                var uploadedFileLen = uploadedFileListObj.length;
+                for (var i = 0; i < uploadedFileLen; i++) {
+                    logBox.innerHTML += uploadedFileListObj[i].uploadName + ', ' + uploadedFileListObj[i].uploadPath + '</br>';
+
+                    // guid: uploadedFileListObj[i].guid
+                    // originName: uploadedFileListObj[i].originName
+                    // fileSize: uploadedFileListObj[i].fileSize
+                    // uploadName: uploadedFileListObj[i].uploadName
+                    // uploadPath: uploadedFileListObj[i].uploadPath
+                    // logicalPath: uploadedFileListObj[i].logicalPath
+                    // order: uploadedFileListObj[i].order
+                    // status: uploadedFileListObj[i].status
+                    // mark: uploadedFileListObj[i].mark
+                    // responseCustomValue: uploadedFileListObj[i].responseCustomValue
+                }
+            }
+        }
+
+        // 취소 이벤트
+        function DEXT5UPLOAD_UploadingCancel(uploadID, uploadedFileListObj) {
+            G_UploadID = uploadID;
+
+            var logBox = document.getElementById("logBox");
+            logBox.innerHTML += '전송 취소 이벤트 : ' + G_UploadID + '<br/>';
+
+            if (uploadedFileListObj != null && uploadedFileListObj != '') {
+                logBox.innerHTML += '업로드 된 파일 리스트 - <br/>';
+                var uploadedFileLen = uploadedFileListObj.length;
+                for (var i = 0; i < uploadedFileLen; i++) {
+                    logBox.innerHTML += uploadedFileListObj[i].uploadName + ', ' + uploadedFileListObj[i].uploadPath + '</br>';
+
+                    // guid: uploadedFileListObj[i].guid
+                    // originName: uploadedFileListObj[i].originName
+                    // fileSize: uploadedFileListObj[i].fileSize
+                    // uploadName: uploadedFileListObj[i].uploadName
+                    // uploadPath: uploadedFileListObj[i].uploadPath
+                    // logicalPath: uploadedFileListObj[i].logicalPath
+                    // order: uploadedFileListObj[i].order
+                    // status: uploadedFileListObj[i].status
+                    // mark: uploadedFileListObj[i].mark
+                    // responseCustomValue: uploadedFileListObj[i].responseCustomValue
+                }
+            }
+        }
+
+
+
+    </script>
+    <script>
+        var uploadData = @Html.Raw(create ? "null" : article.Body);
+        var _dummy = "";
+
+        $(function () {
+
+            var baseUrl = "http://api.kr.kollus.com/0/";
+            function createPayload() {
+                var data = {};
+                data.access_token = "iw8ab05jg5co9jq5";
+                return data;
+            }
+
+            function attachChannel() {
+                var data = createPayload();
+                data.channel_key = "0z2lpsjlew0cdr1z";
+
+                $.post(baseUrl + "media/channel/attach/" + uploadData.upload_file_key, data, function (result) {
+                    if (result.error) {
+                        setTimeout(function () {
+                            attachChannel();
+                        }, 1000);
+                        return;
+                    }
+                    var media_content_key = result.result.media_content_key;
+                    
+                    $("#tbMasterID").val(media_content_key);
+
+                    var entity = $(".info_group").getEntity();
+
+                    $.post("", { entity: JSON.stringify(entity) }, function (result) {
+                        location.href = "VideoWrite?id=" + result.ArticleID;
+                    }, 'json');
+                });
+            }
+
+            $("#btClipboard").click(function () {
+                $("#tbSource")[0].select();
+                document.execCommand("copy");
+            });
+
+            if (!$("#tbMasterID").val()) {
+                if (uploadData) {
+                    var timer = setInterval(function () {
+
+                        var data = createPayload();
+                        data.upload_file_key = uploadData.upload_file_key;
+
+                        $.get(baseUrl+"/media/upload_file/index", data, function (result) {
+                            if (result.error) {
+                                return;
+                            }
+                            var result = result.result;
+                            var item = result.items.item[0];
+                            if (item) {
+                                if (item.transcoding_stage == 12) {
+                                    $("#tbProgress").text(item.transcoding_progress + "%");
+                                }
+                                else if (item.transcoding_stage == 21) {
+                                    clearInterval(timer);
+                                    attachChannel();
+                                }
+                                else {
+                                    if (item.transcoding_stage_name) {
+                                        $("#tbProgress").text(item.transcoding_stage_name);
+                                    }
+                                    else {
+                                        $("#tbProgress").text("처리중");
+                                    }
+                                }
+                            }
+                            else {
+                                $("#tbProgress").text("처리중");
+                            }
+
+                            var result = $.getSync(baseUrl + "/media/library/media_content/" + uploadData.upload_file_key, data);
+
+                            if (result.error) {
+                                return;
+                            }
+
+                            if (result.result.item.transcoding_stage == 21) {
+                                clearInterval(timer);
+                                attachChannel();
+                            }
+                        }).fail(function () {
+                            clearInterval(timer);
+                        });
+                    },2000);
+                }
+            }
+            
+
+            
+            
+
+            $("#btSave").click(function () {
+                if ($(".info_group").validate()) {
+
+                    if ($.queryURL("id")) {
+                        if (!confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                            return;
+                        }
+                        var entity = $(".info_group").getEntity();
+
+                        $.post("", { entity: JSON.stringify(entity) }, function (result) {
+
+                            location.href = "VideoWrite?id=" + result.ArticleID;
+                        }, 'json');
+                    }
+                    else {
+
+                        if ($("#tbThumb")[0].files.length == 0) {
+                            alert('영상을 첨부하여 주십시오.');
+                            return;
+                        }
+                        if (!confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                            return;
+                        }
+
+                        var data = createPayload();
+                        data.title = $("#tbTitle").val();
+
+                        $.post(baseUrl + "media_auth/upload/create_url", data, function (result) {
+                            result = result.result;
+                            var progress_url = result.progress_url;// = http://upload.kr.kollus.com/api/v1/GetUploadingProgress/KUS_f1lSnds5lds3nQprfZq0aevtNS0oheDa
+                            var upload_file_key = result.upload_file_key;//=20200309-y90qmwti
+                            var upload_url = result.upload_url//=http://upload.kr.kollus.com/api/v1/UploadMultiParts/KUS_f1lSnds5lds3nQprfZq0aevtNS0oheDa/20200309-y90qmwti
+                            var will_be_expired_at = result.will_be_expired_at;//=1583745067
+
+                            $("#tbBody").val(JSON.stringify(result));
+
+                            var formData = new FormData();
+                            formData.append("upload-file", $("#tbThumb")[0].files[0]);
+                            formData.append("accept", "application/json");
+                            //upload_file_key=20200310-pisgjpal
+                            $.ajax({
+                                type: "POST",
+                                enctype: 'multipart/form-data',
+                                url: upload_url,
+                                contentType: false,
+                                processData: false,
+                                data: formData,
+                                dataType: 'json',
+                                success: function (result) {
+
+                                    var entity = $(".info_group").getEntity();
+
+                                    $.post("", { entity: JSON.stringify(entity) }, function (result) {
+
+                                        location.href = "VideoWrite?id=" + result.ArticleID;
+                                    }, 'json');
+                                },
+                                xhr: function () { //XMLHttpRequest 재정의 가능
+                                    var xhr = $.ajaxSettings.xhr();
+                                    xhr.upload.onprogress = function (e) { //progress 이벤트 리스너 추가
+                                        var percent = e.loaded * 100 / e.total;
+                                        $("#tbUploadProgress").text(percent.toFixed(2) + '%');
+                                    };
+                                    return xhr;
+                                },
+
+                                error: function (e) {
+                                    alert("fail");
+                                }
+                            });
+
+                        });
+                    }
+                    
+                }
+            });
+
+            //var data = {};
+            //data.cuid = "hallaholdings";
+            //data.expt = Math.floor(new Date().getTime() / 1000) + 60 * 10;
+            //data.mc = [{
+            //    "mckey": "20200310-pisgjpal"
+            //}];
+            //
+            //var url = "http://v.kr.kollus.com/s?jwt=생성한 JWT&custom_key=e8532e1c00f1a4cb708309469d7f3c2bb0663c653c6b18eb7257c40895c4bc5d";
+            //$.post(url, data, function () {
+            //
+            //});
+            //	
+            $("#btDelete").click(function () {
+
+                if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                    $.post("VideoDelete", { id: $.queryURL("id") }, function () {
+
+                        location.href = "VideoList";
+                    });
+                }
+            });
+
+        });
+    </script>
+}
+
+<div class="con_area">
+    <div class="main_title">영상 등록</div>
+    <div class="flex_wrap">
+        <!-- 컨텐츠 -->
+        <div class="con">
+            <div class="btn_group01">
+                <ul class="btn_g">
+                    <li><a href="VideoList"><input type="button" value="목록"></a></li>
+                    <li><input type="button" id="btSave" value="@(create ? "등록" : "수정")"></li>
+                    @if (!create)
+                    {
+                        <li><input type="button" id="btDelete" value="삭제"></li>
+                    }
+                </ul>
+            </div>
+            <div class="info_group" f-validate="required">
+                <input type="hidden" id="tbBody" name="Body" value="@article.Body" />
+                <input type="hidden" id="tbMasterID" name="MasterID" value="@article.MasterID" />
+
+                <div class="info"><label style="margin-right:65px;"><img src="~/_img/bullet01.png" alt="bullet" />제목</label><input type="text" class="w70" name="Title" placeholder="" value="@article.Title" /></div>
+                @if (create)
+                {
+                    <div class="info">
+                        <label style="margin-right:65px;"><img src="~/_img/bullet01.png" alt="bullet" />첨부</label>
+                        <input id="tbThumb" type="file" class="btn_upload" accept=".mp4">
+                    </div>
+                    <div class="info">
+                        <label style="margin-right:65px;"><img src="~/_img/bullet01.png" alt="bullet" />업로드 진행률</label>
+                        <span id="tbUploadProgress"></span>
+                    </div>
+                }
+
+                @if (create)
+                {
+
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(article.MasterID))
+                    {
+                        <div class="info">
+                            <label style="margin-right:65px;"><img src="~/_img/bullet01.png" alt="bullet" />트랜스코딩 진행률</label>
+                            <span id="tbProgress"></span>
+                        </div>
+                    }
+                    else
+                    {
+                        var source = $"<iframe style='width:100%; height:500px;' src='http://v.kr.kollus.com/{article.MasterID}?player_version=html5' allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true' oallowfullscreen='true' msallowfullscreen='true'></iframe>";
+                        <div class="info">
+                            <label style="margin-right:41px;"><img src="~/_img/bullet01.png" alt="bullet" />Source</label>
+                            <input type="text" id="tbSource" class="w70" value="@Html.Raw(source)" readonly />
+                            <input type="button" id="btClipboard" value="Copy" />
+                        </div>
+                        <div class="info">
+                            @Html.Raw(source)
+                        </div>
+                    }
+                }
+
+
+            </div>
+        </div>
+    </div>
+</div>

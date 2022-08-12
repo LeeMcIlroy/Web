@@ -1,0 +1,125 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var article = ViewData["article"] as ArticleEntity;
+    var thumb = ViewData["thumb"] as FileEntity;
+
+    bool create = string.IsNullOrEmpty(article.ArticleID);
+    string title = $"게시물 {(create ? "작성" : "수정")}";
+}
+
+@section scripts{
+    <script>
+        $(function () {
+            $("#btAdd").click(function () {
+                $("#tbThumb").click();
+            });
+
+            $("#tbThumb").change(function () {
+                var filename;
+                if (window.FileReader) {
+                    if ($(this)[0].files.length > 0) {
+                        filename = $(this)[0].files[0].name;
+                    }
+                    else {
+                        filename = '';
+                    }
+                } else {
+                    filename = $(this).val().split('/').pop().split('\\').pop();
+                }
+                $(this).parents(".info:first").find('.file_name').val(filename);
+
+                $(".file .btn_02").click();
+            });
+
+            $("#btSave").click(function (e) {
+                e.preventDefault();
+
+                if ($.validate()) {
+                    if (!$("#tbThumb").val() && $(".file").not(".delete").length == 0) {
+                        alert('배너이미지를 선택하여 주십시오.');
+                        return;
+                    }
+                    var entity = $(".info_group").getEntity();
+                    
+                    var msg = '등록 하시겠습니까?';
+                    if ($.queryURL("id")) {
+                        msg = "수정 하시겠습니까?";
+                    }
+                    if (!confirm(msg)) return;
+
+                    var formData = new FormData();
+                    formData.append("uploadfile", $("#tbThumb")[0].files[0]);
+
+                    $.ajax({
+                        type: "POST",
+                        enctype: 'multipart/form-data',
+                        url: _config.AppPath + "FileReceiver?type=Thumb",
+                        contentType: false,
+                        processData: false,
+                        data: formData,
+                        dataType: 'json',
+                        success: function (files) {
+                            var delFiles = [];
+                            $(".file.delete").each(function () {
+                                delFiles.push($(this).data("id"));
+                            });
+
+                            $.post("", { entity: JSON.stringify(entity), files: JSON.stringify(files), delFiles: JSON.stringify(delFiles) }, function () {
+                                location.href = "BannerList";
+                            });
+                        },
+                        error: function (e) {
+                            alert("fail");
+                        }
+                    });
+                }
+            });
+
+            $("#btDelete").click(function (e) {
+                e.preventDefault();
+
+                var msg = '삭제 하시겠습니까?';
+                if (!confirm(msg)) return;
+
+                $.post("BannerDelete", { id: $.queryURL("id") }, function () {
+                    location.href = "BannerList";
+                });
+            });
+
+            $(".file .btn_02").click(function (e) {
+                e.preventDefault();
+
+                $(this).parents(".file:first").addClass("delete").hide();
+            });
+        });
+    </script>
+}
+
+<div class="con_area">
+    <div class="main_title">배너 등록</div>
+    <div class="flex_wrap">
+        <!-- 컨텐츠 -->
+        <div class="con">
+            <div class="btn_group01">
+                <ul class="btn_g">
+                    <li><a href="BannerList"><input type="button" value="목록"></a></li>
+                    <li><input id="btSave" type="button" value="@(create ? "등록" : "수정")"></li>
+                    <li><input id="btDelete" type="button" value="삭제"></li>
+                </ul>
+            </div>
+            <div class="info_group" f-validate="required">
+                <div class="info"><label class="mgr90"><img src="~/_img/bullet01.png" alt="bullet" />제목</label><input type="text" name="Title" class="w70" placeholder="" value="@article.Title"/></div>
+                <div class="info"><label class="mgr90"><img src="~/_img/bullet01.png" alt="bullet" />위치</label><label class="mgr40"><input type="radio" name="ArticleType" class="mgr10" value="Top" @(article.ArticleType=="Top"?"checked":"")/>상단</label><label><input type="radio" name="ArticleType" class="mgr10" value="Middle" @(article.ArticleType=="Middle"?"checked":"")/>중간</label></div>
+                <div class="info"><label class="mgr90"><img src="~/_img/bullet01.png" alt="bullet" />기간</label><input type="text" f-type="date" name="StartDate" class="w150" placeholder="일자" value="@article.StartDate.ToDate()"/> ~ <input type="text" f-type="date" name="EndDate" class="w150" placeholder="일자" value="@article.EndDate.ToDate()"/></div>
+                <div class="info" style="padding-top:10px;"><label class="mgr51"><img src="~/_img/bullet01.png" alt="bullet" />이동컨텐츠</label><input type="text" name="Body" class="w70" placeholder="" value="@article.Body"/></div>
+                <div class="info" style="padding-top:30px;"><label class="mgr50"><img src="~/_img/bullet01.png" alt="bullet" />배너이미지</label><a href="#" id="btAdd" class="btn_01 mgr10">배너 선택</a><input type="text" class="w70 file_name" style="border-radius:0px; border-top:none; border-left:none; border-right:none; background:#f8f8f8; box-shadow:none;" disabled placeholder="선택된 파일이 표시됩니다." /><input type="file" id="tbThumb" accept=".jpg, .jpeg, .png, .bmp" style="display:none;"/></div>
+                @if (thumb != null)
+                {
+                    <div class="info" style="padding-top:30px;padding-left:128px;"><div data-id="@thumb.FileID" class="file" style="display:inline-block;"><a href="#" class="btn_02 mgr10" style="float:left;">삭제</a><img src="@thumb.Path"  style="width:400px;height:90px;"/></div></div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

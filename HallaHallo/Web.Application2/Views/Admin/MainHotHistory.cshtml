@@ -1,0 +1,63 @@
+﻿
+@{
+
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+}
+<div>
+    <div class="tit_group">
+        <div class="pop_tit">Home Carousel 적용 이력</div>
+        <a href="#modal-close" title="Close" class="modal-close"><img src="~/_img/btn_close.png" alt="닫힘" /></a>
+    </div>
+    <div class="pop_contents" id="pHistoryList">
+        <!--테이블-->
+        <table class="ta_carousel">
+            <colgroup><col><col><col><col><col><col></colgroup>
+            <thead>
+                <tr>
+                    <th>카테고리</th>
+                    <th>제목</th>
+                    <th>설정기간</th>
+                    <th>등록일</th>
+                    <th>총 조회수</th>
+                    <th>설정후</th>
+                    <th class="non">위치</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in list)
+                {
+                    string name = "";
+                    if (item.SectionCode == "CarouselLeft")
+                    {
+                        name = "좌측";
+                    }
+                    if (item.SectionCode == "CarouselRightTop")
+                    {
+                        name = "우상";
+                    }
+                    if (item.SectionCode == "CarouselRightBottom")
+                    {
+                        name = "우하";
+                    }
+                    <tr>
+                        <td class="al_left">@menu[item.CategoryCode].GetName(User.Language)</td>
+                        <td class="al_left"><a href="~/Article/Read?id=@item.ArticleID" target="_blank">@item.Title</a></td>
+                        <td>@item.SetDate.TimeZone10(User.TimeZones)</td>
+                        <td>@item.RegDate.TimeZone10(User.TimeZones)</td>
+                        <td>@(item.ViewCount - item.ExistViewCount)</td>
+                        <td>@item.LikeCount</td>
+                        <td class="non">@name</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!--paging-->
+        @Html.Partial("PageNavigator", search)
+    </div>
+</div>
+

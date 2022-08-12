@@ -1,0 +1,82 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+
+    var article = ViewData["article"] as ArticleEntity;
+
+    bool create = string.IsNullOrEmpty(article.ArticleID);
+}
+
+@section scripts{
+    <script>
+        $(function () {
+
+            $("#btSave").click(function () {
+                if ($(".info_group").validate()) {
+                    var entity = $(".info_group").getEntity();
+                    
+
+                    if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                        $.post("", { entity: JSON.stringify(entity) }, function () {
+
+                            location.reload();
+                        });
+                    }
+                }
+            });
+
+            $("#btDelete").click(function () {
+                var entity = $(".info_group").getEntity();
+
+                if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                    $.post("PairingDelete", { id: entity.CategoryID }, function () {
+
+                        location.reload();
+                    });
+                }
+            });
+
+        });
+    </script>
+}
+
+<div class="con_area">
+    <div class="main_title">편성표 등록</div>
+    <div class="flex_wrap">
+        <!-- 컨텐츠 -->
+        <div class="con">
+            <div class="btn_group01">
+                <ul class="btn_g">
+                    <li><a href="HashtagList"><input type="button" value="목록"></a></li>
+                    <li><input type="button" id="btSave" value="@(create ? "등록" : "수정")"></li>
+                    <li><input type="button" id="btDelete" value="삭제"></li>
+                </ul>
+            </div>
+            <div class="info_group" f-validate="required">
+                <div class="info">
+                    <label class="mgr60"><img src="~/_img/bullet01.png" alt="bullet" />채널</label>
+                    <select id="category" name="CategoryCode" class="w150">
+                        <option value="">전체</option>
+                        @foreach (var top in topmenu)
+                        {
+                            if (top.IsDisplay == "N") { continue; }
+                            <optgroup label="@top.CategoryKornm">
+                                @foreach (var item in menu.Values.Where(p => p.ParentID == top.CategoryID))
+                                {
+                                    if (item.IsDisplay == "N") { continue; }
+                                    <option value="@item.CategoryID" @(article.CategoryCode == item.CategoryID ? "selected" : "")>@item.CategoryKornm</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                </div>
+                <div class="info"><label style="margin-right:65px;"><img src="~/_img/bullet01.png" alt="bullet" />제목</label><input type="text" class="w70" name="Title" placeholder="" value="@article.Title" /></div>
+                <div class="info"><label class="mgr35"><img src="~/_img/bullet01.png" alt="bullet" />노출기간</label><input type="text" f-type="date" class="w150" name="StartDate" placeholder="일자" value="@article.StartDate.ToDate()" /> ~ <input type="text" f-type="date" class="w150" name="EndDate" placeholder="일자" value="@article.EndDate.ToDate()" /></div>
+
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--파일-->
+<QueryList>
+  <!--등록-->
+	<Query id="File.Create">
+		<![CDATA[
+		INSERT INTO TB_FILE( FILE_ID, OBJECT_ID, OBJECT_TYPE, FILE_NM, PATH, EXTENSION, SIZE, REG_DATE, FILE_ORDER )
+		VALUES( @FILE_ID, @OBJECT_ID, @OBJECT_TYPE, @FILE_NM, @PATH, @EXTENSION, @SIZE, @REG_DATE, @FILE_ORDER )
+		]]>
+	</Query>
+
+  <!--단일 선택-->
+	<Query id="File.Get">
+		<![CDATA[
+		SELECT * FROM TB_FILE 
+		WHERE FILE_ID=@FILE_ID
+		]]>
+	</Query>
+
+  <!--파일 유형별 목록 선택-->
+  <Query id="File.GetFileList">
+    <![CDATA[
+		SELECT * FROM TB_FILE 
+		WHERE OBJECT_ID=@OBJECT_ID AND OBJECT_TYPE=@OBJECT_TYPE
+    ORDER BY FILE_ORDER
+		]]>
+  </Query>
+  
+  <!--단일 수정-->
+  <Query id="File.Update">
+		<![CDATA[
+		UPDATE TB_FILE SET 
+		  FILE_ORDER=@FILE_ORDER
+		WHERE FILE_ID=@FILE_ID
+		]]>
+	</Query>
+
+  <!--단일 삭제-->
+	<Query id="File.Delete">
+		<![CDATA[
+		DELETE FROM TB_FILE WHERE FILE_ID=@FILE_ID
+		]]>
+	</Query>
+
+</QueryList>

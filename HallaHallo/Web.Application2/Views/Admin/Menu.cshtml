@@ -1,0 +1,151 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+}
+
+@section scripts{
+<script>
+    $(function () {
+        $(".tmenu .set-top").click(function () {
+            var s = $(this);
+            var wrap = s.parents("li:first");
+
+            $("#tbTopMenu").val(wrap.children("span").text());
+            $("#tbParentID").val(wrap.data("id"));
+        });
+
+        $(".caret01,.caret02").click(function () {
+            $(this).siblings("ul.nested").toggleClass("active");
+        });
+
+        $(".caret02,.caret03").click(function () {
+            $(".caret01-down").removeClass("caret01-down");
+            $(this).addClass("caret01-down");
+
+            var wrap = $(this).parents("li:first");
+            var entity = wrap.data("entity");
+            $(".info_group").mapping(entity);
+
+            $("li[data-id='" + entity.ParentID + "']").children(".set-top:first").click();
+        });
+
+
+        $("#btAdd").click(function(){
+            if ($(".info_group").validate()) {
+                var entity = $(".info_group").getEntity();
+                entity._ItemState = "Create";
+
+                if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                    $.post("MenuSave", { entity: entity }, function () {
+
+                        location.reload();
+                    });
+                }
+            }
+        });
+
+        $("#btModify").click(function () {
+            if ($(".info_group").validate()) {
+                var entity = $(".info_group").getEntity();
+                entity._ItemState = "Update";
+
+                if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                    $.post("MenuSave", { entity: entity }, function () {
+
+                        location.reload();
+                    });
+                }
+            }
+        });
+
+        $("#btDelete").click(function () {
+            var entity = $(".info_group").getEntity();
+
+            if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                $.post("MenuDelete", { id: entity.CategoryID }, function () {
+
+                    location.reload();
+                });
+            }
+        });
+
+        $("#btReset").click(function () {
+            if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                
+                $(".caret01-down").removeClass("caret01-down");
+                $(".info_group [name]").each(function () {
+                    this.value = '';
+                    if (this.type == 'checkbox') {
+                        $(this).prop("checked", false);
+                    }
+                })
+            }
+            
+        });
+    });
+</script>
+}
+
+<style>
+    .caret03{cursor:pointer;}
+</style>
+<div class="con_area">
+    <div class="main_title">메뉴관리(GNB 및 SNB)</div>
+    <div class="flex_wrap">
+        <!-- 트리메뉴 -->
+        <div class="tree">
+            <!-- step01 -->
+            <ul class="tmenu">
+                <li data-id="000000000010">
+                    <span class="caret01 caret01-down"><img src="~/_img/bullet01.png" alt="billet" class="on"/>메뉴</span>
+                    <input type="button" class="set-top" style="padding:3px" value="상위 지정"/>
+                    <!-- step02 -->
+                    <ul class="smenu nested active">
+                        @foreach (var item in topmenu)
+                        {
+                            if (item.IsDel == Const.True) { continue; }
+                            <li data-id="@item.CategoryID" data-entity="@Newtonsoft.Json.JsonConvert.SerializeObject(item)">
+                                <span class="caret02"><img src="~/_img/bullet02.png" alt="billet" />@item.CategoryKornm</span>
+                                <input type="button" class="set-top" style="padding:3px" value="상위 지정"/>
+                                <!-- step03 -->
+                                <ul class="smenu nested">
+                                    @foreach (var sub in menu.Values.Where(p => p.ParentID == item.CategoryID))
+                                    {
+                                        if (sub.IsDel == Const.True) { continue; }
+                                        <li data-id="@sub.CategoryID" data-entity="@Newtonsoft.Json.JsonConvert.SerializeObject(sub)"><span class="caret03"><img src="~/_img/bullet02.png" alt="billet" />@sub.CategoryKornm</span></li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- 컨텐츠 -->
+        <div class="con">
+            <div class="btn_group01">
+                <ul class="btn_g">
+                    <li><input type="button" id="btAdd" value="추가"></li>
+                    <li><input type="button" id="btModify" value="수정"></li>
+                    <li><input type="button" id="btDelete" value="삭제"></li>
+                    <li><input type="button" id="btReset" value="초기화"></li>
+                </ul>
+            </div>
+            <div class="info_group">
+                <input type="hidden" name="CategoryID" />
+                <input type="hidden" id="tbParentID" name="ParentID" />
+                <div class="info"><label class="mgr20"><img src="~/_img/bullet01.png" alt="bullet" />상위 메뉴</label><input id="tbTopMenu" name="ParentNm" type="text" class="w70" placeholder="" readonly f-validate="required" /></div>
+                <div class="info"><label class="mgr21"><img src="~/_img/bullet01.png" alt="bullet" />연결 URL</label><input name="Data" type="text" class="w70" placeholder="" /></div>
+                <div class="info"><label class="mgr38"><img src="~/_img/bullet01.png" alt="bullet" />한국어</label><input name="CategoryKornm" type="text" class="w70" placeholder="" f-validate="required" /></div>
+                <div class="info"><label class="mgr51"><img src="~/_img/bullet01.png" alt="bullet" />영어</label><input name="CategoryEngnm" type="text" class="w70" placeholder="" /></div>
+                <div class="info"><label class="mgr38"><img src="~/_img/bullet01.png" alt="bullet" />중국어</label><input name="CategoryChnnm" type="text" class="w70" placeholder="" /></div>
+                <div class="info"><label class="mgr51"><img src="~/_img/bullet01.png" alt="bullet" />기타</label><input name="CategoryEtcnm" type="text" class="w70" placeholder="" /></div>
+                <div class="info"><label class="mgr51"><img src="~/_img/bullet01.png" alt="bullet" />순서</label><input name="CategoryOrder" type="text" class="w70" placeholder="" /></div>
+                <div class="info"><label for="vehicle1" class="mgr23"><img src="~/_img/bullet01.png" alt="bullet" />숨김여부</label><input type="checkbox" id="vehicle1" name="IsDisplay" value="N" /></div>
+            </div>
+        </div>
+    </div>
+</div>

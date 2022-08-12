@@ -1,0 +1,192 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var mainList = ViewData["mainList"] as List<ArticleEntity>;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+}
+
+@section scripts{
+<script>
+    $(function () {
+        $("#btSearch").click(function () {
+            var search = {
+                CategoryCode: $("#category").val(),
+                Area: $("#ddlArea").val(),
+                Word: $("#tbWord").val()
+            };
+
+            $.post("MainArticleSearch", { search: search}, function (html) {
+                $("#pList tbody").html($(html).find("tbody").html());
+            },'html')
+        });
+
+        $("#tbWord").keydown(function (e) {
+            if (e.keyCode == 13) {
+                $("#btSearch").click();
+            }
+        });
+
+        $("#pList").on("click", ".add", function (e) {
+            e.preventDefault();
+
+            var tr = $(this).parents("tr:first");
+            if ($("#pMainList tr[data-id='" + tr.data("id") + "']").length > 0) {
+                alert('이미 추가한 항목입니다.');
+                return;
+            }
+            $.post("MainArticleItem", { type: "New", id: tr.data("id") }, function (html) {
+                $("#pMainList tbody").append(html);
+            },'html');
+            
+        });
+
+        $("#pMainList").on("click", ".alink_del", function () {
+
+            $(this).parents("tr:first").remove();
+        });
+
+        $("#btSave").click(function () {
+            var trs = $("#pMainList tbody tr");
+            //if (trs.length != 3) {
+            //    alert('반드시 3개 항목을 입력해야 합니다.');
+            //    return;
+            //}
+
+            var locate = {}
+            var list = [];
+            var valid = true;
+            trs.each(function () {
+                var val = $(this).find("#locate").val();
+                if (locate[val]) {
+                    valid = false;
+                    alert('중복된 위치가 있습니다.');
+                    return false;
+                }
+                locate[val] = "Y";
+                list.push({ ArticleID: $(this).data("id"), SectionID: $(this).data("section"), SectionCode: val  });
+            });
+
+            if (!valid) return;
+
+            if (confirm('저장하시겠습니까?')) {
+
+                $.post("MainArticleSave", { list: JSON.stringify(list) }, function () {
+                    location.reload();
+                });
+            }
+        });
+
+        function bindHistory(page) {
+            $.post("MainArticleHistory", { pageNumber: page}, function (html) {
+                $("#pop_set").html(html);
+            }, 'html')
+        }
+
+        $("#pop_set").on("click", "[data-page]", function (e) {
+            e.preventDefault();
+
+            bindHistory($(this).data("page"));
+        });
+
+        $(".btn_set").click(function () {
+            bindHistory(1);
+        });
+
+        if (location.href.indexOf("#pop_set") > 0) {
+            bindHistory(1);
+        }
+
+        $(".modal-close").click(function () {
+            $("#pop_set").html('');
+        });
+    });
+</script>
+}
+
+
+<div class="con_area">
+    <div class="ta01">
+        <div class="main_title">Home 최신 컨텐츠 관리</div>
+        <div class="table_set">
+            <!--인풋그룹-->
+            <div class="input_group">
+                <div class="sel_category">
+                    <select id="category" name="CategoryCode" class="w150">
+                        <option value="">전체</option>
+                        @foreach (var top in topmenu)
+                        {
+                            if (top.IsDisplay == "N") { continue; }
+                            <optgroup label="@top.CategoryKornm">
+                                @foreach (var item in menu.Values.Where(p => p.ParentID == top.CategoryID))
+                                {
+                                    if (item.IsDisplay == "N") { continue; }
+                                    <option value="@item.CategoryID">@item.CategoryKornm</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                </div>
+                @Html.Partial("MainSearch")
+            </div>
+            <!--테이블-->
+            <table id="pList" class="ta_carousel">
+                <colgroup><col><col><col><col><col><col></colgroup>
+                <thead>
+                    <tr>
+                        <th>카테고리</th>
+                        <th>제목</th>
+                        <th>등록일</th>
+                        <th>조회수</th>
+                        <th>Like</th>
+                        <th>댓글수</th>
+                        <th class="non">설정</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ta01 mgt30">
+        <div class="main_title">선택된 최신 컨텐츠 관리</div>
+        <div class="table_set">
+
+            <!--테이블-->
+            <table id="pMainList" class="ta_carousel">
+                <colgroup><col><col><col><col><col><col></colgroup>
+                <thead>
+                    <tr>
+                        <th>카테고리</th>
+                        <th>제목</th>
+                        <th>설정일</th>
+                        <th>등록일</th>
+                        <th>조회수</th>
+                        <th>Like</th>
+                        <th>댓글수</th>
+                        <th>순서</th>
+                        <th class="non">삭제</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in mainList)
+                    {
+                        Html.RenderPartial("MainNewApply", item);
+                    }
+                </tbody>
+            </table>
+
+            <div class="al_right"><input type="submit" id="btSave" value="저장" class="mgt10" /></div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Start : 설정이력 -->
+<div id="pop_set" class="modal-window">
+</div>
+

@@ -1,0 +1,66 @@
+﻿@model CommentEntity
+@{
+    var comment = Model;
+    var commentFiles = ViewData["commentFiles"] as List<FileEntity>;
+}
+
+<div class="comment_area @(string.IsNullOrEmpty(comment.CommentID) && string.IsNullOrEmpty(comment.GroupID) ?"":"current")" data-id="@comment.CommentID" data-group="@comment.GroupID">
+    <div class="imoticon_wrap">
+        <ul class="imoticon_list">
+            @for (int i = 1; i <= 20; i++)
+            {
+                <li><button type="button" data-index="@(i.ToString("00"))" class="btn_imoticon imoticon@(i.ToString("00"))"></button></li>
+            }
+        </ul>
+    </div>
+    <div class="textarea_wrap">
+        <div name="Body" class="comment_body" contenteditable="true" style="width:100%; height:100%; padding:5px; box-sizing:border-box; overflow-y:scroll;" placeholder="@Text["댓글을 입력하세요"]">
+            @if (string.IsNullOrEmpty(comment.CommentID))
+            {
+                <div><br></div>
+            }
+            else
+            {
+                @Html.Raw(comment.Body)
+            }
+
+        </div>
+    </div>
+    <div class="file_box">
+        <input type="text" class="file_name" readonly="readonly" placeholder="@Text["tipFileAttach"]">
+        <label class="btn_file">
+            @Text["첨부"]
+            <input type="file" class="btn_upload" multiple accept=".jpg, .jpeg, .png, .bmp">
+        </label>
+
+        <div class="attached_wrap">
+            @if (!string.IsNullOrEmpty(comment.CommentID))
+            {
+                foreach (var item in commentFiles)
+                {
+                    <div class="file_tag" data-id="@item.FileID">
+                        <span>@item.FileNm</span>
+                        <button type="button" class="btn_del_file">@Text["파일삭제"]</button>
+                    </div>
+                }
+            }
+
+        </div>
+    </div>
+    <div class="btn_wrap">
+        @if (string.IsNullOrEmpty(comment.CommentID))
+        {
+        <button type="button" class="btn_secret">@Text["비밀댓글"]</button>
+        <button type="button" class="btn_register on">@Text["등록"]</button>
+        }
+        else
+        {
+        <button type="button" class="btn_register on">@Text["수정"]</button>
+        }
+
+        @if (!string.IsNullOrEmpty(comment.GroupID))
+        {
+        <button type="button" class="btn_cancel">@Text["취소"]</button>
+        }
+    </div>
+</div>

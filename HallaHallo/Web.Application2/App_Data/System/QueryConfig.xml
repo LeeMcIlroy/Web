@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--구성/쿼리는 사용안함-->
+<QueryList>
+
+	<Query id="Config.Create">
+		<![CDATA[
+		INSERT INTO TB_CONFIG( CONFIG_ID, VALUE, REG_DATE )
+		VALUES( @CONFIG_ID, @VALUE, @REG_DATE )
+		]]>
+	</Query>
+
+	<Query id="Config.Get">
+		<![CDATA[
+		SELECT * FROM TB_CONFIG 
+		WHERE CONFIG_ID=@CONFIG_ID
+		]]>
+	</Query>
+
+  <Query id="Config.GetConfigList">
+    <![CDATA[
+		SELECT * FROM TB_CONFIG 
+		]]>
+  </Query>
+
+  <Query id="Config.Update">
+		<![CDATA[
+		UPDATE TB_CONFIG SET 
+		CONFIG_ID=@CONFIG_ID
+		, VALUE=@VALUE
+		, REG_DATE=@REG_DATE
+		WHERE CONFIG_ID=@CONFIG_ID
+		]]>
+	</Query>
+
+	<Query id="Config.Delete">
+		<![CDATA[
+		DELETE FROM TB_CONFIG WHERE CONFIG_ID=@CONFIG_ID
+		]]>
+	</Query>
+
+</QueryList>

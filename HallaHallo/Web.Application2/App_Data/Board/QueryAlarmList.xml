@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--알람-->
+<QueryList>
+
+  <!--알람 목록-->
+  <Query id="Alarm.GetList" group="folder">
+    <![CDATA[
+		SELECT * FROM (
+			SELECT 
+				#SelectColumn# #CountColumn# 
+			FROM (
+        SELECT a.* FROM TB_ALARM a
+			  WHERE REG_ID=@UserID
+      ) t
+		) t WHERE 1=1 #PageRange#
+		]]>
+  </Query>
+
+  <CommonSub group="folder" id="DateType">
+    <![CDATA[ 
+      AND [DateType] BETWEEN @StartDate AND @EndDate
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="SelectColumn" property="IsCount" value="False" mode="include">
+    <![CDATA[
+			  ROW_NUMBER() OVER(ORDER BY [InnerSortType] [SortOrd]) rnum, t.*
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="CountColumn" property="IsCount" value="True"  mode="include">
+    <![CDATA[
+			count(*) TOTAL_COUNT
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="PageRange" property="IsCount" value="False" mode="include">
+    <![CDATA[
+			LIMIT @RowStart, @PageSize
+		  ]]>
+  </CommonSub>
+</QueryList>

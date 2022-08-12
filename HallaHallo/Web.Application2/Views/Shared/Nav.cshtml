@@ -1,0 +1,11 @@
+﻿@{
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var category = ViewData["_Category"] as CategoryEntity;
+    var parent = menu[category.ParentID];
+}
+
+<ul class="location">
+    <li><a href="#none;">HOME</a></li>
+    <li><a href="#none;">@parent.GetName(User.Language)</a></li>
+    <li><a href="#none;">@category.GetName(User.Language)</a></li>
+</ul>

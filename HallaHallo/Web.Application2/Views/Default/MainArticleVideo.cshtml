@@ -1,0 +1,24 @@
+﻿@model ArticleEntity
+@{
+    var item = Model;
+    if (item == null) { return; }
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+
+    string path = item.ThumbPath;
+    if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(Server.MapPath(path)))
+    {
+        path = $"{Config.AppPath}inc/images/contents/default.jpg";
+    }
+
+}
+<div class="cont_box">
+    <a href="#" class="btn_layer_open" data-layer-id="pop_video" data-type="@item.ArticleType">
+        <img src="@path" alt="">
+        <div class="txt_box">
+            <span class="label">@menu[menu[item.CategoryCode].ParentID].GetName(User.Language)</span>
+            <p class="tit">@item.Title</p>
+        </div>
+        <input type="hidden" value="@item.Body"/>
+    </a>
+</div>

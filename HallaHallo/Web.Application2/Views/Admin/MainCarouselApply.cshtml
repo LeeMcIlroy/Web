@@ -1,0 +1,24 @@
+﻿@model ArticleEntity
+@{
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+
+    var item = Model;
+}
+
+<tr data-id="@item.ArticleID" data-section="@item.SectionID">
+    <td class="al_left">@menu[item.CategoryCode].GetName(User.Language)</td>
+    <td class="al_left"><a href="~/Article/Read?id=@item.ArticleID" target="_blank">@item.Title</a></td>
+    <td>@item.SetDate.TimeZone10(User.TimeZones)</td>
+    <td>@item.RegDate.TimeZone10(User.TimeZones)</td>
+    <td>@item.ViewCount</td>
+    <td>@item.LikeCount</td>
+    <td>@item.CommentCount</td>
+    <td>
+        <select id="locate" name="locate" class="w100" style="margin:3px 3px 3px 0px;">
+            <option value="CarouselLeft" @(item.SectionCode == "CarouselLeft" ? "selected" : "")>좌측</option>
+            <option value="CarouselRightTop" @(item.SectionCode == "CarouselRightTop" ? "selected" : "")>우상</option>
+            <option value="CarouselRightBottom" @(item.SectionCode == "CarouselRightBottom" ? "selected" : "")>우하</option>
+        </select>
+    </td>
+    <td class="non"><a href="#" class="alink_del"> 삭제</a></td>
+</tr>

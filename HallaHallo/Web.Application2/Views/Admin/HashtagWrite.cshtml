@@ -1,0 +1,123 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var article = ViewData["article"] as ArticleEntity;
+    var list = ViewData["list"] as List<ArticleEntity>;
+
+    bool create = string.IsNullOrEmpty(article.ArticleID);
+
+    var logRepository = new LogRepository();
+}
+
+@section scripts{
+    <script>
+        $(function () {
+
+            $("#btSave").click(function () {
+                if ($(".info_group").validate()) {
+                    var entity = $(".info_group").getEntity();
+                    var ht = entity.Hashtag.split('#');
+                    if ($.trim(ht[0]).length == 0 && ht.length > 6 || $.trim(ht[0]).length > 0 && ht.length > 5) {
+                        alert('해시태그 입력은 5개까지 가능합니다.');
+                        return false;
+                    }
+
+                    var valid = true;
+                    $.each(ht, function (i) {
+                        if (i > 0 && $.trim(ht[i]).length == 0) {
+                            alert((i + 1) + '번째 해시태그 내용을 입력하여 주십시오.');
+                            return false;
+                        }
+                    });
+                    if (!valid) return;
+
+                    if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                        $.post("", { entity: JSON.stringify(entity) }, function () {
+
+                            location.reload();
+                        });
+                    }
+                }
+            });
+
+            $("#btDelete").click(function () {
+                var entity = $(".info_group").getEntity();
+
+                if (confirm(_text("confirmConfirm", { Name: $(this).val() }))) {
+                    $.post("HashtagDelete", { id: $.queryURL("id") }, function () {
+
+                        location.reload();
+                    });
+                }
+            });
+
+        });
+    </script>
+}
+
+<div class="con_area">
+    <div class="main_title">추천 검색어 등록<span>- 추천 검색어는 최근에 등록된 내용만 출력됩니다.</span></div>
+    <div class="flex_wrap">
+        <!-- 트리메뉴 -->
+        <div class="tree">
+            <!-- list -->
+            <ul class="s_word_list">
+                <li>
+                    <img src="~/_img/bullet01.png" alt="billet" />추천 검색어
+                    <!-- list -->
+                    <ul class="sub_list">
+                        @foreach (var item in list)
+                        {
+                            <li>
+                                <a href="HashtagWrite?id=@item.ArticleID">
+                                    @foreach (string t in item.Hashtag.Split('#'))
+                                    {
+                                        if (string.IsNullOrEmpty(t)) { continue; }
+                                        <span class="fo">#</span><span>@t</span>
+                                    }
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- 컨텐츠 -->
+        <div class="con">
+            <div class="btn_group01">
+                <ul class="btn_g">
+                    <li><a href="HashtagList"><input type="button" value="목록"></a></li>
+                    <li><input type="button" id="btSave" value="@(create ? "등록" : "수정")"></li>
+                    <li><input type="button" id="btDelete" value="삭제"></li>
+                </ul>
+            </div>
+            <div class="info_group" f-validate="required">
+                <div class="info"><label class="mgr50"><img src="~/_img/bullet01.png" alt="bullet" />검색어</label><input type="text" class="w70" name="Hashtag" placeholder="" value="@article.Hashtag"/></div>
+                <div class="info"><label class="mgr35"><img src="~/_img/bullet01.png" alt="bullet" />노출기간</label><input type="text" f-type="date" class="w150" name="StartDate" placeholder="일자" value="@article.StartDate.ToDate()"/> ~ <input type="text" f-type="date" class="w150" name="EndDate" placeholder="일자" value="@article.EndDate.ToDate()"/></div>
+
+                <table class="ta_carousel mgt10">
+                    <thead>
+                        <tr>
+                            <th>추천 검색어</th>
+                            <th>등록일</th>
+                            <th>클릭수</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (string t in article.Hashtag.Split('#'))
+                        {
+                            if (string.IsNullOrEmpty(t)) { continue; }
+                            long count = logRepository.GetHitHashtagCount(article.ArticleID, t);
+                            <tr>
+                                <td class="al_left">@t</td>
+                                <td>@article.RegDate.TimeZone10(User.TimeZones)</td>
+                                <td class="none"><span>@count</span>회</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

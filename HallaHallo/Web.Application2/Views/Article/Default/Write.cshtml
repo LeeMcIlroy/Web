@@ -1,0 +1,445 @@
+﻿@{
+    var article = ViewData["article"] as ArticleEntity;
+    var thumb = ViewData["thumb"] as FileEntity;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+
+    bool create = string.IsNullOrEmpty(article.ArticleID);
+    string title = create ? Text["게시물 작성"] : Text["게시물 수정"];
+}
+
+@section scripts{
+    <script>
+        $(function () {
+            DEXT5.setBodyValue($("#tbBody").html());
+
+            $("#ddlTopMenu li").click(function () {
+                var parent = $(this).data("id");
+                var items = $("#ddlSubMenu li");
+
+                var first = true;
+                items.each(function () {
+                    $(this).removeClass("current");
+                    if ($(this).data("parent") == parent) {
+                        $(this).show();
+                        if (first) {
+                            $(this).addClass("current").click();
+                            first = false;
+                        }
+                    }
+                    else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            $("#ddlSubMenu li").click(function () {
+                var category = $(this).data("id");
+                $("#tbCategoryCode").val(category);
+            });
+
+            var category = $("#tbCategoryCode").val();
+            if (category) {
+                var selected = $("#ddlSubMenu li[data-id='" + category + "']");
+                var parent = selected.data("parent");
+                $("#ddlTopMenu li[data-id='" + parent + "']").click();
+                selected.click();
+            }
+            else {
+                $("ul.option_list").each(function () {
+                    $(this).parent().css("display", "block");
+                    $(this).find("li:visible:first").addClass("current").click();
+                    $(this).parent().css("display", null);
+                });
+            }
+
+            $(".btn_del_file").click(function () {
+                $(this).parents("li:first").addClass("delete").hide();
+
+            });
+
+            $(".btn_upload").change(function () {
+                $(".btn_del_file").click();
+            });
+
+            $("#btPreview").click(function (e) {
+                e.preventDefault();
+
+                var title = $("[name='Title']").val();
+                var body = DEXT5.getBodyValue();
+
+                $("#pPreviewTitle").text(title);
+                $("#pPreviewBody").html(body);
+            });
+
+            $("#btSave").click(function (e) {
+                e.preventDefault();
+
+                $("#tbBody").html(DEXT5.getBodyValue());
+
+                if ($.validate()) {
+                    var entity = $(".tbl_write").getEntity();
+                    if (entity.State == "Reserve") {
+                        entity.StartDate += " " + $("#ddlHour").val() + ":" + $("#ddlMinute").val() + ":00";
+                    }
+                    
+                    entity.Body = $("#tbBody").html();
+                    var ht = entity.Hashtag.split('#');
+                    if (ht.length > 0) {
+                        if ($.trim(ht[0]).length == 0 && ht.length > 6 || $.trim(ht[0]).length > 0 && ht.length > 5) {
+                            alert(_text("해시태그 입력은 5개까지 가능합니다."));
+                            return false;
+                        }
+                    }
+
+                    var valid = true;
+                    $.each(ht, function (i) {
+                        if (i > 0 && $.trim(ht[i]).length == 0) {
+                            var msg = _text("[Index]번째 해시태그 내용을 입력하여 주십시오.", { Index: i + 1 })
+                            alert(msg);
+                            return false;
+                        }
+                    });
+                    if (!valid) return;
+
+                    var msg = _text("발행 하시겠습니까?");
+                    if ($.queryURL("id")) {
+                        msg = _text("수정 하시겠습니까?");
+                    }
+                    if (!confirm(msg)) return;
+
+                    var formData = new FormData();
+                    formData.append("uploadfile", $("#tbThumb")[0].files[0]);
+
+                    $.ajax({
+                        type: "POST",
+                        enctype: 'multipart/form-data',
+                        url: _config.AppPath + "FileReceiver?type=Thumb",
+                        contentType: false,
+                        processData:false,
+                        data: formData,
+                        dataType:'json',
+                        success: function (files) {
+                            var delFiles = [];
+                            $(".file_list li.delete").each(function () {
+                                delFiles.push($(this).data("id"));
+                            });
+
+                            $.post("", { entity: JSON.stringify(entity), files: JSON.stringify(files), delFiles: JSON.stringify(delFiles)}, function () {
+                                location.href = _config.AppPath + "Article/List?CategoryCode=" + entity.CategoryCode;
+                            });
+                        },
+                        error: function (e) {
+                            alert("fail");
+                        }
+                    });
+                }
+            });
+
+            $("#btCancel").click(function (e) {
+                e.preventDefault();
+
+                history.back();
+            });
+
+            $("#btDelete").click(function (e) {
+                e.preventDefault();
+
+                var msg = _text("삭제 하시겠습니까?");
+                if (!confirm(msg)) return;
+
+                $.post("Delete", { id: $.queryURL("id")}, function () {
+                    location.href = "List?CategoryCode=@article.CategoryCode";
+                });
+            });
+
+            $("#btList").click(function (e) {
+                e.preventDefault();
+
+                history.back();
+            });
+
+            $("#pop_reservation").on("show",function () {
+                $(".layerpop_bg").show();
+                $(".layerpop_bg").click(function () {
+                    $("#pop_reservation").hide();
+                })
+            })
+
+            $("#pop_reservation").on("hide", function () {
+                $(".layerpop_bg").hide();
+                $(".layerpop_bg").unbind('click');
+            })
+
+            $("[name='State']").change(function () {
+                if (this.value == "Reserve") {
+                    $("#pReserve").show();
+                }
+                else {
+                    $("#pReserve").hide();
+                }
+            });
+        });
+    </script>
+}
+
+<div class="contents">
+    <div class="sub_tit_wrap">
+        <a href="#none;" id="btList" class="btn_flat type_gray">@Text["목록보기"]</a>
+        <ul class="location">
+            <li><a href="#none;">HOME</a></li>
+            <li><a href="#none;">@title</a></li>
+        </ul>
+    </div>
+
+    <div class="headline">
+        <h2 class="tit">@title</h2>
+    </div>
+
+    <div class="con_wrap">
+        <div class="write_wrap">
+            <div class="tbl_write">
+                <input type="hidden" name="StartDate" value="@article.StartDate.ToString(Const.DateHHmm)" />
+
+                <table f-validate="required">
+                    <caption>@title</caption>
+                    <colgroup>
+                        <col width="8.4%;">
+                        <col width="*;">
+                    </colgroup>
+
+                    <tbody>
+                        <tr>
+                            <th scope="row">@Text["카테고리"]</th>
+                            <td>
+                                <input type="hidden" id="tbCategoryCode" name="CategoryCode" value="@article.CategoryCode" />
+                                <div class="select_wrap">
+                                    <div class="design_select">
+                                        <div class="option_wrap">
+                                            <button type="button" class="selected"><span></span></button>
+                                            <div class="inner">
+                                                <ul id="ddlTopMenu" class="option_list">
+                                                    @foreach (var item in topmenu)
+                                                    {
+                                                        if (item.IsDisplay == Const.False) { continue; }
+                                                        <li data-id="@item.CategoryID"><a href="#none">@item.GetName(User.Language)</a></li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="design_select">
+                                        <div class="option_wrap">
+                                            <button type="button" class="selected"><span></span></button>
+                                            <div class="inner">
+                                                <ul id="ddlSubMenu" class="option_list">
+                                                    @foreach (var item in menu.Values.Where(p => p.CategoryLevel == 3))
+                                                    {
+                                                        if (item.IsDisplay == Const.False) { continue; }
+                                                        <li style="display:none;" data-id="@item.CategoryID" data-parent="@item.ParentID"><a href="#none">@item.GetName(User.Language)</a></li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">@Text["콘텐츠 종류"]</th>
+                            <td>
+                                <div class="checkWrap">
+                                    <span>
+                                        <label>@Html.Radio("ArticleType", "Image", article.ArticleType)@Text["이미지"]</label>
+                                    </span>
+                                    <span>
+                                        <label>@Html.Radio("ArticleType", "Text", article.ArticleType)@Text["텍스트"]</label>
+                                    </span>
+                                    <span>
+                                        <label>@Html.Radio("ArticleType", "Video", article.ArticleType)@Text["동영상"]</label>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="write">
+                            <th scope="row">@Text["제목"]</th>
+                            <td>
+                                <input type="text" name="Title" class="inp_txt" title="@Text["게시물 제목 입력"]" maxlength="100" value="@article.Title">
+                            </td>
+                        </tr>
+                        <tr class="write">
+                            <th scope="row"><label style="display:none;">@Text["내용"]</label></th>
+                            <td>
+                                <div class="editor_area" style="border:solid 1px #e3e3e3; display:none;" id="tbBody" name="Body">
+                                    @Html.Raw(article.Body)
+                                </div>
+                                <script src="~/Component/dext5editor/js/dext5editor.js" type="text/javascript"></script>
+                                <script>
+                                    //DEXT5.config.InitXml = "dext_editor.xml";
+                                    //DEXT5.config.HandlerUrl = "http://www.dext5.com/handler/upload_handler.ashx";
+                                    //DEXT5.config.SkinName = "blue";
+                                    //DEXT5.config.ToSavePathURL = "dext5data";
+                                    if (_user.Language == "ENG") {
+                                        DEXT5.config.Lang = "en-us";
+                                    }
+                                    else if (_user.Language == "CHN") {
+                                        DEXT5.config.Lang = "zh-cn";
+                                    }
+                                    else {
+                                        DEXT5.config.Lang = "ko-kr";
+                                    }
+                                    //DEXT5.config.Lang = "ko-kr"; // ko-kr, en-us, ja-jp, zh-cn, zh-tw
+                                    //DEXT5.config.Mode = "view";
+                                    //DEXT5.config.focusInitObjId = "title"; // 에디터가 로드된 후 설정한 아이디를 가진 객체에 포커스를 줌.
+                                    //DEXT5.config.NextTabElementId = "nextInput";
+                                    //DEXT5.config.IgnoreSameEditorName = "1";
+
+                                    DEXT5.config.Width = "930px";
+                                    DEXT5.config.Height = "500px";
+                                    //DEXT5.config.RunTimes = '';   // 웹표준모드 : html5, 플러그인모드(IE전용) : ieplugin, version이하 플러그인(IE전용) : versionieplugin
+
+                                    // 에디터의 팝업창과 우클릭 메뉴를 부모창에 띄우기 위한 설정.
+                                    // 에디터를 iframe 형태로 띄우는 경우 사이즈가 작아서 팝업창이나 우클릭 메뉴가 가려질 때 설정하면 유용합니다.
+                                    //DEXT5.config.DialogWindow = parent.window;
+
+                                    var editor1 = new Dext5editor("tbBody");
+                                </script>
+                            </td>
+                        </tr>
+                        <tr class="attach">
+                            <th scope="row">@Text["대표이미지"]</th>
+                            <td>
+                                <div class="file_box">
+                                    <input type="text" class="file_name" readonly="readonly" placeholder="확장자 (jpg, jpeg, png, bmp) 파일만 업로드 할 수 있습니다. 파일 용량은 10MB 이하입니다.">
+                                    <label class="btn_file">
+                                        첨부
+                                        <input id="tbThumb" type="file" class="btn_upload" accept=".jpg, .jpeg, .png, .bmp">
+                                    </label>
+                                </div>
+                                @if (thumb != null)
+                                {
+                                    <div class="attach_box">
+                                        <ul class="file_list">
+                                            <li data-id="@thumb.FileID">
+                                                <span class="name">@thumb.FileNm</span> <span class="size"><em>@Method.GetFileSize(thumb.Size)</em></span>
+                                                <button type="button" class="btn_del_file">@Text["파일삭제"]</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                }
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">@Text["요약정보"]</th>
+                            <td><input type="text" name="Summary" class="inp_txt" title="@Text["요약정보 입력"]" value="@article.Summary"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">@Text["해시태그"]</th>
+                            <td><input type="text" name="Hashtag" class="inp_txt" f-validate="none" maxlength="100" value="@article.Hashtag" placeholder="@Text["해시태그 입력은 5개까지 가능합니다."]" title="@Text["해시태그 입력"]"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">@Text["콘텐츠 상태"]</th>
+                            <td>
+                                <div class="checkWrap">
+                                    <span>
+                                        <label>@Html.Radio("State", "Private", article.State)@Text["비공개"]</label>
+                                    </span>
+                                    <span>
+                                        <label>@Html.Radio("State", "Open", article.State)@Text["공개"]</label>
+                                    </span>
+                                    <span data-layer-id="pop_reservation11" class="btn_layer_open11">
+                                        <label>@Html.Radio("State", "Reserve", article.State)@Text["공개예약"]</label>
+                                    </span>
+                                    <span id="pReserve" style="display:@(article.State=="Reserve"?"":"none")">
+                                        <input type="text" style="width:70px;" name="StartDate" f-type="date" class="year" f-validate="none" value="@article.StartDate.ToDate()">
+                                        
+                                        <select id="ddlHour" style="width:50px; margin-left:10px;">
+                                            @for (int i = 0; i < 24; i++)
+                                            {
+                                            <option value="@i.ToString("00")" @(article.StartDate.Hour == i ? "selected" : "")>@i @Text["시"]</option>
+                                            }
+                                        </select>
+                                        <select id="ddlMinute" style="width:50px; margin-left:10px;">
+                                            @for (int i = 0; i < 60; i++)
+                                            {
+                                                <option value="@i.ToString("00")" @(article.StartDate.Minute==i?"selected":"")>@i @Text["분"]</option>
+                                            }
+                                        </select>
+                                    </span>
+                                </div>
+                                <p></p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn_wrap">
+                    <a href="#none;" id="btPreview" class="btn_flat type_gray btn_layer_open" data-layer-id="pop_preview">@Text["미리보기"]</a>
+                    <div class="btn_group">
+                        <a href="#none;" id="btSave" class="btn_flat type_blue">@(create ? Text["발행"] : Text["수정"])</a>
+                        <a href="#none;" id="btCancel" class="btn_flat type_gray">@Text["취소"]</a>
+                        @if (!create)
+                        {
+                        <a href="#none;" id="btDelete" class="btn_flat type_gray">@Text["삭제"]</a>
+                        }
+                    </div>
+                </div>
+
+                <!-- 공개예약 레이어 -->
+
+                <div id="pop_reservation" class="layerpop">
+                    <div class="inner">
+                        <p class="layer_tit">날짜 및 시간 선택</p>
+                        <div class="input_wrap">
+                            <div class="year_wrap">
+                                <input type="text" style="width:150px;" id="reservation_year" class="year" value="@article.StartDate.ToDate()">
+                            </div>
+
+                            <div class="time_wrap">
+                                <button type="button" id="reservation_ampm" class="ampm">오전</button>
+                                <input type="text" id="reservation_hour" value="00">
+                                <span class="colon">:</span>
+                                <input type="text" id="reservation_minute" value="00">
+                            </div>
+                        </div>
+                        <div class="btn_wrap align_right">
+                            <button type="button" class="btn_cancel">취소</button>
+                            <button type="button" id="btReservationSave" class="btn_save">저장</button>
+                        </div>
+                        <button type="button" class="btn_layer_close">팝업 닫기</button>
+                    </div>
+                </div>
+                <!-- //공개예약 레이어 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="pop_preview" class="layerpop">
+    <div class="inner">
+        <div class="pop_head">
+            <span>미리보기</span>
+            <button type="button" class="btn_layer_close">팝업 닫기</button>
+        </div>
+        <div class="preview_area">
+            <div class="headline">
+                <h2 class="tit" id="pPreviewTitle"></h2>
+            </div>
+
+            <div class="con_wrap">
+                <div class="ex_con_wrap">
+                    <div class="news_view">
+                        <div class="con_area">
+                            <p style="color:#556670;" id="pPreviewBody">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

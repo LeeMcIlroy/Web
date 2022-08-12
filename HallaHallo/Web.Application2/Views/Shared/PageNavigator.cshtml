@@ -1,0 +1,48 @@
+﻿@model SearchModel
+@{
+    long totalCount = Model.TotalCount;
+    if (totalCount == 0) { return; }
+    int pageSize = Model.PageSize;
+    int pageNumber = Model.PageNumber;
+
+    int max = 10;
+    int totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+    //if (totalPage == 0) { totalPage = 1; }
+    int startPage = (int)(Math.Ceiling((double)pageNumber / max) - 1) * max + 1;
+    int endPage = startPage + max - 1;
+    if (endPage > totalPage)
+    {
+        endPage = totalPage;
+    }
+
+    int previous = startPage - max;
+    if (previous < 1)
+    {
+        previous = 1;
+    }
+    int next = endPage + 1;
+    if (next > totalPage)
+    {
+        next = totalPage;
+    }
+}
+
+
+<div class="paging">
+    <a href="#none;" data-page="1" class="first">@Text["처음"]</a>
+    <a href="#none;" data-page="@previous" class="prev">@Text["이전"]</a>
+    @for (long i = startPage; i <= endPage; i++)
+    {
+        if (pageNumber == i)
+        {
+            <a href="#none;" data-page="@i" class="on">@i</a>
+        }
+        else
+        {
+            <a href="#none;" data-page="@i">@i</a>
+        }
+    }
+            <a href="#none;" data-page="@next" class="next">@Text["다음"]</a>
+            <a href="#none;" data-page="@totalPage" class="last">@Text["마지막"]</a>
+</div>
+

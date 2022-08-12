@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--댓글-->
+<QueryList>
+  <!--댓글 목록-->
+  <Query id="Comment.GetList" group="folder">
+    <![CDATA[
+		SELECT * FROM (
+			SELECT 
+				#SelectColumn# #CountColumn# 
+			FROM (
+        SELECT c.* FROM TB_COMMENT c
+			  WHERE ARTICLE_ID = @ARTICLE_ID
+      ) t
+		) t WHERE 1=1
+		]]>
+  </Query>
+
+  <!--댓글 파일 목록-->
+  <Query id="Comment.GetFileList" group="folder">
+    <![CDATA[
+    SELECT * FROM TB_FILE f WHERE OBJECT_ID IN (
+		  SELECT COMMENT_ID FROM (
+			  SELECT 
+				  #SelectColumn#
+			  FROM (
+          SELECT * FROM TB_COMMENT c
+			    WHERE ARTICLE_ID = @ARTICLE_ID
+        ) t
+		  ) t WHERE 1=1
+    )
+    ORDER BY FILE_ID
+		]]>
+  </Query>
+
+  <CommonSub group="folder" id="Integrate" property="Area" value="Integrate" mode="include" >
+    <![CDATA[
+				AND (TITLE LIKE N'%[Word]%' OR BODY LIKE N'%[Word]%')
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="Title" property="Area" value="Title" mode="include" >
+    <![CDATA[
+				AND TITLE LIKE N'%[Word]%'
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="UserNm" property="Area" value="UserNm" mode="include" >
+    <![CDATA[
+				AND UserNm LIKE N'%[Word]%'
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="DateType">
+    <![CDATA[ 
+      AND [DateType] BETWEEN @StartDate AND @EndDate
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="SelectColumn" property="IsCount" value="False" mode="include">
+    <![CDATA[
+			  ROW_NUMBER() OVER( ORDER BY CREATE_DATE DESC ) rnum, t.*
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="CountColumn" property="IsCount" value="True"  mode="include">
+    <![CDATA[
+			count(*) TOTAL_COUNT
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="PageRange" property="IsCount" value="False" mode="include">
+    <![CDATA[
+			LIMIT @RowStart, @PageSize
+		  ]]>
+  </CommonSub>
+</QueryList>

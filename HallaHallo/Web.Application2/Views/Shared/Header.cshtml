@@ -1,0 +1,99 @@
+﻿@{
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+    var category = ViewData["_Cateogry"] as CategoryEntity;
+}
+
+<div id="nav">
+    <h1 class="logo">
+        <a href="~/" class="halla_tube"></a>
+        <a href="https://ep.halla.com/Portal/" target="_blank" title="@Text["새 창으로 열기"]" class="hanmaru"></a>
+    </h1>
+
+    <div id="menu">
+		<ul>
+			@foreach (var item in topmenu)
+			{
+				if (item.IsDisplay == "N") { continue; }
+				var first = menu.Values.FirstOrDefault(p => p.ParentID == item.CategoryID && p.IsDisplay == "Y" && p.IsDel == "N");
+				if (first == null)
+				{
+					<li><a href="#none;">@item.GetName(User.Language)</a></li>
+				}
+				else if (string.IsNullOrEmpty(first.Data))
+				{
+					<li><a href="~/Article/AllList?CategoryCode=@item.CategoryID" data-id="@(first?.CategoryID)">@item.GetName(User.Language)</a></li>
+					@*<li><a href="~/Article/List?CategoryCode=@first.CategoryID" data-id="@(first?.CategoryID)">@item.GetName(User.Language)</a></li>*@
+				}
+				else
+				{
+					<li><a href="@first.Data" data-id="@(first?.CategoryID)">@item.GetName(User.Language)</a></li>
+				}
+			}
+		</ul>
+    </div>
+
+    <div id="nav_util">
+        <ul>
+            @{
+                var alarmRepository = new AlarmRepository();
+            }
+            <li class="notice @(alarmRepository.Exist(User.UserId)?"on":"")"><a href="~/Alarm/List">@Text["알림"]<span></span></a></li>
+            <li class="search"><button type="button">@Text["통합검색"]</button></li>
+        </ul>
+    </div>
+
+    <div class="search_wrap">
+        <div class="search_area">
+            <input type="text" class="search_input" title="@Text["통합검색"]" placeholder="@Text["검색어를 입력하세요"]">
+            <button type="button" id="btSearchTop" class="btn_search">@Text["검색하기"]</button>
+            <button type="button" class="btn_search_close">@Text["검색창 닫기"]</button>
+        </div>
+    </div>
+
+    <button type="button" class="btn_allmenu">@Text["전체메뉴"]</button>
+    <div id="allmenu">
+        <div class="allmenu_box">
+            <div class="menu_wrap">
+                @{
+                    int idx = 0;
+                }
+                @foreach (var itemTopMenu in topmenu)
+                {
+                    if (itemTopMenu.IsDisplay == "N") { continue; }
+                    idx++;
+                    <ul class="menu0@(idx)">
+                        @foreach (var item in menu.Values.Where(p => p.ParentID == itemTopMenu.CategoryID))
+                        {
+                            if (item.IsDisplay == "N") { continue; }
+                            string url = item.Data;
+                            if (string.IsNullOrEmpty(url))
+                            {
+                                url = $"{Config.AppPath}Article/List?CategoryCode={item.CategoryID}";
+                            }
+
+                            if (item.CategoryID == category?.CategoryID)
+                            {
+                                <li><a href="@url" data-id="@item.CategoryID"><strong>@item.GetName(User.Language)</strong></a></li>
+                            }
+                            else
+                            {
+                                <li><a href="@url" data-id="@item.CategoryID">@item.GetName(User.Language)</a></li>
+                            }
+                        }
+                    </ul>
+                }
+            </div>
+
+            <!-- other_menu -->
+            <div class="other_menu">
+                <ul>
+                    <li class="menu01"><a href="~/Intro">@Text["HALLO 소개"]</a></li>
+                    <li class="menu02"><a href="~/Article/Pairing/List">@Text["콘텐츠 편성표"]</a></li>
+                    <li class="menu03"><a href="~/Article/Contents/List">@Text["콘텐츠 제안"]</a></li>
+                </ul>
+            </div>
+            <!-- //other_menu -->
+        </div>
+    </div>
+</div>

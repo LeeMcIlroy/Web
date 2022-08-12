@@ -1,0 +1,45 @@
+﻿@model object
+@{
+    ReflctionObject rbj;
+
+    if (Model is ReflctionObject)
+    {
+        rbj = Model as ReflctionObject;
+    }
+    else
+    {
+        rbj = new ReflctionObject
+        {
+            Object = Model,
+            Type = Model.GetType()
+        };
+    }
+
+    foreach (var property in rbj.Type.GetProperties())
+    {
+        if (property.Name == "Item")
+        {
+            continue;
+        }
+
+        var attr = property.GetCustomAttributes(typeof(ReflectionTypeAttribute), false);
+        if (attr.Length > 0)
+        {
+            if ((attr[0] as ReflectionTypeAttribute).FieldGroup == "NoUserInput")
+            {
+                continue;
+            }
+        }
+
+        object val = property.GetValue(rbj.Object, null);
+        if (val is DateTime)
+        {
+            if (!((DateTime)val).IsValid())
+            {
+                val = string.Empty;
+            }
+        }
+
+        <input type="hidden" id="h@(property.Name)" name="@property.Name" value="@val" />
+    }
+}

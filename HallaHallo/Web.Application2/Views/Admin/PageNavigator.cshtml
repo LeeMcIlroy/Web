@@ -1,0 +1,57 @@
+﻿@model SearchModel
+@{
+    long totalCount = Model.TotalCount;
+    if (totalCount == 0) { return; }
+    int pageSize = Model.PageSize;
+    int pageNumber = Model.PageNumber;
+
+    int max = 10;
+    int totalPage = (int)Math.Ceiling((double)totalCount / pageSize);
+    //if (totalPage == 0) { totalPage = 1; }
+    int startPage = (int)(Math.Ceiling((double)pageNumber / max) - 1) * max + 1;
+    int endPage = startPage + max - 1;
+    if (endPage > totalPage)
+    {
+        endPage = totalPage;
+    }
+
+    int previous = startPage - max;
+    if (previous < 1)
+    {
+        previous = 1;
+    }
+    int next = endPage + 1;
+    if (next > totalPage)
+    {
+        next = totalPage;
+    }
+}
+
+<div class="page_group">
+    <div class="paging">
+        <div class="btn_page"><img src="~/_img/ic_ar_last.png" alt="처음" data-page="1"/></div>
+        <div class="btn_page"><img src="~/_img/ic_ar_next.png" alt="이전" data-page="@previous"/></div>
+        <div class="list_num">
+            @for (long i = startPage; i <= endPage; i++)
+            {
+                if (pageNumber == i)
+                {
+                    <a href="#" data-page="@i" class="on">@i</a>
+                }
+                else
+                {
+                    <a href="#" data-page="@i">@i</a>
+                }
+                if (i < endPage)
+                {
+                    <text>|</text>
+                }
+            }
+        </div>
+        <div class="btn_page"><img src="~/_img/ic_ar_prev.png" alt="이전" data-page="@next"/></div>
+        <div class="btn_page"><img src="~/_img/ic_ar_first.png" alt="마지막" data-page="@totalPage"/></div>
+    </div>
+</div>
+
+
+

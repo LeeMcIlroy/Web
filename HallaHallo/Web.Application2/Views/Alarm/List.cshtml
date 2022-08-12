@@ -1,0 +1,153 @@
+﻿@{
+    var list = ViewData["list"] as List<AlarmEntity>;
+    var search = ViewData["search"] as SearchModel;
+
+    var dateList = list.GroupBy(p => p.RegDate.TimeZone10(User.TimeZones)).Select(p => p.First());
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+}
+
+@section scripts{
+    <script>
+        $(function () {
+            $(document).on("click", "[data-page]", function (e) {
+                e.preventDefault();
+
+                $("#hPageNumber").val($(this).data("page"));
+                $("form").submit();
+            });
+
+            $(".btn_del").click(function (e) {
+                e.preventDefault();
+                var wrap = $(this).parents("li:first");
+                if (confirm("삭제하시겠습니까?")) {
+                    $.post("Delete", { id: wrap.data("id") }, function () {
+                        location.reload();
+                    });
+                }
+            });
+
+            $(".notice_list li a").click(function (e) {
+                var wrap = $(this).parents("li:first");
+                $.postSync("Read", { id: wrap.data("id")});
+            });
+
+            $("#btDeleteRead").click(function (e) {
+                e.preventDefault();
+                var wrap = $(this).parents("li:first");
+                if (confirm("삭제하시겠습니까?")) {
+                    $.post("DeleteRead", {  }, function () {
+                        location.reload();
+                    });
+                }
+            });
+
+            $("#btDeleteAll").click(function (e) {
+                e.preventDefault();
+                var wrap = $(this).parents("li:first");
+                if (confirm("삭제하시겠습니까?")) {
+                    $.post("DeleteAll", {  }, function () {
+                        location.reload();
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+<form method="get" action="">
+    <input type="hidden" name="PageNumber" id="hPageNumber" />
+</form>
+
+<div class="contents">
+    <div class="sub_tit_wrap">
+        <a href="#none;" class="btn_flat type_gray">목록보기</a>
+        <ul class="location">
+            <li><a href="#none;">HOME</a></li>
+            <li><a href="#none;">알림</a></li>
+        </ul>
+    </div>
+
+    <div class="headline">
+        <h2 class="tit">HALLO 알림</h2>
+    </div>
+
+    <div class="ex_con_wrap">
+        <div class="halla_notice">
+            <div class="top_util_wrap">
+                <ul>
+                    <li><button type="button" id="btDeleteRead">읽은 알림 삭제</button></li>
+                    <li><button type="button" id="btDeleteAll">모두 삭제</button></li>
+                </ul>
+            </div>
+
+            <div class="notice_list_wrap">
+                @if (list.Count == 0)
+                {
+                    <div class="=notice_group">
+                        <ul>
+                            <li style="text-align:center; padding-top:40px; font-size:20px;">
+                                새로운 알림이 없습니다.
+                            </li>
+                        </ul>
+                    </div>
+                    
+                }
+
+                @foreach (var dateItem in dateList)
+                {
+                    string date = dateItem.RegDate.TimeZone10(User.TimeZones);
+                    DateTime dt = DateTime.Parse(date);
+                    <div class="notice_group">
+                        
+                        <p class="date"><span>@dt.Month</span>월 <span>@dt.Day</span>일</p>
+                        <ul class="notice_list">
+                            @foreach (var item in list.FindAll(p => p.RegDate.TimeZone10(User.TimeZones) == date))
+                            {
+                                string title = "";
+                                string userNm = item[$"USER_{User.Language}Nm"].ToString();
+
+                                //자기가 쓴 댓글
+                                //xxx 글에 댓글을 작성하였습니다.
+                                if (item.AlarmType == "Self")
+                                {
+                                    title = $"글에 댓글을 작성하였습니다.";
+                                }
+
+                                //자신이 쓴 글에 대한 타인의 댓글
+                                //xxx 글에 xxx님이 댓글을 작성하였습니다.
+                                if (item.AlarmType == "Comment")
+                                {
+                                    title = $"글에 {userNm}님이 댓글을 작성하였습니다.";
+                                }
+
+                                //자신이 쓴 댓글에 대한 타인의 댓글
+                                //xxx 글의 댓글에 xxx님이 답글을 작성하였습니다.
+                                if (item.AlarmType == "Reply")
+                                {
+                                    title = $"글의 댓글에 {userNm}님이 답글을 작성하였습니다.";
+                                }
+
+                                <li data-id="@item.AlarmID" data-target="@item.TargetID">
+                                    <a href="@(Config.AppPath)Article/Read?id=@item.TargetID#pCommentList">
+                                        <p class="label">@menu[menu[item.ArticleCategory].ParentID].GetName(User.Language)</p>
+                                        <div class="txt_wrap">
+                                            <p class="inform" style="font-weight:@(item.AlarmState=="Ready"?"bold":"")">[@item.ArticleTitle] @title</p>
+                                            <p class="category">
+                                                <span>@menu[menu[item.ArticleCategory].ParentID].GetName(User.Language)</span>
+                                                <span>@menu[item.ArticleCategory].GetName(User.Language)</span>
+                                            </p>
+                                        </div>
+                                    </a>
+                                    <button type="button" class="btn_del">알림 삭제</button>
+                                </li>
+                            }
+
+                        </ul>
+                    </div>
+                }
+
+                @Html.Partial("PageNavigator", search)
+            </div>
+        </div>
+    </div>
+</div>

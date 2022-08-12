@@ -1,0 +1,91 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+}
+
+@section scripts{
+    <script>
+        $(function () {
+            $("#btSearch").click(function () {
+                $("#hPageNumber").val(1);
+                search();
+            });
+
+            $("#tbWord").keydown(function (e) {
+                if (e.keyCode == 13) {
+                    $("#btSearch").click();
+                }
+            });
+
+            function search() {
+                $("form").submit();
+            }
+
+            $(".con_area").on("click", "[data-page]", function (e) {
+                e.preventDefault();
+                $("#hPageNumber").val($(this).data("page"));
+                search();
+            });
+
+            $("#btWrite").click(function () {
+                location.href = "BannerWrite";
+            });
+        });
+    </script>
+}
+
+<div class="con_area">
+    <div class="ta01">
+        <div class="main_title">배너 관리</div>
+        <div class="table_set">
+            <!--인풋그룹-->
+            <div class="input_group">
+                <div class="sel_category">
+                    <div class="al_right"><input type="submit" id="btWrite" value="등록" /></div>
+                </div>
+                <form action="" method="get">
+                    <input type="hidden" id="hPageNumber" name="PageNumber"/>
+                    @Html.Partial("MainSearch")
+                </form>
+            </div>
+            <!--테이블-->
+            <table class="ta_carousel">
+                <colgroup><col><col><col><col><col><col></colgroup>
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>제목</th>
+                        <th>링크보기</th>
+                        <th>배너이미지</th>
+                        <th>노출기간</th>
+                        <th>등록일</th>
+                        <th class="non">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in list)
+                    {
+                        <tr>
+                            <td>@item["rnum"]</td>
+                            <td class="al_left">@item.Title</td>
+                            <td><a href="@item.Body">URL링크</a></td>
+                            <td><a href="BannerWrite?id=@item.ArticleID"><img src="@item.ThumbPath" style="width:400px;height:90px;"/></a></td>
+                            <td>@item.StartDate.ToDate() ~ @item.EndDate.ToDate()</td>
+                            <td>@item.RegDate.TimeZone10(User.TimeZones)</td>
+                            <td class="non">@item.ViewCount</td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+
+            <!--paging-->
+            @Html.Partial("PageNavigator", search)
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--게시물-->
+<QueryList>
+
+  <!--등록-->
+	<Query id="Article.Create">
+		<![CDATA[
+		INSERT INTO TB_ARTICLE( ARTICLE_ID, GROUP_ID, ARTICLE_LEVEL, BOARD_CODE, CATEGORY_CODE, ARTICLE_TYPE, TITLE, BODY, SUMMARY, HASHTAG, MASTER_ID, REG_ID, REG_DATE, START_DATE, END_DATE, STATE, IS_NOTICE, VIEW_COUNT, COMMENT_COUNT, LIKE_COUNT, SHARE_COUNT, IS_DEL, USER_KORNM, USER_ENGNM, USER_CHNNM )
+		VALUES( @ARTICLE_ID, @GROUP_ID, @ARTICLE_LEVEL, @BOARD_CODE, @CATEGORY_CODE, @ARTICLE_TYPE, @TITLE, @BODY, @SUMMARY, @HASHTAG, @MASTER_ID, @REG_ID, @REG_DATE, @START_DATE, @END_DATE, @STATE, @IS_NOTICE, @VIEW_COUNT, @COMMENT_COUNT, @LIKE_COUNT, @SHARE_COUNT, @IS_DEL, @USER_KORNM, @USER_ENGNM, @USER_CHNNM )
+		]]>
+	</Query>
+
+  <!--단일 선택-->
+	<Query id="Article.Get">
+		<![CDATA[
+		SELECT * FROM TB_ARTICLE 
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+	</Query>
+
+  <!--메인 화면 구역별 게시물 선택-->
+  <Query id="Article.GetMainList">
+    <![CDATA[
+    SELECT a.*
+          , s.SECTION_ID, s.SECTION_CODE, s.EXIST_VIEW_COUNT, s.REG_DATE SET_DATE 
+          ,f.PATH THUMB_PATH
+    FROM TB_ARTICLE a
+    LEFT JOIN TB_FILE f ON a.ARTICLE_ID=f.OBJECT_ID AND f.OBJECT_TYPE='Thumb'
+    INNER JOIN TB_ARTICLE_SECTION s ON a.ARTICLE_ID=s.ARTICLE_ID
+    INNER JOIN (
+      SELECT max(SECTION_ID) SECTION_ID FROM TB_ARTICLE_SECTION t
+      WHERE SECTION_CODE IN ('[CODES]')
+      GROUP BY SECTION_CODE
+    ) m ON m.SECTION_ID=s.SECTION_ID
+    ORDER BY SECTION_ID
+		]]>
+  </Query>
+
+  <!--배너 선택-->
+  <Query id="Article.GetBanner">
+    <![CDATA[
+    SELECT a.*,f.PATH THUMB_PATH FROM TB_ARTICLE a
+    LEFT JOIN TB_FILE f ON a.ARTICLE_ID=f.OBJECT_ID AND f.OBJECT_TYPE='Thumb'
+		WHERE BOARD_CODE='Banner' AND ARTICLE_TYPE=@Type
+	AND @Date BETWEEN a.START_DATE AND END_DATE
+    AND IS_DEL='N'
+    ORDER BY ARTICLE_ID DESC
+		]]>
+  </Query>
+  
+
+  <!--조회수 증가-->
+  <Query id="Article.IncreaseViewCount">
+    <![CDATA[
+		UPDATE TB_ARTICLE SET 
+      VIEW_COUNT=VIEW_COUNT+1
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+  </Query>
+  
+  <!--좋아요수 증가-->
+  <Query id="Article.IncreaseLikeCount">
+    <![CDATA[
+		UPDATE TB_ARTICLE SET 
+      LIKE_COUNT=LIKE_COUNT+1
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+  </Query>
+
+  <!--좋아요수 감소-->
+  <Query id="Article.DecreaseLikeCount">
+    <![CDATA[
+		UPDATE TB_ARTICLE SET 
+      LIKE_COUNT=LIKE_COUNT-1
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+  </Query>
+
+  <!--공유수 증가-->
+  <Query id="Article.IncreaseShareCount">
+    <![CDATA[
+		UPDATE TB_ARTICLE SET 
+      SHARE_COUNT=SHARE_COUNT+1
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+  </Query>
+
+  <!--댓글수 증가-->
+  <Query id="Article.IncreaseCommentCount">
+    <![CDATA[
+		UPDATE TB_ARTICLE SET 
+      COMMENT_COUNT=COMMENT_COUNT+1
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+  </Query>
+
+  <!--댓글수 감소-->
+  <Query id="Article.DecreaseCommentCount">
+    <![CDATA[
+		UPDATE TB_ARTICLE SET 
+      COMMENT_COUNT=COMMENT_COUNT-1
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+  </Query>
+
+  <!--단일 수정-->
+  <Query id="Article.Update">
+		<![CDATA[
+		UPDATE TB_ARTICLE SET 
+		  ARTICLE_TYPE=@ARTICLE_TYPE
+    , CATEGORY_CODE=@CATEGORY_CODE
+		, TITLE=@TITLE
+		, BODY=@BODY
+		, SUMMARY=@SUMMARY
+    , HASHTAG=@HASHTAG
+    , MASTER_ID=@MASTER_ID
+		
+		, START_DATE=@START_DATE
+    , END_DATE=@END_DATE
+		, STATE=@STATE
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+	</Query>
+
+  <!--단일 삭제-->
+	<Query id="Article.Delete">
+		<![CDATA[
+		UPDATE TB_ARTICLE SET 
+		  IS_DEL='Y'
+		WHERE ARTICLE_ID=@ARTICLE_ID
+		]]>
+	</Query>
+
+</QueryList>

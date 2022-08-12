@@ -1,0 +1,318 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+
+    DataTable dt = ViewData["dt"] as DataTable;
+    var search = ViewData["search"] as StatsSearchModel;
+    var list = ViewData["list"] as List<LogEntity>;
+
+    int range = 24;
+    int start = 0;
+    if (search.DateType == "Day") { range = 31; start = 1; }
+    else if (search.DateType == "Month") { range = 12; start = 1; }
+    else if (search.DateType == "Year")
+    {
+        range = search.EndDate.Year - search.StartDate.Year + 1;
+        start = search.StartDate.Year;
+    }
+
+
+    long sum = 0;
+    string[] label = new string[range];
+    long[] data = new long[range];
+
+    foreach (DataRow dr in dt.Rows)
+    {
+        long cnt = (long)dr["cnt"];
+        data[(int)dr[search.DateType] - start] = cnt;
+        sum += cnt;
+    }
+
+    string unit = "시";
+    if (search.DateType == "Day") { unit = "일"; }
+    else if (search.DateType == "Month") { unit = "월"; }
+    else if (search.DateType == "Year") { unit = "년"; }
+
+    for (int i = 0; i < range; i++)
+    {
+        label[i] = i + start + unit;
+    }
+
+
+    var logRepository = new LogRepository();
+    var compList = WebCache.Get("CompList") as DataTable;
+    if (compList == null)
+    {
+        compList = logRepository.GetCompList();
+        WebCache.Set("CompList", compList);
+    }
+
+    string[] labelGrade = null;
+    long[] dataGrade = null;
+    DataTable dtGrade = ViewData["dtGrade"] as DataTable;
+    if (dtGrade != null)
+    {
+        labelGrade = new string[dtGrade.Rows.Count];
+        dataGrade = new long[dtGrade.Rows.Count];
+
+        int i = 0;
+        foreach (DataRow dr in dtGrade.Rows)
+        {
+            dataGrade[i] = (long)dr[0];
+            labelGrade[i] = dr[1].ToString();
+            i++;
+        }
+    }
+
+    string[] labelPosition = null;
+    long[] dataPosition = null;
+    DataTable dtPosition = ViewData["dtPosition"] as DataTable;
+    if (dtPosition != null)
+    {
+        labelPosition = new string[dtPosition.Rows.Count];
+        dataPosition = new long[dtPosition.Rows.Count];
+
+        int i = 0;
+        foreach (DataRow dr in dtPosition.Rows)
+        {
+            dataPosition[i] = (long)dr[0];
+            labelPosition[i] = dr[1].ToString();
+            i++;
+        }
+    }
+}
+
+@section scripts{
+    <script src="//cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/chartjs-plugin-colorschemes.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+
+    <script>
+        $(function () {
+            if ($("input:checkbox[id='tbUnique']").is(":checked"))
+                $("#btExcel").hide();
+
+            $("#btSearch").click(function () {
+                $("#hUseExcel").val('N');
+
+                $("#hPageNumber").val(1);
+                search();
+            });
+
+            $("#tbWord").keydown(function (e) {
+                if (e.keyCode == 13) {
+                    $("#btSearch").click();
+                }
+            });
+
+            $("#tbUnique").change(function () {
+                $("#btSearch").click();
+            });
+
+            $("#btExcel").click(function () {
+                $("#hUseExcel").val('Y');
+                $("#hPageNumber").val(1);
+                search();
+            });
+
+            function search() {
+
+                var diff = new Date($("#tbEndDate").val()) - new Date($("#tbStartDate").val());
+                var day = diff / (24 * 60 * 60 * 1000);
+                //if (day > 30) {
+                //    alert('30일 이상은 조회 할 수 없습니다.');
+                //    return;
+                //}
+
+                $("form").submit();
+            }
+
+        });
+
+        function hexToRgb(hex) {
+            // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+            var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+            hex = hex.replace(shorthandRegex, function (m, r, g, b) {
+                return r + r + g + g + b + b;
+            });
+
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+    </script>
+}
+
+<div class="con_area">
+    <div class="ta01">
+        <div class="main_title">접속일별 통계</div>
+        <div class="status_set">
+            <div class="st_tab_group">
+                <ul>
+                    <li><a href="?DateType=Hour" class="@(search.DateType=="Hour"?"on":"")">시간별</a></li>
+                    <li><a href="?DateType=Day" class="@(search.DateType=="Day"?"on":"")">일별</a></li>
+                    <li><a href="?DateType=Month" class="@(search.DateType=="Month"?"on":"")">월별</a></li>
+                    <li><a href="?DateType=Year" class="@(search.DateType=="Year"?"on":"")">년별</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <form action="" method="post">
+            <input type="hidden" name="DateType" value="@search.DateType" />
+            <input type="hidden" id="hUseExcel" name="UseExcel" value="" />
+            <!--인풋그룹-->
+            <div class="input_group02">
+                <select name="UserCompNm">
+                    <option value="">전체</option>
+                    @foreach (DataRow dr in compList.Rows)
+                    {
+                        <option value="@dr["USER_COMP_NM"]" @(dr["USER_COMP_NM"].ToString() == search.UserCompNm ? "selected" : "")>@dr["USER_COMP_NM"]</option>
+                    }
+                </select>
+                <label for="date01" class="mgr30 mgl8">기간</label><input type="text" f-type="date" id="tbStartDate" name="StartDate" class="width:150" value="@search.StartDate.ToDate()" /> ~ <input type="text" f-type="date" id="tbEndDate" name="EndDate" class="width:150" value="@search.EndDate.ToDate()" />
+                <input type="button" id="btSearch" value="검색" class="h40" style="padding-top:10px;" />
+                <input type="button" id="btExcel" value="EXCEL 다운로드" class="h40" style="padding-top:10px; float:right;" />
+            </div>
+
+
+            <div class="info">
+                Total : <span>@sum.ToString("#,#")</span>&nbsp;&nbsp; / &nbsp;&nbsp;<label for="tbUnique" class="txt_fo">중복 접속자수 제거</label><input type="checkbox" id="tbUnique" name="Unique" value="Y" @(search.Unique == "Y" ? "checked" : "") />
+            </div>
+        </form>
+        <!--데이터 그래프 영역 시작-->
+        <div class="info">
+            <canvas id="chartConnect" style="width:100%; height:300px"></canvas>
+            <script>
+                $(function () {
+                    var ctx = document.getElementById('chartConnect').getContext('2d');
+                    var chartConnect = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(label)),
+                            datasets: [{
+                                label: "접속자",
+                                data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(data)),
+
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            legend: {
+                                display: false
+                            },
+                            tooltips: {
+                                callbacks: {
+                                    label: function (tooltipItem) {
+                                        return tooltipItem.yLabel;
+                                    }
+                                }
+                            },
+                            spanGaps: false,
+                            elements: {
+                                line: {
+                                    tension: 0.000001
+                                }
+                            },
+                            plugins: {
+                                filler: {
+                                    propagate: false
+                                }
+                            },
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        callback: function (value) { if (value % 1 === 0) { return value; } }
+                                    }
+                                }]
+                            },
+                            plugins: {
+                                colorschemes: {
+                                    scheme: 'tableau.Tableau20'
+                                }
+                            }
+                        },
+                    });
+                });
+
+            </script>
+        </div>
+        @if (!string.IsNullOrEmpty(search.UserCompNm))
+        {
+            <div class="info">
+                <table style="width:100%; table-layout:fixed">
+                    <colgroup>
+                        <col style="width:50%;" />
+                        <col style="width:50%;" />
+                    </colgroup>
+                    <tr>
+                        <td>
+                            <canvas id="chartGrade" style="width:100%; height:300px"></canvas>
+                            <script>
+                                $(function () {
+                                    var ctx = document.getElementById('chartGrade').getContext('2d');
+                                    var chartGrade = new Chart(ctx, {
+                                        type: 'doughnut',
+                                        data: {
+                                            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(labelGrade)),
+                                            datasets: [{
+                                                label: "직책별",
+                                                data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dataGrade)),
+                                                
+                                                borderWidth: 1
+                                            }]
+                                        },
+                                        options: {
+                                            plugins: {
+                                                labels: {
+                                                    fontColor: '#000',
+                                                }
+                                            },
+                                        },
+                                    });
+                                });
+
+                            </script>
+                        </td>
+                        <td>
+                            <canvas id="chartPosition" style="width:100%; height:300px"></canvas>
+                            <script>
+                                $(function () {
+                                    var ctx = document.getElementById('chartPosition').getContext('2d');
+                                    var chartPosition = new Chart(ctx, {
+                                        type: 'doughnut',
+                                        data: {
+                                            labels: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(labelPosition)),
+                                            datasets: [{
+                                                label: "직급별",
+                                                data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dataPosition)),
+
+                                                borderWidth: 1
+                                            }]
+                                        },
+                                        options: {
+                                            plugins: {
+                                                colorschemes: {
+                                                    scheme: 'tableau.Tableau20'
+                                                },
+                                                labels: {
+                                                    fontColor: '#000',
+                                                }
+                                            }
+                                        },
+                                    });
+                                });
+
+                            </script>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+        }
+    </div>
+</div>
+
+

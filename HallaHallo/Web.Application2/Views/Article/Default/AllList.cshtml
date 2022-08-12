@@ -1,0 +1,43 @@
+﻿@{
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var category = ViewData["_Category"] as CategoryEntity;
+}
+
+@section scripts{
+<script>
+    $(function(){
+        $(document).on("click", "[data-page]", function (e) {
+            e.preventDefault();
+
+            $("#hPageNumber").val($(this).data("page"));
+            $("form").submit();
+        });
+    });
+</script>
+}
+
+<form method="get" action="">
+    <input type="hidden" name="CategoryCode" value="@category.CategoryCode" />
+    <input type="hidden" name="PageNumber" id="hPageNumber" />
+</form>
+
+<div class="contents">
+    <div class="sub_tit_wrap">
+        <h2 class="sub_tit">@category.GetName(User.Language)</h2>
+        @Html.Partial("Nav")
+    </div>
+
+
+    <div class="con_wrap">
+        <div class="item_list_wrap">
+            @Html.Partial("ArticleList", list)
+
+            <!-- paging -->
+            @Html.Partial("PageNavigator", search)
+            <!-- //paging -->
+        </div>
+    </div>
+</div>

@@ -1,0 +1,84 @@
+﻿@{
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var category = ViewData["_Category"] as CategoryEntity;
+}
+
+@section scripts{
+<script>
+    $(function(){
+        $("#btWrite").click(function (e) {
+            e.preventDefault();
+
+            location.href = "Write";
+        });
+    });
+</script>
+}
+
+
+<div class="contents">
+    <div class="sub_tit_wrap">
+        <a href="#none;" class="btn_flat type_gray">@Text["목록보기"]</a>
+        <ul class="location">
+            <li><a href="#none;">HOME</a></li>
+            <li><a href="#none;">@Text["콘텐츠 제안"]</a></li>
+        </ul>
+    </div>
+
+    <div class="headline">
+        <h2 class="tit">@Text["콘텐츠 제안"]</h2>
+    </div>
+
+    <div class="con_wrap">
+        <div class="ex_con_wrap">
+            <div class="suggestion_wrap">
+                <div class="tbl_wrap">
+                    <table>
+                        <caption>@Text["콘텐츠 제안"] @Text["목록"]</caption>
+                        <colgroup>
+                            <col width="7.1%;" />
+                            <col width="10.7%;" />
+                            <col width="*;" />
+                            <col width="10.1%;" />
+                            <col width="11.9%;" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col">NO</th>
+                                <th scope="col">@Text["메뉴"]</th>
+                                <th scope="col">@Text["제목"]</th>
+                                <th scope="col">@Text["작성자"]</th>
+                                <th scope="col">@Text["날짜"]</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in list)
+                            {
+                                <tr>
+                                    <td>@(search.TotalCount - ((long)item["rnum"]) + 1)</td>
+                                    <td><span>@menu[menu[item.CategoryCode].ParentID].GetName(User.Language)</span></td>
+                                    <td class="title"><a href="Read?id=@item.ArticleID">@item.Title</a></td>
+                                    <td>@item[$"USER_{User.Language}NM"]</td>
+                                    <td>@item.RegDate.TimeZone10(User.TimeZones)</td>
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- paging -->
+                @Html.Partial("PageNavigator", search)
+                <!-- //paging -->
+
+                <button id="btWrite" type="button" class="btn_suggestion">@Text["제안하기"]</button>
+            </div>
+        </div>
+
+        @Html.Partial("ArticleNewList")
+    </div>
+</div>

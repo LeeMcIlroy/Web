@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--게시물 구역-->
+<QueryList>
+  <!--등록-->
+	<Query id="ArticleSection.Create">
+		<![CDATA[
+		INSERT INTO TB_ARTICLE_SECTION( SECTION_ID, ARTICLE_ID, SECTION_CODE, EXIST_VIEW_COUNT, REG_DATE )
+		VALUES( @SECTION_ID, @ARTICLE_ID, @SECTION_CODE, @EXIST_VIEW_COUNT, @REG_DATE )
+		]]>
+	</Query>
+
+  <!--단일 선택-->
+	<Query id="ArticleSection.Get">
+		<![CDATA[
+		SELECT * FROM TB_ARTICLE_SECTION 
+		WHERE SECTION_ID=@SECTION_ID
+		]]>
+	</Query>
+
+  <!--단일 수정-->
+	<Query id="ArticleSection.Update">
+		<![CDATA[
+		UPDATE TB_ARTICLE_SECTION SET 
+		  SECTION_CODE=@SECTION_CODE
+		, EXIST_VIEW_COUNT=@EXIST_VIEW_COUNT
+		, REG_DATE=@REG_DATE
+		WHERE SECTION_ID=@SECTION_ID
+		]]>
+	</Query>
+
+  <!--단일 삭제-->
+	<Query id="ArticleSection.Delete">
+		<![CDATA[
+		DELETE FROM TB_ARTICLE_SECTION WHERE SECTION_ID=@SECTION_ID
+		]]>
+	</Query>
+
+  <Query id="ArticleSection.DeleteNew">
+    <![CDATA[
+		DELETE FROM TB_ARTICLE_SECTION WHERE SECTION_CODE LIKE 'New%'
+		]]>
+  </Query>
+
+</QueryList>

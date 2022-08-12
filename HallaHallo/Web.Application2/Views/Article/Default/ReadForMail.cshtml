@@ -1,0 +1,274 @@
+﻿@{
+    /**/
+    Layout = "~/Views/Shared/_LayoutForMail.cshtml";
+    var article = ViewData["article"] as ArticleEntity;
+    var like = ViewData["like"] as ArticleLikeEntity;
+    var commentList = ViewData["commentList"] as List<CommentEntity>;
+    var commentFiles = ViewData["commentFiles"] as List<FileEntity>;
+
+    var category = ViewData["_Category"] as CategoryEntity;
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+
+    var search = ViewData["search"] as SearchModel;
+    var refererUrl = ViewData["refererUrl"] as string;
+}
+
+@section scripts{
+    <script>
+        $(function () {
+
+
+            $(document).on("click", "#btLike", function (e) {
+                e.preventDefault();
+                var s = $(this);
+
+                if (s.hasClass("like")) {
+                    $.post('Like', { id: $.queryURL("id") }, function (data) {
+                        s.replaceWith(data);
+                    });
+                }
+                else {
+                    $.post('CancelLike', { id: $.queryURL("id") }, function (data) {
+                        s.replaceWith(data);
+                    });
+                }
+            });
+
+            $(document).on("click", "[data-page]", function (e) {
+                e.preventDefault();
+
+                $("#hPageNumber").val($(this).data("page"));
+                $("form").submit();
+            });
+
+            $(document).on("click", ".comment_area .btn_secret", function (e) {
+                $(this).toggleClass("current");
+            });
+
+            $(".comment_wrap").on("click", ".btn_register", function () {
+                var wrap = $(this).parents(".comment_area");
+                var editor = wrap.find(".comment_body");
+
+                var entity = {};
+                entity.CommentID = wrap.data("id");
+                entity.GroupID = wrap.data("group");
+                entity.ArticleID = $.queryURL("id");
+                entity.Body = editor.html();
+                if (editor.find("img").length == 0 && $.trim(editor.text()).length == 0) {
+                    alert(_text("msgInputField", { Name: "댓글" }));
+                    return;
+                }
+                entity.IsSecret = wrap.find(".btn_secret").hasClass("current") ? "Y" : "";
+
+                var formData = new FormData();
+                $.each(wrap.find("input[type='file']")[0].files, function (i, file) {
+                    formData.append('uploadfile', file);
+                });
+
+                $.ajax({
+                    type: "POST",
+                    enctype: 'multipart/form-data',
+                    url: _config.AppPath + "FileReceiver?type=Image",
+                    contentType: false,
+                    processData: false,
+                    data: formData,
+                    dataType: 'json',
+                    success: function (files) {
+                        var delFiles = [];
+                        wrap.find(".attached_wrap .delete").each(function () {
+                            delFiles.push($(this).data("id"));
+                        });
+
+                        $.post('CommentSave', { entity: entity, files: JSON.stringify(files), delFiles: JSON.stringify(delFiles) }, function (result) {
+                            var group = $('<li></li>').append(result);
+                            if (wrap.data("id") || wrap.data("group")) {
+                                wrap.parents("li:first").replaceWith(group);
+                                RemoveCommentArea();
+                            }
+                            else {
+                                editor.html('<div><br></div>');
+                                wrap.find(".btn_upload").val('');
+                                wrap.find(".btn_upload").change();
+
+                                $(".comment_list").append(group);
+                            }
+
+                            var count = parseInt($("#pCommentCount").text());
+                            $("#pCommentCount").text(count + 1);
+                        }, 'html');
+                    },
+                    error: function (e) {
+                        alert("fail");
+                    }
+                });
+            });
+
+            $(".comment_wrap").on("click", ".btn_del", function () {
+                RemoveCommentArea();
+
+                if (confirm(_text("confirmConfirm", { Name: "삭제" }))) {
+                    var inner = $(this).parents(".inner:first");
+
+                    $.post('CommentDelete', { id: inner.data("id") }, function () {
+                        inner.parents("li:first").remove();
+
+                        var count = parseInt($("#pCommentCount").text());
+                        $("#pCommentCount").text(count - 1);
+                    });
+                }
+            });
+
+            $(".comment_wrap").on("click", ".btn_modify", function () {
+                RemoveCommentArea();
+
+                var inner = $(this).parents(".inner:first");
+                $.post('CommentWrite', { id: inner.data("id") }, function (result) {
+                    inner.parent().append(result);
+                    $(result).find(".comment_body").focus();
+                }, 'html');
+            });
+
+            function RemoveCommentArea() {
+                var area = $(".comment_area.current");
+                if (area.data("id")) {//수정
+                    $(".comment_area.current").remove();
+                }
+                else {//답글
+                    $(".comment_area.current").parents("li:first").remove();
+                }
+            }
+
+            $(".comment_wrap").on("click", ".btn_cancel", function () {
+                RemoveCommentArea();
+            });
+
+            $(".comment_wrap").on("click", ".btn_del_file", function () {
+                $(this).parent().addClass('delete');
+                $(this).parent().hide();
+            });
+
+            $(".comment_wrap").on("click", ".btn_comment", function () {
+                RemoveCommentArea();
+
+                var inner = $(this).parents(".inner:first");
+                $.post('CommentWrite', { group: inner.data("group") }, function (result) {
+                    var group = $('<li></li>').append(result).addClass("reply_comment");
+                    $(".inner[data-group='" + inner.data("group") + "']:last").parents("li:first").after(group);
+                    group.find(".comment_body").focus();
+
+                }, 'html');
+            });
+
+            function controlselectHandler(evt) {
+                evt.preventDefault();
+            }
+            document.body.addEventListener('mscontrolselect', controlselectHandler);
+
+            $(".btn_imoticon").click(function () {
+                var idx = $(this).data('index');
+                var wrap = $(this).parents(".comment_area");
+                var editor = wrap.find(".comment_body");
+                //saveCaret(editor);
+
+                var selection = window.getSelection();
+                if (selection.containsNode === undefined) {
+                    selection.containsNode = function (target) {
+
+                        return (selection.anchorNode == target || $.contains(target, selection.anchorNode)) > 0
+                            && (selection.focusNode == target || $.contains(target, selection.focusNode));
+                    }
+                }
+                if (selection.rangeCount == 0 || !selection.containsNode(editor[0], true)) {
+                    selection.removeAllRanges();
+
+                    let range = document.createRange();
+                    range.setEndBefore(editor.find('div:last')[0]);
+                    range.collapse(false);
+                    selection.addRange(range);
+                }
+                var icon = $('<img src="' + _config.AppPath + 'inc/images/btn/btn_imoticon' + idx + '.png"> ')[0];
+                selection.deleteFromDocument();
+                selection.getRangeAt(0).insertNode(icon);
+                var range = selection.getRangeAt(0);
+                range.setEndAfter(icon);
+                range.collapse(false);
+                //$("#caret").after();
+                //restoreCaret(editor);
+
+            });
+
+
+            $(".attached_wrap .btn_layer_open").click(function (e) {
+                var html = $('<img style="max-width:1270px;"/>').attr("src", $(this).data("path"));
+                $("#pop_video_player").html(html);
+            });
+        });
+    </script>
+}
+
+<div class="contents">
+    <form method="get" action="#pCommentList">
+        <input type="hidden" name="id" value="@article.ArticleID" />
+        <input type="hidden" name="PageNumber" id="hPageNumber" />
+    </form>
+    <div class="headline">
+        <h2 class="tit">@article.Title</h2>
+    </div>
+
+    <div class="con_wrap">
+        <div class="ex_con_wrap">
+            <div class="news_view">
+                <div class="con_area">
+                    <p style="color:#556670;">
+                        @Html.Raw(article.Body)
+                    </p>
+                </div>
+
+                <div class="article_wrap">
+                    <div class="top_info_wrap">
+                        <ul>
+                            <li id="pViewCount" class="view">@article.ViewCount</li>
+                            @Html.Partial("ArticleLike")
+                            <li class="share" style="cursor:pointer;" id="btShare">@article.ShareCount</li>
+                        </ul>
+                        <p class="date">@article.RegDate.TimeZone16(User.TimeZones)</p>
+                    </div>
+
+                    <div class="summary_wrap">
+                        <p class="tit summary">요약정보</p>
+                        <div class="txt_wrap">
+                            <p class="txt">@article.Summary</p>
+                            <ul class="tag_list">
+                                @foreach (string t in article.Hashtag.Split('#'))
+                                {
+                                    if (string.IsNullOrEmpty(t)) { continue; }
+                                    <li><a href="~/Article/Search?area=Hashtag&word=@t">#<span>@t</span></a></li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="comment_wrap">
+                        <p class="tit comment">@Text["댓글"] (<span id="pCommentCount">@article.CommentCount</span>@Text["개"])</p>
+
+                        <ul id="pCommentList" class="comment_list">
+                            @foreach (var comment in commentList)
+                            {
+                                bool reply = comment.CommentLevel > 0;
+                                <li>
+                                    @Html.Partial("CommentItem", comment)
+                                </li>
+                            }
+                        </ul>
+
+                        <!-- paging -->
+                        @Html.Partial("PageNavigator", search)
+                        <!-- //paging -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

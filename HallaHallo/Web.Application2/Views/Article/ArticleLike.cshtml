@@ -1,0 +1,9 @@
+﻿
+@{
+    var article = ViewData["article"] as ArticleEntity;
+    var like = ViewData["like"] as ArticleLikeEntity;
+
+    Layout = null;
+}
+
+<li class="@(like==null?"like":"liking")" style="cursor:pointer;" id="btLike">@article.LikeCount</li>

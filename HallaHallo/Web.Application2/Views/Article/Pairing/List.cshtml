@@ -1,0 +1,104 @@
+﻿@{
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var category = ViewData["_Category"] as CategoryEntity;
+}
+
+@section scripts{
+<script>
+    $(function(){
+        $("#btSearch").click(function () {
+            $("#hPageNumber").val(1);
+            search();
+        });
+
+        $("#tbWord").keydown(function (e) {
+            if (e.keyCode == 13) {
+                $("#btSearch").click();
+            }
+        });
+
+        function search() {
+            $("form").submit();
+        }
+
+        $(".con_area").on("click", "[data-page]", function (e) {
+            e.preventDefault();
+            $("#hPageNumber").val($(this).data("page"));
+            search();
+        });
+
+        $(".date_wrap .prev").click(function () {
+            $("#hStartDate").val($(this).data("date"));
+
+            $("#hPageNumber").val(1);
+            search();
+        });
+
+        $(".date_wrap .next").click(function () {
+            $("#hStartDate").val($(this).data("date"));
+
+            $("#hPageNumber").val(1);
+            search();
+        });
+    });
+</script>
+}
+
+
+<div class="contents">
+	<div class="sub_tit_wrap">
+        <a href="#none;" class="btn_flat type_gray">@Text["목록보기"]</a>
+		<ul class="location">
+			<li><a href="#none;">HOME</a></li>
+			<li><a href="#none;">@Text["콘텐츠 편성표"]</a></li>
+		</ul>
+	</div>
+
+	<div class="headline">
+        <h2 class="tit">@Text["콘텐츠 편성표"]</h2>
+	</div>
+
+    <form>
+        <input type="hidden" name="Area" value="Period" />
+        <input type="hidden" id="hStartDate" name="StartDate" />
+        <input type="hidden" id="hPageNumber" name="PageNumber" />
+    </form>
+
+	<div class="con_wrap">
+		<div class="ex_con_wrap">
+            <div class="org_table">
+                <div class="date_wrap">
+                    <div class="inner">
+                        <button type="button" class="prev" data-date="@search.StartDate.AddMonths(-1).ToDate()">@Text["이전"]</button>
+                        <p class="date">
+                            <span class="year">@search.StartDate.Year</span>
+                            <span class="month"><em>@search.StartDate.Month</em>@Text["월"]</span>
+                        </p>
+                        <button type="button" class="next" data-date="@search.StartDate.AddMonths(1).ToDate()">@Text["다음"]</button>
+                    </div>
+                </div>
+
+                <ul class="con_list">
+                    @foreach (var item in list)
+                    {
+                        <li>
+                            <a href="#none;">
+                                <p class="label">@menu[menu[item.CategoryCode].ParentID].GetName(User.Language)</p>
+                                <p class="category">@menu[item.CategoryCode].GetName(User.Language)</p>
+                                <p class="tit">@item.Title</p>
+                            </a>
+                        </li>
+                    }
+
+                </ul>
+
+                @Html.Partial("PageNavigator", search)
+            </div>
+		</div>
+
+		
+	</div>
+</div>

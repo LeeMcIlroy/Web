@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--게시물-->
+<QueryList>
+
+  <Query id="Article.GetRelatedList2" group="folder">
+    <![CDATA[
+		SELECT a.*,f.PATH THUMB_PATH FROM TB_ARTICLE a
+    LEFT JOIN TB_FILE f ON a.ARTICLE_ID=f.OBJECT_ID AND f.OBJECT_TYPE='Thumb'
+		WHERE IS_DEL='N' AND CATEGORY_CODE IN ( SELECT CATEGORY_CODE FROM TB_CATEGORY WHERE PARENT_ID=@parentCode ) AND BOARD_CODE = @BOARD_CODE
+    ORDER BY REG_DATE DESC
+    LIMIT 4
+		]]>
+  </Query>
+
+  <!--연관 콘텐츠-->
+  <Query id="Article.GetRelatedList" group="folder">
+    <![CDATA[
+		SELECT a.*,f.PATH THUMB_PATH FROM TB_ARTICLE a
+    LEFT JOIN TB_FILE f ON a.ARTICLE_ID=f.OBJECT_ID AND f.OBJECT_TYPE='Thumb'
+		WHERE IS_DEL='N' AND BOARD_CODE = 'Default' AND HASHTAG LIKE N'%#[Word]%'
+    ORDER BY REG_DATE DESC
+    LIMIT 4
+		]]>
+  </Query>
+
+  <!--콘텐츠 하단 최근 게시물-->
+  <Query id="Article.GetNewList" group="folder">
+    <![CDATA[
+		SELECT a.*,f.PATH THUMB_PATH FROM TB_ARTICLE a
+    LEFT JOIN TB_FILE f ON a.ARTICLE_ID=f.OBJECT_ID AND f.OBJECT_TYPE='Thumb'
+		WHERE IS_DEL='N' AND BOARD_CODE = 'Default' AND CATEGORY_CODE != '00000000011X'
+    ORDER BY REG_DATE DESC
+    LIMIT @Count
+		]]>
+  </Query>
+
+  <!--목록-->
+  <Query id="Article.GetList" group="folder">
+    <![CDATA[
+			SELECT 
+				#SelectColumn# #CountColumn# 
+			FROM (
+        SELECT a.*,f.PATH THUMB_PATH FROM TB_ARTICLE a
+        LEFT JOIN TB_FILE f ON a.ARTICLE_ID=f.OBJECT_ID AND f.OBJECT_TYPE='Thumb'
+			  WHERE IS_DEL='N' #CategoryCode# #BoardCode#
+        #Hashtag# #Integrate# #Body# #Title# #DateType# #Period#
+        #Carousel# #Hot#
+      ) t WHERE 1=1 #PageRange#
+		]]>
+  </Query>
+
+	<!--목록-->
+	<Query id="Article.GetAllList" group="folder">
+		<![CDATA[
+			SELECT 
+				#SelectColumn# #CountColumn# 
+			FROM (
+		SELECT a.*,f.PATH THUMB_PATH FROM TB_ARTICLE a
+		LEFT JOIN TB_FILE f ON a.ARTICLE_ID=f.OBJECT_ID AND f.OBJECT_TYPE='Thumb'
+				WHERE IS_DEL='N' #ParentCategoryCode# #BoardCode#
+		#Hashtag# #Integrate# #Body# #Title# #DateType# #Period#
+		#Carousel# #Hot#
+		) t WHERE 1=1 #PageRange#
+		]]>
+	</Query>
+
+	<!--구역별 설정 이력-->
+  <Query id="Article.GetMainHistoryList" group="folder">
+    <![CDATA[
+		SELECT * FROM (
+			SELECT 
+				#SelectColumn# #CountColumn# 
+			FROM (
+        SELECT a.*, s.SECTION_ID, s.SECTION_CODE, s.EXIST_VIEW_COUNT, s.REG_DATE SET_DATE FROM TB_ARTICLE a
+        INNER JOIN TB_ARTICLE_SECTION s ON a.ARTICLE_ID=s.ARTICLE_ID
+		    WHERE s.SECTION_CODE IN ('[CODES]')
+      ) t
+		) t WHERE 1=1 #PageRange#
+		]]>
+  </Query>
+
+
+  <!--기존 인기 컨텐츠 제외-->
+  <CommonSub group="folder" id="Hot">
+    <![CDATA[
+				AND ARTICLE_ID NOT IN( 
+          SELECT ARTICLE_ID FROM TB_ARTICLE_SECTION t
+          WHERE SECTION_CODE LIKE 'Hot%'
+        )
+			  ]]>
+  </CommonSub>
+
+  <!--기존 Carousel 제외-->
+  <CommonSub group="folder" id="Carousel">
+    <![CDATA[
+				AND ARTICLE_ID NOT IN ( 
+          SELECT a.ARTICLE_ID FROM TB_ARTICLE a
+          INNER JOIN TB_ARTICLE_SECTION s ON a.ARTICLE_ID=s.ARTICLE_ID
+          INNER JOIN (
+            SELECT max(SECTION_ID) SECTION_ID FROM TB_ARTICLE_SECTION t
+            WHERE SECTION_CODE LIKE 'Carousel%'
+            GROUP BY SECTION_CODE
+          ) m ON m.SECTION_ID=s.SECTION_ID
+        )
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="BoardCode">
+    <![CDATA[
+				AND BOARD_CODE = @BOARD_CODE
+			  ]]>
+  </CommonSub>
+
+	<CommonSub group="folder" id="ParentCategoryCode" mode="include">
+		<![CDATA[
+				AND CATEGORY_CODE IN (SELECT CATEGORY_CODE FROM TB_CATEGORY WHERE PARENT_ID = @CATEGORY_CODE)
+				]]>
+	</CommonSub>
+
+  <CommonSub group="folder" id="CategoryCode">
+    <![CDATA[
+				AND CATEGORY_CODE = @CATEGORY_CODE
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="Hashtag" property="Area" value="Hashtag" mode="include" >
+    <![CDATA[
+				AND HASHTAG LIKE N'%#[Word]%'
+			  ]]>
+  </CommonSub>
+  
+  <CommonSub group="folder" id="Integrate" property="Area" value="Integrate" mode="include" >
+    <![CDATA[
+				AND (TITLE LIKE N'%[Word]%' OR BODY LIKE N'%[Word]%')
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="Body" property="Area" value="Body" mode="include" >
+    <![CDATA[
+				AND BODY LIKE N'%[Word]%'
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="Title" property="Area" value="Title" mode="include" >
+    <![CDATA[
+				AND TITLE LIKE N'%[Word]%'
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="UserNm" property="Area" value="UserNm" mode="include" >
+    <![CDATA[
+				AND UserNm LIKE N'%[Word]%'
+			  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="Period" property="Area" value="Period" mode="include" >
+    <![CDATA[ 
+      AND ( START_DATE BETWEEN @StartDate AND @EndDate OR END_DATE BETWEEN @StartDate AND @EndDate OR START_DATE < @StartDate AND END_DATE > @EndDate )
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="DateType">
+    <![CDATA[ 
+      AND a.[DateType] BETWEEN @StartDate AND @EndDate
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="SelectColumn" property="IsCount" value="False" mode="include">
+    <![CDATA[
+      ROW_NUMBER() OVER(ORDER BY [InnerSortType] [SortOrd]) rnum, t.*
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="CountColumn" property="IsCount" value="True"  mode="include">
+    <![CDATA[
+			count(*) TOTAL_COUNT
+		  ]]>
+  </CommonSub>
+
+  <CommonSub group="folder" id="PageRange" property="IsCount" value="False" mode="include">
+    <![CDATA[
+			LIMIT @RowStart, @PageSize
+		  ]]>
+  </CommonSub>
+</QueryList>

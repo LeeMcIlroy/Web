@@ -1,0 +1,11 @@
+﻿@model ArticleEntity
+@{
+    if (Model?.ArticleType == "Video")
+    {
+        @Html.Partial("MainArticleVideo", Model)
+    }
+    else
+    {
+        @Html.Partial("MainArticle", Model)
+    }
+}

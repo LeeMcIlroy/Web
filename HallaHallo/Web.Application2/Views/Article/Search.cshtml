@@ -1,0 +1,79 @@
+﻿@{
+    var list = ViewData["list"] as List<ArticleEntity>;
+    var search = ViewData["search"] as SearchModel;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var category = ViewData["_Category"] as CategoryEntity;
+}
+
+<div class="contents">
+    <div class="sub_tit_wrap">
+        <h2 class="sub_tit">'<span>@search.Word</span>' @Text["검색 결과"] <em> <i>@list.Count</i> @Text["건"]</em></h2>
+        <ul class="location">
+            <li><a href="#none;">HOME</a></li>
+            <li><a href="#none;">@Text["검색"]</a></li>
+            <li><a href="#none;">@Text["검색결과"]</a></li>
+        </ul>
+    </div>
+
+    <div class="con_wrap">
+        <div class="item_list_wrap horizontal">
+            <ul class="item_list">
+                @if (list.Count == 0)
+                {
+                <li style="text-align:center; padding-top:40px; font-size:20px;">
+                    @Text["검색 결과가 없습니다."]
+                </li>
+                }
+                @foreach (var item in list)
+                {
+                    string type = "txt";
+                    if (item.ArticleType == "Image")
+                    {
+                        type = "img";
+                    }
+                    if (item.ArticleType == "Video")
+                    {
+                        type = "video";
+                    }
+
+                    string path = item.ThumbPath;
+                    if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(Server.MapPath(path)))
+                    {
+                        path = $"{Config.AppPath}inc/images/contents/default.jpg";
+                    }
+                    <li>
+                        <a href="~/Article/Read?id=@item.ArticleID">
+                            <div class="img_wrap">
+                                <p class="label">@menu[menu[item.CategoryCode].ParentID].GetName(User.Language)</p>
+                                <span class="classify @type"></span>
+                                <span class="icon_more"></span>
+                                <p class="img"><img src="@path" alt=""></p>
+                            </div>
+                        </a>
+                        <div class="txt_wrap">
+                            <a href="~/Article/Read?id=@item.ArticleID">
+                                <p class="tit">@item.Title</p>
+                                @{ 
+                                    string txt = Method.RemoveHTMLTag(" ", item.Body);
+                                    if (txt.Length > 200)
+                                    {
+                                        txt = txt.Substring(0,190)+"...";
+                                    }
+                                }
+                                <p class="txt">@txt</p>
+                            </a>
+                            <p class="date">@item.RegDate.TimeZone10(User.TimeZones)</p>
+                            <p class="like"><span>@item.LikeCount</span></p>
+                        </div>
+                    </li>
+                }
+
+            </ul>
+
+            <!-- paging -->
+            @Html.Partial("PageNavigator", search)
+            <!-- //paging -->
+        </div>
+    </div>
+</div>

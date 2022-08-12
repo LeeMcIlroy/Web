@@ -1,0 +1,49 @@
+﻿@{
+    Layout = "~/Views/Shared/_Excel.cshtml";
+
+    var list = ViewData["list"] as List<LogEntity>;
+}
+
+<table>
+    <thead>
+        <tr>
+            <td>날짜</td>
+            <td>시</td>
+            <td>분</td>
+
+            <td>접속자명</td>
+            <td>사번</td>
+            <td>메일주소</td>
+
+            <td>직책</td>
+            <td>직급</td>
+            <td>회사</td>
+            <td>팀명</td>
+
+            <td>접속경로</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in list)
+        {
+            DateTime dt = item.LocalDate;
+            <tr>
+                <td>@dt.ToDate()</td>
+                <td>@dt.Hour</td>
+                <td>@dt.Minute</td>
+
+                <td>@item.UserID</td>
+                <td>@item.EmpNo</td>
+                <td>@item.UserEmail</td>
+
+                <td>@item.UserPositionNm</td>
+                <td>@item.UserGradeNm</td>
+                <td>@item.UserCompNm</td>
+                <td>@item.UserDeptNm</td>
+
+                <td>@item.ConnectPath</td>
+            </tr>
+        }
+
+    </tbody>
+</table>

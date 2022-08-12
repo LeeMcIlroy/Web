@@ -1,0 +1,440 @@
+﻿@{
+    var article = ViewData["article"] as ArticleEntity;
+    var thumb = ViewData["thumb"] as FileEntity;
+    var attach = ViewData["attach"] as List<FileEntity>;
+
+    var menu = ViewData["_Menu"] as Dictionary<string, CategoryEntity>;
+    var topmenu = ViewData["_TopMenu"] as List<CategoryEntity>;
+
+    bool create = string.IsNullOrEmpty(article.ArticleID);
+    string title = create ? Text["게시물 작성"] : Text["게시물 수정"];
+}
+
+@section scripts{
+    <script type="text/javascript">
+        var G_UploadID;
+
+        function fn_addFile() {
+            var files = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(attach));
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                DEXT5UPLOAD.AddUploadedFile(file.FileID, file.FileNm, file.Path, file.Size, '', G_UploadID);
+            }
+            // DEXT5UPLOAD.AddUploadedFile('3', 'dext5_logo.png', 'http://www.dext5.com/page/images/dext5_logo.png', '2232', '', G_UploadID);
+        }
+
+        // 생성완료 이벤트
+        function DEXT5UPLOAD_OnCreationComplete(uploadID) {
+            G_UploadID = uploadID;
+
+            var logBox = document.getElementById("logBox");
+            logBox.innerHTML = '업로드 생성 완료 : ' + uploadID + '<br/>';
+
+            fn_addFile();
+        }
+
+        // 전송시작 이벤트
+        function DEXT5UPLOAD_OnTransfer_Start(uploadID) {
+            G_UploadID = uploadID;
+
+            var logBox = document.getElementById("logBox");
+            logBox.innerHTML += '업로드 시작 : ' + uploadID + '<br/>';
+        }
+
+        // 전송완료 이벤트
+        function DEXT5UPLOAD_OnTransfer_Complete(uploadID) {
+            G_UploadID = uploadID;
+
+            var logBox = document.getElementById("logBox");
+
+            // DEXT5 Upload는 json, xml, text delimit 방식으로 결과값을 제공합니다.
+
+            // 파일에 대한 정보 중 업로드가 완료된 파일의 정보(업로드 된 파일경로,업로드 된 파일명)는
+            // DEXT5UPLOAD_OnTransfer_Complete 이벤트 안에서만 추출이 가능합니다.
+
+            // 신규 업로드된 파일
+             var jsonNew = DEXT5UPLOAD.GetNewUploadListForJson(G_UploadID);
+
+            // 삭제된 파일
+             var jsonDel = DEXT5UPLOAD.GetDeleteListForJson(G_UploadID);
+
+            // 전체결과
+            var jsonAll = DEXT5UPLOAD.GetAllFileListForJson(G_UploadID);
+
+            logBox.innerHTML += '<br/>' + '업로드 완료 : ' + G_UploadID + '<br/>';
+
+            var files = [];
+            if (jsonAll) {
+                if (jsonAll.newFile) {
+                    var len = jsonAll.newFile.originalName.length;
+                    for (var i = 0; i < len; i++) {
+                        files.push({
+                            ObjectType: 'Attach',
+                            FileNm: jsonAll.newFile.originalName[i],
+                            Path: jsonAll.newFile.uploadPath[i],
+                            Extension: "." + jsonAll.newFile.extension[i],
+                            Size: jsonAll.newFile.size[i],
+                            FlieOrder: jsonAll.newFile.order[i],
+                        });
+                    }
+                }
+
+                if (jsonAll.webFile) {
+                    var len = jsonAll.webFile.originalName.length;
+                    for (var i = 0; i < len; i++) {
+                        files.push({
+                            FileID: jsonAll.webFile.uniqKey[i],
+                            ObjectType: 'Attach',
+                            FileNm: jsonAll.webFile.originalName[i],
+                            Path: jsonAll.webFile.uploadPath[i],
+                            //Extension: "." + jsonAll.webFile.extension[i],
+                            Size: jsonAll.webFile.size[i],
+                            FlieOrder: jsonAll.newFile.order[i],
+                        });
+                    }
+                }
+            }
+            
+            var delFiles = [];
+            if (jsonDel) {
+                var len = jsonDel.originalName.length;
+                for (var i = 0; i < len; i++) {
+                    delFiles.push(jsonDel.uniqKey[i]);
+                }
+            }
+            
+
+            var entity = $(".tbl_write").getEntity();
+            entity.Body = $("#tbBody").html();
+            
+
+            $.post("", { entity: JSON.stringify(entity), files: JSON.stringify(files), delFiles: JSON.stringify(delFiles) }, function () {
+                location.href = _config.AppPath + "Article/Contents/List?CategoryCode=" + entity.CategoryCode;
+            });
+        }
+
+        // 오류 이벤트
+        function DEXT5UPLOAD_OnError(uploadID, code, message, uploadedFileListObj) {
+            var logBox = document.getElementById("logBox");
+            logBox.innerHTML += 'Error : ' + code + ', ' + message + '<br/>';
+
+            if (uploadedFileListObj != null && uploadedFileListObj != '') {
+                logBox.innerHTML += '업로드 된 파일 리스트 - <br/>';
+                var uploadedFileLen = uploadedFileListObj.length;
+                for (var i = 0; i < uploadedFileLen; i++) {
+                    logBox.innerHTML += uploadedFileListObj[i].uploadName + ', ' + uploadedFileListObj[i].uploadPath + '</br>';
+
+                    // guid: uploadedFileListObj[i].guid
+                    // originName: uploadedFileListObj[i].originName
+                    // fileSize: uploadedFileListObj[i].fileSize
+                    // uploadName: uploadedFileListObj[i].uploadName
+                    // uploadPath: uploadedFileListObj[i].uploadPath
+                    // logicalPath: uploadedFileListObj[i].logicalPath
+                    // order: uploadedFileListObj[i].order
+                    // status: uploadedFileListObj[i].status
+                    // mark: uploadedFileListObj[i].mark
+                    // responseCustomValue: uploadedFileListObj[i].responseCustomValue
+                }
+            }
+        }
+
+        // 취소 이벤트
+        function DEXT5UPLOAD_UploadingCancel(uploadID, uploadedFileListObj) {
+            G_UploadID = uploadID;
+
+            var logBox = document.getElementById("logBox");
+            logBox.innerHTML += '전송 취소 이벤트 : ' + G_UploadID + '<br/>';
+
+            if (uploadedFileListObj != null && uploadedFileListObj != '') {
+                logBox.innerHTML += '업로드 된 파일 리스트 - <br/>';
+                var uploadedFileLen = uploadedFileListObj.length;
+                for (var i = 0; i < uploadedFileLen; i++) {
+                    logBox.innerHTML += uploadedFileListObj[i].uploadName + ', ' + uploadedFileListObj[i].uploadPath + '</br>';
+
+                    // guid: uploadedFileListObj[i].guid
+                    // originName: uploadedFileListObj[i].originName
+                    // fileSize: uploadedFileListObj[i].fileSize
+                    // uploadName: uploadedFileListObj[i].uploadName
+                    // uploadPath: uploadedFileListObj[i].uploadPath
+                    // logicalPath: uploadedFileListObj[i].logicalPath
+                    // order: uploadedFileListObj[i].order
+                    // status: uploadedFileListObj[i].status
+                    // mark: uploadedFileListObj[i].mark
+                    // responseCustomValue: uploadedFileListObj[i].responseCustomValue
+                }
+            }
+        }
+
+        
+
+    </script>
+
+    <script>
+        $(function () {
+            DEXT5.setBodyValue($("#tbBody").html());
+
+            $("#ddlTopMenu li").click(function () {
+                var parent = $(this).data("id");
+                var items = $("#ddlSubMenu li");
+
+                var first = true;
+                items.each(function () {
+                    $(this).removeClass("current");
+                    if ($(this).data("parent") == parent) {
+                        $(this).show();
+                        if (first) {
+                            $(this).addClass("current").click();
+                            first = false;
+                        }
+                    }
+                    else {
+                        $(this).hide();
+                    }
+                });
+            });
+
+            $("#ddlSubMenu li").click(function () {
+                var category = $(this).data("id");
+                $("#tbCategoryCode").val(category);
+            });
+
+            var category = $("#tbCategoryCode").val();
+            if (category) {
+                var selected = $("#ddlSubMenu li[data-id='" + category + "']");
+                var parent = selected.data("parent");
+                $("#ddlTopMenu li[data-id='" + parent + "']").click();
+                selected.click();
+            }
+            else {
+                $("ul.option_list").each(function () {
+                    $(this).parent().css("display", "block");
+                    $(this).find("li:visible:first").addClass("current").click();
+                    $(this).parent().css("display", null);
+                });
+            }
+
+
+            $("#btPreview").click(function (e) {
+                e.preventDefault();
+
+            });
+
+            $("#btSave").click(function (e) {
+                e.preventDefault();
+
+                $("#tbBody").html(DEXT5.getBodyValue());
+
+                if ($.validate()) {
+                    
+
+                    var msg = '발행 하시겠습니까?';
+                    if ($.queryURL("id")) {
+                        msg = "수정 하시겠습니까?";
+                    }
+                    if (!confirm(msg)) return;
+
+                    DEXT5UPLOAD.Transfer("dext5upload");
+
+                    
+                }
+            });
+
+            $("#btCancel").click(function (e) {
+                e.preventDefault();
+
+                history.back();
+            });
+
+            $("#btDelete").click(function (e) {
+                e.preventDefault();
+
+                var msg = _text("삭제 하시겠습니까?");
+                if (!confirm(msg)) return;
+
+                $.post("Delete", { id: $.queryURL("id")}, function () {
+                    location.href = "List?CategoryCode=@article.CategoryCode";
+                });
+            });
+
+            $("#btList").click(function (e) {
+                e.preventDefault();
+
+                history.back();
+            });
+
+        });
+    </script>
+}
+<div id="logBox" style="display:none;"></div>
+<div class="contents">
+    <div class="sub_tit_wrap">
+        <a href="#none;" id="btList" class="btn_flat type_gray">@Text["목록보기"]</a>
+        <ul class="location">
+            <li><a href="#none;">HOME</a></li>
+            <li><a href="#none;">@Text["콘텐츠 제안"]</a></li>
+        </ul>
+    </div>
+
+    <div class="headline">
+        <h2 class="tit">@Text["콘텐츠 제안"]</h2>
+    </div>
+
+    <div class="con_wrap">
+        <div class="write_wrap">
+            <div class="tbl_write">
+                <input type="hidden" name="StartDate" value="@article.StartDate.ToString(Const.DateHHmm)" />
+
+                <table f-validate="required">
+                    <caption>@title</caption>
+                    <colgroup>
+                        <col width="8.4%;">
+                        <col width="*;">
+                    </colgroup>
+
+                    <tbody>
+                        <tr>
+                            <th scope="row">@Text["카테고리"]</th>
+                            <td>
+                                <input type="hidden" id="tbCategoryCode" name="CategoryCode" value="@article.CategoryCode" />
+                                <div class="select_wrap">
+                                    <div class="design_select">
+                                        <div class="option_wrap">
+                                            <button type="button" class="selected"><span></span></button>
+                                            <div class="inner">
+                                                <ul id="ddlTopMenu" class="option_list">
+                                                    @foreach (var item in topmenu)
+                                                    {
+                                                        if (item.IsDisplay == Const.False) { continue; }
+                                                        <li data-id="@item.CategoryID"><a href="#none">@item.GetName(User.Language)</a></li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="design_select">
+                                        <div class="option_wrap">
+                                            <button type="button" class="selected"><span></span></button>
+                                            <div class="inner">
+                                                <ul id="ddlSubMenu" class="option_list">
+                                                    @foreach (var item in menu.Values.Where(p => p.CategoryLevel == 3))
+                                                    {
+                                                        if (item.IsDisplay == Const.False) { continue; }
+                                                        <li style="display:none;" data-id="@item.CategoryID" data-parent="@item.ParentID"><a href="#none">@item.GetName(User.Language)</a></li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="write">
+                            <th scope="row">@Text["제목"]</th>
+                            <td>
+                                <input type="text" name="Title" class="inp_txt" title="@Text["게시물 제목 입력"]" maxlength="100" value="@article.Title">
+                            </td>
+                        </tr>
+                        <tr class="write">
+                            <th scope="row"><label style="display:none;">@Text["내용"]</label></th>
+                            <td>
+                                <div class="editor_area" style="border:solid 1px #e3e3e3; display:none;" id="tbBody" name="Body" contenteditable="true">
+                                    @Html.Raw(article.Body)
+                                </div>
+                                <script src="~/Component/dext5editor/js/dext5editor.js" type="text/javascript"></script>
+                                <script>
+                                    //DEXT5.config.InitXml = "dext_editor.xml";
+                                    //DEXT5.config.HandlerUrl = "http://www.dext5.com/handler/upload_handler.ashx";
+                                    //DEXT5.config.SkinName = "blue";
+                                    //DEXT5.config.ToSavePathURL = "dext5data";
+
+                                    if (_user.Language == "ENG") {
+                                        DEXT5.config.Lang = "en-us";
+                                    }
+                                    else if (_user.Language == "CHN") {
+                                        DEXT5.config.Lang = "zh-cn";
+                                    }
+                                    else {
+                                        DEXT5.config.Lang = "ko-kr";
+                                    }
+                                    //DEXT5.config.Lang = "ko-kr"; // ko-kr, en-us, ja-jp, zh-cn, zh-tw
+                                    //DEXT5.config.Mode = "view";
+                                    //DEXT5.config.focusInitObjId = "title"; // 에디터가 로드된 후 설정한 아이디를 가진 객체에 포커스를 줌.
+                                    //DEXT5.config.NextTabElementId = "nextInput";
+                                    //DEXT5.config.IgnoreSameEditorName = "1";
+
+                                    DEXT5.config.Width = "930px";
+                                    DEXT5.config.Height = "500px";
+                                    //DEXT5.config.RunTimes = '';   // 웹표준모드 : html5, 플러그인모드(IE전용) : ieplugin, version이하 플러그인(IE전용) : versionieplugin
+
+                                    // 에디터의 팝업창과 우클릭 메뉴를 부모창에 띄우기 위한 설정.
+                                    // 에디터를 iframe 형태로 띄우는 경우 사이즈가 작아서 팝업창이나 우클릭 메뉴가 가려질 때 설정하면 유용합니다.
+                                    //DEXT5.config.DialogWindow = parent.window;
+
+                                    var editor1 = new Dext5editor("tbBody");
+                                </script>
+                            </td>
+                        </tr>
+                        <tr class="attach">
+                            <th scope="row">@Text["첨부파일"]</th>
+                            <td>
+                                <script type="text/javascript" src="~/Component/dext5upload/js/dext5upload.js"></script>
+                                <script>
+                                    // 해당 config 이외의 설정도 가능합니다. (www.dext5.com > 개발센터 참조)
+                                    //DEXT5UPLOAD.config.InitXml = 'dext5upload.config.xml';
+                                    //DEXT5UPLOAD.config.SkinName = 'pink';
+                                    DEXT5UPLOAD.config.Width = '930px';
+                                    //DEXT5UPLOAD.config.Height = '500px';
+                                    //DEXT5UPLOAD.config.MaxTotalFileSize = '20GB';
+                                    //DEXT5UPLOAD.config.MaxOneFileSize = '20KB';
+                                    //DEXT5UPLOAD.config.MaxTotalFileCount = '9';
+                                    //DEXT5UPLOAD.config.MultiFileSelect = false;
+                                    //DEXT5UPLOAD.config.ExtensionAllowOrLimit = '0';
+                                    //DEXT5UPLOAD.config.ExtensionArr = 'png';
+                                    //DEXT5UPLOAD.config.FolderNameRule = "/uploadfolder";
+                                    //DEXT5UPLOAD.config.Mode = 'view'; // edit, view
+                                    //DEXT5UPLOAD.config.ButtonBarEdit = "add,send,remove,remove_all";
+                                    //DEXT5UPLOAD.config.ButtonBarView = "open,download,download_all"; // 0 일경우 버튼바 보이지 않음.
+                                    
+                                    if (_user.Language == "ENG") {
+                                        DEXT5UPLOAD.config.Lang = "en-us";
+                                    }
+                                    else if (_user.Language == "CHN") {
+                                        DEXT5UPLOAD.config.Lang = "zh-cn";
+                                    }
+                                    else {
+                                        DEXT5UPLOAD.config.Lang = "ko-kr";
+                                    }
+                                    //DEXT5UPLOAD.config.Lang = "en-us"; // ko-kr, en-us, ja-jp, zh-cn, zh-tw
+                                    //DEXT5UPLOAD.config.UploadHolder = "uploadHoder_PlaceHolder";
+                                    //DEXT5UPLOAD.config.IgnoreSameUploadName = "1";
+
+                                    //DEXT5UPLOAD.config.Runtimes = ''; // 웹표준모드 : html5, 플러그인모드(IE전용) : ieplugin, version이하 플러그인(IE전용) : versionieplugin
+
+                                    // 업로드 전송창을 부모창에 띄우기 위한 설정.
+                                    // 업로드를 iframe 형태로 띄우는 경우 사이즈가 작아서 전송창이 가려질 때 설정하면 유용합니다.
+                                    //DEXT5UPLOAD.config.DialogWindow = parent.window;
+
+                                    var upload = new Dext5Upload("dext5upload");
+                                </script>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="btn_wrap">
+                    <div class="btn_group">
+                        <a href="#none;" id="btSave" class="btn_flat type_blue">@(create ? Text["발행"] : Text["수정"])</a>
+                        <a href="#none;" id="btCancel" class="btn_flat type_gray">@Text["취소"]</a>
+                        @if (!create)
+                        {
+                        <a href="#none;" id="btDelete" class="btn_flat type_gray">@Text["삭제"]</a>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--게시판/ 사용안함-->
+<QueryList>
+
+	<Query id="Board.Create">
+		<![CDATA[
+		INSERT INTO TB_BOARD( BOARD_ID, BOARD_CODE, BOARD_NM, TYPE, VIEW_PATH, TOP_MENU, USE_LOGIN, USE_PRIVATE, IS_DEL )
+		VALUES( @BOARD_ID, @BOARD_CODE, @BOARD_NM, @TYPE, @VIEW_PATH, @TOP_MENU, @USE_LOGIN, @USE_PRIVATE, @IS_DEL )
+		]]>
+	</Query>
+
+	<Query id="Board.Get">
+		<![CDATA[
+		SELECT * FROM TB_BOARD 
+		WHERE BOARD_ID=@BOARD_ID
+		]]>
+	</Query>
+
+	<Query id="Board.Update">
+		<![CDATA[
+		UPDATE TB_BOARD SET 
+		BOARD_ID=@BOARD_ID
+		, BOARD_CODE=@BOARD_CODE
+		, BOARD_NM=@BOARD_NM
+		, TYPE=@TYPE
+		, VIEW_PATH=@VIEW_PATH
+		, TOP_MENU=@TOP_MENU
+		, USE_LOGIN=@USE_LOGIN
+		, USE_PRIVATE=@USE_PRIVATE
+		, IS_DEL=@IS_DEL
+		WHERE BOARD_ID=@BOARD_ID
+		]]>
+	</Query>
+
+	<Query id="Board.Delete">
+		<![CDATA[
+		DELETE FROM TB_BOARD WHERE BOARD_ID=@BOARD_ID
+		]]>
+	</Query>
+
+</QueryList>

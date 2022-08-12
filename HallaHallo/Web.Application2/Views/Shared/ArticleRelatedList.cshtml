@@ -1,0 +1,13 @@
+﻿@{
+    var article = ViewData["article"] as ArticleEntity;
+    var category = ViewData["_Category"] as CategoryEntity;
+}
+
+<div class="bottom_item_list">
+    <h3 class="con_tit">@Text["연관 콘텐츠"]</h3>
+    @{
+        var articleRepo = new ArticleRepository();
+        var list = articleRepo.GetRelatedList(article);
+    }
+    @Html.Partial("ArticleList", list)
+</div>

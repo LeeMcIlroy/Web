@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--댓글-->
+<QueryList>
+  <!--등록-->
+	<Query id="Comment.Create">
+		<![CDATA[
+		INSERT INTO TB_COMMENT( COMMENT_ID, ARTICLE_ID, GROUP_ID, COMMENT_LEVEL, BODY, CREATE_ID, CREATE_KORNM, CREATE_ENGNM, CREATE_CHNNM, CREATE_DEPT, CREATE_DATE, IS_SECRET, CREATE_PHOTO )
+		VALUES( @COMMENT_ID, @ARTICLE_ID, @GROUP_ID, @COMMENT_LEVEL, @BODY, @CREATE_ID, @CREATE_KORNM, @CREATE_ENGNM, @CREATE_CHNNM, @CREATE_DEPT, @CREATE_DATE, @IS_SECRET, @CREATE_PHOTO )
+		]]>
+	</Query>
+
+  <!--단일 선택-->
+	<Query id="Comment.Get">
+		<![CDATA[
+		SELECT * FROM TB_COMMENT 
+		WHERE COMMENT_ID=@COMMENT_ID
+		]]>
+	</Query>
+
+  <!--단일 수정-->
+	<Query id="Comment.Update">
+		<![CDATA[
+		UPDATE TB_COMMENT SET 
+		  BODY=@BODY
+		WHERE COMMENT_ID=@COMMENT_ID
+		]]>
+	</Query>
+
+  <!--단일 삭제-->
+	<Query id="Comment.Delete">
+		<![CDATA[
+		DELETE FROM TB_COMMENT WHERE COMMENT_ID=@COMMENT_ID
+		]]>
+	</Query>
+
+</QueryList>
