@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="usr_hotLine_table">
+		FROM
+			TB_SEPS_HOT_LINE
+		WHERE
+			1=1
+	<dynamic>
+		<isNotEmpty property="searchCondition1">
+			AND HOT_LINE_DEPT = #searchCondition1#
+		</isNotEmpty>
+		<isNotEmpty property="searchWord">
+			<isNotEmpty property="searchCondition2">
+				<isEqual property="searchCondition2" compareValue="1">
+					AND HOT_LINE_NAME like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition2" compareValue="2">
+					AND HOT_LINE_TEL like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition2" compareValue="3">
+					AND HOT_LINE_EMAIL like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</isNotEmpty>
+	</dynamic>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="UsrHotLineDAO.selectHotLineList" parameterClass="searchVO" resultClass="egovMap">
+/* UsrHotLineDAO.selectHotLineList */
+	<![CDATA[
+		SELECT
+			HOT_LINE_ID
+			, HOT_LINE_DEPT
+			, HOT_LINE_NAME
+			, HOT_LINE_TEL
+			, HOT_LINE_EMAIL
+			, USE_YN
+			, REG_DTTM
+	]]>
+		<include refid="usr_hotLine_table"/>
+	<![CDATA[
+		ORDER BY
+			REG_DTTM desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="UsrHotLineDAO.selectHotLineListCnt" parameterClass="searchVO" resultClass="int">
+/* UsrHotLineDAO.selectHotLineListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="usr_hotLine_table"/>
+	</select>
+	
+	<!-- 기관목록 -->
+	<select id="UsrHotLineDAO.selectHotLineDeptList" resultClass="EgovMap">
+/*UsrHotLineDAO.selectHotLineDeptList*/
+	<![CDATA[
+		SELECT
+			HOT_LINE_DEPT
+		FROM
+			TB_SEPS_HOT_LINE
+		GROUP BY HOT_LINE_DEPT
+	]]>
+	</select>
+	
+</sqlMap>

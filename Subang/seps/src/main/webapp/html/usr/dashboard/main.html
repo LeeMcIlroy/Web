@@ -1,0 +1,381 @@
+
+<!doctype html>
+<html lang="kr">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+<script src="http://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+<script>
+	var dataMap;
+
+	$.ajax({
+		url: "<c:url value='/usr/dashboard/main.do'/>"
+		, type: "post"
+		, dataType:"json"
+		, async : false
+		, success: function(data){
+			dataMap = data;
+			console.log(data);
+		}, error: function(){
+			alert("������ �߻��Ͽ����ϴ�.");
+		}
+	});
+</script>
+<head>
+</head>
+<script>
+	$("head").load("/html/inc/incHead.html");
+	
+	if(dataMap.adminPage == 'Y') {
+		$("head").append('<link id="a" href="/assets/css/common.css?v=201803272'rel="stylesheet" type="text/css" />');
+		$("head").append('<link id="b" href="/assets/css/menu.css'rel="stylesheet" type="text/css" />');
+	}else {
+		$("head").append('<link id="c" href="/assets/css_usr/common.css?v=201805301'rel="stylesheet" type="text/css" />');		
+		$("head").append('<link id="d" href="/assets/css_usr/menu.css'rel="stylesheet" type="text/css" />');		
+	}
+</script>
+<!-- cctv init! -->
+<script language='VBScript' type="text/vbscript">
+Sub Window_onBeforeUnload()
+	WatSearCtrl.finalize
+	WatSearCtrl2.finalize
+End Sub
+</script>
+<body>
+	<!-- top menu - start -->
+	<div class="m_header">
+		<c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/inc/incTopnav"/>
+	<!-- top menu - end -->
+	</div>
+	
+	
+	<div class="m_body">
+		<div class="main_content02">
+			<div class="content">
+				<div class="cont_box">
+					<!-- GRAPH_BOX multi_box �� div �ִ� 4�� -->
+					<c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/dashboard/dashboardTop"/>
+					<!--// GRAPH_BOX -->
+					
+					<div class="grid_box">
+						<div>
+							<div class="div_half">
+								<div class="grid_title">
+									<ul>
+										<li>����1�� ����</li>
+										<li class="tit_num" id="dt_now1"></li>
+									</ul>
+								</div>
+								<div class="gf_box">
+									<div><c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/graph/wolgye1Graph"/></div>
+								</div>
+							</div>
+							<div class="div_half">
+								<div class="grid_table">
+									<table>
+										<colgroup>
+											<col width="33.33%" />
+											<col width="33.33%" />
+											<col width="33.33%" />
+										</colgroup>
+										<thead>
+											<tr>
+												<th>�ð�</th>
+												<th>����</th>
+												<th>�ܰ�</th>
+											</tr>
+										</thead>
+										<tbody id="wolgye1List">
+										
+								<!-- 			<c:forEach items="${wlList1 }" var="wl" varStatus="status">
+												<tr <c:if test="${wl.level == '3' }"> class="grid_table_alt"</c:if>>
+													<td><c:out value="${wl.baseTime }"/></td>
+													<td><c:out value="${wl.wl }"/></td>
+													<td>
+														<c:choose>
+															<c:when test="${wl.level == '0'}">���</c:when>
+															<c:when test="${wl.level == '1'}">�غ�</c:when>
+															<c:when test="${wl.level == '2'}">���</c:when>
+															<c:when test="${wl.level == '3'}">ħ��</c:when>
+														</c:choose>
+													</td>
+												</tr>
+											</c:forEach> -->
+										
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<div class="cctv_m_none" >
+								<div class="grid_title">
+									<ul>
+										<li>����1�� CCTV</li>
+									</ul>
+								</div>
+								<div class="gf_box">
+									<div id="cctv1"></div>
+								</div>
+								<button class="btn_cctv_open" onclick="connect(1); return false;">CCTV ���󺸱�</button>
+							</div>
+							<div class="div_half">
+								<div class="grid_title">
+									<ul>
+										<li>���ǻ��IC ����</li>
+										<li class="tit_num" id="dt_now2"></li>
+									</ul>
+								</div>
+								<div class="gf_box">
+									<div>
+										<c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/graph/yeouiGraph"/>
+									</div>
+								</div>
+							</div>
+							<div class="div_half">
+								<div class="grid_table">
+									<table>
+										<colgroup>
+											<col width="33.33%" />
+											<col width="33.33%" />
+											<col width="33.33%" />
+										</colgroup>
+										<thead>
+											<tr>
+												<th>�ð�</th>
+												<th>����</th>
+												<th>�ܰ�</th>
+											</tr>
+										</thead>
+										<tbody id="yeouiList">
+												
+											<!-- <c:forEach items="${wlList2 }" var="wl" varStatus="status">
+												<tr <c:if test="${wl.level == '3' }">> class="grid_table_alt"</c:if>>
+													<td><c:out value="${wl.baseTime }"/></td>
+													<td><c:out value="${wl.wl }"/></td>
+													<td>
+														<c:choose>
+															<c:when test="${wl.level == '0'}">���</c:when>
+															<c:when test="${wl.level == '1'}">�غ�</c:when>
+															<c:when test="${wl.level == '2'}">���</c:when>
+															<c:when test="${wl.level == '3'}">ħ��</c:when>
+														</c:choose>
+													</td>
+												</tr>
+											</c:forEach> -->
+											
+										</tbody>
+									</table>
+								</div>
+							</div>
+							<div class="cctv_m_none">
+								<div class="grid_title">
+									<ul>
+										<li>���ǻ��IC CCTV</li>
+									</ul>
+								</div>
+								<div class="gf_box">
+									<div id="cctv2">	</div>
+								</div>
+								<button class="btn_cctv_open" onclick="connect(2); return false;">CCTV ���󺸱�</button>
+							</div>
+							<div class="w50_p">
+								<div class="grid_table td_h47" style="padding-right:5px;">
+									<div class="grid_table_caption">
+										<p>�ø��ȴ��</p>
+										<p></p>
+									</div>
+									<table>
+										<tbody>
+											<tr>
+												<td class="map_btn_r">
+												<div style="height: 236px;">
+													<div id="map1" style="width:100%;height:100%;"></div>
+													<div style="display: block;position: absolute;width: 50px;height: 50px;z-index: 1;top: 10px;">
+														<span class="map_plus" id="mapPlus01"><a href="#" onclick="popup_name(map_popup);"><img src="<c:out value='${pageContext.request.contextPath}/assets/img/map_plus.png'/>" alt="����Ȯ��" /></a></span>
+													</div>
+												</div>
+<%-- 													<c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/dashboard/map/map1"/> --%>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+
+								<div class="grid_table td_h47" style="padding-left:0; padding-top:0;">
+									<div class="grid_table_caption">
+										<p>���ΰ�������</p>
+										<p></p>
+									</div>
+									<table>											
+										<tbody>
+											<tr>
+												<td class="map_btn_r">
+												<div style="height: 236px;">
+													<div id="map2" style="width:100%;height:100%;"></div>
+													<div style="display: block;position: absolute;width: 50px;height: 50px;z-index: 1;top: 10px;">
+														<span class="map_plus" id="mapPlus02"><a href="#" onclick="popup_name(map_popup);"><img src="<c:out value='${pageContext.request.contextPath}/assets/img/map_plus.png'/>" alt="����Ȯ��" /></a></span>
+													</div>
+												</div>
+<%-- 												<c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/dashboard/map/map2"/> --%>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+						<div>
+							<div>
+								<div class="grid_title">
+									<ul>
+										<li>����ٹ���Ȳ</li>
+										<li>
+											<button onclick="javascript:location.href='${pageContext.request.contextPath}/usr/floodCenter/floodAlarmList.do';return false;"><img src="<c:out value='${pageContext.request.contextPath}/assets/img/add_btn.png'/>" alt="������" /></button>
+											<button onclick="fn_snsReload(); return false;"><img src="<c:out value='${pageContext.request.contextPath}/assets/img/re_icon.png'/>" alt="���ΰ�ħ" /></button>
+										</li>
+									</ul>
+								</div>
+								<div class="gf_box">
+									<div class="condition_box">
+										<div class="condition_overflow"  id="snsBoard">
+										<%--
+										
+											<c:forEach items="${snsList}" var="sns" varStatus="status">
+												<ul>
+													<c:choose>
+														<c:when test="${sns.tType == 'K' }">
+															<li><c:out value="${sns.regNm }"/> <span><c:out value="${sns.regDttm }"/></span></li>
+															<li>
+																<c:out value="${sns.title }"/></br>
+																<c:out value="${sns.content }"/>
+															</li>
+														</c:when>
+														<c:when test="${sns.tType == 'D' }">
+															<li><c:out value="${sns.regNm }"/> <span><c:out value="${sns.regDttm }"/></span></li>
+															<li>
+																<c:out value="${sns.content }"/>
+															</li>
+														</c:when>
+														<c:when test="${sns.tType == 'FC' }">
+															<li><c:out value="${sns.regNm }"/> <span><c:out value="${sns.regDttm }"/></span></li>
+															<li>
+																<c:out value="${sns.content }"/> �߷�
+															</li>
+														</c:when>
+													</c:choose>
+												</ul>
+											</c:forEach>
+											 --%>
+										</div>	
+										<div class="condition_txt">
+											<ul>
+												<li>
+													<textarea cols="5" rows="5" name="snsContent" id="snsContent"></textarea>
+												</li>			
+												<li>
+													<button onclick="fn_snsSubmit(); return false;">���</button>
+												</li>									
+											</ul>
+										</div>										
+									</div>																		
+								</div>
+								<c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/dashboard/dashboardFooter"/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--���� ũ�� ���� �˾� -->
+	<div class="map_big_mode" id="map_popup" style="visibility: hidden;">
+		<div class="mb_box">
+			<div class="mb_mode">��������
+				<button onclick="popup_name(map_popup); return false;">�ݱ�</button>
+			</div>
+			<div class="mb_map">
+				<div class="mb_btn"><a href="#"><img src="<c:out value='${pageContext.request.contextPath}/assets/img/map_plus.png'/>" /></a></div>
+				<div class="big_map">
+					<div id="map" style="width:100%;height:100%;"></div>
+				</div>
+<%-- 				<c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/dashboard/map/map"/> --%>
+			</div>
+		</div>
+	</div>
+	<!--// ���� ũ�� ���� �˾� -->
+	<!-- footer -->
+	<c:import url="${pageContext.request.contextPath }/EgovPageLink.do?link=usr/inc/incFooter"/>
+	<!-- footer -->
+	
+	<input type="hidden" id="message" name="message" value="${message }">
+	<script type="text/javascript">
+		
+		function fn_snsSubmit(){
+			var snsContent = $("#snsContent").val();
+			
+			if(snsContent == '' || snsContent.length >150){
+				alert("150�� ���Ϸ� �ۼ����ּ���.");
+			}else{
+				$.ajax({
+					url: "/usr/dashboard/mainSnsSubmitAjax.do"
+					, type: "post"
+					, data: {
+						snsContent : snsContent
+					}
+					, dataType:"json"
+					, async : false
+					, success: function(data){
+						alert("��ϵǾ����ϴ�.");
+						$("#snsContent").val('');
+						fn_snsReload();
+					}, error: function(){
+						alert("������ �߻��Ͽ����ϴ�.");
+					}
+				});
+			}
+			
+		}
+		
+		function fn_snsReload(){
+			$.ajax({
+				url: "/usr/dashboard/mainSnsReloadAjax.do"
+				, type: "post"
+				, dataType:"json"
+				, async : false
+				, success: function(data){
+					var resultList = data.resultList;
+					var tag = '';
+					for(var i=0; i<resultList.length; i++){
+							tag += '<ul>';
+							tag += '	<li>'+resultList[i].regNm+'<span>'+resultList[i].regDttm+'</span></li>';
+						if(resultList[i].tType =='D'){
+							tag += '	<li>'+resultList[i].content+'</li>';
+						}else if(resultList[i].tType == 'FC'){
+							tag +=  '<li>' +resultList[i].content +' �߷�</li>';
+						}else{
+							tag += '	<li>'+resultList[i].title+'</br>'+resultList[i].content+'</li>';
+						}
+						tag += '</ul>';
+					}
+					$("#snsBoard").html(tag);
+				}, error: function(){
+					alert("������ �߻��Ͽ����ϴ�.");
+				}
+			});
+		}
+		
+		$(function(){
+		
+// 			fn_createMap();
+// 			fn_createMap1();
+// 			fn_createMap2();
+			
+			$(window).resize(function(){
+// 				fn_createMap();
+// 				fn_createMap1();
+// 				fn_createMap2();
+			});
+			
+		
+	       
+		});
+	</script>
+</body>
+</html>

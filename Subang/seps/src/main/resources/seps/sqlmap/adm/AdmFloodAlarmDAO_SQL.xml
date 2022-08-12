@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<!-- 목록 -->
+	<select id="AdmFloodAlarmDAO.selectFloodAlarmList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmFloodAlarmDAO.selectFloodAlarmList */
+	<![CDATA[
+		SELECT
+			t1.ID
+			, t1.T_TYPE
+			, t1.TITLE
+			, t1.CONTENT
+			, t1.ISSUE_DATE
+			, t1.ISSUE_TIME
+			, t1.REG_NM
+			, DATE_FORMAT(t1.REG_DTTM, '%Y-%m-%d %H:%i') as REG_DTTM
+		FROM(
+			SELECT
+				ALARM_ID AS ID
+				, ALARM_TYPE AS T_TYPE
+				, '-' AS TITLE
+				, ALARM_CONTENT AS CONTENT
+				, date_format(BASE_DATE, '%Y-%m-%d') as ISSUE_DATE
+				, time_format(concat(BASE_TIME, '00'), '%H:%i') as ISSUE_TIME
+				, '-' AS REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_ALARM
+			UNION ALL
+			SELECT
+				FLOOD_CONTROL_ID AS ID
+				, 'FC' AS T_TYPE
+				, '-' AS TITLE
+				, FLOOD_LEVEL AS CONTENT
+				, DATE_FORMAT(ISSUE_DATE, '%Y-%m-%d') as ISSUE_DATE
+				, ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_FLOOD_CONTROL
+			UNION ALL
+			SELECT
+				SNS_ID AS ID
+				, SNS_TYPE AS T_TYPE 
+				, SNS_TITLE AS TITLE
+				, SNS_CONTENT AS CONTENT
+				, date_format(REG_DTTM, '%Y-%m-%d') as ISSUE_DATE
+				, date_format(REG_DTTM, '%H:%i') as ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_SNS_BOARD
+			WHERE
+				SNS_TYPE <> 'M'
+		) t1
+	]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				T_TYPE = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty property="startDate" prepend="AND">
+				<![CDATA[
+					date_format(REG_DTTM, '%Y-%m-%d') >= #startDate#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty property="endDate" prepend="AND">
+				<![CDATA[
+					date_format(REG_DTTM, '%Y-%m-%d') <= #endDate#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+		<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+		]]>
+		<isEqual property="searchType" compareValue="LIST"><![CDATA[ LIMIT #firstIndex#, #recordCountPerPage# ]]></isEqual>
+	</select>
+	
+	<!-- selectUsrAlarmListCnt -->
+	<select id="AdmFloodAlarmDAO.selectFloodAlarmListCnt" parameterClass="searchVO" resultClass="int">
+/*AdmFloodAlarmDAO.selectFloodAlarmListCnt*/
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM(
+			SELECT
+				ALARM_TYPE AS T_TYPE
+				, '-' AS TITLE
+				, ALARM_CONTENT AS CONTENT
+				, NULL AS ISSUE_DATE
+				, '-' AS ISSUE_TIME
+				, '-' AS REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_ALARM
+			UNION ALL
+			SELECT
+				'FC' AS T_TYPE
+				, '-' AS TITLE
+				, FLOOD_LEVEL AS CONTENT
+				, ISSUE_DATE
+				, ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_FLOOD_CONTROL
+			UNION ALL
+			SELECT
+				SNS_TYPE AS T_TYPE 
+				, SNS_TITLE AS TITLE
+				, SNS_CONTENT AS CONTENT
+				, NULL AS ISSUE_DATE
+				, '-' AS ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_SNS_BOARD
+			WHERE
+				SNS_TYPE <> 'M'
+		) t1
+	]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				T_TYPE = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty property="startDate" prepend="AND">
+				<![CDATA[
+					date_format(REG_DTTM, '%Y-%m-%d') >= #startDate#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty property="endDate" prepend="AND">
+				<![CDATA[
+					date_format(REG_DTTM, '%Y-%m-%d') <= #endDate#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	
+	<!-- 수방근무현황 삭제 -->
+	<delete id="AdmFloodAlarmDAO.deleteAlarm" parameterClass="searchVO">
+/*AdmFloodAlarmDAO.deleteAlarm*/
+	DELETE FROM TB_SEPS_SNS_BOARD WHERE SNS_ID = #searchCode# AND SNS_TYPE = #searchType#
+	</delete>
+	
+	<!-- 수방단계 삭제 -->
+	<delete id="AdmFloodAlarmDAO.deleteAlarm2" parameterClass="String">
+/*AdmFloodAlarmDAO.deleteAlarm2*/
+	DELETE FROM TB_SEPS_FLOOD_CONTROL WHERE FLOOD_CONTROL_ID = #searchCode#
+	</delete>
+</sqlMap>

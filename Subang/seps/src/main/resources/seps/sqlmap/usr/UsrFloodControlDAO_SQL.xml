@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="usr_flood_control">
+		FROM
+			TB_SEPS_FLOOD_CONTROL t1
+		WHERE
+			1=1
+		<dynamic>
+			<isNotEmpty property="searchCondition1">
+				AND FLOOD_LEVEL = #searchCondition1#
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 사용자관리 목록 -->
+	<select id="UsrFloodControlDAO.selectUsrFloodControlList" parameterClass="searchVO" resultClass="EgovMap">
+/*UsrFloodControlDAO.selectUsrFloodControlList*/
+	<![CDATA[
+		SELECT
+			FLOOD_CONTROL_ID
+			, FLOOD_LEVEL
+			, DATE_FORMAT(ISSUE_DATE, '%Y-%m-%d') as ISSUE_DATE
+			, ISSUE_TIME
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d') as REG_DTTM
+			, REG_NM
+			, DATE_FORMAT(UDT_DTTM, '%Y-%m-%d') as UDT_DTTM
+			, UDT_NM
+		FROM (
+			SELECT
+				FLOOD_CONTROL_ID
+				, FLOOD_LEVEL
+				, ISSUE_DATE
+				, ISSUE_TIME
+				, REG_DTTM
+				, REG_NM
+				, UDT_DTTM
+				, UDT_NM
+	]]>
+			<include refid="usr_flood_control"/>
+	<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+			]]>	
+			<isNotEqual property="searchType" compareValue="Y">
+				LIMIT #firstIndex#, #recordCountPerPage#
+			</isNotEqual>
+			<![CDATA[
+		) tt
+	]]>
+	</select>
+	
+		<!-- 목록Cnt -->
+	<select id="UsrFloodControlDAO.selectUsrFloodControlListCnt" parameterClass="searchVO" resultClass="int">
+/* UsrFloodControlDAO.selectUsrFloodControlListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="usr_flood_control"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="UsrFloodControlDAO.selectUsrFloodControlView" parameterClass="String" resultClass="floodControlVO">
+/*UsrFloodControlDAO.selectUsrFloodControlView*/
+	<![CDATA[
+		SELECT
+			FLOOD_CONTROL_ID AS floodControlId
+			, FLOOD_LEVEL AS floodLevel
+			, DATE_FORMAT(ISSUE_DATE, '%Y-%m-%d') as issueDate
+			, ISSUE_TIME AS issueTime
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d') as regDttm
+			, REG_NM AS regNm
+			, DATE_FORMAT(UDT_DTTM, '%Y-%m-%d') as udtDttm
+			, UDT_NM AS udtNm
+		FROM
+			TB_SEPS_FLOOD_CONTROL
+		WHERE
+			FLOOD_CONTROL_ID = #floodControlId#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="UsrFloodControlDAO.insertUsrFloodControl" parameterClass="floodControlVO">
+/*UsrFloodControlDAO.insertUsrFloodControl*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_FLOOD_CONTROL(
+			FLOOD_LEVEL
+			, ISSUE_DATE
+			, ISSUE_TIME
+			, REG_DTTM
+			, REG_NM
+		) VALUES (
+			#floodLevel#
+			, #issueDate#
+			, #issueTime#
+			, NOW()
+			, #regNm#
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="UsrFloodControlDAO.updateUsrFloodControl" parameterClass="floodControlVO">
+/*UsrFloodControlDAO.updateUsrFloodControl*/
+	<![CDATA[
+		UPDATE TB_SEPS_FLOOD_CONTROL SET
+			FLOOD_LEVEL = #floodLevel#
+			, ISSUE_DATE = #issueDate#
+			, ISSUE_TIME = #issueTime#
+			, UDT_DTTM = NOW()
+			, UDT_NM = #udtNm#
+		WHERE
+			FLOOD_CONTROL_ID = #floodControlId#
+	]]>
+	</update>
+	
+</sqlMap>

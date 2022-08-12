@@ -1,0 +1,126 @@
+package seps.cmmn;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import egovframework.com.cmm.util.EgovUserDetailsHelper;
+import egovframework.com.utl.sim.service.EgovFileScrty;
+import egovframework.let.utl.fcc.service.EgovStringUtil;
+import seps.valueObject.AuthVO;
+import seps.valueObject.UserInfoVO;
+
+@Controller
+public class CmmnController {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(CmmnController.class);
+	
+	@Resource View jsonView;
+	
+	@Autowired private CmmnDAO cmmnDAO;
+	@Autowired private LoginDAO loginDAO;
+	
+	/******************************************************* 로그인 *******************************************************/
+	// 로그인 화면
+	@RequestMapping("/loginView.do")
+	public String loginView(HttpSession session) throws Exception {
+		LOGGER.info("/loginView.do - 로그인 화면");
+		session.setAttribute("adminPage", "N");
+		if(EgovUserDetailsHelper.isAuthenticatedUser()){
+			//EgovMap resultVO = (EgovMap) session.getAttribute("userSession");
+			return "redirect:/usr/dashboard/main.do";
+		}
+		return "/loginView";
+	}
+	
+	// 로그인
+	@RequestMapping("/login.do")
+	public String tmpLogin(UserInfoVO userInfoVO, HttpSession session, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/login.do - 로그인");
+		
+		if(EgovStringUtil.isEmpty(userInfoVO.getUuid()) && (EgovStringUtil.isEmpty(userInfoVO.getUserId()) || EgovStringUtil.isEmpty(userInfoVO.getUserPw()))){
+			LOGGER.warn("아이디 or 비밀번호를 입력하지 않았습니다.");
+			reda.addFlashAttribute("message", "로그인 정보가 없습니다.\n아이디와 비밀번호를 확인해주세요.");
+			reda.addFlashAttribute("autoLogin", "N");
+			return "redirect:/loginView.do";
+		}
+		//계정정보 소문자로 변경
+		userInfoVO.setUserId(userInfoVO.getUserId().toLowerCase());
+		userInfoVO.setUserPw(userInfoVO.getUserPw().toLowerCase());
+		
+		// 비밀번호 암호화 - start
+		String encryptPw = EgovFileScrty.encryptPassword(userInfoVO.getUserPw(), userInfoVO.getUserId());
+		userInfoVO.setUserPw(encryptPw);
+		// 비밀번호 암호화 - end
+
+		UserInfoVO resultVO = loginDAO.actionLogin(userInfoVO);
+		
+		if(resultVO == null){
+			LOGGER.warn("로그인 정보가 없습니다.");
+			reda.addFlashAttribute("message", "로그인 정보가 없습니다.\n아이디와 비밀번호를 확인해주세요.");
+			reda.addFlashAttribute("autoLogin", "N");
+			return "redirect:/loginView.do";
+		}
+		
+		// 접속일 갱신 - start
+		loginDAO.updateUserLog(resultVO.getUserInfoId());
+		// 접속일 갱신 - end
+		session.setAttribute("userSession", resultVO);
+		
+		List<AuthVO> menuList = EgovUserDetailsHelper.getAuthenticatedAthrList();
+		String[] requestURI = new String[]{"/usr/dashboard/main.do", "/usr/dashboard/dongbu.do", "/usr/dashboard/olympic.do", "/usr/totalInfo/periodWeatherInfo.do", "/usr/floodCenter/noticeList.do", "/usr/hotLine/hotLineList.do"};
+		for (AuthVO menuVO : menuList) {
+			for(int i=0; i<requestURI.length; i++){
+				Pattern p2 = Pattern.compile(".*\\"+menuVO.getUrl());
+				Matcher m2 = p2.matcher(requestURI[i]);
+				boolean a2 = m2.matches();
+				LOGGER.debug(menuVO.getUrl() + " = " + a2);
+				if(a2){
+					return "redirect:"+requestURI[i];
+				}
+			}
+		}
+		
+		return "redirect:/logout.do";
+		
+	}
+	
+	// 로그아웃
+	@RequestMapping("/logout.do")
+	public String logout(HttpSession session, HttpServletResponse response, HttpServletRequest request, RedirectAttributes reda) throws Exception {
+		LOGGER.info("/logout.do - 로그아웃");
+		// 로그인정보
+		session.removeAttribute("userSession");
+		// leftmenu
+		session.removeAttribute("leftMenuCode");
+		// 모바일 자동로그인 방지
+		reda.addFlashAttribute("autoLogin", "N");
+		return "redirect:/loginView.do";
+	}
+	
+	
+	//특보 대비메뉴얼 새창 열기
+	@RequestMapping("/usr/special/solution.do")
+	public String dashboardTest(String specialCode, ModelMap model, HttpSession session, HttpServletRequest request) throws Exception {
+		LOGGER.info("/usr/dashboard/special.do - 특보발령 대비 자료");
+		
+		if(EgovStringUtil.isEmpty(specialCode) || specialCode.equals("0")){
+			return "redirect:/usr/dashboard/main.do";
+		}
+		return "/usr/solution/solutionView"+specialCode;
+	}
+}

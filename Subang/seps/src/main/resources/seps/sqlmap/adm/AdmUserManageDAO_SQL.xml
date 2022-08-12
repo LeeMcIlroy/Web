@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_user_manage">
+		FROM
+			TB_SEPS_USER_INFO t1
+		<dynamic prepend="WHERE">
+			ADMIN_YN = 'N'
+			<isEqual property="searchCondition1" compareValue="Y">
+				AND USE_YN = 'Y'
+			</isEqual>
+			<isEqual property="searchCondition1" compareValue="N">
+				AND USE_YN = 'N'
+			</isEqual>
+			<isNotEmpty property="searchWord" >
+				<isEqual property="searchCondition2" compareValue="1">
+					AND USER_NM like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition2" compareValue="2">
+					AND DEPT like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+				
+		</dynamic>
+	</sql>
+	
+	<!-- 사용자관리 목록 -->
+	<select id="AdmUserManageDAO.selectAdmUserManageList" parameterClass="searchVO" resultClass="EgovMap">
+/*AdmUserManageDAO.selectAdmUserManageList*/
+	<![CDATA[
+		SELECT
+			USER_INFO_ID
+			, USER_ID
+			, USER_NM
+			, DEPT
+			, USE_YN
+			, ALARM_YN
+			, DATE_FORMAT(UDT_DTTM, '%Y-%m-%d %H:%i') as UDT_DTTM
+		FROM (
+			SELECT
+				USER_INFO_ID
+				, USER_ID
+				, USER_NM
+				, DEPT
+				, USE_YN
+				, ALARM_YN
+				, UDT_DTTM
+	]]>
+			<include refid="adm_user_manage"/>
+	<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+			]]>	
+			<isNotEqual property="searchType" compareValue="Y">
+				LIMIT #firstIndex#, #recordCountPerPage#
+			</isNotEqual>
+			<![CDATA[
+		) tt
+	]]>
+	</select>
+	
+		<!-- 목록Cnt -->
+	<select id="AdmUserManageDAO.selectAdmUserManageListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmUserManageDAO.selectAdmUserManageListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="adm_user_manage"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmUserManageDAO.selectAdmUserManageView" parameterClass="String" resultClass="userInfoVo">
+/*AdmUserManageDAO.selectAdmUserManageView*/
+	<![CDATA[
+		SELECT
+			USER_INFO_ID AS userInfoId
+			, USER_ID AS userId
+			, USER_NM AS userNm
+			, USER_TEL AS userTel
+			, USER_MAIL AS userMail
+			, DEPT AS dept
+			, USE_YN AS useYn
+			, ALARM_YN AS alarmYn
+		FROM
+			TB_SEPS_USER_INFO
+		WHERE
+			USER_INFO_ID = #userInfoId#
+	]]>
+	</select>
+	
+	<!-- 중복조회 -->
+	<select id="AdmUserManageDAO.selectAdmUserManageIdCheck" parameterClass="String" resultClass="String">
+/*AdmUserManageDAO.selectAdmUserManageIdCheck*/
+	<![CDATA[
+		SELECT
+			COUNT(USER_ID)
+		FROM
+			TB_SEPS_USER_INFO
+		WHERE
+			USER_ID = #userId#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmUserManageDAO.insertAdmUserManage" parameterClass="userInfoVO">
+/*AdmUserManageDAO.insertAdmUserManage*/
+	<selectKey keyProperty="userInfoId" resultClass="String">
+		SELECT LAST_INSERT_ID()
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_SEPS_USER_INFO(
+			USER_NM
+			, USER_ID
+			, USER_PW
+			, DEPT
+			, USE_YN
+			, ALARM_YN
+			, ADMIN_YN
+			, REG_DTTM
+		) VALUES (
+			#userNm#
+			, #userId#
+			, #userPw#
+			, #dept#
+			, #useYn#
+			, #alarmYn#
+			, 'N'
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmUserManageDAO.updateAdmUserManage" parameterClass="userInfoVO">
+/*AdmUserManageDAO.updateAdmUserManage*/
+	<![CDATA[
+		UPDATE TB_SEPS_USER_INFO SET
+			USER_NM = #userNm#
+			, DEPT = #dept#
+			, USE_YN = #useYn#
+			, ALARM_YN = #alarmYn#
+	]]>
+	<isNotEmpty property="userPw">
+		, USER_PW = #userPw#
+	</isNotEmpty>			
+	<![CDATA[
+		WHERE
+			USER_INFO_ID = #userInfoId#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmUserManageDAO.deleteAdmUserManage" parameterClass="String">
+/*AdmUserManageDAO.deleteAdmUserManage*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_USER_INFO WHERE USER_INFO_ID = #userInfoId#
+	]]>
+	</delete>
+	
+</sqlMap>

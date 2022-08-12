@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<!-- 권한목록 -->
+	<select id="CmmnDAO.selectAuthList" resultClass="authVO">
+/*CmmnDAO.selectAuthList*/
+	<![CDATA[
+		SELECT
+			AUTH_ID AS authId
+			, AUTH_NM AS authNm
+		FROM
+			TB_SEPS_AUTH
+	]]>
+	</select>
+	
+	<!-- 유저별 권한목록 -->
+	<select id="CmmnDAO.selectAuthListOne" parameterClass="String" resultClass="String">
+/*CmmnDAO.selectAuthListOne*/
+	<![CDATA[
+		SELECT
+			t2.AUTH_ID AS authId
+			, t2.URL AS url
+			, t2.AUTH_NM AS authNm
+		FROM
+			TB_SEPS_AUTH_MAPPING t1
+			, TB_SEPS_AUTH t2
+		WHERE
+			t1.AUTH_ID = t2.AUTH_ID
+		AND
+			USER_INFO_ID = #userInfoId#
+	]]>
+	</select>
+	
+	
+	<!-- 권한 등록 -->
+	<insert id="CmmnDAO.insertAuth" parameterClass="userInfoVo">
+/*CmmnDAO.insertAuth*/
+	<![CDATA[
+		INSERT  INTO TB_SEPS_AUTH_MAPPING ( AUTH_ID, USER_INFO_ID ) VALUES
+	]]>
+		<iterate conjunction=" ," property="menuIds">
+			 (#menuIds[]#, #userInfoId#)
+		</iterate>
+	</insert>
+	
+	
+	<!-- 권한 삭제 -->
+	<delete id="CmmnDAO.deleteAuth" parameterClass="userInfoVO">
+/*CmmnDAO.deleteAuth*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_AUTH_MAPPING WHERE USER_INFO_ID = #userInfoId#
+	]]>
+	</delete>
+	
+	
+	<!-- 첨부파일 조회 -->
+	<select id="CmmnDAO.selectFileBoard" parameterClass="map" resultClass="EgovMap">
+/*CmmnDAO.selectFileBoard*/
+	<![CDATA[
+		SELECT
+			ATTACH_FILE_ID
+			, SAVE_FILE_NM
+			, ORG_FILE_NM
+			, BOARD_ID
+			, BOARD_TYPE
+			, REG_DTTM
+			, REG_NM
+		FROM
+			TB_SEPS_ATTACH_FILE
+		WHERE
+			BOARD_ID = #boardId# 
+		AND 
+			BOARD_TYPE = #boardType#
+	]]>
+	</select>
+	
+	<!-- 첨부파일 조회 -->
+	<select id="CmmnDAO.selectFile" parameterClass="String" resultClass="EgovMap">
+/*CmmnDAO.selectFile*/
+	<![CDATA[
+		SELECT
+			ATTACH_FILE_ID
+			, SAVE_FILE_NM
+			, ORG_FILE_NM
+			, BOARD_ID
+			, BOARD_TYPE
+			, REG_DTTM
+			, REG_NM
+		FROM
+			TB_SEPS_ATTACH_FILE
+		WHERE
+			ATTACH_FILE_ID = #attachFileId# 
+	]]>
+	</select>
+	
+	<!-- 첨부파일 등록 -->
+	<insert id="CmmnDAO.insertFile" parameterClass="fileVO">
+/*CmmnDAO.insertFile*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_ATTACH_FILE(
+			SAVE_FILE_NM
+			, ORG_FILE_NM
+			, BOARD_ID
+			, BOARD_TYPE
+			, REG_DTTM
+			, REG_NM
+		) VALUES (
+			#saveFileNm#
+			, #orgFileNm#
+			, #boardId#
+			, #boardType#
+			, NOW()
+			, #regNm#
+		)
+	]]>
+	</insert>
+	
+	
+	<!-- 첨부파일 삭제 -->
+	<delete id="CmmnDAO.deleteFile" parameterClass="String">
+/*CmmnDAO.deleteFile*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_ATTACH_FILE WHERE ATTACH_FILE_ID = #attachFileId#
+	]]>
+	</delete>
+	
+	<!-- 첨부파일 삭제 -->
+	<delete id="CmmnDAO.deleteFileAll" parameterClass="map">
+/*CmmnDAO.deleteFileAll*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_ATTACH_FILE WHERE BOARD_ID = #boardId# AND BOARD_TYPE = #boardType#
+	]]>
+	</delete>
+</sqlMap>

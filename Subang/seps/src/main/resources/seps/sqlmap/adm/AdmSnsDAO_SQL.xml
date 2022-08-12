@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+
+	<sql id="adm_snsBoard_table">
+		FROM
+			TB_SEPS_SNS_BOARD
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchWord" prepend="AND">
+				<isEqual property="searchCondition1" compareValue="TITLE"><![CDATA[ SNS_TITLE like concat('%', #searchWord#, '%') ]]></isEqual>
+				<isEqual property="searchCondition1" compareValue="CONTENT"><![CDATA[ SNS_CONTENT like concat('%', #searchWord#, '%') ]]></isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+
+	<!-- 목록 -->
+	<select id="AdmSnsDAO.selectSnsList" parameterClass="searchVO" resultClass="egovMap">
+/* AdmSnsDAO.selectSnsList */
+	<![CDATA[
+		SELECT
+			SNS_TITLE
+			, SNS_CONTENT
+			, SNS_TYPE
+			, REG_NM
+			, REG_DTTM
+	]]>
+		<include refid="adm_snsBoard_table"/>
+	<![CDATA[
+		ORDER BY
+			REG_DTTM desc
+		LIMIT #firstIndex#, #recordCountPerPage#
+	]]>
+	</select>
+	
+	<!-- 목록Cnt -->
+	<select id="AdmSnsDAO.selectSnsListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmSnsDAO.selectSnsListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="adm_snsBoard_table"/>
+	</select>
+</sqlMap>

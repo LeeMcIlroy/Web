@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="kr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Script-Type" content="text/javascript" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+		<link href="../../css/common.css" rel="stylesheet" type="text/css" />
+		<link href="../../css/menu.css" rel="stylesheet" type="text/css" />
+
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" />
+		<script src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+
+		<script src="../../js/menu.js" type="text/javascript"></script>
+		<script src="../../js/common.js" type="text/javascript"></script>
+
+		<title>수방센터 :: 자동차전용도로 수방 통합시스템</title>
+	</head>
+	<body class="sub_page">
+		<!-- PAGE_HEAD -->
+		<div class="m_header">
+			<div class="t_logo">
+				자동차전용도로 <span>수방 통합시스템</span>
+			</div>
+			<button id="clickme"><img src="../../img/mobile_menu_open.png" alt="메뉴열기" /></button>
+			<!-- TOP_MENU -->
+			<div class="t_menu">
+				<!-- PC_TOP_MENU -->
+				<div class="pc_menu">
+					<div class="log_in">
+						<ul>
+							<li><a href="#"><img src="../../img/kakao_icon.png" alt="" /></a>&nbsp;&nbsp;<a href="#"><img src="../../img/sns_icon.png" alt="" /></a>&nbsp;</li>
+							<li><a href="#">홍길동</a></li>
+						</ul>
+					</div>
+					<ul>
+						<li><a href="#">종합상황판</a></li>
+						<li><a href="#">동부간선(도로)</a></li>
+						<li><a href="#">올림픽대로</a></li>
+						<li><a href="#">종합정보</a></li>
+						<li><a href="#">비상연락망</a></li>
+						<li><a href="#">수방센터</a></li>
+						<li><a href="#">마이페이지</a></li>
+						<li><a href="#">수방단계설정</a></li>
+					</ul>
+				</div>
+				<!--// PC_TOP_MENU -->
+			</div>
+			<!--// TOP_MENU -->
+		</div>
+		<!-- MOBILE_MENU -->
+		<div class="mob_menu">
+			<div class="cssmenu">
+				<div id="cssmenu">
+					<div class="log_info_box">
+						<a href="#" class="fl_right"><img src="../../img/sns_icon.png" alt="" /></a>
+						<a href="#" class="fl_right"><img src="../../img/kakao_icon.png" alt="" /></a>
+						<a href="#">홍길동</a>
+						<a href="#">로그아웃</a>
+					</div>
+					<ul>
+					   <li class="has-sub"><a href="#">종합상황판</a>
+						  <ul>
+							 <li><a href="#">종합상황판</a></li>
+						  </ul>
+					   </li>
+					   <li class="has-sub"><a href="#">동부간선(도로)</a>
+						  <ul>
+							 <li><a href="#">상황판</a></li>
+						  </ul>
+					   </li>
+					   <li class="has-sub"><a href="#">올림픽대로</a>
+						  <ul>
+							 <li><a href="#">상황판</a></li>
+						  </ul>
+					   </li>
+					   <li class="has-sub"><a href="#">종합정보</a>
+						  <ul>
+							 <li><a href="#">기간별수위정보</a></li>
+							 <li><a href="#">시간대별기상현황</a></li>
+							 <li><a href="#">기상정보</a></li>
+							 <li><a href="#">수위정보</a></li>
+							 <li><a href="#">조위정보</a></li>
+						  </ul>
+					   </li>
+					   <li><a href="#">비상연락망</a>
+						  <ul>
+							 <li><a href="#">비상연락망</a></li>
+						  </ul>
+					   </li>
+					   <li class="has-sub"><a href="#">수방센터</a>
+						  <ul>
+							 <li><a href="#">공지사항</a></li>
+							 <li><a href="#">기간별알림현황</a></li>
+						  </ul>
+					   </li>
+					   <li class="has-sub"><a href="#">마이페이지</a>
+						  <ul>
+							 <li><a href="#">개인정보변경</a></li>
+							 <li><a href="#">로그아웃</a></li>
+						  </ul>
+					   </li>
+					   <li><a href="#">수방단계설정</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<!--// MOBILE_MENU -->
+		<!-- //PAGE_HEAD-->
+		<div class="m_body" >
+			<!-- WEB LEFT_MENU -->
+			<div class="left_menu left_cas" id="left_menu">
+				<div class="left_title"><p>수방센터</p></div>
+				<ul>
+					<li><a href="#">기상대비 발전량</a>
+				</ul>
+			</div>
+			<!--// WEB LEFT_MENU -->
+			<div class="main_content">
+				<div class="content">
+					<div class="cont_box">
+						<!-- GRAPH_BOX multi_box 안 div 최대 4개 -->
+						<div class="multi_box m_total">
+							<!-- div1 -->
+							<div>
+								<dl class="total_top_box">
+									<dt><a href="#" class="re_icon">단계설정</a></dt>
+									<dd>
+										<ul>
+											<li><img src="../../img/alt_img.png" alt="" /></li>
+											<li><p>2018.4.16(월) 13:50 발령</p>1단계(주의)</li>
+											<li><img src="../../img/step_red.png" alt="주의" /></li>
+										</ul>
+									</dd>
+								</dl>
+							</div>
+							<!--// div1 -->
+							<!-- div2 -->
+							<div>
+								<dl class="total_top_box">
+									<dt><a href="#" class="ar_icon">자세히 보기</a></dt>
+									<dd>
+										<ul>
+											<li><img src="../../img/wt_img.png" alt="" /></li>
+											<li>
+												<p>월계1교 수위 17.76M (통제수위 도달)</p>
+												현재 1단계 발령중
+											</li>
+											<li>
+												<div class="step">
+													<ul>
+														<li>1</li>
+														<li>단계</li>
+													</ul>
+												</div>
+											</li>
+										</ul>
+									</dd>
+								</dl>
+							</div>
+							<!--// div2 -->
+
+							<!-- div3 -->
+							<div>
+								<dl class="total_top_box">
+									<dt><a href="#" class="re_icon">2018.4.16(월) 14:00 현재</a></dt>
+									<dd>
+										<ul>
+											<li><img src="../../img/gps_img.png" alt="" /></li>
+											<li>
+												<p>서울시 성동구 마장동 110-11</p>
+												<ul>
+													<li>온도 : <strong>9℃</strong></li>
+													<li>바람 : <strong>남동풍 1m/s</strong></li>
+													<li>습도 : <strong>47%</strong></li>
+													<li>1시간 강수량 : <strong>10mm</strong></li>
+												</ul>
+											</li>
+											<li>
+												<div style="text-align:center;">
+													<ul style="vertical-align:middle;">
+														<li><img src="../../img/wd_icon01.png" alt="맑음" /><p class="mt5">맑음</p></li>
+													</ul>
+												</div>
+											</li>
+										</ul>
+									</dd>
+								</dl>
+							</div>
+							<!--// div3 -->
+						</div>
+						<!--// GRAPH_BOX -->
+						<div class="grid_box">
+							<div>
+								<div>
+									<div class="grid_title">
+										<ul>
+											<li>월계1교 수위</li>
+											<li class="tit_num">3000 (13:10)</li>
+										</ul>
+									</div>
+									<div class="gf_box">
+										<div><img src="../../img/grf_img01.png"></div>
+									</div>
+								</div>
+								<div>
+									<div class="grid_table">
+										<table>
+											<colgroup>
+												<col width="33.33%" />
+												<col width="33.33%" />
+												<col width="33.33%" />
+											</colgroup>
+											<thead>
+												<tr>
+													<th>시간</th>
+													<th>수위</th>
+													<th>단계</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>관심</td>
+												</tr>
+												<tr>
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>경계</td>
+												</tr>
+												<tr class="grid_table_alt">
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>경고</td>
+												</tr>
+												<tr>
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>위험</td>
+												</tr>
+												<tr>
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>침수</td>
+												</tr>
+												<tr class="grid_table_alt">
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>경고</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+								<div>
+									<div class="grid_title">
+										<ul>
+											<li>월계1교 CCTV</li>
+										</ul>
+									</div>
+									<div class="gf_box">
+										<div><img src="../../img/sample_cctv.png"></div>
+									</div>
+								</div>
+								<div>
+									<div class="grid_title">
+										<ul>
+											<li>여의상류IC 수위</li>
+											<li class="tit_num">3000 (13:10)</li>
+										</ul>
+									</div>
+									<div class="gf_box">
+										<div><img src="../../img/grf_img01.png"></div>
+									</div>
+								</div>
+								<div>
+									<div class="grid_table">
+										<table>
+											<colgroup>
+												<col width="33.33%" />
+												<col width="33.33%" />
+												<col width="33.33%" />
+											</colgroup>
+											<thead>
+												<tr>
+													<th>시간</th>
+													<th>수위</th>
+													<th>단계</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>관심</td>
+												</tr>
+												<tr>
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>경계</td>
+												</tr>
+												<tr class="grid_table_alt">
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>경고</td>
+												</tr>
+												<tr>
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>위험</td>
+												</tr>
+												<tr>
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>침수</td>
+												</tr>
+												<tr class="grid_table_alt">
+													<td>16 14:00</td>
+													<td>14.73</td>
+													<td>경고</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+								<div>
+									<div class="grid_title">
+										<ul>
+											<li>월계1교 CCTV</li>
+										</ul>
+									</div>
+									<div class="gf_box">
+										<div><img src="../../img/sample_cctv.png"></div>
+									</div>
+								</div>
+								<div>
+									<div class="grid_title">
+										<ul>
+											<li>월계1교 수위</li>
+										</ul>
+									</div>
+									<div class="gf_box">
+										<div><img src="../../img/m_map.png"></div>
+									</div>
+								</div>
+							</div>
+							<div>
+								<div>
+									<div class="grid_title">
+										<ul>
+											<li>동부간선도로</li>
+										</ul>
+									</div>
+									<div class="gf_box">
+										<img src="../../img/map_all02.png">
+									</div>
+									<div class="end_info">
+										<div>
+											<ul>
+												<li>
+													<p>한강대교수위</p>
+													13.56EL.M
+												</li>
+											</ul>
+										</div>
+										<div>
+											<ul>
+												<li>
+													<p>팔당댐방류량</p>
+													13.56EL.M
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<ul>
+				<li><img src="../../img/end_logo.png" alt="" /></li>
+				<li>
+					04704 서울시 성동구 청계천로 540 서울시설공단 도로관리본부 / 도로관리처 Tel:02)2290-6273<br>
+					Copyright(c) 2018 Seoul Metropolitan Facilities Management Corporation. All Rights Reserved
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>

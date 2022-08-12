@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_system_manage">
+		FROM
+			TB_SEPS_USER_INFO t1
+		<dynamic prepend="WHERE">
+			ADMIN_YN = 'Y'
+			<isEqual property="searchCondition1" compareValue="Y">
+				AND USE_YN = 'Y'
+			</isEqual>
+			<isEqual property="searchCondition1" compareValue="N">
+				AND USE_YN = 'N'
+			</isEqual>
+			<isNotEmpty property="searchWord" >
+				<isEqual property="searchCondition2" compareValue="1">
+					AND USER_NM like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition2" compareValue="2">
+					AND DEPT like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+				
+		</dynamic>
+	</sql>
+	
+	<!-- 사용자관리 목록 -->
+	<select id="AdmSystemManageDAO.selectAdmSystemManageList" parameterClass="searchVO" resultClass="EgovMap">
+/*AdmSystemManageDAO.selectAdmSystemManageList*/
+	<![CDATA[
+		SELECT
+			USER_INFO_ID
+			, USER_ID
+			, USER_NM
+			, USER_TEL
+			, USER_MAIL
+			, USE_YN
+			, ALARM_YN
+		FROM (
+			SELECT
+				USER_INFO_ID
+				, USER_ID
+				, USER_NM
+				, USER_TEL
+				, USER_MAIL
+				, USE_YN
+				, ALARM_YN
+	]]>
+			<include refid="adm_system_manage"/>
+	<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+			]]>	
+			<isNotEqual property="searchType" compareValue="Y">
+				LIMIT #firstIndex#, #recordCountPerPage#
+			</isNotEqual>
+			<![CDATA[
+		) tt
+	]]>
+	</select>
+	
+		<!-- 목록Cnt -->
+	<select id="AdmSystemManageDAO.selectAdmSystemManageListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmSystemManageDAO.selectAdmSystemManageListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="adm_system_manage"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmSystemManageDAO.selectAdmSystemManageView" parameterClass="String" resultClass="userInfoVo">
+/*AdmSystemManageDAO.selectAdmSystemManageView*/
+	<![CDATA[
+		SELECT
+			USER_INFO_ID AS userInfoId
+			, USER_ID AS userId
+			, USER_NM AS userNm
+			, USER_TEL AS userTel
+			, USER_MAIL AS userMail
+			, DEPT AS dept
+			, USE_YN AS useYn
+			, ALARM_YN AS alarmYn
+		FROM
+			TB_SEPS_USER_INFO
+		WHERE
+			USER_INFO_ID = #userInfoId#
+	]]>
+	</select>
+	
+	<!-- 중복조회 -->
+	<select id="AdmSystemManageDAO.selectAdmSystemManageIdCheck" parameterClass="String" resultClass="String">
+/*AdmSystemManageDAO.selectAdmSystemManageIdCheck*/
+	<![CDATA[
+		SELECT
+			COUNT(USER_ID)
+		FROM
+			TB_SEPS_USER_INFO
+		WHERE
+			USER_ID = #userId#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmSystemManageDAO.insertAdmSystemManage" parameterClass="userInfoVO">
+/*AdmSystemManageDAO.insertAdmSystemManage*/
+	<selectKey keyProperty="userInfoId" resultClass="String">
+		SELECT LAST_INSERT_ID()
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_SEPS_USER_INFO(
+			USER_NM
+			, USER_ID
+			, USER_PW
+			, USER_TEL
+			, USER_MAIL
+			, USE_YN
+			, ADMIN_YN
+			, ALARM_YN
+			, REG_DTTM
+		) VALUES (
+			#userNm#
+			, #userId#
+			, #userPw#
+			, #userTel#
+			, #userMail#
+			, #useYn#
+			, 'Y'
+			, 'Y'
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmSystemManageDAO.updateAdmSystemManage" parameterClass="userInfoVO">
+/*AdmSystemManageDAO.updateAdmSystemManage*/
+	<![CDATA[
+		UPDATE TB_SEPS_USER_INFO SET
+			USER_NM = #userNm#
+			, USER_TEL = #userTel#
+			, USER_MAIL = #userMail#
+			, USE_YN = #useYn#
+			, UDT_DTTM = NOW()
+	]]>
+	<isNotEmpty property="userPw">
+		, USER_PW = #userPw#
+	</isNotEmpty>			
+	<![CDATA[
+		WHERE
+			USER_INFO_ID = #userInfoId#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmSystemManageDAO.deleteAdmSystemManage" parameterClass="String">
+/*AdmSystemManageDAO.deleteAdmSystemManage*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_USER_INFO WHERE USER_INFO_ID = #userInfoId#
+	]]>
+	</delete>
+	
+	<!-- 데이터연계현황 -->
+	<select id="AdmSystemManageDAO.selectApiStatusList" resultClass="egovMap">
+/* AdmSystemManageDAO.selectApiStatusList */
+	<![CDATA[
+		SELECT * FROM (
+			(SELECT '동네예보' as type, '기상청' as type2, REG_DTTM FROM TB_SEPS_WEATHER_SERIES_API ORDER BY REG_DTTM desc limit 1) /* 동네예보 */
+			union all
+			(SELECT '초단기실황' as type, '기상청' as type2, REG_DTTM FROM TB_SEPS_WEATHER_API ORDER BY REG_DTTM desc limit 1) /* 초단기 실황 */
+			union all
+			(SELECT '초단기예보' as type, '기상청' as type2, REG_DTTM FROM TB_SEPS_WEATHER_TIME_API ORDER BY REG_DTTM desc limit 1) /* 초단기 예보 */
+			union all
+			(SELECT '수위' as type, '한강홍수통제소&서울시설공단' as type2, REG_DTTM FROM TB_SEPS_WATER_LEVEL_API ORDER BY REG_DTTM DESC limit 1) /* 수위 */
+			union all
+			(SELECT '조위-실측&예측(1hour/1day)' as type, '바다누리해양정보서비스' as type2, REG_DTTM FROM TB_SEPS_TIDE_API ORDER BY REG_DTTM desc limit 1) /* 조위 실측 & 예측 */
+			union all
+			(SELECT '조위-예측(1day)' as type, '바다누리해양정보서비스' as type2, REG_DTTM FROM TB_SEPS_TIDE_TPH_API ORDER BY REG_DTTM desc limit 1) /* 조위 예측 */
+			union all
+			(SELECT '방류량' as type, '한강홍수통제소' as type2, REG_DTTM FROM TB_SEPS_DAM_API ORDER BY REG_DTTM desc limit 1) /* 방류량 */
+		) tt
+	]]>
+	</select>
+	
+</sqlMap>

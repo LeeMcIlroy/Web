@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <!-- 프로퍼티 정보 설정 -->
+    <bean name="propertiesService" class="egovframework.rte.fdl.property.impl.EgovPropertyServiceImpl" destroy-method="destroy">
+        <property name="properties">
+            <map>
+            	<!--운영   
+            		
+                <entry key="Globals.fileStorePath.titleImage" value="/home/hsDesign/upload/titleImage/"/>
+                <entry key="Globals.fileStorePath.attachedFile" value="/home/hsDesign/upload/attachedFile/"/>
+                <entry key="Globals.fileStorePath.oldImage" value="/home/hsDesign/upload/attachedFile/old/"/>
+                <entry key="Globals.fileStorePath.ckeditor" value="/home/hsDesign/upload/ckeditor/"/>
+                 -->
+<!-- 				<entry key="Globals.domain" value="http://211.251.239.8"/> -->
+<!--                 <entry key="Globals.fileStorePath.attachedFile" value="/data/seps/upload/attachedFile/"/> -->
+<!--                 <entry key="Globals.fileStorePath.ckeditor" value="/data/seps/upload/ckeditor/"/> -->
+                
+				<!--
+					개발 
+                <entry key="Globals.domain" value="http://202.167.218.35:8080"/>
+                <entry key="Globals.domain" value="http://202.167.218.36:8081"/>
+                <entry key="Globals.domain" value="http://125.141.35.215:8081"/>
+                <entry key="Globals.domain" value="http://202.167.218.23:8080"/>
+                <entry key="Globals.fileStorePath.titleImage" value="D:/WAS/2017/hsDesign/upload/titleImage/"/>
+                <entry key="Globals.fileStorePath.oldImage" value="D:/WAS/2017/hsDesign/upload/attachedFile/old/"/>
+				-->
+				
+                <entry key="Globals.domain" value="http://202.167.218.35:8080"/>
+                <entry key="Globals.fileStorePath.ckeditor" value="D:/WAS/2018/seps/upload/ckeditor/"/>
+                <entry key="Globals.fileStorePath.attachedFile" value="D:/WAS/2018/seps/upload/attachedFile/"/>
+            </map>
+        </property>
+    </bean>
+</beans>

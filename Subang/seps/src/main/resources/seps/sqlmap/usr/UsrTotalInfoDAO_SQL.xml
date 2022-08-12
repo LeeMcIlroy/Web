@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<!-- 시간대별 기상현황 목록 가져오기 -->
+	<select id="UsrTotalInfoDAO.selectWeatherStatusList" parameterClass="searchVO" resultClass="egovMap">
+/* UsrTotalInfoDAO.selectWeatherStatusList */
+	<![CDATA[
+		SELECT *
+		FROM 
+		(
+			SELECT *
+			FROM (
+				SELECT
+					concat(BASE_DATE, ' ', BASE_TIME) as DTTM
+					, ARR_RN1
+				FROM (
+					SELECT BASE_DATE, BASE_TIME, group_concat(SHP_ID, '=', rn1) as ARR_RN1
+					FROM TB_SEPS_WEATHER_API
+					GROUP BY BASE_DATE, BASE_TIME
+				) tt
+			) ttt
+			WHERE
+				DTTM >= concat(replace(#startDate#, '-', ''), ' ', #startTime#, '00')
+				and DTTM <= concat(replace(#endDate#, '-', ''), ' ', #endTime#, '00')
+		) tttt1
+		, (
+			SELECT *
+			FROM (
+				SELECT
+					concat(BASE_DATE, ' ', BASE_TIME) as DTTM
+					, ARR_WL
+				FROM (
+					SELECT BASE_DATE, BASE_TIME, group_concat(WLOBSCD, '=', wl) as ARR_WL
+					FROM TB_SEPS_WATER_LEVEL_API
+					WHERE substring(BASE_TIME, 3, 2) = '00'
+					GROUP BY BASE_DATE, BASE_TIME
+				) tt
+			) ttt
+			WHERE
+				DTTM >= concat(replace(#startDate#, '-', ''), ' ', #startTime#, '00')
+				and DTTM <= concat(replace(#endDate#, '-', ''), ' ', #endTime#, '00')
+		) tttt2
+		, (
+			SELECT *
+			FROM (
+				SELECT concat(BASE_DATE, ' ', BASE_TIME) as DTTM, TOTOTF
+				FROM TB_SEPS_DAM_API
+				WHERE 
+					DMOBSCD = '1017310'
+					AND substring(BASE_TIME, 3, 2) = '00'
+			) tt
+			WHERE
+				DTTM >= concat(replace(#startDate#, '-', ''), ' ', #startTime#, '00')
+				and DTTM <= concat(replace(#endDate#, '-', ''), ' ', #endTime#, '00')
+		) tttt3
+		WHERE 
+			tttt1.DTTM = tttt2.DTTM AND tttt2.DTTM = tttt3.DTTM
+	]]>
+	</select>
+	
+	<!-- 단계조회 -->
+	<select id="UsrTotalInfoDAO.selectFloodLevel" parameterClass="map" resultClass="egovMap">
+/* UsrTotalInfoDAO.selectFloodLevel */
+	<![CDATA[
+		SELECT *
+		FROM (
+			SELECT
+				concat(ISSUE_DATE, ' ', ISSUE_TIME) as DTTM
+				, FLOOD_LEVEL
+			FROM (
+				SELECT
+					date_format(ISSUE_DATE, '%Y%m%d') as ISSUE_DATE
+					, replace(ISSUE_TIME, ':', '') as ISSUE_TIME
+					, FLOOD_LEVEL
+				FROM TB_SEPS_FLOOD_CONTROL
+				WHERE 
+					  SITUATION_TYPE = 'F'
+			) tt
+		) ttt
+	]]>
+	<dynamic prepend="WHERE">
+		<isNotEmpty property="preHourDate" prepend="AND"><![CDATA[ DTTM >= #preHourDate# ]]></isNotEmpty>
+		<isNotEmpty property="stdHourDate" prepend="AND"><![CDATA[ DTTM <= #stdHourDate# ]]></isNotEmpty>
+	</dynamic>
+	<![CDATA[
+		ORDER BY
+			DTTM DESC
+		LIMIT 1
+	]]>
+	</select>
+	
+	<!-- 강수량 목록 -->
+	<select id="UsrTotalInfoDAO.selectWeatherRainList" parameterClass="searchVO" resultClass="egovMap">
+/* UsrTotalInfoDAO.selectWeatherRainList */
+	<![CDATA[
+		SELECT *
+		FROM (
+			SELECT
+				t1.BASE_DATE
+				, t1.BASE_TIME
+				, concat(t1.BASE_DATE, ' ', t1.BASE_TIME) as DTTM
+				, t1.SHP_ID as SHP_ID_A
+				, t1.RN1 as RN1_A
+				, t2.SHP_ID as SHP_ID_B
+				, t2.RN1 as RN1_B
+			FROM
+				TB_SEPS_WEATHER_API t1
+				, TB_SEPS_WEATHER_API t2
+			WHERE
+				t1.BASE_DATE = t2.BASE_DATE
+				AND t1.BASE_TIME = t2.BASE_TIME
+				AND t1.SHP_ID != t2.SHP_ID
+				AND t1.SHP_ID = 1
+		) tt
+		WHERE 
+			tt.DTTM >= concat(replace(#startDate#, '-', ''), ' ', #startTime#, '00')
+			and tt.DTTM <= concat(replace(#endDate#, '-', ''), ' ', #endTime#, '00')
+		ORDER BY 
+			tt.DTTM asc
+	]]>
+	</select>
+	
+	<!-- 수위 목록 -->
+	<select id="UsrTotalInfoDAO.selectWaterLevelOrDamList" parameterClass="searchVO" resultClass="egovMap">
+/* UsrTotalInfoDAO.selectWaterLevelOrDamList */
+	<dynamic>
+		<isNotEqual property="searchCondition1" compareValue="1017310">
+			<![CDATA[
+				SELECT
+					BASE_DATE
+					, BASE_TIME
+					, WL			as VAL
+					, REG_DTTM
+				FROM TB_SEPS_WATER_LEVEL_API
+				WHERE
+					WLOBSCD = #searchCondition1#
+			]]>
+				<isNotEmpty property="startDate" prepend="AND"><![CDATA[ BASE_DATE >= replace(#startDate#, '-', '') ]]></isNotEmpty>
+				<isNotEmpty property="endDate" prepend="AND"><![CDATA[ BASE_DATE <= replace(#endDate#, '-', '') ]]></isNotEmpty>
+		</isNotEqual>
+		<isEqual property="searchCondition1" compareValue="1017310">
+			<![CDATA[
+				SELECT
+					BASE_DATE
+					, BASE_TIME
+					, TOTOTF		as VAL
+					, REG_DTTM
+				FROM TB_SEPS_DAM_API
+				WHERE 
+					DMOBSCD = #searchCondition1#
+			]]>
+				<isNotEmpty property="startDate" prepend="AND"><![CDATA[ BASE_DATE >= replace(#startDate#, '-', '') ]]></isNotEmpty>
+				<isNotEmpty property="endDate" prepend="AND"><![CDATA[ BASE_DATE <= replace(#endDate#, '-', '') ]]></isNotEmpty>
+		</isEqual>
+			<![CDATA[
+				ORDER BY
+					BASE_DATE asc, BASE_TIME asc
+			]]>
+	</dynamic>
+	</select>
+	
+	<!-- 극치 조위 목록 -->
+	<select id="UsrTotalInfoDAO.selectTideTphList" parameterClass="searchVO" resultClass="egovMap">
+/* UsrTotalInfoDAO.selectTideTphList */
+	<![CDATA[
+		SELECT
+			BASE_DATE
+			, BASE_TIME
+			, HL_CODE
+			, TPH_LEVEL
+			, REG_DTTM
+		FROM TB_SEPS_TIDE_TPH_API
+		WHERE
+			OBSCODE = #searchCondition1#
+			AND BASE_DATE >= replace(#searchDate#, '-', '')
+			AND BASE_DATE < date_format(date_add(date_format(replace(#searchDate#, '-', ''), '%Y%m%d'), interval 4 day), '%Y%m%d')
+		ORDER BY
+			BASE_DATE asc, BASE_TIME asc
+	]]>
+	</select>
+	
+	<!-- 조위 목록 -->
+	<select id="UsrTotalInfoDAO.selectTideList" parameterClass="searchVO" resultClass="egovMap">
+/* UsrTotalInfoDAO.selectTideList */
+	<![CDATA[
+		SELECT
+			BASE_DATE
+			, BASE_TIME
+			, REAL_VALUE
+			, PRV_VALUE
+			, REG_DTTM
+		FROM
+			TB_SEPS_TIDE_API
+		WHERE
+			OBSCODE = #searchCondition1#
+			and BASE_DATE = replace(#searchDate#, '-', '')
+		ORDER BY
+			BASE_DATE ASC, BASE_TIME ASC
+	]]>
+	</select>
+	
+	
+	<!-- 기상정보 조회 -->
+	<select id="UsrTotalInfoDAO.selectWeather" parameterClass="searchVO" resultClass="egovMap">
+/*UsrTotalInfoDAO.selectWeather*/
+	<![CDATA[
+		SELECT
+			T1H
+			, RN1
+			, REH
+			, CONCAT(LGT, PTY, SKY) AS STATUS
+			, LGT
+			, PTY
+			, SKY
+			, BASE_DATE
+			, BASE_TIME
+			, (SELECT ROUND(SUM(RN1), 1) FROM TB_SEPS_WEATHER_API WHERE SHP_ID = #searchCode# AND CONCAT(BASE_DATE, BASE_TIME) >= #searchCondition1#) AS RN24
+		FROM
+			TB_SEPS_WEATHER_API
+		WHERE
+			SHP_ID = #searchCode#
+		ORDER BY REG_DTTM DESC
+		LIMIT 1
+	]]>
+	</select>
+	
+	<!-- 기상예보 조회 메인용-->
+	<select id="UsrTotalInfoDAO.selectWeatherTime" parameterClass="searchVO" resultClass="egovMap">
+/*UsrTotalInfoDAO.selectWeatherTime*/
+	<![CDATA[
+		SELECT
+			T1H
+			, RN1
+			, REH
+			, CONCAT(LGT, PTY, SKY) AS STATUS
+			, LGT
+			, PTY
+			, SKY
+			, BASE_DATE
+			, BASE_TIME
+			, FCST_DATE
+			, FCST_TIME
+		FROM
+			TB_SEPS_WEATHER_TIME_API
+		WHERE
+			SHP_ID = #searchCode#
+		ORDER BY
+			CONCAT(BASE_DATE," ",BASE_TIME) DESC
+			, CONCAT(FCST_DATE," ", FCST_TIME) DESC 
+		LIMIT 1 ,1 
+	]]>
+	</select>
+	
+	<!-- 기상예보 조회 목록-->
+	<select id="UsrTotalInfoDAO.selectWeatherTimeList" parameterClass="searchVO" resultClass="egovMap">
+/*UsrTotalInfoDAO.selectWeatherTimeList*/
+	<![CDATA[
+		SELECT
+			FCST_DATE
+			, FCST_TIME
+			, CONCAT(PTY, SKY) AS STATUS
+			, PTY
+			, SKY
+            , CASE WHEN PCP ='강수없음' THEN '0.0' when PCP IS NULL THEN '0.0'ELSE PCP END AS PCP
+			, POP
+			, R06
+		FROM
+			TB_SEPS_WEATHER_SERIES_API
+		WHERE
+			SHP_ID = #searchCode#
+		ORDER BY
+			BASE_DATE DESC
+			, BASE_TIME DESC
+			, FCST_DATE ASC
+			, FCST_TIME ASC 
+		LIMIT 0,10
+	]]>
+	</select>
+	
+	<!-- 기상예보 조회 6시간전 강수량 -->
+	<select id="UsrTotalInfoDAO.selectWeatherFristTime" parameterClass="searchVO" resultClass="egovMap">
+/*UsrTotalInfoDAO.selectWeatherFristTime*/
+	<![CDATA[
+		SELECT
+			FCST_DATE
+			, FCST_TIME
+			, CONCAT(PTY, SKY) AS STATUS
+			, PTY
+			, SKY
+			, POP
+			, R06
+		FROM
+			TB_SEPS_WEATHER_SERIES_API
+		WHERE
+			SHP_ID = #searchCode#
+		AND
+			CONCAT(FCST_DATE, FCST_TIME) = #startDate#
+		ORDER BY
+			BASE_DATE DESC
+			, BASE_TIME DESC
+			, FCST_DATE ASC
+			, FCST_TIME ASC 
+		LIMIT 0,1
+	]]>
+	</select>
+</sqlMap>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_hot_line">
+		FROM
+			TB_SEPS_HOT_LINE t1
+		WHERE
+			1=1
+		<dynamic>
+			<isNotEmpty property="searchCondition1">
+				AND HOT_LINE_DEPT = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty property="searchWord">
+				<isNotEmpty property="searchCondition2">
+					<isEqual property="searchCondition2" compareValue="1">
+						AND HOT_LINE_NAME like concat('%', #searchWord#, '%')
+					</isEqual>
+					<isEqual property="searchCondition2" compareValue="2">
+						AND HOT_LINE_TEL like concat('%', #searchWord#, '%')
+					</isEqual>
+					<isEqual property="searchCondition2" compareValue="3">
+						AND HOT_LINE_EMAIL like concat('%', #searchWord#, '%')
+					</isEqual>
+				</isNotEmpty>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 사용자관리 목록 -->
+	<select id="AdmHotLineDAO.selectAdmHotLineList" parameterClass="searchVO" resultClass="EgovMap">
+/*AdmHotLineDAO.selectAdmHotLineList*/
+	<![CDATA[
+		SELECT
+			HOT_LINE_ID
+			, HOT_LINE_DEPT
+			, HOT_LINE_NAME
+			, HOT_LINE_TEL
+			, HOT_LINE_EMAIL
+		FROM (
+			SELECT
+				HOT_LINE_ID
+				, HOT_LINE_DEPT
+				, HOT_LINE_NAME
+				, HOT_LINE_TEL
+				, HOT_LINE_EMAIL
+	]]>
+			<include refid="adm_hot_line"/>
+	<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+			]]>	
+			<isNotEqual property="searchType" compareValue="Y">
+				LIMIT #firstIndex#, #recordCountPerPage#
+			</isNotEqual>
+			<![CDATA[
+		) tt
+	]]>
+	</select>
+	
+		<!-- 목록Cnt -->
+	<select id="AdmHotLineDAO.selectAdmHotLineListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmHotLineDAO.selectAdmHotLineListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="adm_hot_line"/>
+	</select>
+	
+	
+	<!-- 기관목록 -->
+	<select id="AdmHotLineDAO.selectHotLineDeptList" resultClass="EgovMap">
+/*AdmHotLineDAO.selectHotLineDeptList*/
+	<![CDATA[
+		SELECT
+			HOT_LINE_DEPT
+		FROM
+			TB_SEPS_HOT_LINE
+		GROUP BY HOT_LINE_DEPT
+	]]>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmHotLineDAO.selectAdmHotLineView" parameterClass="String" resultClass="hotLineVO">
+/*AdmHotLineDAO.selectAdmHotLineView*/
+	<![CDATA[
+		SELECT
+			HOT_LINE_ID AS hotLineId
+			, HOT_LINE_DEPT AS hotLineDept
+			, HOT_LINE_NAME AS hotLineName
+			, HOT_LINE_TEL AS hotLineTel
+			, HOT_LINE_EMAIL AS hotLineEmail
+			, USE_YN AS useYn
+		FROM
+			TB_SEPS_HOT_LINE
+		WHERE
+			HOT_LINE_ID = #hotLineId#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmHotLineDAO.insertAdmHotLine" parameterClass="hotLineVO">
+/*AdmHotLineDAO.insertAdmHotLine*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_HOT_LINE(
+			HOT_LINE_DEPT
+			, HOT_LINE_NAME
+			, HOT_LINE_TEL
+			, HOT_LINE_EMAIL
+			, REG_DTTM
+			, REG_NM
+		) VALUES (
+			#hotLineDept#
+			, #hotLineName#
+			, #hotLineTel#
+			, #hotLineEmail#
+			, NOW()
+			, #regNm#
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmHotLineDAO.updateAdmHotLine" parameterClass="hotLineVO">
+/*AdmHotLineDAO.updateAdmHotLine*/
+	<![CDATA[
+		UPDATE TB_SEPS_HOT_LINE SET
+			HOT_LINE_DEPT = #hotLineDept#
+			, HOT_LINE_NAME = #hotLineName#
+			, HOT_LINE_TEL = #hotLineTel#
+			, HOT_LINE_EMAIL = #hotLineEmail#
+			, UDT_DTTM = NOW()
+			, UDT_NM = #udtNm#
+		WHERE
+			HOT_LINE_ID = #hotLineId#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmHotLineDAO.deleteAdmHotLine" parameterClass="String">
+/*AdmHotLineDAO.deleteAdmHotLine*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_HOT_LINE WHERE HOT_LINE_ID = #hotLineId#
+	]]>
+	</delete>
+	
+	<!-- 일괄삭제 -->
+	<delete id="AdmHotLineDAO.deleteAdmHotLineAll">
+/*AdmHotLineDAO.deleteAdmHotLine*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_HOT_LINE
+	]]>
+	</delete>
+</sqlMap>

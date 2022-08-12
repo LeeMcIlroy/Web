@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="usr_notice">
+		FROM
+			TB_SEPS_NOTICE t1
+		WHERE
+			NOTICE_YN = 'N'
+		<dynamic>
+			<isNotEmpty property="searchWord" >
+				<isEqual property="searchCondition1" compareValue="1">
+					AND TITLE like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="2">
+					AND REG_NM like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<sql id="usr_notice2">
+		FROM
+			TB_SEPS_NOTICE t1
+		WHERE
+			NOTICE_YN = 'Y'
+	</sql>
+	
+	<!-- 공지사항 목록 -->
+	<select id="UsrFloodCenterDAO.selectUsrNoticeList" parameterClass="searchVO" resultClass="EgovMap">
+/*UsrFloodCenterDAO.selectUsrNoticeList*/
+	<![CDATA[
+		SELECT
+			NOTICE_ID
+			, TITLE
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d') as REG_DTTM
+			, REG_NM
+			, HIT_CNT
+			, (SELECT ATTACH_FILE_ID FROM TB_SEPS_ATTACH_FILE WHERE BOARD_TYPE = 'N' AND BOARD_ID = tt.NOTICE_ID) AS ATTACH_FILE_ID
+		FROM (
+			SELECT
+				NOTICE_ID
+				, TITLE
+				, REG_DTTM
+				, REG_NM
+				, HIT_CNT
+	]]>
+			<include refid="usr_notice"/>
+	<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+			]]>	
+			<isNotEqual property="searchType" compareValue="Y">
+				LIMIT #firstIndex#, #recordCountPerPage#
+			</isNotEqual>
+			<![CDATA[
+		) tt
+	]]>
+	</select>
+	
+	<!-- 공지글 목록 -->
+	<select id="UsrFloodCenterDAO.selectUsrNoticeList2" resultClass="EgovMap">
+/*UsrFloodCenterDAO.selectUsrNoticeList2*/
+	<![CDATA[
+		SELECT
+			NOTICE_ID
+			, TITLE
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d') as REG_DTTM
+			, REG_NM
+			, HIT_CNT
+			, (SELECT ATTACH_FILE_ID FROM TB_SEPS_ATTACH_FILE WHERE BOARD_TYPE = 'N' AND BOARD_ID = tt.NOTICE_ID) AS ATTACH_FILE_ID
+		FROM (
+			SELECT
+				NOTICE_ID
+				, TITLE
+				, REG_DTTM
+				, REG_NM
+				, HIT_CNT
+	]]>
+			<include refid="usr_notice2"/>
+	<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+		) tt
+	]]>
+	</select>
+	
+		<!-- 목록Cnt -->
+	<select id="UsrFloodCenterDAO.selectUsrNoticeListCnt" parameterClass="searchVO" resultClass="int">
+/* UsrFloodCenterDAO.selectUsrNoticeListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="usr_notice"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="UsrFloodCenterDAO.selectUsrNoticeView" parameterClass="String" resultClass="noticeVO">
+/*UsrFloodCenterDAO.selectUsrNoticeView*/
+	<![CDATA[
+		SELECT
+			NOTICE_ID AS noticeId
+			, TITLE AS title
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d') as regDttm
+			, REG_NM AS regNm
+			, HIT_CNT AS hitCnt
+			, NOTICE_YN AS noticeYn
+			, CONTENT AS content
+		FROM
+			TB_SEPS_NOTICE
+		WHERE
+			NOTICE_ID = #noticeId#
+	]]>
+	</select>
+	
+	
+	<!-- 등록 -->
+	<insert id="UsrFloodCenterDAO.insertUsrNotice" parameterClass="noticeVO">
+/*UsrFloodCenterDAO.insertUsrNotice*/
+	<selectKey keyProperty="noticeId" resultClass="String">
+		SELECT LAST_INSERT_ID()
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_SEPS_NOTICE(
+			TITLE
+			, CONTENT
+			, REG_NM
+			, REG_DTTM
+			, NOTICE_YN
+		) VALUES (
+			#title#
+			, #content#
+			, #regNm#
+			, NOW()
+			, #noticeYn#
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="UsrFloodCenterDAO.updateUsrNotice" parameterClass="noticeVO">
+/*UsrFloodCenterDAO.updateUsrNotice*/
+	<![CDATA[
+		UPDATE TB_SEPS_NOTICE SET
+			TITLE = #title#
+			, CONTENT = #content#
+			, UDT_NM = #udtNm#
+			, UDT_DTTM = NOW()
+			, NOTICE_YN = #noticeYn#
+		WHERE
+			NOTICE_ID = #noticeId#
+	]]>
+	</update>
+	
+	<!-- 조회수 업데이트 -->
+	<update id="UsrFloodCenterDAO.updateHitCnt" parameterClass="String">
+/*UsrFloodCenterDAO.updateHitCnt*/
+	<![CDATA[
+		UPDATE TB_SEPS_NOTICE SET
+			HIT_CNT = HIT_CNT + 1
+		WHERE
+			NOTICE_ID = #noticeId#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="UsrFloodCenterDAO.deleteUsrNotice" parameterClass="String">
+/*UsrFloodCenterDAO.deleteUsrNotice*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_NOTICE WHERE NOTICE_ID = #noticeId#
+	]]>
+	</delete>
+	
+	
+	<!-- selectUsrAlarmListCnt -->
+	<select id="UsrFloodCenterDAO.selectUsrAlarmListCnt" parameterClass="searchVO" resultClass="int">
+/*UsrFloodCenterDAO.selectUsrAlarmListCnt*/
+	<![CDATA[
+		SELECT
+			count(*)
+		FROM(
+			SELECT
+				ALARM_TYPE AS T_TYPE
+				, '-' AS TITLE
+				, ALARM_CONTENT AS CONTENT
+				, NULL AS ISSUE_DATE
+				, '-' AS ISSUE_TIME
+				, '-' AS REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_ALARM
+			UNION ALL
+			SELECT
+				'FC' AS T_TYPE
+				, '-' AS TITLE
+				, FLOOD_LEVEL AS CONTENT
+				, ISSUE_DATE
+				, ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_FLOOD_CONTROL
+			UNION ALL
+			SELECT
+				SNS_TYPE AS T_TYPE 
+				, SNS_TITLE AS TITLE
+				, SNS_CONTENT AS CONTENT
+				, NULL AS ISSUE_DATE
+				, '-' AS ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_SNS_BOARD
+			WHERE
+				SNS_TYPE <> 'M'
+		) t1
+	]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				T_TYPE = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty property="startDate" prepend="AND">
+				<![CDATA[
+					date_format(REG_DTTM, '%Y-%m-%d') >= #startDate#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty property="endDate" prepend="AND">
+				<![CDATA[
+					date_format(REG_DTTM, '%Y-%m-%d') <= #endDate#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 기간별알람현황 목록 -->
+	<select id="UsrFloodCenterDAO.selectUsrAlarmList" parameterClass="searchVO" resultClass="egovMap">
+/*UsrFloodCenterDAO.selectUsrAlarmList*/
+	<![CDATA[
+		SELECT
+			t1.T_TYPE
+			, t1.TITLE
+			, t1.CONTENT
+			, t1.ISSUE_DATE
+			, t1.ISSUE_TIME
+			, t1.REG_NM
+			, DATE_FORMAT(t1.REG_DTTM, '%Y-%m-%d %H:%i') as REG_DTTM
+		FROM(
+			SELECT
+				ALARM_TYPE AS T_TYPE
+				, '-' AS TITLE
+				, ALARM_CONTENT AS CONTENT
+				, date_format(BASE_DATE, '%Y-%m-%d') as ISSUE_DATE
+				, time_format(concat(BASE_TIME, '00'), '%H:%i') as ISSUE_TIME
+				, '-' AS REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_ALARM
+			UNION ALL
+			SELECT
+				'FC' AS T_TYPE
+				, '-' AS TITLE
+				, FLOOD_LEVEL AS CONTENT
+				, DATE_FORMAT(ISSUE_DATE, '%Y-%m-%d') as ISSUE_DATE
+				, ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_FLOOD_CONTROL
+			UNION ALL
+			SELECT
+				SNS_TYPE AS T_TYPE 
+				, SNS_TITLE AS TITLE
+				, SNS_CONTENT AS CONTENT
+				, date_format(REG_DTTM, '%Y-%m-%d') as ISSUE_DATE
+				, date_format(REG_DTTM, '%H:%i') as ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+			FROM
+				TB_SEPS_SNS_BOARD
+			WHERE
+				SNS_TYPE <> 'M'
+		) t1
+	]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty property="searchCondition1" prepend="AND">
+				T_TYPE = #searchCondition1#
+			</isNotEmpty>
+			<isNotEmpty property="startDate" prepend="AND">
+				<![CDATA[
+					date_format(REG_DTTM, '%Y-%m-%d') >= #startDate#
+				]]>
+			</isNotEmpty>
+			<isNotEmpty property="endDate" prepend="AND">
+				<![CDATA[
+					date_format(REG_DTTM, '%Y-%m-%d') <= #endDate#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+		<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+		]]>
+		<isEqual property="searchType" compareValue="LIST"><![CDATA[ LIMIT #firstIndex#, #recordCountPerPage# ]]></isEqual>
+	</select>
+</sqlMap>

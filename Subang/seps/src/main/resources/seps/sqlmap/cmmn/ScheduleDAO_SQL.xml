@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 기상정보 실황 insert -->
+	<insert id="ScheduleDAO.weatherInsert" parameterClass="weatherVO">
+/* ScheduleDAO.weatherInsert */
+	<![CDATA[
+		INSERT INTO TB_SEPS_WEATHER_API (
+			SHP_ID
+			, BASE_DATE
+			, BASE_TIME
+			, SKY
+			, PTY
+			, LGT
+			, T1H
+			, REH
+			, RN1
+			, VEC
+			, WSD
+			, REG_DTTM	
+		) VALUES (
+			#shpId#
+			, #baseDate#
+			, #baseTime#
+			, #SKY#
+			, #PTY#
+			, #LGT#
+			, #T1H#
+			, #REH#
+			, #RN1#
+			, #VEC#
+			, #WSD#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 초단기예보 실황 insert -->
+	<insert id="ScheduleDAO.weatherTimeInsert" parameterClass="weatherVO">
+/* ScheduleDAO.weatherTimeInsert */
+	<![CDATA[
+		INSERT INTO TB_SEPS_WEATHER_TIME_API (
+			SHP_ID
+			, BASE_DATE
+			, BASE_TIME
+			, FCST_DATE
+			, FCST_TIME
+			, SKY
+			, PTY
+			, LGT
+			, T1H
+			, REH
+			, RN1
+			, VEC
+			, WSD
+			, REG_DTTM	
+		) VALUES (
+			#shpId#
+			, #baseDate#
+			, #baseTime#
+			, #fcstDate#
+			, #fcstTime#
+			, #SKY#
+			, #PTY#
+			, #LGT#
+			, #T1H#
+			, #REH#
+			, #RN1#		
+			, #VEC#
+			, #WSD#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 초단기예보 조회 -->
+	<select id="ScheduleDAO.weatherTimeSelect" parameterClass="weatherVO" resultClass="int">
+/*ScheduleDAO.weatherTimeSelect*/
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_SEPS_WEATHER_TIME_API
+		WHERE
+			SHP_ID = #shpId#
+		AND
+			BASE_DATE = #baseDate#
+		AND
+			BASE_TIME = #baseTime#
+		AND
+			FCST_DATE = #fcstDate#
+		AND
+			FCST_TIME = #fcstTime#
+	]]>
+	</select>
+	
+	<!-- 초단기예보 수정 -->
+	<update id="ScheduleDAO.weatherTimeUpdate" parameterClass="weatherVO">
+/*ScheduleDAO.weatherTimeUpdate*/
+	<![CDATA[
+		UPDATE TB_SEPS_WEATHER_TIME_API SET
+			SKY = #SKY#
+			, PTY = #PTY#
+			, LGT = #LGT#
+			, T1H = #T1H#
+			, REH = #REH#
+			, RN1 = #RN1#
+			, VEC = #VEC#
+			, WSD = #WSD#
+		WHERE
+			SHP_ID = #shpId#
+		AND
+			FCST_DATE = #fcstDate#
+		AND
+			FCST_TIME = #fcstTime#
+	]]>
+	</update>
+	
+	<!-- 동네예보 등록 insert -->
+	<insert id="ScheduleDAO.weatherSeriesInsert" parameterClass="weatherVO">
+/* ScheduleDAO.weatherSeriesInsert */
+	<![CDATA[
+		INSERT INTO TB_SEPS_WEATHER_SERIES_API (
+			SHP_ID
+			, BASE_DATE
+			, BASE_TIME
+			, FCST_DATE
+			, FCST_TIME
+			, POP
+			, PTY
+			, PCP
+			, R06
+			, REH
+			, SNO
+			, S06
+			, SKY
+			, TMP
+			, T3H
+			, TMN
+			, TMX
+			, UUU
+			, VVV
+			, WAV
+			, VEC
+			, WSD
+			, REG_DTTM
+		) VALUES (
+			#shpId#
+			, #baseDate#
+			, #baseTime#
+			, #fcstDate#
+			, #fcstTime#
+			, #POP#
+			, #PTY#
+			, #PCP#
+			, #R06#
+			, #REH#
+			, #SNO#
+			, #S06#
+			, #SKY#
+			, #TMP#
+			, #T3H#
+			, #TMN#
+			, #TMX#
+			, #UUU#
+			, #VVV#
+			, #WAV#
+			, #VEC#
+			, #WSD#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	
+	<!-- 동네예보 조회 -->
+	<select id="ScheduleDAO.weatherSeriesSelect" parameterClass="weatherVO" resultClass="int">
+/*ScheduleDAO.weatherSeriesSelect*/
+	<![CDATA[
+		SELECT
+			COUNT(*)
+		FROM
+			TB_SEPS_WEATHER_SERIES_API
+		WHERE
+			SHP_ID = #shpId#
+		AND
+			BASE_DATE = #baseDate#
+		AND
+			BASE_TIME = #baseTime#
+		AND
+			FCST_DATE = #fcstDate#
+		AND
+			FCST_TIME = #fcstTime#
+	]]>
+	</select>
+	
+	<!-- 동네예보 수정 -->
+	<update id="ScheduleDAO.weatherSeriesUpdate" parameterClass="weatherVO">
+/*ScheduleDAO.weatherSeriesUpdate*/
+	<![CDATA[
+		UPDATE TB_SEPS_WEATHER_SERIES_API SET
+			POP = #POP#
+			, PTY = #PTY#
+			, PCP = #PCP#
+			, R06 = #R06#
+			, REH = #REH#
+			, S06 = #S06#
+			, SKY = #SKY#
+			, T3H = #T3H#
+			, TMN = #TMN#
+			, TMX = #TMX#
+			, UUU = #UUU#
+			, VVV = #VVV#
+			, WAV = #WAV#
+			, VEC = #VEC#
+			, WSD = #WSD#
+		WHERE
+			SHP_ID = #shpId#
+		AND
+			FCST_DATE = #fcstDate#
+		AND
+			FCST_TIME = #fcstTime#
+	]]>
+	</update>
+	
+	
+	<!-- 조위 실측&예측 등록 -->
+	<insert id="ScheduleDAO.tideRealPrevInsert" parameterClass="tideVO">
+/*ScheduleDAO.tideRealPrevInsert*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_TIDE_API(
+			OBSCODE
+			, BASE_DATE
+			, BASE_TIME
+			, REAL_VALUE
+			, PRV_VALUE
+			, REG_DTTM
+		) VALUES (
+			#obscode#
+			, #baseDate#
+			, #baseTime#
+			, #realValue#
+			, #prvValue#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 조위 극치 등록 -->
+	<insert id="ScheduleDAO.tideTphInsert" parameterClass="tideTphVO">
+/*ScheduleDAO.tideTphInsert*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_TIDE_TPH_API(
+			OBSCODE
+			, BASE_DATE
+			, BASE_TIME
+			, HL_CODE
+			, TPH_LEVEL
+			, REG_DTTM
+		) VALUES (
+			#obscode#
+			, #baseDate#
+			, #baseTime#
+			, #hlCode#
+			, #tphLevel#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 댐방수량 등록여부 확인 -->
+	<select id="ScheduleDAO.damSelect" parameterClass="damVO" resultClass="int">
+/*ScheduleDAO.damSelect*/
+	<![CDATA[
+		SELECT 
+			COUNT(*)
+		FROM
+			TB_SEPS_DAM_API
+		WHERE
+			BASE_DATE = #baseDate#
+		AND
+			BASE_TIME = #baseTime#
+	]]>
+	</select>
+	
+	<!-- 댐 방수량 등록 -->
+	<insert id="ScheduleDAO.damInsert" parameterClass="damVO">
+/*ScheduleDAO.damInsert*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_DAM_API(
+			DMOBSCD
+			, BASE_DATE
+			, BASE_TIME
+			, SWL
+			, INF
+			, SFW
+			, ECPC
+			, TOTOTF
+			, REG_DTTM
+		) VALUES (
+			'1017310'
+			, #baseDate#
+			, #baseTime#
+			, #swl#
+			, #inf#
+			, #sfw#
+			, #ecpc#
+			, #tototf#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 수위 등록여부 확인 -->
+	<select id="ScheduleDAO.waterLevelSelect" parameterClass="waterLevelVO" resultClass="int">
+/*ScheduleDAO.waterLevelSelect*/
+	<![CDATA[
+		SELECT 
+			COUNT(*)
+		FROM
+			TB_SEPS_WATER_LEVEL_API
+		WHERE
+			WLOBSCD = #wlobscd#
+		AND
+			BASE_DATE = #baseDate#
+		AND
+			BASE_TIME = #baseTime#
+	]]>
+	</select>
+	
+	<!-- 수위 등록 -->
+	<insert id="ScheduleDAO.waterLevelInsert" parameterClass="waterLevelVO">
+/*ScheduleDAO.waterLevelInsert*/
+		INSERT INTO TB_SEPS_WATER_LEVEL_API(
+			WLOBSCD
+			, BASE_DATE
+			, BASE_TIME
+			, WL
+		<isNotEmpty property="fw">
+			, FW
+		</isNotEmpty>
+			, REG_DTTM
+		) VALUES (
+			#wlobscd#
+			, #baseDate#
+			, #baseTime#
+			, ROUND(#wl#, 2)
+		<isNotEmpty property="fw">
+			, #fw#
+		</isNotEmpty>
+			, NOW()
+		)
+	</insert>
+	
+	<!-- 알람등록 -->
+	<insert id="ScheduleDAO.alarmInsert" parameterClass="alarmVO">
+/*ScheduleDAO.alarmInsert*/
+	<selectKey keyProperty="alarmId" resultClass="String">
+		SELECT LAST_INSERT_ID()
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_SEPS_ALARM(
+			ALARM_TYPE
+			, ALARM_CONTENT
+			, PLACE_CODE
+			, BASE_DATE
+			, BASE_TIME
+			, REG_DTTM
+		) VALUES(
+			#alarmType#
+			, #alarmContent#
+			, #placeCode#
+			, #baseDate#
+			, #baseTime#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 알람상황판 수정 -->
+	<update id="ScheduleDAO.alarmBoardUpdate" parameterClass="alarmBoardVO">
+/*ScheduleDAO.alarmBoardUpdate*/
+	<![CDATA[
+		UPDATE TB_SEPS_ALARM_BOARD SET
+			ALARM_YN = #alarmYn#
+			, ALARM_ID = #alarmId#
+			, UDT_DTTM = NOW()
+		WHERE 
+			PLACE_CODE = #placeCode#
+	]]>
+	</update>
+	
+	<!-- 특보코드조회 조회Cnt -->
+	<select id="ScheduleDAO.selectSpecialNewsCodeCnt" parameterClass="specialNewsCodeVO" resultClass="int">
+/* ScheduleDAO.selectSpecialNewsCodeCnt */
+	<![CDATA[
+		SELECT count(*)
+		FROM TB_SEPS_SPECIAL_NEWS_CODE
+		WHERE 
+			STN_ID			= #stnId#
+			AND TM_FC		= #tmFc#
+			AND TM_SEQ		= #tmSeq#
+			AND AREA_CODE	= #areaCode#
+	]]>
+	</select>
+	
+	<!-- 특보코드조회 등록 -->
+	<insert id="ScheduleDAO.specialNewsCodeInsert" parameterClass="specialNewsCodeVO">
+/* ScheduleDAO.specialNewsCodeInsert */
+	<![CDATA[
+		INSERT INTO TB_SEPS_SPECIAL_NEWS_CODE (
+			STN_ID
+			, TM_FC
+			, TM_SEQ
+			, AREA_CODE
+			, AREA_NAME
+			, WARN_VAR
+			, WARN_STRESS
+			, COMMAND
+			, START_TIME
+			, END_TIME
+			, ALL_END_TIME
+			, CANCEL
+			, REG_DTTM
+		) VALUES (
+			#stnId#
+			, #tmFc#
+			, #tmSeq#
+			, #areaCode#
+			, #areaName#
+			, #warnVar#
+			, #warnStress#
+			, #command#
+			, #startTime#
+			, #endTime#
+			, #allEndTime#
+			, #cancel#
+			, sysdate()
+		)
+	]]>
+	</insert>
+	
+	<!-- 예경보 등록 insert -->
+	<insert id="ScheduleDAO.warningInsert" parameterClass="dustVO">
+/* ScheduleDAO.warningInsert */
+	<![CDATA[
+		INSERT INTO TB_SEPS_WARN_API (
+			APPLC_DT
+			, POLLUTANT
+			, FA_ON
+			, MSRRGN
+			, CAISTEP
+			, ALERTSTEP
+			, ALARM_CNDT
+			, CNDT1
+			, RGST_DT
+		) VALUES (
+			#applcDt#
+			, #pollutant#
+			, #faOn#
+			, #msrrgn#
+			, #caistep#
+			, #alertstep#
+			, #alarmCndt#
+			, #cndt1#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	
+	<!-- 예경보 조회 -->
+	<select id="ScheduleDAO.warningSelect" parameterClass="dustVO" resultClass="int">
+/*ScheduleDAO.warningSelect*/
+	<![CDATA[ ]]>
+		SELECT
+			COUNT(*)
+		FROM
+			TB_SEPS_WARN_API
+		WHERE
+		<isNotEqual property="msrrgn" compareValue="check">
+			APPLC_DT = #applcDt#
+		</isNotEqual>
+		<isEqual property="msrrgn" compareValue="check">
+			APPLC_DT <![CDATA[>=]]> #applcDt#
+		</isEqual>	
+		AND
+			POLLUTANT = #pollutant#
+		AND
+			FA_ON = #faOn#
+	</select>
+	
+	<!-- 예경보 수정 -->
+	<update id="ScheduleDAO.warningUpdate" parameterClass="dustVO">
+/*ScheduleDAO.warningUpdate*/
+	<![CDATA[
+		UPDATE TB_SEPS_WARN_API SET
+			MSRRGN = #msrrgn#
+			, CAISTEP = #caistep#
+			, ALERTSTEP = #alertstep#
+			, ALARM_CNDT = #alarmCndt#
+			, CNDT1 = #cndt1#
+		WHERE
+			APPLC_DT = #applcDt#
+		AND
+			POLLUTANT = #pollutant#
+		AND
+			FA_ON = #faOn#
+	]]>
+	</update>
+	
+	<!-- 생활&보건 기상지수 등록 -->
+	<insert id="ScheduleDAO.weatherLifeInsert" parameterClass="weatherLifeVO">
+/*ScheduleDAO.weatherLifeInsert*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_WEATHER_LIFE_API(
+			CODE
+			, BASE_DATE
+			, VALUE
+			, REG_DTTM
+		) VALUES (
+			#code#
+			, #baseDate#
+			, #value#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 생활&보건 기상지수 조회 -->
+	<select id="ScheduleDAO.weatherLifeSelect" parameterClass="weatherLifeVO" resultClass="int">
+/*ScheduleDAO.weatherLifeSelect*/
+	<![CDATA[
+		SELECT
+			COUNT(VALUE)
+		FROM
+			TB_SEPS_WEATHER_LIFE_API
+		WHERE
+			CODE = #code#
+		AND
+			BASE_DATE = #baseDate#
+	]]>
+	</select>
+	
+	<!-- 중기예보 조회 -->
+	<select id="ScheduleDAO.weatherMiddleSelect" parameterClass="weatherMiddleVO" resultClass="int">
+/*ScheduleDAO.weatherMiddleSelect*/
+	<![CDATA[
+		SELECT
+			COUNT(BASE_DATE)
+		FROM
+			TB_SEPS_WEATHER_MIDDLE_API
+		WHERE
+			BASE_DATE = #baseDate#
+	]]>
+	</select>
+	
+	<!-- 중기예보 등록 -->
+	<insert id="ScheduleDAO.weatherMiddleInsert" parameterClass="weatherMiddleVO">
+/*ScheduleDAO.weatherMiddleInsert*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_WEATHER_MIDDLE_API(
+			BASE_DATE
+			, DATE3
+			, DATE4
+			, DATE5
+			, DATE6
+			, DATE7
+			, WF_3_AM
+			, WF_3_PM
+			, RN_ST_3_AM
+			, RN_ST_3_PM
+			, WF_4_AM
+			, WF_4_PM
+			, RN_ST_4_AM
+			, RN_ST_4_PM
+			, WF_5_AM
+			, WF_5_PM
+			, RN_ST_5_AM
+			, RN_ST_5_PM
+			, WF_6_AM
+			, WF_6_PM
+			, RN_ST_6_AM
+			, RN_ST_6_PM
+			, WF_7_AM
+			, WF_7_PM
+			, RN_ST_7_AM
+			, RN_ST_7_PM
+			, REG_DTTM
+		) VALUES (
+			#baseDate#
+			, #date3#
+			, #date4#
+			, #date5#
+			, #date6#
+			, #date7#
+			, #wf3Am#
+			, #wf3Pm#
+			, #rnSt3Am#
+			, #rnSt3Pm#
+			, #wf4Am#
+			, #wf4Pm#
+			, #rnSt4Am#
+			, #rnSt4Pm#
+			, #wf5Am#
+			, #wf5Pm#
+			, #rnSt5Am#
+			, #rnSt5Pm#
+			, #wf6Am#
+			, #wf6Pm#
+			, #rnSt6Am#
+			, #rnSt6Pm#
+			, #wf7Am#
+			, #wf7Pm#
+			, #rnSt7Am#
+			, #rnSt7Pm#
+			, NOW()
+		)
+	]]>
+	</insert>
+
+	<!-- 중기기온 조회 -->
+	<select id="ScheduleDAO.weatherTemperatureSelect" parameterClass="weatherTemperatureVO" resultClass="int">
+/*ScheduleDAO.weatherTemperatureSelect*/
+	<![CDATA[
+		SELECT
+			COUNT(BASE_DATE)
+		FROM
+			TB_SEPS_WEATHER_TEMPERATURE_API
+		WHERE
+			BASE_DATE = #baseDate#
+	]]>
+	</select>
+
+	<!-- 중기기온 등록 -->
+	<insert id="ScheduleDAO.weatherTemperatureInsert" parameterClass="weatherTemperatureVO">
+/*ScheduleDAO.weatherTemperatureInsert*/
+	<![CDATA[
+	INSERT INTO TB_SEPS_WEATHER_TEMPERATURE_API(
+		BASE_DATE
+		, TA_MIN_3, TA_MAX_3
+		, TA_MIN_4, TA_MAX_4
+		, TA_MIN_5, TA_MAX_5
+		, TA_MIN_6, TA_MAX_6
+		, TA_MIN_7, TA_MAX_7
+		, REG_DTTM
+	) VALUES (
+		#baseDate#
+		, #taMin3# ,#taMax3#
+		, #taMin4# ,#taMax4#
+		, #taMin5# ,#taMax5#
+		, #taMin6# ,#taMax6#
+		, #taMin7# ,#taMax7#
+		, NOW()
+	)
+	]]>
+	</insert>
+	
+
+</sqlMap>

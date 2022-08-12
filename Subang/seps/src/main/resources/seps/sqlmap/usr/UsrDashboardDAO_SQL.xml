@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<!-- 수방단계설정 조회 -->
+	<select id="UsrDashboardDAO.selectFloodControl" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectFloodControl*/
+	<![CDATA[
+		SELECT
+			FLOOD_CONTROL_ID
+			, FLOOD_LEVEL
+			, DATE_FORMAT(ISSUE_DATE, '%Y-%m-%d') as ISSUE_DATE
+			, ISSUE_TIME
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d') as REG_DTTM
+			, REG_NM
+			, DATE_FORMAT(UDT_DTTM, '%Y-%m-%d') as UDT_DTTM
+			, UDT_NM
+			, SITUATION_TYPE
+		FROM 
+			TB_SEPS_FLOOD_CONTROL
+		ORDER BY FLOOD_CONTROL_ID DESC
+		LIMIT 1			
+	]]>
+	</select>
+	
+	<!-- 수방단계 입력 -->
+	<insert id="UsrDashboardDAO.insertFloodControl" parameterClass="floodControlVO">
+/*UsrDashboardDAO.insertFloodControl*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_FLOOD_CONTROL(
+			FLOOD_LEVEL
+			, ISSUE_DATE
+			, ISSUE_TIME
+			, REG_DTTM
+			, REG_NM
+			, SITUATION_TYPE
+		) VALUES (
+			#floodLevel#
+			, #issueDate#
+			, #issueTime#
+			, NOW()
+			, #regNm#
+			, #situationType#
+		)
+	]]>
+	</insert>
+	
+	<!-- 알림현황 조회 -->
+	<select id="UsrDashboardDAO.selectAlarmBoard" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectAlarmBoard*/
+	<![CDATA[
+		SELECT DISTINCT
+			t1.ALARM_CONTENT
+			, t1.BASE_DATE
+			, t1.BASE_TIME
+			, t2.PLACE_CODE
+		FROM 
+			TB_SEPS_ALARM t1
+			, TB_SEPS_ALARM_BOARD t2
+		WHERE
+			t1.ALARM_ID = t2.ALARM_ID
+		AND
+			t2.ALARM_YN = 'Y'
+	]]>
+	</select>
+	
+	<!-- 알람상황판 조회 -->
+	<select id="UsrDashboardDAO.selectAlarmBoardOne" parameterClass="string" resultClass="alarmBoardVO">
+/* UsrDashboardDAO.selectAlarmBoardOne */
+	<![CDATA[
+		SELECT
+			t1.PLACE_CODE	as placeCode
+			, t1.ALARM_ID	as alarmId
+			, t2.ALARM_YN	as alarmYn
+			, date_format(t2.UDT_DTTM, '%Y%m%d%H%i') as udtDttm
+		FROM
+			TB_SEPS_ALARM t1
+			, TB_SEPS_ALARM_BOARD t2
+		WHERE
+			t1.ALARM_ID = t2.ALARM_ID
+			AND t2.ALARM_YN = 'Y'
+			AND t1.PLACE_CODE = #placeCode#
+			AND t1.ALARM_CONTENT like '%해제%'
+	]]>
+	</select>
+	
+	<!-- 알람상황판 update (특보코드관련) -->
+	<update id="UsrDashboardDAO.alarmBoardSpecialNewsCodeUpdate" parameterClass="map">
+/* UsrDashboardDAO.alarmBoardSpecialNewsCodeUpdate */
+	<![CDATA[
+		UPDATE TB_SEPS_ALARM_BOARD
+		SET
+			ALARM_YN = #alarmYn#
+		WHERE
+			PLACE_CODE = #placeCode#
+	]]>
+	</update>
+	
+	
+	<!-- 알림현황 조회 -->
+	<select id="UsrDashboardDAO.selectAlarmBoardCnt" parameterClass="searchVO" resultClass="int">
+/*UsrDashboardDAO.selectAlarmBoardCnt*/
+	<![CDATA[
+		SELECT COUNT(*) FROM TB_SEPS_ALARM_BOARD WHERE ALARM_YN = 'Y'
+	]]>
+	</select>
+	
+	<!-- 수위조회 -->
+	<select id="UsrDashboardDAO.selectWaterLevel" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectWaterLevel*/
+	<![CDATA[
+		SELECT
+			BASE_DATE
+			, BASE_TIME
+			, WL
+		FROM
+			TB_SEPS_WATER_LEVEL_API
+		WHERE
+			WLOBSCD = #searchCode#
+			AND BASE_DATE >= date_format(date_add(now(),interval - 1 day) ,'%Y%m%d' )
+	ORDER BY CONCAT(BASE_DATE, "", BASE_TIME) DESC
+	LIMIT 6
+	]]>
+	</select>
+	
+	<!-- 댐조회 -->
+	<select id="UsrDashboardDAO.selectDamLevel" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectDamLevel*/
+	<![CDATA[
+		SELECT
+			BASE_DATE
+			, BASE_TIME
+			, TOTOTF
+		FROM
+			TB_SEPS_DAM_API
+		WHERE
+			DMOBSCD = #searchCode#
+	ORDER BY CONCAT(BASE_DATE, "", BASE_TIME) DESC
+	LIMIT 6
+	]]>
+	</select>
+	
+	<!-- 관측위치별 수위조회 -->
+	<select id="UsrDashboardDAO.selectWaterLevel2" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectWaterLevel2*/
+	<![CDATA[
+		SELECT t1.WLOBSCD ,ROUND(t2.WL, 2) AS WL, t1.DTTM 
+		  FROM (
+			SELECT 	WLOBSCD
+					, MAX(CONCAT(BASE_DATE, "", BASE_TIME)) DTTM
+			FROM TB_SEPS_WATER_LEVEL_API
+			GROUP BY WLOBSCD
+		) t1
+		, TB_SEPS_WATER_LEVEL_API t2
+		WHERE 
+			  t1.WLOBSCD = t2.WLOBSCD
+		  AND t1.DTTM = CONCAT(t2.BASE_DATE, "", t2.BASE_TIME)
+		UNION  
+		SELECT '1017310', TOTOTF, CONCAT(BASE_DATE, "", BASE_TIME) AS DTTM  FROM TB_SEPS_DAM_API WHERE CONCAT(BASE_DATE, "", BASE_TIME) = (SELECT MAX(CONCAT(BASE_DATE, "", BASE_TIME)) FROM TB_SEPS_DAM_API LIMIT 1)
+		UNION
+		SELECT SHP_ID, RN1, CONCAT(BASE_DATE, "", BASE_TIME) AS DTTM FROM TB_SEPS_WEATHER_API WHERE CONCAT(BASE_DATE, "", BASE_TIME) = (SELECT MAX(CONCAT(BASE_DATE, "", BASE_TIME)) FROM TB_SEPS_WEATHER_API LIMIT 1)
+	]]>
+	</select>
+	
+	<!-- 기상정보 조회 -->
+	<select id="UsrDashboardDAO.selectWeather" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectWeather*/
+	<![CDATA[
+		SELECT
+			T1H
+			, RN1
+			, REH
+			, CONCAT(LGT, PTY, SKY) AS STATUS
+			, LGT
+			, PTY
+			, SKY
+			, BASE_DATE
+			, BASE_TIME
+			, (SELECT ROUND(ifnull(SUM(RN1), 0), 1) FROM TB_SEPS_WEATHER_API WHERE SHP_ID = #searchCode# AND CONCAT(BASE_DATE, BASE_TIME) >= #startDate#) AS RN24
+		FROM
+			TB_SEPS_WEATHER_API
+		WHERE
+			SHP_ID = #searchCode#
+		ORDER BY REG_DTTM DESC
+		LIMIT 1
+	]]>
+	</select>
+	
+	<!-- 기상예보 조회 메인용-->
+	<select id="UsrDashboardDAO.selectWeatherTime" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectWeatherTime*/
+	<![CDATA[
+		SELECT
+			T1H
+			, CASE WHEN RN1= '강수없음' THEN 0 END AS RN1
+			, REH
+			, CONCAT(LGT, PTY, SKY) AS STATUS
+			, LGT
+			, PTY
+			, SKY
+			, BASE_DATE
+			, BASE_TIME
+			, FCST_DATE
+			, FCST_TIME
+		FROM
+			TB_SEPS_WEATHER_TIME_API
+		WHERE
+			SHP_ID = #searchCode#
+		ORDER BY
+			CONCAT(BASE_DATE," ",BASE_TIME) DESC
+			, CONCAT(FCST_DATE," ", FCST_TIME) DESC 
+		LIMIT 1 
+	]]>
+	</select>
+	
+	<!-- 기상예보 조회 목록-->
+	<select id="UsrDashboardDAO.selectWeatherTimeList" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectWeatherTimeList*/
+	<![CDATA[
+		SELECT
+			  BASE_DATE
+			, FCST_DATE
+			, FCST_TIME
+			
+			, CONCAT(PTY, SKY) AS STATUS
+			, PTY
+			, SKY
+			, POP			
+            , CASE WHEN PCP ='강수없음' THEN '0.0' when PCP IS NULL THEN '0.0' ELSE PCP END AS PCP
+			, R06
+		FROM
+			TB_SEPS_WEATHER_SERIES_API
+		WHERE
+			SHP_ID = '8'
+			AND BASE_DATE >= date_format(date_add(now(),interval - 1 day) ,'%Y%m%d' )
+		ORDER BY
+			BASE_DATE DESC
+			, BASE_TIME DESC
+			, FCST_DATE ASC
+			, FCST_TIME ASC 
+		LIMIT 0,10
+	]]>
+	</select>
+	
+	<!-- 기상예보 조회 6시간전 강수량 -->
+	<select id="UsrDashboardDAO.selectWeatherFristTime" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectWeatherFristTime*/
+	<![CDATA[
+		SELECT
+			FCST_DATE
+			, FCST_TIME
+			, CONCAT(PTY, SKY) AS STATUS
+			, PTY
+			, SKY
+			, POP
+			, R06
+		FROM
+			TB_SEPS_WEATHER_SERIES_API
+		WHERE
+			SHP_ID = #searchCode#
+		AND
+			CONCAT(FCST_DATE, FCST_TIME) = #startDate#
+		ORDER BY
+			BASE_DATE DESC
+			, BASE_TIME DESC
+			, FCST_DATE ASC
+			, FCST_TIME ASC 
+		LIMIT 0,1
+	]]>
+	</select>
+	
+	
+	<!-- 사용자작성 알림 조회 -->
+	<select id="UsrDashboardDAO.selectUsrAlarm" resultClass="String">
+/*UsrDashboardDAO.selectUsrAlarm*/
+	<![CDATA[
+		SELECT
+		 	SNS_TITLE
+		FROM
+			TB_SEPS_SNS_BOARD
+		WHERE
+			SNS_ID = '1'
+	]]>
+	</select>
+	
+	<!-- 사용자작성 알림 수정 -->
+	<update id="UsrDashboardDAO.updateUsrAlarm" parameterClass="String">
+/*UsrDashboardDAO.updateUsrAlarm*/
+	<![CDATA[
+		UPDATE TB_SEPS_SNS_BOARD SET
+			SNS_TITLE = #title#
+		WHERE
+			SNS_ID = '1'
+	]]>
+	</update>
+	
+	
+	<!-- 수방근무현황용 목록 조회 -->
+	<select id="UsrDashboardDAO.selectSnsList" resultClass="egovMap">
+/*UsrDashboardDAO.selectSnsList*/
+	<![CDATA[
+		SELECT
+		t1.T_TYPE
+		, t1.TITLE
+		, t1.CONTENT
+		, t1.ISSUE_DATE
+		, t1.ISSUE_TIME
+		, t1.REG_NM
+		, DATE_FORMAT(t1.REG_DTTM, '%Y-%m-%d %H:%i') as REG_DTTM
+		, t1.SITUATION_TYPE
+		FROM(
+			SELECT
+				'FC' AS T_TYPE
+				, '-' AS TITLE
+				, FLOOD_LEVEL AS CONTENT
+				, DATE_FORMAT(ISSUE_DATE, '%Y-%m-%d') as ISSUE_DATE
+				, ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+				, SITUATION_TYPE
+			FROM
+				TB_SEPS_FLOOD_CONTROL
+			UNION ALL
+			SELECT
+				SNS_TYPE AS T_TYPE 
+				, SNS_TITLE AS TITLE
+				, SNS_CONTENT AS CONTENT
+				, date_format(REG_DTTM, '%Y-%m-%d') as ISSUE_DATE
+				, date_format(REG_DTTM, '%H:%i') as ISSUE_TIME
+				, REG_NM
+				, REG_DTTM
+				, ''
+			FROM
+				TB_SEPS_SNS_BOARD
+			WHERE
+				SNS_TYPE <> 'M'
+		) t1
+		ORDER BY t1.REG_DTTM DESC
+		LIMIT 10
+	]]>
+	</select>
+	
+	<!-- 수방근무현황 등록 -->
+	<insert id="UsrDashboardDAO.insertSns" parameterClass="snsVO">
+/*UsrDashboardDAO.insertSns*/
+	<![CDATA[
+		INSERT INTO TB_SEPS_SNS_BOARD(
+			SNS_TITLE
+			, SNS_CONTENT
+			, SNS_TYPE
+			, REG_NM
+			, REG_DTTM
+		) VALUES (
+			#snsTitle#
+			, #snsContent#
+			, #snsType#
+			, #regNm#
+			, NOW()
+		)
+	]]>
+	</insert>
+	
+	<!-- 극치 정보 조회 -->
+	<select id="UsrDashboardDAO.selectTideTph" parameterClass="searchVO" resultClass="egovMap">
+/*UsrDashboardDAO.selectTideTph*/
+	<![CDATA[
+			SELECT
+				BASE_DATE
+				, BASE_TIME
+				, HL_CODE
+				, TPH_LEVEL
+			FROM
+				TB_SEPS_TIDE_TPH_API
+ 			WHERE  
+ 				OBSCODE = #searchCondition1#
+ 				AND BASE_DATE = #startDate#
+			ORDER BY 
+				BASE_DATE DESC, BASE_TIME DESC
+	]]>
+	</select>
+	
+	<!-- ****************************************************************** 그래프 data set ****************************************************************** -->
+	<!-- 조위 목록 -->
+	<select id="UsrDashboardDAO.selectTideGraphData" parameterClass="string" resultClass="egovMap">
+/* UsrTotalInfoDAO.selectTideList */
+	<![CDATA[
+		SELECT
+			BASE_DATE
+			, BASE_TIME
+			, REAL_VALUE
+			, PRV_VALUE
+			, REG_DTTM
+		FROM
+			TB_SEPS_TIDE_API
+		WHERE
+			OBSCODE = #obsCode#
+			and BASE_DATE = DATE_FORMAT(SYSDATE(), '%Y%m%d')
+		ORDER BY
+			BASE_DATE ASC, BASE_TIME ASC
+	]]>
+	</select>
+	
+	<!-- 수위 데이터 -->
+	<select id="UsrDashboardDAO.selectWaterLevelGraphData" parameterClass="string" resultClass="egovMap">
+/* UsrDashboardDAO.selectWaterLevelGraphData */
+	<![CDATA[
+		SELECT *
+		FROM (
+			SELECT
+				concat(BASE_DATE, ' ', BASE_TIME) as BASE_DTTM
+				, WL
+			FROM TB_SEPS_WATER_LEVEL_API WHERE WLOBSCD = #wlobscd#
+			            			AND BASE_DATE >= date_format(date_add(now(),interval - 12 HOUR) ,'%Y%m%d' )
+			
+			ORDER BY BASE_DTTM asc
+		) tt
+		WHERE BASE_DTTM >= date_format(date_add(sysdate(), interval -12 HOUR), '%Y%m%d %H%i')
+	]]>
+	</select>
+	
+	<!-- 강수량 데이터 -->
+	<select id="UsrDashboardDAO.selectRainGraphData" parameterClass="string" resultClass="egovMap">
+/* UsrDashboardDAO.selectRainGraphData */
+	<![CDATA[
+		SELECT *
+		FROM (
+			SELECT
+				BASE_DATE
+				, BASE_TIME
+				, RN1
+				, REG_DTTM
+				, concat(BASE_DATE, ' ', BASE_TIME) as BASE_DTTM
+			FROM TB_SEPS_WEATHER_API 
+			WHERE
+				SHP_ID = #shpId# 
+		) tt
+		WHERE BASE_DTTM >= date_format(date_add(sysdate(), interval -24 hour), '%Y%m%d %H%i')
+		ORDER BY 
+			BASE_DTTM asc
+	]]>
+	</select>
+	
+	<!-- 방류량 데이터 -->
+	<select id="UsrDashboardDAO.selectDamGraphData" parameterClass="string" resultClass="egovMap">
+/* UsrDashboardDAO.selectDamGraphData */
+	<![CDATA[
+		SELECT
+			BASE_DATE
+			, BASE_TIME
+			, TOTOTF
+			, REG_DTTM
+		FROM TB_SEPS_DAM_API 
+		WHERE 
+			DMOBSCD = #dmobscd#
+			AND BASE_DATE = date_format(sysdate(), '%Y%m%d')
+		ORDER BY 
+			BASE_TIME asc
+	]]>
+	</select>
+	
+	<!-- 미세먼지, 초미세먼지 데이터-->
+	<select id="UsrDashboardDAO.selectWarnStatus" resultClass="egovMap">
+/*UsrDashboardDAO.selectWarnStatus*/
+	<![CDATA[
+		select
+			t1.POLLUTANT
+			, t1.APPLC_DT
+			, t1.CAISTEP
+			, t1.ALARM_CNDT
+		FROM	
+			TB_SEPS_WARN_API t1
+		WHERE
+			t1.APPLC_DT = (SELECT MAX(APPLC_DT) AS APPLC_DT FROM TB_SEPS_WARN_API where POLLUTANT = 'pm10' and FA_ON = 'f')
+			AND t1.FA_ON = 'f'
+			and t1.POLLUTANT = 'pm10'
+		UNION 
+		select
+			t1.POLLUTANT
+			, t1.APPLC_DT
+			, t1.CAISTEP
+			, t1.ALARM_CNDT
+		FROM	
+			TB_SEPS_WARN_API t1
+		WHERE
+			t1.APPLC_DT = (SELECT MAX(APPLC_DT) AS APPLC_DT FROM TB_SEPS_WARN_API where POLLUTANT = 'pm25' and FA_ON = 'f')
+			AND t1.FA_ON = 'f'
+			and t1.POLLUTANT = 'pm25'
+	]]>
+	</select>
+	
+	<!-- 지수 조회 -->
+	<select id="UsrDashboardDAO.selectLifeStatus" resultClass="egovMap">
+/*UsrDashboardDAO.selectLifeStatus*/
+	<![CDATA[
+		SELECT
+			t1.CODE
+			, t1.BASE_DATE
+			, t1.VALUE
+		FROM
+			TB_SEPS_WEATHER_LIFE_API t1
+			, (SELECT CODE, MAX(BASE_DATE) AS BASE_DATE FROM TB_SEPS_WEATHER_LIFE_API GROUP BY CODE) t2
+		WHERE
+			t1.CODE = t2.CODE
+		AND
+			t1.BASE_DATE = t2.BASE_DATE
+	]]>
+	</select>
+	
+	<!-- 중기예보 조회 -->
+	<select id="UsrDashboardDAO.selectMiddleStatus" resultClass="egovMap">
+/*UsrDashboardDAO.selectMiddleStatus*/
+	<![CDATA[
+		SELECT 
+			t1.BASE_DATE
+			, t1.DATE3, t1.DATE4, t1.DATE5, t1.DATE6, t1.DATE7
+			, t1.WF_3_AM, t1.WF_3_PM, t1.RN_ST_3_AM, t1.RN_ST_3_PM
+			, t1.WF_4_AM, t1.WF_4_PM, t1.RN_ST_4_AM, t1.RN_ST_4_PM
+			, t1.WF_5_AM, t1.WF_5_PM, t1.RN_ST_5_AM, t1.RN_ST_5_PM
+			, t1.WF_6_AM, t1.WF_6_PM, t1.RN_ST_6_AM, t1.RN_ST_6_PM
+			, t1.WF_7_AM, t1.WF_7_PM, t1.RN_ST_7_AM, t1.RN_ST_7_PM
+			, t2.TA_MIN_3, t2.TA_MAX_3
+			, t2.TA_MIN_4, t2.TA_MAX_4
+			, t2.TA_MIN_5, t2.TA_MAX_5
+			, t2.TA_MIN_6, t2.TA_MAX_6
+			, t2.TA_MIN_7, t2.TA_MAX_7
+		FROM 
+			TB_SEPS_WEATHER_MIDDLE_API t1
+			, TB_SEPS_WEATHER_TEMPERATURE_API t2
+		WHERE
+			t1.BASE_DATE = t2.BASE_DATE
+		ORDER BY t1.BASE_DATE DESC
+		LIMIT 1
+	]]>
+	</select>
+	
+</sqlMap>

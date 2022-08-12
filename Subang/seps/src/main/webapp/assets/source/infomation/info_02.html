@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="kr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Script-Type" content="text/javascript" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+		<link href="../../css/common.css" rel="stylesheet" type="text/css" />
+		<link href="../../css/menu.css" rel="stylesheet" type="text/css" />
+
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" />
+		<script src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+
+		<script src="../../js/menu.js" type="text/javascript"></script>
+		<script src="../../js/common.js" type="text/javascript"></script>
+
+		<title>종합상환판 :: 자동차전용도로 수방 통합시스템</title>
+	</head>
+	<body class="sub_page">
+		<!-- PAGE_HEAD -->
+		<div class="m_header">
+			<div class="t_logo">
+				자동차전용도로 <span>수방 통합시스템</span>
+			</div>
+			<button id="clickme"><img src="../../img/mobile_menu_open.png" alt="메뉴열기" /></button>
+			<!-- TOP_MENU -->
+			<div class="t_menu">
+				<!-- PC_TOP_MENU -->
+				<div class="pc_menu">
+					<div class="log_in">
+						<ul>
+							<li><a href="#">홍길동</a></li>
+							<li><a href="#">Logout</a></li>
+							<li><a href="#"><img src="../../img/kakao_icon.png" alt="공유하기" />&nbsp;&nbsp;공유하기</a></li>
+						</ul>
+					</div>
+					<ul>
+						<li><a href="#">종합상황판</a></li>
+						<li><a href="#">동부간선도로</a></li>
+						<li><a href="#">올림픽대로</a></li>
+						<li><a href="#">종합정보</a></li>
+						<li><a href="#">복구차량</a></li>
+						<li><a href="#">수방센터</a></li>
+						<li><a href="#">비상연락망</a></li>
+					</ul>
+				</div>
+				<!--// PC_TOP_MENU -->
+			</div>
+			<!--// TOP_MENU -->
+		</div>
+		<!-- MOBILE_MENU -->
+		<div class="mob_menu">
+			<div class="cssmenu">
+				<div id="cssmenu">
+					<div class="log_info_box">
+						<a href="#" class="fl_right"><img src="../../img/kakao_icon.png" alt="공유하기" /></a>
+						<a href="#">홍길동</a>
+						<a href="#">Logout</a>
+					</div>
+					<ul>
+					   <li><a href="#">종합상황판</a></li>
+					   <li><a href="#">동부간선도로</a></li>
+					   <li><a href="#">올림픽대로</a></li>
+					   <li class="has-sub"><a href="#">종합정보</a>
+						  <ul>
+							 <li><a href="#">기간별수위정보</a></li>
+							 <li><a href="#">시간대별기상현황</a></li>
+							 <li><a href="#">종합정보</a></li>
+							 <li><a href="#">수위정보</a></li>
+							 <li><a href="#">조위정보</a></li>
+						  </ul>
+					   </li>
+					   <li><a href="#">복구차량</a></li>
+					   <li class="has-sub"><a href="#">수방센터</a>
+						  <ul>
+							 <li><a href="#">공지사항</a></li>
+							 <li><a href="#">기간별알림현황</a></li>
+						  </ul>
+					   </li>
+					   <li><a href="#">비상연락망</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<!--// MOBILE_MENU -->
+		<!-- //PAGE_HEAD-->
+		<div class="m_body" >
+			<!-- WEB LEFT_MENU -->
+			<div class="left_menu left_cas" id="left_menu">
+				<div class="left_title"><p>종합정보</p></div>
+				<ul>
+					 <li><a href="#">기간별 수위정보</a></li>
+					 <li><a href="#">시간대별기상현황</a></li>
+					 <li><a href="#">종합정보</a></li>
+					 <li><a href="#">수위정보</a></li>
+					 <li><a href="#">조위정보</a></li>
+				  </ul>
+			</div>
+			<!--// WEB LEFT_MENU -->
+			<div class="main_content">
+				<div class="content">
+					<div class="m_title">
+						<div class="title">시간대별 기상현황</div>
+						<div class="navi">
+							<ul>
+								<li>HOME</li>
+								<li>종합정보</li>
+								<li>시간대별 기상현황</li>
+							</ul>
+						</div>
+					</div>
+					<fieldset>
+						<legend>검색하기</legend>
+						<div class="top_sh_box">
+							<div class="sh_box">
+								<dl>
+									<dt>대상</dt>
+									<dd>
+										<select class="select_box">
+											<option checked="checked">test</option>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt>기간</dt>
+									<dd>
+										<input type="text" id="day_st" class="start_day input_date"  placeholder="날짜" /> <input type="text" name="" class="input_time" placeholder="시간" /> ~ <input type="text" id="day_st02" class="finish_day input_date"  placeholder="날짜" /> <input type="text" name="" class="input_time" placeholder="시간" />
+									</dd>
+								</dl>
+							</div>
+							<div class="btn_sh"><button>검색</button></div>
+							<div class="dw_exl"><a href="#"><img src="../../img/excel_icon.png" alt="엑셀파일 다운로드" /></a></div>
+						</div>
+					</fieldset>
+					<div class="cont_box">
+						<div class="grid_table">
+							<table>
+								<thead>
+									<tr>
+										<th rowspan="3">시간</th>
+										<th colspan="5">강수량</th>
+										<th colspan="5">수위 및 방류량      *자체수위 및 한강통수통제소</th>
+									</tr>
+									<tr>
+										<th rowspan="2">시간</th>
+										<th colspan="2">서울</th>
+										<th colspan="2">의정부</th>
+										<th rowspan="2">월계1교</th>
+										<th rowspan="2">시간당</th>
+										<th rowspan="2">누적</th>
+										<th rowspan="2">시간당</th>
+										<th rowspan="2">누적</th>
+									</tr>
+									<tr>
+										<th>시간당</th>
+										<th>누적</th>
+										<th>시간당</th>
+										<th>누적</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>10:00</td>
+										<td>1단계</td>
+										<td>1</td>
+										<td>1</td>
+										<td>3</td>
+										<td>3</td>
+										<td>15m이하</td>
+										<td>0.68</td>
+										<td>-</td>
+										<td>1.06</td>
+										<td>523</td>
+									</tr>
+									<tr>
+										<td>11:00</td>
+										<td>1단계</td>
+										<td>23.5</td>
+										<td>24.5</td>
+										<td>17.5</td>
+										<td>20.5</td>
+										<td>15m이하</td>
+										<td>0.77</td>
+										<td>-</td>
+										<td>1.11</td>
+										<td>550</td>
+									</tr>
+									<tr>
+										<td>12:00</td>
+										<td>1단계</td>
+										<td>16</td>
+										<td>40.5</td>
+										<td>24</td>
+										<td>44.5</td>
+										<td>15m이하</td>
+										<td>1.09</td>
+										<td>-</td>
+										<td>1.21</td>
+										<td>653</td>
+									</tr>
+									<tr>
+										<td>13:00</td>
+										<td>1단계</td>
+										<td>10</td>
+										<td>50.5</td>
+										<td>8.5</td>
+										<td>53</td>
+										<td>15m이하</td>
+										<td>1.38</td>
+										<td>-</td>
+										<td>1.67</td>
+										<td>660</td>
+									</tr>
+									<tr>
+										<td>14:00</td>
+										<td>1단계</td>
+										<td>3</td>
+										<td>53.5</td>
+										<td>8.5</td>
+										<td>61.5</td>
+										<td>15m이하</td>
+										<td>1.51</td>
+										<td>-</td>
+										<td>1.86</td>
+										<td>660</td>
+									</tr>
+									<tr>
+										<td>15:00</td>
+										<td>보강</td>
+										<td>2</td>
+										<td>55.5</td>
+										<td>4.5</td>
+										<td>66</td>
+										<td>15m이하</td>
+										<td>1.53</td>
+										<td>-</td>
+										<td>1.86</td>
+										<td>655</td>
+									</tr>
+									<tr>
+										<td>16:00</td>
+										<td>보강</td>
+										<td>1.5</td>
+										<td>57</td>
+										<td>2</td>
+										<td>68</td>
+										<td>15m이하</td>
+										<td>1.5</td>
+										<td>-</td>
+										<td>1.8</td>
+										<td>646</td>
+									</tr>
+									<tr>
+										<td>17:00</td>
+										<td>보강</td>
+										<td>4</td>
+										<td>61</td>
+										<td>1.5</td>
+										<td>69.5</td>
+										<td>15m이하</td>
+										<td>1.41</td>
+										<td>-</td>
+										<td>1.73</td>
+										<td>663</td>
+									</tr>
+									<tr>
+										<td>18:00</td>
+										<td>보강</td>
+										<td>1</td>
+										<td>62</td>
+										<td>1</td>
+										<td>70.5</td>
+										<td>15m이하</td>
+										<td>1.33</td>
+										<td>-</td>
+										<td>1.65</td>
+										<td>783</td>
+									</tr>
+
+								</tbody>
+							</table>
+						</div>
+						<div class="b_table_caption">*사례 근무일시 : 2017.8.15(화) 10:00 ~ 8.15(화) 18:00 상황 표시 함.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<ul>
+				<li><img src="../../img/end_logo.png" alt="" /></li>
+				<li>
+					04704 서울시 성동구 청계천로 540 서울시설공단 도로관리본부 / 도로관리처 Tel:02)2290-6273<br>
+					Copyright(c) 2018 Seoul Metropolitan Facilities Management Corporation. All Rights Reserved
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>

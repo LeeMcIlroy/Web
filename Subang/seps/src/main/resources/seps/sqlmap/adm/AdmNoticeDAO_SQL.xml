@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	
+	<sql id="adm_notice">
+		FROM
+			TB_SEPS_NOTICE t1
+		WHERE
+			NOTICE_YN = 'N'
+		<dynamic>
+		<isNotEmpty property="searchWord" >
+				<isEqual property="searchCondition1" compareValue="1">
+					AND TITLE like concat('%', #searchWord#, '%')
+				</isEqual>
+				<isEqual property="searchCondition1" compareValue="2">
+					AND REG_NM like concat('%', #searchWord#, '%')
+				</isEqual>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	
+	<!-- 공지사항 목록 -->
+	<select id="AdmNoticeDAO.selectAdmNoticeList" parameterClass="searchVO" resultClass="EgovMap">
+/*AdmNoticeDAO.selectAdmNoticeList*/
+	<![CDATA[
+		SELECT
+			NOTICE_ID
+			, TITLE
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d') as REG_DTTM
+			, REG_NM
+			, HIT_CNT
+			, (SELECT ATTACH_FILE_ID FROM TB_SEPS_ATTACH_FILE WHERE BOARD_TYPE = 'N' AND BOARD_ID = tt.NOTICE_ID) AS ATTACH_FILE_ID
+		FROM (
+			SELECT
+				NOTICE_ID
+				, TITLE
+				, REG_DTTM
+				, REG_NM
+				, HIT_CNT
+	]]>
+			<include refid="adm_notice"/>
+	<![CDATA[
+			ORDER BY
+				REG_DTTM desc
+			]]>	
+			<isNotEqual property="searchType" compareValue="Y">
+				LIMIT #firstIndex#, #recordCountPerPage#
+			</isNotEqual>
+			<![CDATA[
+		) tt
+	]]>
+	</select>
+	
+	<!-- 목록2(공지글) -->
+	<select id="AdmNoticeDAO.selectNoticeList2" resultClass="egovMap">
+/* AdmNoticeDAO.selectNoticeList2 */
+	<![CDATA[
+		SELECT
+			NOTICE_ID
+			, TITLE
+			, date_format(REG_DTTM, '%Y-%m-%d') as REG_DTTM
+			, REG_NM
+			, HIT_CNT
+			, (SELECT ATTACH_FILE_ID FROM TB_SEPS_ATTACH_FILE WHERE BOARD_TYPE = 'N' AND BOARD_ID = t1.NOTICE_ID) AS ATTACH_FILE_ID
+		FROM TB_SEPS_NOTICE t1
+		WHERE
+			NOTICE_YN = 'Y'
+		ORDER BY 
+			REG_DTTM desc
+	]]>
+	</select>
+	
+		<!-- 목록Cnt -->
+	<select id="AdmNoticeDAO.selectAdmNoticeListCnt" parameterClass="searchVO" resultClass="int">
+/* AdmNoticeDAO.selectAdmNoticeListCnt */
+	<![CDATA[
+		SELECT count(*)
+	]]>
+		<include refid="adm_notice"/>
+	</select>
+	
+	<!-- 조회 -->
+	<select id="AdmNoticeDAO.selectAdmNoticeView" parameterClass="String" resultClass="noticeVO">
+/*AdmNoticeDAO.selectAdmNoticeView*/
+	<![CDATA[
+		SELECT
+			NOTICE_ID AS noticeId
+			, TITLE AS title
+			, DATE_FORMAT(REG_DTTM, '%Y-%m-%d') as regDttm
+			, REG_NM AS regNm
+			, HIT_CNT AS hitCnt
+			, NOTICE_YN AS noticeYn
+			, CONTENT AS content
+		FROM
+			TB_SEPS_NOTICE
+		WHERE
+			NOTICE_ID = #noticeId#
+	]]>
+	</select>
+	
+	<!-- 등록 -->
+	<insert id="AdmNoticeDAO.insertAdmNotice" parameterClass="noticeVO">
+/*AdmNoticeDAO.insertAdmNotice*/
+	<selectKey keyProperty="noticeId" resultClass="String">
+		SELECT LAST_INSERT_ID()
+	</selectKey>
+	<![CDATA[
+		INSERT INTO TB_SEPS_NOTICE(
+			TITLE
+			, CONTENT
+			, REG_NM
+			, REG_DTTM
+			, NOTICE_YN
+		) VALUES (
+			#title#
+			, #content#
+			, #regNm#
+			, NOW()
+			, #noticeYn#
+		)
+	]]>
+	</insert>
+	
+	<!-- 수정 -->
+	<update id="AdmNoticeDAO.updateAdmNotice" parameterClass="noticeVO">
+/*AdmNoticeDAO.updateAdmNotice*/
+	<![CDATA[
+		UPDATE TB_SEPS_NOTICE SET
+			TITLE = #title#
+			, CONTENT = #content#
+			, UDT_NM = #udtNm#
+			, UDT_DTTM = NOW()
+			, NOTICE_YN = #noticeYn#
+		WHERE
+			NOTICE_ID = #noticeId#
+	]]>
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="AdmNoticeDAO.deleteAdmNotice" parameterClass="String">
+/*AdmNoticeDAO.deleteAdmNotice*/
+	<![CDATA[
+		DELETE FROM TB_SEPS_NOTICE WHERE NOTICE_ID = #noticeId#
+	]]>
+	</delete>
+</sqlMap>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"	"http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap>
+	<!-- 로그인 -->	
+	<select id="LoginDAO.actionLogin" parameterClass="userInfoVO" resultClass="userInfoVO">
+/* LoginDAO.actionLogin */
+	<![CDATA[
+		SELECT
+			USER_INFO_ID as userInfoId
+			, USER_ID AS userId
+			, USER_NM AS userNm
+			, DEPT
+			, USER_TEL AS userTel
+			, USER_MAIL AS userMail
+			, USE_YN AS useYn
+			, ALARM_YN AS alarmYn
+			, ADMIN_YN AS adminYn
+		FROM 
+			TB_SEPS_USER_INFO
+		WHERE
+			USE_YN = 'Y'
+			AND USER_ID = #userId# 
+			AND	USER_PW = #userPw# 
+	]]>
+	</select>
+	
+		
+	<!-- 로그인 권한 조회-->	
+	<select id="LoginDAO.selectAuthList" parameterClass="userInfoVO" resultClass="authVO">
+/* LoginDAO.selectAuthList */
+	<![CDATA[
+		SELECT
+			T2.AUTH_NM as authNm
+			, T2.URL as url
+		FROM
+			TB_SEPS_AUTH_MAPPING T1
+		JOIN TB_SEPS_AUTH T2 ON T1.AUTH_ID = T2.AUTH_ID
+		WHERE
+			T1.USER_INFO_ID = #userInfoId#
+	]]>
+	</select>
+	
+	
+	<!-- 최종접속 시간 기록 -->
+	<update id="LoginDAO.updateUserLog" parameterClass="String">
+/*LoginDAO.updateUserLog*/
+	<![CDATA[
+		UPDATE TB_SEPS_USER_INFO SET
+			UDT_DTTM = NOW()
+		WHERE
+			USER_INFO_ID = #userInfoId#
+	]]>
+	</update>
+	
+</sqlMap>

@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="kr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Script-Type" content="text/javascript" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+		<link href="../../css/common.css" rel="stylesheet" type="text/css" />
+		<link href="../../css/menu.css" rel="stylesheet" type="text/css" />
+
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" />
+		<script src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+
+		<script src="../../js/menu.js" type="text/javascript"></script>
+		<script src="../../js/common.js" type="text/javascript"></script>
+
+		<title>종합상환판 :: 자동차전용도로 수방 통합시스템</title>
+	</head>
+	<body class="sub_page">
+		<!-- PAGE_HEAD -->
+		<div class="m_header">
+			<div class="t_logo">
+				자동차전용도로 <span>수방 통합시스템</span>
+			</div>
+			<button id="clickme"><img src="../../img/mobile_menu_open.png" alt="메뉴열기" /></button>
+			<!-- TOP_MENU -->
+			<div class="t_menu">
+				<!-- PC_TOP_MENU -->
+				<div class="pc_menu">
+					<div class="log_in">
+						<ul>
+							<li><a href="#">홍길동</a></li>
+							<li><a href="#">Logout</a></li>
+							<li><a href="#"><img src="../../img/kakao_icon.png" alt="공유하기" />&nbsp;&nbsp;공유하기</a></li>
+						</ul>
+					</div>
+					<ul>
+						<li><a href="#">종합상황판</a></li>
+						<li><a href="#">동부간선도로</a></li>
+						<li><a href="#">올림픽대로</a></li>
+						<li><a href="#">종합정보</a></li>
+						<li><a href="#">복구차량</a></li>
+						<li><a href="#">수방센터</a></li>
+						<li><a href="#">비상연락망</a></li>
+					</ul>
+				</div>
+				<!--// PC_TOP_MENU -->
+			</div>
+			<!--// TOP_MENU -->
+		</div>
+		<!-- MOBILE_MENU -->
+		<div class="mob_menu">
+			<div class="cssmenu">
+				<div id="cssmenu">
+					<div class="log_info_box">
+						<a href="#" class="fl_right"><img src="../../img/kakao_icon.png" alt="공유하기" /></a>
+						<a href="#">홍길동</a>
+						<a href="#">Logout</a>
+					</div>
+					<ul>
+					   <li><a href="#">종합상황판</a></li>
+					   <li><a href="#">동부간선도로</a></li>
+					   <li><a href="#">올림픽대로</a></li>
+					   <li class="has-sub"><a href="#">종합정보</a>
+						  <ul>
+							 <li><a href="#">기간별수위정보</a></li>
+							 <li><a href="#">시간대별기상현황</a></li>
+							 <li><a href="#">종합정보</a></li>
+							 <li><a href="#">수위정보</a></li>
+							 <li><a href="#">조위정보</a></li>
+						  </ul>
+					   </li>
+					   <li><a href="#">복구차량</a></li>
+					   <li class="has-sub"><a href="#">수방센터</a>
+						  <ul>
+							 <li><a href="#">공지사항</a></li>
+							 <li><a href="#">기간별알림현황</a></li>
+						  </ul>
+					   </li>
+					   <li><a href="#">비상연락망</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<!--// MOBILE_MENU -->
+		<!-- //PAGE_HEAD-->
+		<div class="m_body" >
+			<!-- WEB LEFT_MENU -->
+			<div class="left_menu left_cas" id="left_menu">
+				<div class="left_title"><p>종합정보</p></div>
+				<ul>
+					 <li><a href="#">기간별 수위정보</a></li>
+					 <li><a href="#">시간대별기상현황</a></li>
+					 <li><a href="#">종합정보</a></li>
+					 <li><a href="#">수위정보</a></li>
+					 <li><a href="#">조위정보</a></li>
+				  </ul>
+			</div>
+			<!--// WEB LEFT_MENU -->
+			<div class="main_content">
+				<div class="content">
+					<div class="m_title">
+						<div class="title">기상정보</div>
+						<div class="navi">
+							<ul>
+								<li>HOME</li>
+								<li>종합정보</li>
+								<li>기상정보</li>
+							</ul>
+						</div>
+					</div>
+					<div class="reload"><a href="#">2018.4.16(월) 15:00 현재</a></div>
+					<fieldset>
+						<legend>검색하기</legend>
+						<div class="top_sh_box">
+							<div class="sh_box">
+								<dl>
+									<dt>대상</dt>
+									<dd>
+										<select class="select_box">
+											<option checked="checked">마장동</option>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt></dt>
+									<dd>
+										<input type="text" id="day_st" class="start_day input_date"  placeholder="날짜" />
+									</dd>
+								</dl>
+							</div>
+							<div class="btn_sh"><button>검색</button></div>
+						</div>
+					</fieldset>
+					<div class="cont_box">
+						<div class="wt_box">
+							<div class="wt_title">
+								<p>신곡동 기상현황</p>
+								서울시 성동구 마장동 110-11
+							</div>
+							<div class="wt_icon">
+								<div><img src="../../img/wd_icon02.png" alt="비" /></div>
+							</div>
+							<div class="wt_info">
+								<ul>
+									<li>온도: 9℃</li>
+									<li>습도: 47%</li>
+									<li>바람: 남동풍 1m/s</li>
+									<li>1시간 강수량: 10mm</li>
+								</ul>
+							</div>
+						</div>
+						<div class="wt_table">
+							<div class="grid_table grid_table_l">
+								<table>
+									<thead>
+										<tr>
+											<th>날짜  </th>
+											<th>26(수)</th>
+											<th>27(목)</th>
+											<th>28(금)</th>
+											<th>29(토)</th>
+											<th>30(일)</th>
+											<th>31(월)</th>
+											<th>1(화) </th>
+											<th>2(수) </th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>시각</td>
+											<td>1</td>
+											<td>2</td>
+											<td>3</td>
+											<td>4</td>
+											<td>5</td>
+											<td>6</td>
+											<td>7</td>
+											<td>8</td>
+										</tr>
+										<tr>
+											<td>날씨</td>
+											<td>1</td>
+											<td>2</td>
+											<td>3</td>
+											<td>4</td>
+											<td>5</td>
+											<td>6</td>
+											<td>7</td>
+											<td>8</td>
+										</tr>
+										<tr>
+											<td>강수확률(%)</td>
+											<td>1</td>
+											<td>2</td>
+											<td>3</td>
+											<td>4</td>
+											<td>5</td>
+											<td>6</td>
+											<td>7</td>
+											<td>8</td>
+										</tr>
+										<tr>
+											<td>강수량(mm)</td>
+											<td>1</td>
+											<td>2</td>
+											<td>3</td>
+											<td>4</td>
+											<td>5</td>
+											<td>6</td>
+											<td>7</td>
+											<td>8</td>
+										</tr>
+										<tr>
+											<td>기온(ºC)</td>
+											<td>1</td>
+											<td>2</td>
+											<td>3</td>
+											<td>4</td>
+											<td>5</td>
+											<td>6</td>
+											<td>7</td>
+											<td>8</td>
+										</tr>
+										<tr>
+											<td>습도(%)</td>
+											<td>1</td>
+											<td>2</td>
+											<td>3</td>
+											<td>4</td>
+											<td>5</td>
+											<td>6</td>
+											<td>7</td>
+											<td>8</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class="cont_box">
+						<div class="gf_w100p"><img src="../../img/grf_b_img.png"></div>
+						<div class="grid_table_over grid_table_l">
+							<table>
+								<tbody>
+									<tr>
+										<td>시간</td>
+										<td>10:00</td>
+										<td>11:00</td>
+										<td>12:00</td>
+										<td>13:00</td>
+										<td>14:00</td>
+										<td>15:00</td>
+										<td>16:00</td>
+										<td>17:00</td>
+										<td>18:00</td>
+										<td>19:00</td>
+										<td>20:00</td>
+										<td>21:00</td>
+										<td>22:00</td>
+										<td>23:00</td>
+									</tr>
+									<tr>
+										<td>강수량</td>
+										<td>100</td>
+										<td>200</td>
+										<td>300</td>
+										<td>400</td>
+										<td>500</td>
+										<td>600</td>
+										<td>700</td>
+										<td>800</td>
+										<td>900</td>
+										<td>1000</td>
+										<td>1100</td>
+										<td>1200</td>
+										<td>1300</td>
+										<td>1400</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="b_table_caption">*사례 근무일시 : 2017.8.15(화) 10:00 ~ 8.15(화) 18:00 상황 표시 함.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<ul>
+				<li><img src="../../img/end_logo.png" alt="" /></li>
+				<li>
+					04704 서울시 성동구 청계천로 540 서울시설공단 도로관리본부 / 도로관리처 Tel:02)2290-6273<br>
+					Copyright(c) 2018 Seoul Metropolitan Facilities Management Corporation. All Rights Reserved
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>

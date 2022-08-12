@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="kr">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-Script-Type" content="text/javascript" />
+		<meta http-equiv="Content-Style-Type" content="text/css" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+		<link href="../../css/common.css" rel="stylesheet" type="text/css" />
+		<link href="../../css/menu.css" rel="stylesheet" type="text/css" />
+
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" />
+		<script src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+
+		<script src="../../js/menu.js" type="text/javascript"></script>
+		<script src="../../js/common.js" type="text/javascript"></script>
+
+		<title>종합상환판 :: 자동차전용도로 수방 통합시스템</title>
+	</head>
+	<body class="sub_page">
+		<!-- PAGE_HEAD -->
+		<div class="m_header">
+			<div class="t_logo">
+				자동차전용도로 <span>수방 통합시스템</span>
+			</div>
+			<button id="clickme"><img src="../../img/mobile_menu_open.png" alt="메뉴열기" /></button>
+			<!-- TOP_MENU -->
+			<div class="t_menu">
+				<!-- PC_TOP_MENU -->
+				<div class="pc_menu">
+					<div class="log_in">
+						<ul>
+							<li><a href="#">홍길동</a></li>
+							<li><a href="#">Logout</a></li>
+							<li><a href="#"><img src="../../img/kakao_icon.png" alt="공유하기" />&nbsp;&nbsp;공유하기</a></li>
+						</ul>
+					</div>
+					<ul>
+						<li><a href="#">종합상황판</a></li>
+						<li><a href="#">동부간선도로</a></li>
+						<li><a href="#">올림픽대로</a></li>
+						<li><a href="#">종합정보</a></li>
+						<li><a href="#">복구차량</a></li>
+						<li><a href="#">수방센터</a></li>
+						<li><a href="#">비상연락망</a></li>
+					</ul>
+				</div>
+				<!--// PC_TOP_MENU -->
+			</div>
+			<!--// TOP_MENU -->
+		</div>
+		<!-- MOBILE_MENU -->
+		<div class="mob_menu">
+			<div class="cssmenu">
+				<div id="cssmenu">
+					<div class="log_info_box">
+						<a href="#" class="fl_right"><img src="../../img/kakao_icon.png" alt="공유하기" /></a>
+						<a href="#">홍길동</a>
+						<a href="#">Logout</a>
+					</div>
+					<ul>
+					   <li><a href="#">종합상황판</a></li>
+					   <li><a href="#">동부간선도로</a></li>
+					   <li><a href="#">올림픽대로</a></li>
+					   <li class="has-sub"><a href="#">종합정보</a>
+						  <ul>
+							 <li><a href="#">기간별수위정보</a></li>
+							 <li><a href="#">시간대별기상현황</a></li>
+							 <li><a href="#">종합정보</a></li>
+							 <li><a href="#">수위정보</a></li>
+							 <li><a href="#">조위정보</a></li>
+						  </ul>
+					   </li>
+					   <li><a href="#">복구차량</a></li>
+					   <li class="has-sub"><a href="#">수방센터</a>
+						  <ul>
+							 <li><a href="#">공지사항</a></li>
+							 <li><a href="#">기간별알림현황</a></li>
+						  </ul>
+					   </li>
+					   <li><a href="#">비상연락망</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<!--// MOBILE_MENU -->
+		<!-- //PAGE_HEAD-->
+		<div class="m_body" >
+			<!-- WEB LEFT_MENU -->
+			<div class="left_menu left_cas" id="left_menu">
+				<div class="left_title"><p>수방센터</p></div>
+				<ul>
+					 <li><a href="#">공지사항</a></li>
+					 <li><a href="#">기간별알림현황</a></li>
+				  </ul>
+			</div>
+			<!--// WEB LEFT_MENU -->
+			<div class="main_content">
+				<div class="content">
+					<div class="m_title">
+						<div class="title">기간별알림현황</div>
+						<div class="navi">
+							<ul>
+								<li>HOME</li>
+								<li>수방센터</li>
+								<li>기간별알림현황</li>
+							</ul>
+						</div>
+					</div>
+					<fieldset>
+						<legend>검색하기</legend>
+						<div class="top_sh_box">
+							<div class="sh_box">
+								<dl>
+									<dt>대상</dt>
+									<dd>
+										<select class="select_box">
+											<option checked="checked">수위</option>
+										</select>
+									</dd>
+								</dl>
+								<dl>
+									<dt></dt>
+									<dd>
+										<input type="text" id="day_st" class="start_day input_date" /> ~ <input type="text" id="day_st02" class="finish_day input_date" />
+									</dd>
+								</dl>
+							</div>
+							<div class="btn_sh"><button>검색</button></div>
+							<div class="excel"><a href="#"><img src="../../img/excel_icon.png" alt="엑셀파일 다운로드" /></a></div>
+						</div>
+					</fieldset>
+					<div class="cont_box ptb_50">
+						<div class="transform_table notice_type2">
+							<ul class="tbl_th">
+								<li>대상</li>
+								<li>알람내용</li>
+								<li>발생일시</li>
+							</ul>
+							<div class="tbl_td2">
+								<ul>
+									<li class="tbl_ntc"><span>기상</span></li>
+									<li class="txt_left"><a href="#">2018년4월20일 14시 현재 홍수주의보 발령</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>수위</span></li>
+									<li class="txt_left"><a href="#">월계1교 수위 10m</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>기상</span></li>
+									<li class="txt_left"><a href="#">2018년4월20일 14시 현재 홍수주의보 발령</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>수위</span></li>
+									<li class="txt_left"><a href="#">월계1교 수위 10m</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>기상</span></li>
+									<li class="txt_left"><a href="#">2018년4월20일 14시 현재 홍수주의보 발령</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>수위</span></li>
+									<li class="txt_left"><a href="#">월계1교 수위 10m</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>기상</span></li>
+									<li class="txt_left"><a href="#">2018년4월20일 14시 현재 홍수주의보 발령</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>수위</span></li>
+									<li class="txt_left"><a href="#">월계1교 수위 10m</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>기상</span></li>
+									<li class="txt_left"><a href="#">2018년4월20일 14시 현재 홍수주의보 발령</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+								<ul>
+									<li class="tbl_ntc"><span>수위</span></li>
+									<li class="txt_left"><a href="#">월계1교 수위 10m</a></li>
+									<li>2018-04-23 13:20</li>
+								</ul>
+							</div>
+
+					    <!--<div class="btn_b">
+							<img src="../../img/btn_cen01.png" alt="글쓰기" />
+							<img src="../../img/btn_cen01.png" alt="글쓰기" />
+							<img src="../../img/btn_cen01.png" alt="글쓰기" />
+						</div>-->
+
+						</div>
+						<div class="pager">
+							<a href="#" class="no_active"><img src="../../img/pager_dl_icon2.png" alt="첫 페이지" /></a>
+							<a href="#" class="no_active"><img src="../../img/pager_dl02_icon2.png" alt="이전 페이지" /></a>
+							<a href="#" class="active">1</a>
+							<a href="#">2</a>
+							<a href="#">3</a>
+							<a href="#">4</a>
+							<a href="#">5</a>
+							<a href="#" class="no_active"><img src="../../img/pager_dr02_icon2.png" alt="다음 페이지" /></a>
+							<a href="#" class="no_active"><img src="../../img/pager_dr_icon2.png" alt="마지막 페이지" /></a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<ul>
+				<li><img src="../../img/end_logo.png" alt="" /></li>
+				<li>
+					04704 서울시 성동구 청계천로 540 서울시설공단 도로관리본부 / 도로관리처 Tel:02)2290-6273<br>
+					Copyright(c) 2018 Seoul Metropolitan Facilities Management Corporation. All Rights Reserved
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>
